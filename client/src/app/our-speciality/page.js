@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
+import Link from "next/link";
 
 const responsive2 = {
   desktop: {
@@ -26,8 +27,15 @@ function page() {
   return (
     <>
       <Navbar />
-      <div className="flex justify-center text-center text-[#023b81] align-middle items-center  h-30">
-        <h1 className="text-5xl font-bold"> Our Speciality</h1>
+      <div className="relative bg-gray-300 overflow-hidden top-0 z-0">
+        {/* Background Image Layer */}
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-5"
+          style={{ backgroundImage: "url('/image/instit.jpg')" }} // replace with your image path
+        ></div>
+        <div className="flex justify-center text-center text-[#023b81] align-middle items-center  h-30">
+          <h1 className="text-5xl font-bold"> Our Speciality</h1>
+        </div>
       </div>
       <section>
         <div id="about" className="w-full bg-gray-100 py-12 px-4">
@@ -35,9 +43,9 @@ function page() {
             <p className="text-center font-semibold">
               {" "}
               <span>
-                <a href="/" className="underline">
+                <Link href="/" className="underline">
                   Global Technical Institute{" "}
-                </a>
+                </Link>
               </span>
               Global Technical Institute offers a variety of unique selling
               points (USPs) that set it apart from other technical education and
@@ -207,7 +215,7 @@ function page() {
           </div>
         </div>
 
-        {/* oyhers facility  */}
+        {/* others facility  */}
         <section className="py-10 px-4 bg-white">
           {/* Section Title */}
           <div className="text-center mb-8">
@@ -250,7 +258,7 @@ function page() {
           </div>
 
           {/* Conclusion Section */}
-          <div className="max-w-4xl mx-auto text-gray-800 text-base leading-relaxed">
+          <div className="max-w-4xl mx-10 text-gray-800   leading-relaxed">
             <h2 className="text-xl font-semibold mb-2">Conclusion</h2>
             <p>
               Our speciality makes it an excellent choice for students who want
@@ -261,31 +269,31 @@ function page() {
               experience. With expert instructors and state-of-the-art
               facilities, we nurture talent, empowering individuals to thrive in
               their chosen fields.
-              <a
-                href="https://globaltechnicalinstitute.com/contact-us/"
+              <Link
+                href="/contact-us"
                 className=" underline font-semibold ml-1"
               >
-                Contact us
-              </a>
+                Contact us&nbsp;
+              </Link>
               and unlock your potential for success in today’s competitive
               landscape. You can also visit our
-              <a
+              <Link
                 href="https://www.facebook.com/gtitrainingcourse"
                 className=" underline font-semibold ml-1"
               >
-                Facebook Page
-              </a>
+                Facebook Page&nbsp;
+              </Link>
               for more information.
             </p>
           </div>
         </section>
-        <div>
+        <div className="max-w-7xl mx-auto md:px-15">
           <img
             src="https://globaltechnicalinstitute.com/wp-content/uploads/2024/05/dl.beatsnoop.com-kPXfGWFt8V.jpg"
             alt="State-of-the-Art Facilities"
             width={1241}
-            height={380 }
-            className="mx-auto shadow-md"
+            height={380}
+            className="mx-auto shadow-md "
             loading="lazy"
           />
         </div>

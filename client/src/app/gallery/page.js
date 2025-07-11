@@ -7,6 +7,8 @@ import Navbar from "@/components/Navbar";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import Image from "next/image";
+import { Gallery } from "@/components/Gallery";
+import AOSProvider from "@/components/AOSProvider";
 
 const responsive2 = {
   desktop: {
@@ -47,13 +49,24 @@ function page() {
 
   return (
     <>
+      <AOSProvider>
+
+   
       <Navbar />
-      <div className="flex justify-center text-center text-[#023b81] align-middle items-center  h-30">
-        <h1 className="text-5xl font-bold">Gallery</h1>
+      <div className="relative bg-gray-300 overflow-hidden top-0 z-0">
+        {/* Background Image Layer */}
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-5"
+          style={{ backgroundImage: "url('/image/instit.jpg')" }} // replace with your image path
+        ></div>
+        <div className="flex justify-center text-center text-[#023b81] align-middle items-center  h-30">
+          <h1 className="text-5xl font-bold">Gallery</h1>
+        </div>
       </div>
 
-      <section>
-        {/* Annual Programme */}
+      <Gallery />
+
+      {/* <section>
         <div>
           <div className="text-center mb-8">
             <h4 className="text-2xl font-semibold ">Annual Programme</h4>
@@ -98,7 +111,7 @@ function page() {
                   alt=""
                   // src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
                   src="image/anu04.jpg"
-                   className="h-40 w-auto cursor-pointer transition-transform duration-300 hover:scale-105"
+                  className="h-40 w-auto cursor-pointer transition-transform duration-300 hover:scale-105"
                   onClick={() => openImage("image/anu04.jpg")}
                 />
               </div>
@@ -117,7 +130,6 @@ function page() {
           </div>
         </div>
 
-        {/* Our Excursion */}
         <div>
           <div className="text-center mb-8">
             <h4 className="text-2xl font-semibold ">Our Excursion</h4>
@@ -133,12 +145,10 @@ function page() {
           </div>
           <div id="about" className="w-full bg-gray-100 py-12 px-4">
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-              {/* small About carousal  */}
             </div>
           </div>
         </div>
 
-        {/* Ceremony for Diploma Certificate Distribution */}
         <div>
           <div className="text-center mb-8">
             <h4 className="text-2xl font-semibold ">
@@ -157,11 +167,10 @@ function page() {
           </div>
           <div id="about" className="w-full bg-gray-100 py-12 px-4">
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-              {/* small About carousal  */}
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       <Footer />
       <BackToTopButton />
@@ -188,6 +197,7 @@ function page() {
           />
         </div>
       )}
+       </AOSProvider>
     </>
   );
 }

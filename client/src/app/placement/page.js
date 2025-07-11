@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
+import Link from "next/link";
 
 const responsive = {
   superLargeDesktop: {
@@ -29,8 +30,15 @@ function page() {
   return (
     <>
       <Navbar />
-      <div className="flex justify-center text-center text-[#023b81] align-middle items-center  h-30">
-        <h1 className="text-5xl font-bold">Our Placements</h1>
+      <div className="relative bg-gray-300 overflow-hidden top-0 z-0">
+        {/* Background Image Layer */}
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-5"
+          style={{ backgroundImage: "url('/image/instit.jpg')" }} // replace with your image path
+        ></div>
+        <div className="flex justify-center text-center text-[#023b81] align-middle items-center  h-30">
+          <h1 className="text-5xl font-bold">Our Placements</h1>
+        </div>
       </div>
 
       {/* Teachers carousal  */}
@@ -42,7 +50,6 @@ function page() {
           <div className="flex justify-center">
             <hr className="mt-5 border-t-2 border-gray-400 w-11/12" />
           </div>
-         
         </div>
         <div className="max-w-7xl mx-auto px-4">
           <div className=" gap-6">
@@ -240,7 +247,6 @@ function page() {
           <div className="flex justify-center">
             <hr className="mt-5 border-t-2 border-gray-400 w-11/12" />
           </div>
-         
         </div>
         <div className="max-w-7xl mx-auto px-4">
           <div className=" gap-6">
@@ -635,13 +641,13 @@ function page() {
             <div className="text-base text-gray-700 leading-relaxed">
               Global Technical Institute Kolkata provides various medical
               courses in Kolkata. or visit our
-              <a
+              <Link
                 href="https://www.facebook.com/gtitrainingcourse/"
                 className="  font-semibold"
               >
                 {" "}
                 &nbsp;Facebook&nbsp;{" "}
-              </a>
+              </Link>
               page for more information about our placement. Our specialty
               offers an outstanding choice for students seeking high-quality
               technical education and training, equipping them for success in

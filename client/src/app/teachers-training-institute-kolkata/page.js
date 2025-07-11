@@ -3,24 +3,8 @@ import React, { useState } from "react";
 import BackToTopButton from "@/components/BackToTopButton";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import Link from "next/link";
-
-const responsive2 = {
-  desktop: {
-    breakpoint: { max: 3000, min: 1024 },
-    items: 1,
-  },
-  tablet: {
-    breakpoint: { max: 1024, min: 464 },
-    items: 1,
-  },
-  mobile: {
-    breakpoint: { max: 464, min: 0 },
-    items: 1,
-  },
-};
 
 function page() {
   const [montessoriTeachers, setMontessoriTeachers] = useState(true);
@@ -42,8 +26,15 @@ function page() {
   return (
     <>
       <Navbar />
-      <div className="flex justify-center text-center text-[#023b81] align-middle items-center  h-30">
-        <h1 className="text-5xl font-bold"> Teachers Training</h1>
+      <div className="relative bg-gray-300 overflow-hidden top-0 z-0">
+        {/* Background Image Layer */}
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-5"
+          style={{ backgroundImage: "url('/image/instit.jpg')" }} // replace with your image path
+        ></div>
+        <div className="flex justify-center text-center text-[#023b81] align-middle items-center  h-30">
+          <h1 className="text-5xl font-bold"> Teachers Training</h1>
+        </div>
       </div>
 
       <div className="space-y-6">
@@ -286,12 +277,12 @@ function page() {
             Are you passionate about shaping the minds of young children and
             creating a positive impact on their lives? Look no further! Global
             Technical Institute offers a comprehensive Primary{" "}
-            <a
+            <Link
               href="https://en.wikipedia.org/wiki/Teacher"
               className="text-blue-600 hover:underline"
             >
               Teacher’s
-            </a>{" "}
+            </Link>{" "}
             Training program based on the renowned Montessori Method to equip
             you with the skills and knowledge necessary for a successful career
             in primary education.
@@ -322,12 +313,12 @@ function page() {
           <p>
             Upon completing our{" "}
             <strong>
-              <a
+              <Link
                 href="https://globaltechnicalinstitute.com/best-teachers-training-institute-in-kolkata/"
                 className="text-blue-600 hover:underline"
               >
                 Primary Teacher’s Training program in Kolkata
-              </a>
+              </Link>
             </strong>
             , you will be awarded a Diploma in Primary Teacher’s Training.
             Minimum qualification required is Madhyamik or H.S.
@@ -397,50 +388,69 @@ function page() {
                 Primary Teacher’s Training program?
               </h3>
               <p>
-                You can teach in primary schools, preschools, or educational
-                NGOs in both public and private sectors.
-              </p>
-            </div>
-            <div>
-              <h3 className="font-bold">Is the program recognized globally?</h3>
-              <p>
-                While it's nationally recognized, the Montessori Method has
-                global relevance.
+                Upon completing the program, you can explore teaching positions
+                in primary schools, both in the public and private sectors.
+                Consider opportunities in preschools, early childhood education
+                centres, and educational NGOs.
               </p>
             </div>
             <div>
               <h3 className="font-bold">
-                Can I pursue the course while working or studying?
+                Is the Primary Teacher’s Training program recognized globally?{" "}
               </h3>
               <p>
-                Yes. Flexible online/offline options make it easier to balance
-                commitments.
+                While our program holds recognition and affiliations at the
+                national level, the impact and applicability of your training
+                can extend globally, as the principles of the Montessori Method
+                are widely respected and practised worldwide.
               </p>
             </div>
             <div>
               <h3 className="font-bold">
-                What support is provided during the course?
+                Can I pursue the course while working or studying
+                simultaneously?
               </h3>
               <p>
-                Mentorship, study materials, and access to online learning
-                platforms are provided.
+                Our flexible scheduling options allow you to balance your course
+                commitments with other obligations. You can choose between
+                online and offline classes to suit your convenience.
               </p>
             </div>
             <div>
-              <h3 className="font-bold">Is financial assistance available?</h3>
+              <h3 className="font-bold">
+                What support do you provide during the course duration?
+              </h3>
               <p>
-                Yes, scholarships and assistance are available. Contact
-                admissions for details.
+                Alongside comprehensive coursework, you will receive mentoring
+                and guidance from our experienced faculty members. We also
+                provide resources, including study materials and access to
+                online learning platforms, to support your academic journey.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-bold">
+                Is financial assistance available for the course?{" "}
+              </h3>
+              <p>
+                We understand the importance of accessibility. We offer various
+                financial assistance programs and scholarships to eligible
+                students. Please reach out to our admissions department for
+                further details.
               </p>
             </div>
           </div>
         </div>
 
-        <div className="text-center mt-10">
+        <div className="text-start mt-10">
           <h2 className="text-2xl font-bold text-blue-900">Conclusion</h2>
           <p className="mt-4 text-lg">
-            Enrol in our Primary Teacher’s Training program and build a
-            rewarding career shaping young minds. Contact us today!
+            Embark on a fulfilling journey as a primary school teacher with
+            Global Technical Institute’s Primary Teacher’s Training program.
+            Gain the necessary skills, knowledge, and certification to impact
+            young learners’ lives positively. Our recognized institute,
+            comprehensive curriculum, and focus on skill development ensure that
+            you are well-prepared for the dynamic field of education. Enrol
+            today and shape the future, one student at a time.
           </p>
           <Link
             href="/contact-us"

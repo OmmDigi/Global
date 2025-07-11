@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
+import Link from "next/link";
 
 const responsive2 = {
   desktop: {
@@ -25,25 +26,30 @@ function page() {
   return (
     <>
       <Navbar />
-      <div className="flex justify-center text-center text-[#023b81] align-middle items-center  h-30">
-        <h1 className="text-5xl font-bold">ECG Technician Training</h1>
+      <div className="relative bg-gray-300 overflow-hidden top-0 z-0">
+        {/* Background Image Layer */}
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-5"
+          style={{ backgroundImage: "url('/image/instit.jpg')" }} // replace with your image path
+        ></div>
+        <div className="flex justify-center text-center text-[#023b81] align-middle items-center  h-30">
+          <h1 className="text-5xl font-bold">ECG Technician Training</h1>
+        </div>
       </div>
 
       <section className="grid grid-cols-1 md:grid-cols-12 gap-6 max-w-6xl mx-auto px-4 py-10 bg-white text-gray-800">
         <div className="md:col-span-5 space-y-6">
-       
-            <img
-              src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/04/ecg-tra01.jpg"
-              alt="ECG Technician Training"
-              className=" shadow-md w-full object-cover"
-            />
-       
-            <img
-              src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/ecg-train.jpg"
-              alt="ECG training institute in Kolkata"
-              className=" shadow-md w-full object-cover"
-            />
-          
+          <img
+            src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/04/ecg-tra01.jpg"
+            alt="ECG Technician Training"
+            className=" shadow-md w-full object-cover"
+          />
+
+          <img
+            src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/ecg-train.jpg"
+            alt="ECG training institute in Kolkata"
+            className=" shadow-md w-full object-cover"
+          />
         </div>
 
         <div className="md:col-span-7">
@@ -153,12 +159,12 @@ function page() {
             />
             <p className="text-gray-600">
               After completing the{" "}
-              <a
+              <Link
                 href="https://globaltechnicalinstitute.com/"
                 className="text-blue-500 font-medium hover:underline"
               >
                 ECG Technician Training program in Kolkata
-              </a>
+              </Link>
               , students receive a certificate. Duration:{" "}
               <strong>6 months</strong>.
             </p>
@@ -180,8 +186,8 @@ function page() {
               Number of Classes
             </h3>
             <p className="text-gray-600">
-              Only <strong>one className per week</strong>, ideal for balancing work
-              or personal responsibilities.
+              Only <strong>one className per week</strong>, ideal for balancing
+              work or personal responsibilities.
             </p>
           </section>
 
@@ -265,13 +271,13 @@ function page() {
                 <p className="text-gray-600">A: 6 months.</p>
               </div>
               <div>
-               <h4 className="font-bold text-2xl text-gray-800">
+                <h4 className="font-bold text-2xl text-gray-800">
                   Q: When are sessions conducted?
                 </h4>
                 <p className="text-gray-600">A: April, August, and December.</p>
               </div>
               <div>
-               <h4 className="font-bold text-2xl text-gray-800">
+                <h4 className="font-bold text-2xl text-gray-800">
                   Q: What documents are required?
                 </h4>
                 <p className="text-gray-600">
@@ -279,7 +285,7 @@ function page() {
                 </p>
               </div>
               <div>
-               <h4 className="font-bold text-2xl text-gray-800">
+                <h4 className="font-bold text-2xl text-gray-800">
                   Q: Are skill development modules included?
                 </h4>
                 <p className="text-gray-600">
@@ -287,7 +293,7 @@ function page() {
                 </p>
               </div>
               <div>
-               <h4 className="font-bold text-2xl text-gray-800">
+                <h4 className="font-bold text-2xl text-gray-800">
                   Q: Is the training institute recognized?
                 </h4>
                 <p className="text-gray-600">
@@ -295,7 +301,7 @@ function page() {
                 </p>
               </div>
               <div>
-               <h4 className="font-bold text-2xl text-gray-800">
+                <h4 className="font-bold text-2xl text-gray-800">
                   Q: Where is this training offered?
                 </h4>
                 <p className="text-gray-600">
@@ -310,12 +316,12 @@ function page() {
             <p className="text-lg font-medium text-green-700">
               Ready to start your journey?
             </p>
-            <a
+            <Link
               href="https://globaltechnicalinstitute.com/"
               className="mt-4 inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-md"
             >
               Enroll Now
-            </a>
+            </Link>
           </div>
         </div>
       </div>

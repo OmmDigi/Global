@@ -6,14 +6,24 @@ import ourBranch from "../components/ourBranch";
 // import Image from "../../public/image/booking.png";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
+import { useScrollChecker } from "./useScrollChecker";
 
 export default function Navbar() {
+  const router = useRouter();
+  const dropdownRef = useRef(null); // Create a ref for the dropdown
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const toggleDropdown = () => setIsOpen(!isOpen);
   const [isOpenPopup, setIsOpenPopup] = useState(false);
-
   const [imgSrc, setImgSrc] = useState("");
+  const [showNavbar, setShowNavbar] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  const toggleDropdown = () => {
+    setIsOpen(!isOpen);
+  };
 
   const openImage = (src) => {
     setImgSrc(src);
@@ -24,18 +34,31 @@ export default function Navbar() {
     setIsOpenPopup(false);
     setTimeout(() => setImgSrc(""), 300); // Delay clearing src until after animation
   };
-  const navigation1 = [
-    { name: "HOME", href: "#" },
-    { name: "ABOUT US", href: "#" },
-    { name: "OUR COURSES", href: "#" },
-    { name: "OUR SPECIALITY", href: "#" },
-  ];
-  const navigation2 = [
-    { name: "OUR PLACEMENTS", href: "#" },
-    { name: "OUR BLOG", href: "#" },
-    { name: "OUR GALLERY", href: "#" },
-    { name: "CONTACT US", href: "#" },
-  ];
+
+  //   useEffect(() => {
+  //     const handleScroll = () => {
+  //       const currentScrollY = window.scrollY;
+  // console.log("Current Scroll Y:", currentScrollY);
+
+  //       setShowNavbar(currentScrollY <= 300);
+  //       setLastScrollY(currentScrollY);
+  //     };
+
+  //     window.addEventListener("scroll", handleScroll);
+  //     return () => window.removeEventListener("scroll", handleScroll);
+  //   }, [lastScrollY]);
+  useEffect(() => {
+    window.addEventListener("scroll", () => {
+      console.log("Scroll Y:", window.scrollY);
+
+      if (window.scrollY > 200) {
+        setShowNavbar(false);
+      } else {
+        setShowNavbar(true);
+      }
+    });
+  });
+
   const navigation3 = [
     {
       name: "Call for Query",
@@ -61,7 +84,26 @@ export default function Navbar() {
       image: "/image/map.png",
       detail: "Our Branch",
     },
+    {
+      name: "Log in",
+      href: "#",
+      image: "/image/log-in.png",
+      detail: "Account Login",
+    },
   ];
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false); // Close dropdown
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const open = (event, item, index) => {
     event.preventDefault();
@@ -69,19 +111,35 @@ export default function Navbar() {
       openImage();
       console.log("4th element clicked:", item);
     }
+    if (index === 1) {
+      router.push("/news-events");
+    }
+    if (index === 2) {
+      router.push("/admission");
+    }
+    if (index === 4) {
+      router.push("/login");
+    }
+    // news-events
   };
+  const { isScrolling, scrollingDirection } = useScrollChecker();
 
   return (
-    <div>
+    <div className="sticky  top-0 z-50">
       <div className="bg-gray-300">
-        <header className="inset-x-0 top-0 ">
-          <div>
-            <div className="hidden lg:flex justify-between p-2 pl-8 pr-8">
+        <header className="inset-x-0 top-0 relative ">
+          <div
+            className={`${
+              isScrolling ? "max-h-0 overflow-hidden" : "max-h-full"
+            } transition-transform duration-300 `}
+          >
+            <div className="hidden lg:flex justify-between pb-7 pt-3 pl-8 pr-8">
               {navigation3.map((item, index) => (
-                <a
+                <Link
                   key={item.name}
                   href={item.href}
-                  className="flex text-sm/4 font-semibold text-gray-900"
+                  onClick={(e) => open(e, item, index)}
+                  className="flex text-sm/4 font-semibold text-gray-900 transition-transform duration-300 hover:scale-105"
                 >
                   <Image
                     height={512}
@@ -93,23 +151,22 @@ export default function Navbar() {
                   />
                   <div className="ml-2">
                     <div>{item.name}</div>
-                    <div
-                      onClick={(e) => open(e, item, index)}
-                      className="text-blue-500 *:"
-                    >
-                      {item.detail}
-                    </div>
+                    <div className="text-blue-500 *:">{item.detail}</div>
                   </div>
-                </a>
+                </Link>
               ))}
             </div>
           </div>
-          <div className="w-12/12 flex align-middle items-center justify-center  ">
+          <div
+            className={`  w-12/12 flex align-middle  items-center justify-center  `}
+          >
             <nav
               aria-label="Global"
-              className="flex items-center  justify-between  p-2 lg:px-8 w-12/12 h-20   bg-emerald-200"
+              className={`flex items-center ${
+                isScrolling ? "md:mt-7" : " mt-0"
+              } shadow justify-between  p-2 lg:px-8 w-12/12 h-15  bg-white`}
             >
-              <div className=" lg:hidden justify-between contents ">
+              <div className=" lg:hidden sticky top-0 justify-between contents ">
                 <button
                   type="button"
                   onClick={() => setMobileMenuOpen(true)}
@@ -119,14 +176,16 @@ export default function Navbar() {
                   <Bars3Icon aria-hidden="true" className="size-6" />
                 </button>
                 <div>
-                  <Image
-                    height={512}
-                    width={512}
-                    alt=""
-                    src="/image/global-logo2.png"
-                    // src={"/image/booking.png"}
-                    className=" w-60 h-20"
-                  />
+                  <Link href="/" className="-m-1.5 p-1.5 z-10">
+                    <Image
+                      height={512}
+                      width={512}
+                      alt=""
+                      src="/image/global-logo2.png"
+                      // src={"/image/booking.png"}
+                      className=" w-50 h-15"
+                    />
+                  </Link>
                 </div>
                 <div> </div>
               </div>
@@ -157,10 +216,10 @@ export default function Navbar() {
                   </Link>
                 </div> */}
 
-                <div>
+                <div className="cursor-pointer " ref={dropdownRef}>
                   <div
                     onClick={toggleDropdown}
-                    className="flex items-center justify-between w-full text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 md:w-auto dark:text-white md:dark:hover:text-blue-500 dark:focus:text-white dark:border-gray-700 dark:hover:bg-gray-700 md:dark:hover:bg-transparent "
+                    className="flex items-center justify-between w-full text-xs font-semibold text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 md:w-auto dark:text-white md:dark:hover:text-blue-500 dark:focus:text-white dark:border-gray-700 dark:hover:bg-gray-700 md:dark:hover:bg-transparent "
                   >
                     OUR COURSES{" "}
                     <svg
@@ -179,6 +238,8 @@ export default function Navbar() {
                       />
                     </svg>
                   </div>
+
+                  {/* list of courser  */}
 
                   {isOpen && (
                     <div className="absolute z-10 mt-2 font-normal bg-white divide-y divide-gray-100  shadow-sm w-60 dark:bg-gray-700 dark:divide-gray-600">
@@ -251,15 +312,15 @@ export default function Navbar() {
                 </div>
                 <div className="text-xs font-semibold text-gray-900">
                   <Link
-                    href="/ourSpeciality"
+                    href="/our-speciality"
                     className="relative inline-block after:block after:h-[2px] after:bg-blue-600 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 after:origin-left after:mt-.5"
                   >
                     OUR SPECIALITY
                   </Link>
                 </div>
               </div>
-              <div className="hidden lg:flex justify-center">
-                <a href="#" className="-m-1.5 p-1.5">
+              <div className="hidden lg:flex justify-center  ">
+                <Link href="/" className="-m-1.5 p-1.5 z-10">
                   <span className="sr-only">Your Company</span>
                   <Image
                     height={512}
@@ -267,15 +328,15 @@ export default function Navbar() {
                     alt=""
                     src="/image/global-logo.png"
                     // src={"/image/booking.png"}
-                    className=" w-30 h-30"
+                    className=" w-27 h-25"
                   />
-                </a>
+                </Link>
               </div>
               <div className="hidden lg:flex  lg:gap-x-6">
                 <div className="hidden lg:flex lg:gap-x-6">
                   <div className="text-xs font-semibold text-gray-900 ">
                     <Link
-                      href="/ourPlacements"
+                      href="/placement"
                       className="relative inline-block after:block after:h-[2px] after:bg-blue-600 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 after:origin-left after:mt-.5"
                     >
                       OUR PLACEMENTS
@@ -291,7 +352,7 @@ export default function Navbar() {
                   </div>
                   <div className="text-xs font-semibold text-gray-900">
                     <Link
-                      href="/ourGallery"
+                      href="/gallery"
                       className="relative inline-block after:block after:h-[2px] after:bg-blue-600 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 after:origin-left after:mt-.5"
                     >
                       OUR GALLERY
@@ -309,9 +370,9 @@ export default function Navbar() {
               </div>
 
               {/* <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-                    <a href="#" className="text-sm/6 font-semibold text-gray-900">
+                    <Link href="#" className="text-sm/6 font-semibold text-gray-900">
                       Log in <span aria-hidden="true">&rarr;</span>
-                    </a>
+                    </Link>
                   </div> */}
             </nav>
           </div>
@@ -321,16 +382,16 @@ export default function Navbar() {
             className="lg:hidden"
           >
             <div className="fixed inset-0 z-50" />
-            <DialogPanel className="fixed inset-y-0 left-0 z-50 w-full overflow-y-auto bg-white p-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
+            <DialogPanel className="fixed inset-y-0 left-0 z-50 w-full overflow-y-auto bg-white p-6  sm:ring-1 sm:ring-gray-900/10">
               <div className="flex items-center justify-between">
-                <a href="#" className="-m-1.5 p-1.5">
+                <Link href="#" className="-m-1.5 p-1.5">
                   <span className="sr-only">Your Company</span>
                   <img
                     alt=""
-                    src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
+                    src="/image/global-logo.png"
                     className="h-8 w-auto"
                   />
-                </a>
+                </Link>
                 <button
                   type="button"
                   onClick={() => setMobileMenuOpen(false)}
@@ -354,7 +415,7 @@ export default function Navbar() {
                         <Link href="#">OUR COURSES</Link>
                       </div>
                       <div className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50">
-                        <Link href="/ourSpeciality">OUR SPECIALITY</Link>
+                        <Link href="/our-speciality">OUR SPECIALITY</Link>
                       </div>
                     </div>
                   </div>
@@ -362,13 +423,13 @@ export default function Navbar() {
                   <div className="space-y-2 py-6">
                     <div className="space-y-0">
                       <div className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50">
-                        <Link href="/ourPlacements">OUR PLACEMENTS</Link>
+                        <Link href="/placement">OUR PLACEMENTS</Link>
                       </div>
                       <div className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50">
                         <Link href="/blog">OUR BLOG</Link>
                       </div>
                       <div className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50">
-                        <Link href="/ourGallery">OUR GALLERY</Link>
+                        <Link href="/gallery">OUR GALLERY</Link>
                       </div>
                       <div className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50">
                         <Link href="/contact-us">CONTACT US</Link>
@@ -376,12 +437,12 @@ export default function Navbar() {
                     </div>
                   </div>
                   <div className="py-6">
-                    <a
-                      href="#"
+                    <Link
+                      href="/login"
                       className="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
                     >
                       Log in
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -390,8 +451,7 @@ export default function Navbar() {
         </header>
         {isOpenPopup && (
           <div
-              className="fixed inset-0 bg-gray-500/70 flex items-center justify-center z-50 "
-
+            className="fixed inset-0 bg-gray-500/70 flex items-center justify-center z-50 "
             onClick={closeModal}
           >
             {/* Close Button */}
@@ -405,9 +465,9 @@ export default function Navbar() {
             <popup class="max-w-screen-xl mx-auto p-6 bg-white rounded-lg shadow-lg w-11/12">
               <div class="text-center mb-6">
                 <img
-                  src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/logo-mob.png"
+                  src="/image/global-logo2.png"
                   alt="Global Technical Institute Logo"
-                  class="mx-auto w-[232px] h-auto"
+                  class="mx-auto w-[432px] h-auto"
                 />
               </div>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

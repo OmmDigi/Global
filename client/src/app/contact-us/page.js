@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import BackToTopButton from "@/components/BackToTopButton";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
@@ -23,11 +23,25 @@ const responsive2 = {
 };
 
 function page() {
+  const [n1, setN1] = useState(0);
+  const [n2, setN2] = useState(0);
+
+  useEffect(() => {
+    setN1(Math.floor(Math.random() * 9) + 1); // 1–9
+    setN2(Math.floor(Math.random() * 9) + 1);
+  }, []);
   return (
     <>
       <Navbar />
-      <div className="flex justify-center text-center text-[#023b81] align-middle items-center  h-30">
-        <h1 className="text-5xl font-bold">Contact us</h1>
+      <div className="relative bg-gray-300 overflow-hidden top-0 z-0">
+        {/* Background Image Layer */}
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-5"
+          style={{ backgroundImage: "url('/image/instit.jpg')" }} // replace with your image path
+        ></div>
+        <div className="flex justify-center text-center text-[#023b81] align-middle items-center  h-30">
+          <h1 className="text-5xl font-bold">Contact us</h1>
+        </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <container className="max-w-7xl mx-auto px-4 py-8 ">
@@ -43,12 +57,12 @@ function page() {
             <info-box className="flex items-start space-x-4 mb-4">
               <div>
                 <img
-                  src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/location-40x40.png"
+                  src="/image/map.png"
                   alt="Location Icon"
                   className="w-10 h-10"
                 />
               </div>
-              <content>
+              <div>
                 <div className="text-lg text-[#023b81] font-semibold">
                   Head Office
                 </div>
@@ -57,7 +71,7 @@ function page() {
                   <br />
                   Landmark: Near Surah Kanya Vidyalaya.
                 </div>
-              </content>
+              </div>
             </info-box>
 
             <contact-list>
@@ -74,14 +88,14 @@ function page() {
             <hr className="my-6 border-t-2 border-gray-400 w-11/12" />
 
             <info-box className="flex items-start space-x-4 mb-4">
-              <icon>
+              <div>
                 <img
-                  src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/location-40x40.png"
+                  src="/image/map.png"
                   alt="Location Icon"
                   className="w-10 h-10"
                 />
-              </icon>
-              <content>
+              </div>
+              <div>
                 <div className="text-lg text-[#023b81] font-semibold">
                   Garia Branch
                 </div>
@@ -90,7 +104,7 @@ function page() {
                   <br />
                   Near: Geetanjali metro station and Naktala Sib Mandir.
                 </div>
-              </content>
+              </div>
             </info-box>
 
             <contact-list>
@@ -105,7 +119,7 @@ function page() {
           <div>
             <imageContainer className="shadow-xl rounded-md overflow-hidden">
               <img
-                src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/04/hom-01-400x260.jpg"
+                src="/image/hom-04.jpg"
                 alt="teachers training institute in Kolkata"
                 title="teachers training institute in Kolkata"
                 className="w-full h-auto object-cover"
@@ -120,53 +134,49 @@ function page() {
               </h4>
             </header>
 
-            <form action="/contact-us/" method="post" className="space-y-4">
-              <field>
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Name:"
-                  required={true}
-                  className="w-full border border-gray-300 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </field>
+            <form action="/contact-us" method="post" className="space-y-4">
+              <input
+                type="text"
+                name="name"
+                label="Name"
+                placeholder="Name:"
+                required={true}
+                className="w-full border border-gray-300 px-4 py-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
 
-              <field>
-                <input
-                  type="tel"
-                  name="phone"
-                  placeholder="Phone:"
-                  className="w-full border border-gray-300 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </field>
+              <input
+                type="tel"
+                name="phone"
+                required={true}
+                placeholder="Phone:"
+                className="w-full border border-gray-300 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <input
+                type="email"
+                name="email"
+                placeholder="Email ID"
+                required={true}
+                className="w-full border border-gray-300 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
 
-              <field>
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Email ID"
-                  required={true}
-                  className="w-full border border-gray-300 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </field>
+              <textarea
+                name="message"
+                placeholder="If any query, please write to us:"
+                className="w-full border border-gray-300 px-4 py-2 rounded h-24 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+              ></textarea>
 
-              <field>
-                <textarea
-                  name="message"
-                  placeholder="If any query, please write to us:"
-                  className="w-full border border-gray-300 px-4 py-2 rounded h-24 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                ></textarea>
-              </field>
-
-              <captcha className="flex flex-col">
+              <captcha className="flex flex-row gap-5">
                 <label className="text-sm font-medium text-gray-700 mb-1">
-                  Captcha: 6 × 3 =
+                  Captcha:
+                </label>
+                <label className="text-lg font-bold text-gray-700 mb-1">
+                  {`${n1} × ${n2} =`}
                 </label>
                 <input
                   type="text"
                   name="captcha"
                   required={true}
-                  className="w-1/3 border border-gray-300 px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-1/4 border border-gray-300 px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <input type="hidden" name="n1" value="6" />
                 <input type="hidden" name="n2" value="3" />
@@ -242,7 +252,7 @@ function page() {
             <li>
               GTI boasts an impressive track record of
               <Link
-                href="/ourPlacements"
+                href="/placement"
                 className="text-blue-600 underline font-semibold ml-1"
               >
                 placements
@@ -290,60 +300,60 @@ function page() {
               </Link>
             </li>
             <li>
-              <a
+              <Link
                 href="https://globaltechnicalinstitute.com/nursing-training-in-kolkata/"
                 className="text-blue-600 underline font-semibold"
               >
                 Nursing Training
-              </a>
+              </Link>
             </li>
             <li>
-              <a
+              <Link
                 href="https://globaltechnicalinstitute.com/lab-technician-training-institute/"
                 className="text-blue-600 underline font-semibold"
               >
                 Lab Technician Training
-              </a>
+              </Link>
             </li>
             <li>
-              <a
+              <Link
                 href="https://globaltechnicalinstitute.com/ecg-technician-training-kolkata/"
                 className="text-blue-600 underline font-semibold"
               >
                 ECG Technician Training
-              </a>
+              </Link>
             </li>
             <li>
-              <a
+              <Link
                 href="https://globaltechnicalinstitute.com/physiotherapy-training-institute-in-kolkata/"
                 className="text-blue-600 underline font-semibold"
               >
                 Physiotherapy Training
-              </a>
+              </Link>
             </li>
             <li>
-              <a
+              <Link
                 href="https://globaltechnicalinstitute.com/ot-technician-training/"
                 className="text-blue-600 underline font-semibold"
               >
                 OT Technician Training
-              </a>
+              </Link>
             </li>
             <li>
-              <a
+              <Link
                 href="https://globaltechnicalinstitute.com/x-ray/"
                 className="text-blue-600 underline font-semibold"
               >
                 X-Ray Training
-              </a>
+              </Link>
             </li>
             <li>
-              <a
+              <Link
                 href="https://globaltechnicalinstitute.com/cmsed/"
                 className="text-blue-600 underline font-semibold"
               >
                 CMS &amp; ED Training
-              </a>
+              </Link>
             </li>
           </ul>
         </div>

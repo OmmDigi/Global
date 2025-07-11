@@ -26,8 +26,15 @@ function page() {
   return (
     <>
       <Navbar />
-      <div className="flex justify-center text-center text-[#023b81] align-middle items-center  h-30">
-        <h1 className="text-5xl font-bold"> X-Ray & Imaging Technology</h1>
+      <div className="relative bg-gray-300 overflow-hidden top-0 z-0">
+        {/* Background Image Layer */}
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-5"
+          style={{ backgroundImage: "url('/image/instit.jpg')" }} // replace with your image path
+        ></div>
+        <div className="flex justify-center text-center text-[#023b81] align-middle items-center  h-30">
+          <h1 className="text-5xl font-bold"> X-Ray & Imaging Technology</h1>
+        </div>
       </div>
 
       <section className="grid grid-cols-1 md:grid-cols-12 gap-6 max-w-6xl mx-auto px-4 py-10 bg-white text-gray-800">
@@ -117,8 +124,6 @@ function page() {
         </div>
       </section>
 
-
-
       <div class="container mx-auto px-4 py-10">
         <div class="bg-white  p-6 md:p-10 max-w-6xl mx-auto">
           <h2 class="text-3xl font-bold text-center text-blue-700 mb-6">
@@ -171,12 +176,12 @@ function page() {
                 Contact us
               </Link>{" "}
               today or visit our
-              <a
+              <Link
                 href="https://www.facebook.com/gtitrainingcourse/"
                 class="text-blue-600 underline font-semibold hover:text-blue-800 transition duration-200"
               >
                 Facebook
-              </a>{" "}
+              </Link>{" "}
               page for more information on becoming a skilled radiologic
               technologist in Kolkata.
             </p>

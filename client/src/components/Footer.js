@@ -2,14 +2,15 @@ import React from "react";
 import { IoIosMail } from "react-icons/io";
 import { FaPhoneAlt } from "react-icons/fa";
 import { FaLocationDot } from "react-icons/fa6";
+import Link from "next/link";
 function Footer() {
   return (
     <div>
       <footer className="bg-[#092143] text-white py-10">
-        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1  md:grid-cols-3 gap-8">
           <div>
             <img
-              src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/global-logo-150x150.png"
+              src="/image/global-logo.png"
               alt="teachers training in Kolkata"
               className="w-24 h-24 mb-4"
             />
@@ -60,82 +61,70 @@ function Footer() {
 
             <h2 className="text-xl font-semibold mt-6 mb-2">Connect With Us</h2>
             <div className="flex space-x-4 text-white text-lg">
-              <a href="http://facebook.com/gtitrainingcourse" target="_blank">
+              <Link
+                href="http://facebook.com/gtitrainingcourse"
+                target="_blank"
+              >
                 <i className="fab fa-facebook-f"></i>
-              </a>
-              <a
+              </Link>
+              <Link
                 href="http://instagram.com/globaltechnicalinstitute/"
                 target="_blank"
               >
                 <i className="fab fa-instagram"></i>
-              </a>
-              <a
+              </Link>
+              <Link
                 href="http://api.whatsapp.com/send/?phone=919231551285"
                 target="_blank"
               >
                 <i className="fab fa-whatsapp"></i>
-              </a>
+              </Link>
             </div>
           </div>
 
           <div>
-            <h2 className="text-xl font-semibold mb-4">USEFUL LINKS</h2>
+            <div className="flex justify-between">
+              <h2 className="text-xl font-semibold mb-4">USEFUL LINKS</h2>
+              <Link href="/login" className=" flex justify-between transition-transform duration-300 hover:scale-105">
+                <img src=" /image/log-in.png"   className="h-8 w-auto"/>
+                <h2 className="text-xl font-semibold mb-4">Login</h2>
+              </Link>
+            </div>
             <ul className="space-y-2 text-sm">
               <li>
-                <a
-                  href="https://globaltechnicalinstitute.com/about-us/"
-                  className="hover:underline"
-                >
+                <Link href="/about" className="hover:underline">
                   About us
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="https://globaltechnicalinstitute.com/our-speciality/"
-                  className="hover:underline"
-                >
+                <Link href="/our-speciality" className="hover:underline">
                   Our Speciality
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="https://globaltechnicalinstitute.com/placement/"
-                  className="hover:underline"
-                >
+                <Link href=" /outPlacements" className="hover:underline">
                   Our Placements
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="https://globaltechnicalinstitute.com/blog/"
-                  className="hover:underline"
-                >
+                <Link href=" /blog" className="hover:underline">
                   Our Blog
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="https://globaltechnicalinstitute.com/gallery/"
-                  className="hover:underline"
-                >
+                <Link href=" /ourGallery" className="hover:underline">
                   Gallery
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="https://globaltechnicalinstitute.com/news-events/"
-                  className="hover:underline"
-                >
+                <Link href="/news-events" className="hover:underline">
                   News & Events
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="https://globaltechnicalinstitute.com/contact-us/"
-                  className="hover:underline"
-                >
+                <Link href=" /contact-us" className="hover:underline">
                   Contact us
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -143,7 +132,18 @@ function Footer() {
         <hr className="w=11/12" />
 
         <div className="flex justify-between p-5">
-          <div> 2024 Global Technical Institute</div>
+          <div className="w-3/12">
+            {" "}
+            2024 Global Technical Institute, All Rights Reserved. | Developed by{" "}
+            <span>
+              <Link
+                className="text-lg text-green-300"
+                href="https://ommdigitalsolution.com/"
+              >
+                Omm Digital Solution.
+              </Link>{" "}
+            </span>{" "}
+          </div>
           <div> Privacy Policy</div>
         </div>
       </footer>

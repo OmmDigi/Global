@@ -26,8 +26,16 @@ function page() {
   return (
     <>
       <Navbar />
-      <div className="flex justify-center text-center text-[#023b81] align-middle items-center  h-30">
-        <h1 className="text-5xl font-bold"> CMS & ED Training</h1>
+      <div className="relative bg-gray-300 overflow-hidden top-0 z-0">
+        {/* Background Image Layer */}
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-5"
+          style={{ backgroundImage: "url('/image/instit.jpg')" }} // replace with your image path
+        ></div>
+
+        <div className="flex justify-center text-center text-[#023b81] align-middle items-center  h-30">
+          <h1 className="text-5xl font-bold"> CMS & ED Training</h1>
+        </div>
       </div>
 
       <section className="grid grid-cols-1 md:grid-cols-12 gap-6 max-w-6xl mx-auto px-4 py-10 bg-white text-gray-800">
@@ -151,7 +159,6 @@ function page() {
               href="/contact-us"
               className="inline-block bg-blue-700 text-white px-6 py-3 rounded-md hover:bg-blue-900 transition-all duration-300 font-medium shadow-md"
             >
-              
               Contact Us
             </Link>
           </div>

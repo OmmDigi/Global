@@ -26,8 +26,15 @@ function page() {
   return (
     <>
       <Navbar />
-      <div className="flex justify-center text-center text-[#023b81] align-middle items-center  h-30">
-        <h1 className="text-5xl font-bold"> Lab Technician Training</h1>
+      <div className="relative bg-gray-300 overflow-hidden top-0 z-0">
+        {/* Background Image Layer */}
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-5"
+          style={{ backgroundImage: "url('/image/instit.jpg')" }} // replace with your image path
+        ></div>
+        <div className="flex justify-center text-center text-[#023b81] align-middle items-center  h-30">
+          <h1 className="text-5xl font-bold"> Lab Technician Training</h1>
+        </div>
       </div>
 
       <section className="grid grid-cols-1 md:grid-cols-12 gap-6 max-w-6xl mx-auto px-4 py-10 bg-white text-gray-800">
@@ -65,7 +72,9 @@ function page() {
                 </td>
               </tr>
               <tr className="bg-orange-100">
-                <td className="font-semibold px-4 py-2">BOARD AND RECOGNITION:</td>
+                <td className="font-semibold px-4 py-2">
+                  BOARD AND RECOGNITION:
+                </td>
                 <td className="px-4 py-2">
                   1) BSS Promoted by Govt. of India
                   <br />
@@ -76,14 +85,18 @@ function page() {
               </tr>
               <tr className="bg-blue-100">
                 <td className="font-semibold px-4 py-2">SESSION:</td>
-                <td className="px-4 py-2">3 sessions (January, May, September)</td>
+                <td className="px-4 py-2">
+                  3 sessions (January, May, September)
+                </td>
               </tr>
               <tr className="bg-orange-100">
                 <td className="font-semibold px-4 py-2">NO. OF CLASSES:</td>
                 <td className="px-4 py-2">2 classes per week</td>
               </tr>
               <tr className="bg-blue-100">
-                <td className="font-semibold px-4 py-2">MINIMUM QUALIFICATION:</td>
+                <td className="font-semibold px-4 py-2">
+                  MINIMUM QUALIFICATION:
+                </td>
                 <td className="px-4 py-2">H.S pass.</td>
               </tr>
               <tr className="bg-orange-100">
@@ -190,12 +203,12 @@ function page() {
           <p className="mb-2">
             Our{" "}
             <strong>
-              <a
+              <Link
                 href="https://globaltechnicalinstitute.com/lab-technician-training-institute-in-kolkata/"
                 className="text-blue-600 hover:underline"
               >
                 Medical Lab Technician Training Institute in Kolkata
-              </a>
+              </Link>
             </strong>{" "}
             program blends theory with practical knowledge, offering hands-on
             training across all medical laboratory domains.
@@ -203,7 +216,9 @@ function page() {
         </div>
 
         <div>
-          <h2 className="text-xl font-semibold text-blue-800 mb-2">Sessions:</h2>
+          <h2 className="text-xl font-semibold text-blue-800 mb-2">
+            Sessions:
+          </h2>
           <p className="mb-2">We offer three sessions throughout the year:</p>
           <ul className="list-disc pl-6 space-y-1">
             <li>January session</li>
@@ -277,10 +292,7 @@ function page() {
             curriculum—we deliver Kolkata’s best training.
           </p>
           <p className="mt-2">
-            <Link
-              href="/contact-us"
-              className="text-blue-600 hover:underline"
-            >
+            <Link href="/contact-us" className="text-blue-600 hover:underline">
               Contact us
             </Link>{" "}
             now to learn more or schedule a visit.
