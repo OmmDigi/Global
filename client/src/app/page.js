@@ -685,14 +685,14 @@ export default function Home() {
           </div>
         </section>
         {/* google reviews */}
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto bg-white">
           <div className="text-center mb-10">
             <h4 className="text-2xl md:text-2xl  font-semibold text-blue-800  inline-block pb-2">
               Google Reviews
             </h4>
           </div>
         </div>
-        <div className="flex justify-center">
+        <div className="flex justify-center bg-white">
           <li className="flex text-center space-x-3">
             <img
               src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/11/Google-Reviews-1-30x31.png"
@@ -824,7 +824,7 @@ export default function Home() {
         </section>
 
         {/* Affiliations & Collaborations */}
-        <div className="flex justify-center ">
+        <div className="flex justify-center bg-white ">
           <section className="py-12 bg-gray-50 text-center w-11/12  ">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <h2 className="text-2xl font-semibold text-gray-800 mb-2">

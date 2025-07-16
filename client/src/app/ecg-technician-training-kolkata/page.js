@@ -125,7 +125,7 @@ function page() {
         </div>
       </section>
 
-      <div className="container mx-auto px-4 py-10">
+      <div className="container mx-auto px-4 py-10 bg-white">
         <div className="text-center mb-10">
           <h2 className="text-4xl font-bold text-blue-600">
             ECG Technician Training

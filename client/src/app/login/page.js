@@ -23,7 +23,7 @@ function page() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-const [color, setColor] = useState("bg-blue-200");
+const [color, setColor] = useState("bg-blue-100");
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     console.log("dfsfd", e.target.value);
@@ -74,10 +74,10 @@ const [color, setColor] = useState("bg-blue-200");
         </div>
       </div> */}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white">
         <container
           data-aos="fade-right"
-          className="max-w-7xl mx-auto px-4 py-8 "
+          className="max-w-7xl mx-auto px-4 py-8 bg-white "
         >
           <branch>
             <div>
@@ -152,7 +152,7 @@ const [color, setColor] = useState("bg-blue-200");
 
         <div
           data-aos="fade-left"
-          className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-start justify-center p-2"
+          className="min-h-screen bg-gradient-to-br bg-white from-blue-50 to-indigo-100 flex items-start justify-center p-2"
         >
           <div className="w-full max-w-md">
             {/* Logo and Title */}

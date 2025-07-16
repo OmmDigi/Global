@@ -132,7 +132,7 @@ function page() {
         </div>
       </section>
 
-      <section className="max-w-5xl mx-auto px-4 py-10 space-y-8 text-gray-800">
+      <section className="max-w-5xl mx-auto px-4 py-10 space-y-8 bg-white text-gray-800">
         <div>
           <p className="text-lg">
             Welcome to Global Technical Institute – The Best Medical

@@ -60,7 +60,7 @@ function page() {
         </div>
       </div>
 
-      <article className="w-full lg:w-1/4  md:w-1/3 h-4/6 p-4">
+      <article className="w-full lg:w-1/4  md:w-1/3 h-4/6 p-4 bg-white">
         <div className="bg-white shadow-md hover:shadow-lg transition-shadow duration-300 rounded-lg overflow-hidden">
           <figure className="relative">
             <Link href="#">

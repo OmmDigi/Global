@@ -37,7 +37,7 @@ function page() {
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-6 bg-white">
         <div className="border border-gray-300 rounded-lg overflow-hidden shadow-md mb-6">
           <div
             onClick={
@@ -256,7 +256,7 @@ function page() {
         </div>
       </div>
 
-      <section className="container mx-auto px-4 py-8 text-gray-800">
+      <section className="container mx-auto px-4 py-8 bg-white text-gray-800">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-center text-blue-900 mb-4">
             Welcome to Global Technical Institute

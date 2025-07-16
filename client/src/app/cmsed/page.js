@@ -121,7 +121,7 @@ function page() {
         </div>
       </section>
 
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-12 bg-white">
         <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
           <h2 className="text-3xl font-bold text-center text-blue-800 mb-6">
             Welcome to CMS &amp; ED Training!

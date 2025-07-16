@@ -213,82 +213,18 @@ function page() {
     <>
       {contextHolder}
       <Navbar />
-      <div className="p-7 pl-30 pr-30  flex items-center sticky top-20 bg-amber-50 z-20 justify-center">
-        <Steps
-          style={{ fontSize: "20px", width: "" }}
-          current={current}
-          items={items}
-        />
-      </div>
+        <div className="p-7 pl-30 pr-30  flex items-center sticky top-20 bg-amber-50 z-20 justify-center">
+          <Steps
+            style={{ fontSize: "20px", width: "" }}
+            current={current}
+            items={items}
+          />
+        </div>
 
       {/* form body  */}
       <div style={contentStyle}>
         <div className="max-w-4xl mx-auto p-6 bg-white">
           {/* Header Section */}
-          {/* <div className="border-2 border-gray-800 p-6 mb-6">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <div className="text-center mb-4">
-                  <div className="w-16 h-16 mx-auto mb-2 bg-gray-200 rounded-full flex items-center justify-center">
-                    <span className="text-xs font-bold">LOGO</span>
-                  </div>
-                  <h1 className="text-2xl font-bold text-gray-800">
-                    GLOBAL TECHNICAL INSTITUTE
-                  </h1>
-                  <p className="text-sm text-gray-600">
-                    AN ISO 9001:2015 CERTIFIED ORGANISATION
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    MONTESSORI APPLICATION FORM
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Registration No. 419170156 Govt. of India
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Application form for Undergoing Training
-                  </p>
-                </div>
-              </div>
-              <div className="ml-4">
-                <div className="w-32 h-40 border-2 border-gray-400 flex flex-col items-center justify-center bg-gray-50">
-                  {photo ? (
-                    <div className="relative w-full h-full">
-                      <img
-                        src={photo}
-                        alt="Candidate"
-                        className="w-full h-full object-cover"
-                      />
-                      <button
-                        onClick={() => removeFile("photo")}
-                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                      >
-                        <X size={12} />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="text-center">
-                      <Upload
-                        size={24}
-                        className="mx-auto mb-2 text-gray-400"
-                      />
-                      <p className="text-xs text-gray-500">Paste Your Photo</p>
-                      <label className="cursor-pointer">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleFileUpload(e, "photo")}
-                          className="hidden"
-                        />
-                        <span className="text-xs text-blue-500 hover:text-blue-700">
-                          Upload
-                        </span>
-                      </label>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div> */}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Serial No and Date */}
@@ -723,9 +659,6 @@ function page() {
                         className="w-48 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
-
-                    
-                   
                   </div>
                 </div>
               </div>
@@ -1379,19 +1312,20 @@ function page() {
       </div>
 
       <div className="mt-[20px] mb-[20px] flex justify-center">
-        {current < steps.length - 1 && (
-          <Button type="primary" onClick={() => next()}>
-            Next
+       
+        {current > 0 && (
+          <Button style={{ margin: "0 8px" }} onClick={() => prev()}>
+            Previous
           </Button>
         )}
-        {current === steps.length - 1 && (
+         {current === steps.length - 1 && (
           <Button type="primary" onClick={success}>
             Submit
           </Button>
         )}
-        {current > 0 && (
-          <Button style={{ margin: "0 8px" }} onClick={() => prev()}>
-            Previous
+        {current < steps.length - 1 && (
+          <Button type="primary" onClick={() => next()}>
+            Next
           </Button>
         )}
       </div>

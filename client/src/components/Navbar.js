@@ -241,6 +241,7 @@ export default function Navbar() {
 
                   {/* list of courser  */}
 
+
                   {isOpen && (
                     <div className="absolute z-10 mt-2 font-normal bg-white divide-y divide-gray-100  shadow-sm w-60 dark:bg-gray-700 dark:divide-gray-600">
                       <div className="py-1">

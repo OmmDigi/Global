@@ -51,7 +51,7 @@ function page() {
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-6 bg-white">
         <div className="border border-gray-300 rounded-lg overflow-hidden shadow-md mb-6">
           <div
             onClick={

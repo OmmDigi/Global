@@ -129,7 +129,7 @@ function page() {
         </div>
       </section>
 
-      <div className="container mx-auto px-4 py-10">
+      <div className="container mx-auto px-4 py-10 bg-white">
         <div className="bg-white  p-6 md:p-10 max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-center text-gray-700 mb-6">
             Specialized OT Technician Training
