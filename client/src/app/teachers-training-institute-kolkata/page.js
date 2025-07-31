@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import "react-multi-carousel/lib/styles.css";
 import Link from "next/link";
+import { FaMinus, FaPlus } from "react-icons/fa";
 
 function page() {
   const [montessoriTeachers, setMontessoriTeachers] = useState(true);
@@ -32,12 +33,12 @@ function page() {
           className="absolute inset-0 bg-cover bg-center opacity-5"
           style={{ backgroundImage: "url('/image/instit.jpg')" }} // replace with your image path
         ></div>
-        <div className="flex justify-center text-center text-[#023b81] align-middle items-center  h-30">
+        <div className="flex justify-center text-center text-[#023b81] align-middle  items-center  h-30 ">
           <h1 className="text-5xl font-bold"> Teachers Training</h1>
         </div>
       </div>
 
-      <div className="space-y-6 bg-white">
+      <div className="space-y-6 bg-white mt-10">
         <div className="border border-gray-300 rounded-lg overflow-hidden shadow-md mb-6">
           <div
             onClick={
@@ -45,10 +46,7 @@ function page() {
             }
             className="bg-blue-800 text-white px-4 py-3 font-bold text-lg flex cursor-pointer"
           >
-            <img
-              className="w-8 h-8 mr-5  cursor-pointer"
-              src={montessoriTeachers ? "image/minus.png" : "image/plus.png"}
-            />
+            <div className="pr-4 pt-1">{montessoriTeachers ? <FaMinus /> : <FaPlus />}</div>
             Montessori Teachers Training (Pre Primary & Primary)
           </div>
           {montessoriTeachers && (
@@ -158,10 +156,8 @@ function page() {
             }
             className="bg-blue-800 text-white px-4 py-3 font-bold text-lg flex cursor-pointer"
           >
-            <img
-              className="w-8 h-8 mr-5  cursor-pointer"
-              src={seniorTeachers ? "image/minus.png" : "image/plus.png"}
-            />
+             <div className="pr-4 pt-1">{seniorTeachers ? <FaMinus /> : <FaPlus />}</div>
+           
             Senior Teachers Training
           </div>
           {seniorTeachers && (

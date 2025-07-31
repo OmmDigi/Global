@@ -81,12 +81,15 @@ function Footer() {
               </Link>
             </div>
           </div>
-
+ 
           <div>
             <div className="flex justify-between">
               <h2 className="text-xl font-semibold mb-4">USEFUL LINKS</h2>
-              <Link href="/login" className=" flex justify-between transition-transform duration-300 hover:scale-105">
-                <img src=" /image/log-in.png"   className="h-8 w-auto"/>
+              <Link
+                href="/login"
+                className=" flex justify-between transition-transform duration-300 hover:scale-105"
+              >
+                <img src=" /image/log-in.png" className="h-8 w-auto" />
                 <h2 className="text-xl font-semibold mb-4">Login</h2>
               </Link>
             </div>
@@ -102,7 +105,7 @@ function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href=" /outPlacements" className="hover:underline">
+                <Link href=" /placement" className="hover:underline">
                   Our Placements
                 </Link>
               </li>
@@ -126,13 +129,18 @@ function Footer() {
                   Contact us
                 </Link>
               </li>
+              <li>
+                <div className=" flex md:hidden w-auto ml-[240px] justify-end items-end ">
+                  <p>Privacy Policy</p>
+                </div>
+              </li>
             </ul>
           </div>
         </div>
-        <hr className="w=11/12" />
+        <hr className="w=11/12 mt-2" />
 
-        <div className="flex justify-between p-5">
-          <div className="w-3/12">
+        <div className="flex justify-between p-3">
+          <div className="w-12/12 md:w-3/12">
             {" "}
             2024 Global Technical Institute, All Rights Reserved. | Developed by{" "}
             <span>
@@ -144,7 +152,10 @@ function Footer() {
               </Link>{" "}
             </span>{" "}
           </div>
-          <div> Privacy Policy</div>
+          <div className="hidden md:flex  w-/12 md:w-1/12 ">
+            {" "}
+            Privacy Policy
+          </div>
         </div>
       </footer>
     </div>

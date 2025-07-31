@@ -9,6 +9,8 @@ import { Button, message, Steps, theme } from "antd";
 import { Upload, X } from "lucide-react";
 import { useScrollChecker } from "@/components/useScrollChecker";
 import { ToWords } from "to-words";
+import useSWR from "swr";
+import { fetcher } from "@/lib/fetcher";
 
 const toWords = new ToWords();
 
@@ -28,13 +30,16 @@ const steps = [
     title: "Last",
     content: "Last-content",
   },
+  {
+    title: "Payment",
+    content: "Payment",
+  },
 ];
 
 function page() {
   const [messageApi, contextHolder] = message.useMessage();
   const { token } = theme.useToken();
   const [current, setCurrent] = useState(0);
-
   const [formData, setFormData] = useState({
     serialNo: "",
     date: "",
@@ -196,10 +201,10 @@ function page() {
   const contentStyle = {
     // lineHeight: "260px",
     textAlign: "center",
-    color: token.colorTextTertiary,
+    // color: token.colorTextTertiary,
     backgroundColor: token.colorFillAlter,
     borderRadius: token.borderRadiusLG,
-    border: `1px dashed ${token.colorBorder}`,
+    // border: `1px dashed ${token.colorBorder}`,
     marginTop: 16,
   };
   const success = () => {
@@ -209,17 +214,28 @@ function page() {
     });
   };
 
+  const {
+    data: courseList,
+    loading: courseLoading,
+    error: courseError,
+  } = useSWR("api/v1/course?is_active=true", fetcher);
+  if (courseLoading) {
+    return <div>Loading ...</div>;
+  }
+  console.log("courseList", courseList);
+
   return (
     <>
       {contextHolder}
       <Navbar />
-        <div className="p-7 pl-30 pr-30  flex items-center sticky top-20 bg-amber-50 z-20 justify-center">
-          <Steps
-            style={{ fontSize: "20px", width: "" }}
-            current={current}
-            items={items}
-          />
-        </div>
+      <div className="hidden pl-30 pr-30  md:pl-30 md:pr-30 md:p-7  md:flex items-center sticky top-25 bg-amber-50 z-20 justify-center">
+        <Steps
+          style={{ fontSize: "20px", width: "" }}
+          current={current}
+          items={items}
+          direction="horizontal"
+        />
+      </div>
 
       {/* form body  */}
       <div style={contentStyle}>
@@ -230,7 +246,7 @@ function page() {
             {/* Serial No and Date */}
             {current === 0 && (
               <div>
-                <div className="w-12/12 pr-20 pl-20 mb-4">
+                <div className="w-12/12  mb-4">
                   <label className="block text-lg font-bold text-gray-700 mb-1">
                     Choose your Courses
                   </label>
@@ -240,25 +256,13 @@ function page() {
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="">Select</option>
-                    <option value="teacher-training">Teacher Training</option>
-                    <option value="nursing-training">Nursing Training</option>
-                    <option value="lab-technicion-training">
-                      Lab Technicion Training
-                    </option>
-                    <option value="ECG-technicion-training">
-                      ECG Technicion Training
-                    </option>
-                    <option value="physiotherapy-training">
-                      Physiotherapy Training
-                    </option>
-                    <option value="OT-technicion-training">
-                      OT Technicion Training
-                    </option>
-                    <option value="X-Ray-&-imaging-technology">
-                      X-Ray & Imaging Technology
-                    </option>
-                    <option value="CMS-&-ED-training">CMS & ED Training</option>
+                    {courseList?.data?.map((data, index) => (
+                      <div key={index}>
+                       
+                          <option value={`${data?.name}`}>{data?.name}</option>
+                   
+                      </div>
+                    ))}
                   </select>
                 </div>
 
@@ -269,7 +273,7 @@ function page() {
                   </h2>
 
                   <div className="grid grid-cols-1 gap-4">
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3  gap-4">
                       <div></div>
                       <div></div>
                       <div className="ml-4 flex  justify-center">
@@ -406,7 +410,7 @@ function page() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3  gap-4">
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-1">
                           Sex
@@ -448,7 +452,7 @@ function page() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-1">
                           Category
@@ -676,7 +680,7 @@ function page() {
               </button>
             </div> */}
             {current === 1 && (
-              <div className="max-w-4xl mx-auto p-6  min-h-screen">
+              <div className="max-w-4xl mx-auto   min-h-screen">
                 <div className="space-y-6">
                   {/* Header - Placeholder for logo */}
 
@@ -686,7 +690,7 @@ function page() {
                       Documents to be enclosed with the application
                     </h2>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-2">
                           Self attested copies of last result
@@ -1022,7 +1026,7 @@ function page() {
             )}
 
             {current === 2 && (
-              <div className="max-w-4xl mx-auto p-6 bg-white min-h-screen">
+              <div className="max-w-4xl mx-auto  bg-white min-h-screen">
                 <div className="space-y-8">
                   {/* Header */}
                   <div className="text-center">
@@ -1305,6 +1309,36 @@ function page() {
                     </button>
                   </div> */}
                 </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-10">
+                  <div>
+                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
+                      Set User Name
+                    </label>
+                    <input
+                      type="text"
+                      name="relationshipType2"
+                      value={formData.relationshipType2}
+                      onChange={handleInputChange}
+                      placeholder="User Name"
+                      className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
+                      Set Your password
+                    </label>
+                    <input
+                      type="password"
+                      name="relationName2"
+                      value={formData.relationName2}
+                      onChange={handleInputChange}
+                      className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Set Your password"
+                    />
+                  </div>
+                </div>
               </div>
             )}
           </form>
@@ -1312,13 +1346,12 @@ function page() {
       </div>
 
       <div className="mt-[20px] mb-[20px] flex justify-center">
-       
         {current > 0 && (
           <Button style={{ margin: "0 8px" }} onClick={() => prev()}>
             Previous
           </Button>
         )}
-         {current === steps.length - 1 && (
+        {current === steps.length - 1 && (
           <Button type="primary" onClick={success}>
             Submit
           </Button>

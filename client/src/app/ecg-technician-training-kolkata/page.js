@@ -317,7 +317,7 @@ function page() {
               Ready to start your journey?
             </p>
             <Link
-              href="https://globaltechnicalinstitute.com/"
+              href="/"
               className="mt-4 inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-md"
             >
               Enroll Now

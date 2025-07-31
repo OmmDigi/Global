@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
+import { FaMinus, FaPlus } from "react-icons/fa";
 
 const responsive2 = {
   desktop: {
@@ -52,7 +53,7 @@ function page() {
         </div>
       </div>
 
-      <div className="space-y-6 bg-white">
+      <div className="space-y-6 bg-white mt-10">
         <div className="border border-gray-300 rounded-lg overflow-hidden shadow-md mb-6">
           <div
             onClick={
@@ -60,10 +61,9 @@ function page() {
             }
             className="bg-blue-800 text-white px-4 py-3 font-bold text-lg flex cursor-pointer"
           >
-            <img
-              className="w-8 h-8 mr-5  cursor-pointer"
-              src={montessoriTeachers ? "image/minus.png" : "image/plus.png"}
-            />
+            <div className="pr-4 pt-1">
+              {montessoriTeachers ? <FaMinus /> : <FaPlus />}
+            </div>
             Auxiliary Nursing Midwifery
           </div>
           {montessoriTeachers && (
@@ -176,10 +176,9 @@ function page() {
             }
             className="bg-blue-800 text-white px-4 py-3 font-bold text-lg flex cursor-pointer"
           >
-            <img
-              className="w-8 h-8 mr-5  cursor-pointer"
-              src={seniorTeachers ? "image/minus.png" : "image/plus.png"}
-            />
+            <div className="pr-4 pt-1">
+              {seniorTeachers ? <FaMinus /> : <FaPlus />}
+            </div>
             General Nursing Midwifery
           </div>
           {seniorTeachers && (

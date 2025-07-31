@@ -43,12 +43,12 @@ function page() {
           <img
             src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/07/ot1.jpg"
             alt="CMSED Course 1"
-            className="rounded-lg shadow-lg w-full object-cover"
+            className=" shadow-lg w-full object-cover"
           />
           <img
             src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/07/ot2.jpg"
             alt="CMSED Course 2"
-            className="rounded-lg shadow-lg w-full object-cover"
+            className=" shadow-lg w-full object-cover"
           />
         </div>
 

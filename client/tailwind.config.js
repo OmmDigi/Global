@@ -70,9 +70,15 @@ module.exports = {
           "0%": { transform: "translateX(100%)" },
           "100%": { transform: "translateX(-100%)" },
         },
+        animationUpDown: {
+          "0%": { transform: "scale(1)" },
+          "50%": { transform: "scale(1.1)" },
+          "100%": { transform: "scale(1)" },
+        },
       },
       animation: {
         marquee: "marquee 20s linear infinite",
+        "up-down": "animationUpDown 2s linear infinite",
       },
     },
   },
@@ -96,6 +102,11 @@ module.exports = {
         marquee: "marquee 25s linear infinite",
         marquee2: "marquee2 25s linear infinite",
       },
+         animation: {
+        'border-spin': 'borderSpin 6s linear infinite',
+         ping: 'ping 4s cubic-bezier(0, 0, 0.2, 1) infinite',
+         
+      },
       keyframes: {
         marquee: {
           "0%": { transform: "translateX(0%)" },
@@ -105,8 +116,17 @@ module.exports = {
           "0%": { transform: "translateX(100%)" },
           "100%": { transform: "translateX(0%)" },
         },
+         borderSpin: {
+          '0%': { backgroundPosition: '0% 50%' },
+          '100%': { backgroundPosition: '100% 50%' },
+        },
+        transitionDuration: {
+        3000: '3000ms',
+      },
       },
     },
+   
+ 
   },
   variants: {},
   plugins: [],

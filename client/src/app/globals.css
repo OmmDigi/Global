@@ -24,3 +24,42 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@keyframes bounceUpDown {
+  0%, 100% {
+   scale: 1;
+  }
+  50% {
+   scale: 1.1;
+  }
+}
+.animate-bounce-up-down {
+  animation: bounceUpDown 3s infinite;
+}
+
+
+@keyframes fadeZoomInOut {
+  0% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+   
+  }
+  90% { 
+    opacity: 1;
+
+  }
+  100% {
+    opacity: 0;
+   
+  }
+}
+
+
+
+
+.zoom-in {
+  animation: fadeZoomInOut 3s ease-in-out forwards;
+}
+

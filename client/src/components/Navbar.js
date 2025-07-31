@@ -38,7 +38,6 @@ export default function Navbar() {
   //   useEffect(() => {
   //     const handleScroll = () => {
   //       const currentScrollY = window.scrollY;
-  // console.log("Current Scroll Y:", currentScrollY);
 
   //       setShowNavbar(currentScrollY <= 300);
   //       setLastScrollY(currentScrollY);
@@ -49,8 +48,6 @@ export default function Navbar() {
   //   }, [lastScrollY]);
   useEffect(() => {
     window.addEventListener("scroll", () => {
-      console.log("Scroll Y:", window.scrollY);
-
       if (window.scrollY > 200) {
         setShowNavbar(false);
       } else {
@@ -59,35 +56,36 @@ export default function Navbar() {
     });
   });
 
+
   const navigation3 = [
     {
       name: "Call for Query",
       href: "#",
-      image: "/image/booking.png",
-      detail: "(+91)9231551285",
+      image: "/image/call.gif",
+      detail: "9231551285",
     },
     {
       name: "OUR Schedle",
-      href: "#",
-      image: "/image/clock.png",
+      href: "/news-events",
+      image: "/image/time.gif",
       detail: "News & Events",
     },
     {
       name: "Join Our Courses",
-      href: "#",
-      image: "/image/registration.png",
+      href: "/admission",
+      image: "/image/form.gif",
       detail: "Admission Form",
     },
     {
       name: "Find US",
       href: "#",
-      image: "/image/map.png",
+      image: "/image/location.gif",
       detail: "Our Branch",
     },
     {
       name: "Log in",
-      href: "#",
-      image: "/image/log-in.png",
+      href: "/login",
+      image: "/image/login.gif",
       detail: "Account Login",
     },
   ];
@@ -133,13 +131,13 @@ export default function Navbar() {
               isScrolling ? "max-h-0 overflow-hidden" : "max-h-full"
             } transition-transform duration-300 `}
           >
-            <div className="hidden lg:flex justify-between pb-7 pt-3 pl-8 pr-8">
+            <div className="hidden lg:flex justify-between pb-5 pt-3 pl-8 pr-8">
               {navigation3.map((item, index) => (
                 <Link
                   key={item.name}
                   href={item.href}
                   onClick={(e) => open(e, item, index)}
-                  className="flex text-sm/4 font-semibold text-gray-900 transition-transform duration-300 hover:scale-105"
+                  className={`flex  font-semibold text-sm/4 text-gray-900 transition-transform duration-300 hover:scale-105  `}
                 >
                   <Image
                     height={512}
@@ -147,24 +145,45 @@ export default function Navbar() {
                     alt=""
                     // src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
                     src={item.image}
-                    className="h-8 w-auto"
+                    className={`h-12 w-auto  ${
+                      index === 2 ? "mt-[-5]" : "mt-[-5]"
+                    }`}
                   />
-                  <div className="ml-2">
-                    <div>{item.name}</div>
-                    <div className="text-blue-500 *:">{item.detail}</div>
+                  <div
+                    className={`ml-2 ${index === 2 ? "  rounded-2xl " : ""} `}
+                  >
+                    {index === 2 && (
+                      <div className="relative inline-flex h-10 w-40 overflow-hidden rounded-full p-[3px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50">
+                        <span className="absolute  inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#7f1d1d_50%,#E2CBFF_100%)]" />
+                        <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-gray-300   font-semibold text-[16px] text-gray-900 backdrop-blur-3xl">
+                          {item.detail}
+                        </span>
+                      </div>
+                    )}
+                    <div className={`${index === 2 ? "hidden" : ""}`}>
+                      {item.name}
+                    </div>
+                    <div
+                      className={`text-blue-900 ${
+                        index === 2 ? "hidden" : ""
+                      } `}
+                    >
+                      {item.detail}
+                    </div>
                   </div>
                 </Link>
               ))}
             </div>
           </div>
+
           <div
             className={`  w-12/12 flex align-middle  items-center justify-center  `}
           >
             <nav
               aria-label="Global"
               className={`flex items-center ${
-                isScrolling ? "md:mt-7" : " mt-0"
-              } shadow justify-between  p-2 lg:px-8 w-12/12 h-15  bg-white`}
+                isScrolling ? "md:mt-7 " : " mt-0"
+              } shadow justify-between  p-2 lg:px-8 w-12/12 h-17  bg-white`}
             >
               <div className=" lg:hidden sticky top-0 justify-between contents ">
                 <button
@@ -175,7 +194,7 @@ export default function Navbar() {
                   <span className="sr-only">Open main menu</span>
                   <Bars3Icon aria-hidden="true" className="size-6" />
                 </button>
-                <div>
+                <div className="m-2">
                   <Link href="/" className="-m-1.5 p-1.5 z-10">
                     <Image
                       height={512}
@@ -183,11 +202,11 @@ export default function Navbar() {
                       alt=""
                       src="/image/global-logo2.png"
                       // src={"/image/booking.png"}
-                      className=" w-50 h-15"
+                      className=" w-50 h-15 "
                     />
                   </Link>
                 </div>
-                <div> </div>
+                <div> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </div>
               </div>
 
               <div className="hidden lg:flex lg:gap-x-6">
@@ -216,14 +235,16 @@ export default function Navbar() {
                   </Link>
                 </div> */}
 
-                <div className="cursor-pointer " ref={dropdownRef}>
+                <div className="cursor-pointer text-gray-900" ref={dropdownRef}>
                   <div
                     onClick={toggleDropdown}
-                    className="flex items-center justify-between w-full text-xs font-semibold text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 md:w-auto dark:text-white md:dark:hover:text-blue-500 dark:focus:text-white dark:border-gray-700 dark:hover:bg-gray-700 md:dark:hover:bg-transparent "
+                    className="flex items-center justify-between w-full text-xs font-semibold text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 md:w-auto  md:dark:hover:text-blue-500 dark:focus:text-white dark:border-gray-700 dark:hover:bg-gray-700 md:dark:hover:bg-transparent "
                   >
                     OUR COURSES{" "}
                     <svg
-                      className="w-2.5 h-2.5 ml-2.5"
+                      className={`w-2.5 h-2.5 ml-2.5 transition-transform duration-300 ${
+                        isOpen == true ? "rotate-180 text-blue-500" : ""
+                      } `}
                       aria-hidden="true"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
@@ -241,9 +262,8 @@ export default function Navbar() {
 
                   {/* list of courser  */}
 
-
                   {isOpen && (
-                    <div className="absolute z-10 mt-2 font-normal bg-white divide-y divide-gray-100  shadow-sm w-60 dark:bg-gray-700 dark:divide-gray-600">
+                    <div className=" absolute z-10 mt-2 font-normal bg-white divide-y divide-gray-100  shadow-sm w-60 dark:bg-gray-700 dark:divide-gray-600">
                       <div className="py-1">
                         <Link
                           href="/teachers-training-institute-kolkata"
@@ -320,7 +340,7 @@ export default function Navbar() {
                   </Link>
                 </div>
               </div>
-              <div className="hidden lg:flex justify-center  ">
+              {/* <div className="hidden lg:flex justify-center  ">
                 <Link href="/" className="-m-1.5 p-1.5 z-10">
                   <span className="sr-only">Your Company</span>
                   <Image
@@ -329,10 +349,23 @@ export default function Navbar() {
                     alt=""
                     src="/image/global-logo.png"
                     // src={"/image/booking.png"}
-                    className=" w-27 h-25"
+                    className=" w-27 h-25 mt-3"
                   />
                 </Link>
+              </div> */}
+              <div className=" relative hidden lg:flex justify-center items-center rounded-4xl">
+                <Link href="/" className="  z-10 relative group">
+                  <img
+                    height={5}
+                    width={5}
+                    alt=""
+                    src="/image/global-logo.png"
+                    className="w-27 h-25 mt-3 rounded-4xl "
+                  />
+                  {/* Animated Shine Line */}
+                </Link>
               </div>
+
               <div className="hidden lg:flex  lg:gap-x-6">
                 <div className="hidden lg:flex lg:gap-x-6">
                   <div className="text-xs font-semibold text-gray-900 ">
@@ -377,20 +410,68 @@ export default function Navbar() {
                   </div> */}
             </nav>
           </div>
+          <div
+            className={`lg:hidden  w-12/12 flex align-middle  items-center justify-center  `}
+          >
+            <nav
+              aria-label="Global"
+              className={`flex items-center ${
+                isScrolling ? "md:mt-7" : " mt-0"
+              } shadow justify-center  p-2 lg:px-8 w-12/12 h-12  bg-white`}
+            >
+              <div className="  flex justify-center pb-2 pt-2 ">
+                <Link
+                  key={navigation3[2].name}
+                  href={navigation3[2].href}
+                  onClick={(e) => open(e, navigation3[2], index)}
+                  className={`flex  font-semibold text-sm/4 text-gray-900 transition-transform duration-300 hover:scale-105  `}
+                >
+                  <Image
+                    height={512}
+                    width={512}
+                    alt=""
+                    // src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
+                    src={navigation3[2].image}
+                    className={`h-10 w-auto  ${
+                      2 === 2 ? "mt-[-5]" : "mt-[-5]"
+                    }`}
+                  />
+                  <div className={`ml-2 rounded-2xl } `}>
+                    {2 === 2 && (
+                      <div className="relative inline-flex h-8 w-35 overflow-hidden rounded-full p-[2px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50">
+                        <span className="absolute  inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#7f1d1d_50%,#E2CBFF_100%)]" />
+                        <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-gray-200   font-semibold text-[14px] text-gray-700 backdrop-blur-3xl">
+                          {navigation3[2].detail}
+                        </span>
+                      </div>
+                    )}
+                    <div className={`${2 === 2 ? "hidden" : ""}`}>
+                      {navigation3[2].name}
+                    </div>
+                    <div
+                      className={`text-blue-900 ${2 === 2 ? "hidden" : ""} `}
+                    >
+                      {navigation3[2].detail}
+                    </div>
+                  </div>
+                </Link>
+              </div>
+            </nav>
+          </div>
           <Dialog
             open={mobileMenuOpen}
             onClose={setMobileMenuOpen}
             className="lg:hidden"
           >
             <div className="fixed inset-0 z-50" />
-            <DialogPanel className="fixed inset-y-0 left-0 z-50 w-full overflow-y-auto bg-white p-6  sm:ring-1 sm:ring-gray-900/10">
+            <DialogPanel className=" fixed inset-y-0 left-0 z-50 w-[70%] overflow-y-auto bg-white p-6  sm:ring-1 sm:ring-gray-900/10">
               <div className="flex items-center justify-between">
                 <Link href="#" className="-m-1.5 p-1.5">
                   <span className="sr-only">Your Company</span>
                   <img
                     alt=""
                     src="/image/global-logo.png"
-                    className="h-8 w-auto"
+                    className="h-16 w-auto"
                   />
                 </Link>
                 <button
@@ -413,7 +494,107 @@ export default function Navbar() {
                         <Link href="/about">ABOUT US</Link>
                       </div>
                       <div className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50">
-                        <Link href="#">OUR COURSES</Link>
+                        {/* <Link href="#">OUR COURSES</Link> */}
+
+                        <div
+                          className="cursor-pointer text-gray-900"
+                          ref={dropdownRef}
+                        >
+                          <div
+                            onClick={toggleDropdown}
+                            className="flex items-center justify-between w-full text-lg font-semibold text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 md:w-auto  md:dark:hover:text-blue-500 dark:focus:text-white dark:border-gray-700 dark:hover:bg-gray-700 md:dark:hover:bg-transparent "
+                          >
+                            OUR COURSES{" "}
+                            <svg
+                              className={`w-2.5 h-2.5 ml-2.5 transition-transform duration-300 ${
+                        isOpen == true ? "rotate-180 text-blue-500" : ""
+                      } `}
+                              aria-hidden="true"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 10 6"
+                            >
+                              <path
+                                stroke="currentColor"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="m1 1 4 4 4-4"
+                              />
+                            </svg>
+                          </div>
+
+                          {/* list of courser  */}
+
+                          {isOpen && (
+                            <div className="absolute z-10 mt-2 font-normal bg-white divide-y divide-gray-100  shadow-sm w-60 dark:bg-gray-700 dark:divide-gray-600">
+                              <div className="py-1">
+                                <Link
+                                  href="/teachers-training-institute-kolkata"
+                                  className="block px-4 py-1 text-sm text-gray-700 hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                >
+                                  Teachers Training
+                                </Link>
+                              </div>
+                              <div className="py-1">
+                                <Link
+                                  href="/nursing-training-in-kolkata"
+                                  className="block px-4 py-1 text-sm text-gray-700 hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                >
+                                  Nursing Training
+                                </Link>
+                              </div>
+                              <div className="py-1">
+                                <Link
+                                  href="/lab-technician-training-institute"
+                                  className="block px-4 py-1 text-sm text-gray-700 hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                >
+                                  Lab Technician Training
+                                </Link>
+                              </div>
+                              <div className="py-1">
+                                <Link
+                                  href="/ecg-technician-training-kolkata"
+                                  className="block px-4 py-1 text-sm text-gray-700 hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                >
+                                  ECG Technician Training
+                                </Link>
+                              </div>
+                              <div className="py-1">
+                                <Link
+                                  href="/physiotherapy-training-institute-in-kolkata"
+                                  className="block px-4 py-1 text-sm text-gray-700 hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                >
+                                  Physiotherapy Training
+                                </Link>
+                              </div>
+                              <div className="py-1">
+                                <Link
+                                  href="/ot-technician-training"
+                                  className="block px-4 py-1 text-sm text-gray-700 hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                >
+                                  OT Technician Training
+                                </Link>
+                              </div>
+                              <div className="py-1">
+                                <Link
+                                  href="/x-ray"
+                                  className="block px-4 py-1 text-sm text-gray-700 hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                >
+                                  X-Ray & Imaging Technology
+                                </Link>
+                              </div>
+                              <div className="py-1">
+                                <Link
+                                  href="/cmsed"
+                                  className="block px-4 py-1 text-sm text-gray-700 hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                >
+                                  CMS & ED Training
+                                </Link>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                       <div className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50">
                         <Link href="/our-speciality">OUR SPECIALITY</Link>

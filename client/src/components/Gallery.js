@@ -43,7 +43,7 @@ export const Gallery = () => {
       </div>
 
       <LightGallery
-        elementClassNames="flex  flex-wrap gap-8  justify-center max-w-10xl mx-auto"
+        elementClassNames="flex  flex-wrap gap-4 md:gap-8 justify-center max-w-10xl mx-auto"
         plugins={[lgZoom, lgHash]}
         speed={500}
       >
@@ -55,7 +55,7 @@ export const Gallery = () => {
               data-lg-size="1400-1400"
               data-src={src}
               data-sub-html={html}
-              className="w-[200px] h-[220px] overflow-hidden  shadow-md   hover:shadow-lg "
+              className=" md:w-[200px] md:h-[220px] w-[150px] h-[160px] overflow-hidden  shadow-md   hover:shadow-lg "
             >
               <img
                 src={thumb}
@@ -81,90 +81,90 @@ const galleryData1 = [
   {
     src: "/image/anu03.jpg",
     thumb: "/image/anu03.jpg",
-    html: "<h4>Photo by - <a href='https://unsplash.com/@entrycube'>Diego Guzmán</a></h4><p>Location - <a href='https://unsplash.com/s/photos/fushimi-inari-taisha'>Kyoto, Japan</a></p>",
+      
   },
   {
     src: "/image/anu04.jpg",
     thumb: "/image/anu04.jpg",
-    html: "<h4>Photo by - <a href='https://unsplash.com/@asoshiation'>Shah</a></h4><p>Location - <a href='https://unsplash.com/s/photos/shinimamiya'>Osaka, Japan</a></p>",
+       
   },
   {
     src: "/image/anu08.jpg",
     thumb: "/image/anu08.jpg",
-    html: "<h4>Photo by - <a href='https://unsplash.com/@katherine_xx11'>Katherine Gu</a></h4><p>For all those years we were alone and helpless.</p>",
+         
   },
   {
     src: "/image/anu09.jpg",
     thumb: "/image/anu09.jpg",
-    html: "<h4>Photo by - <a href='https://unsplash.com/@katherine_xx11'>Katherine Gu</a></h4><p>For all those years we were alone and helpless.</p>",
+         
   },
   {
     src: "/image/anu11.jpg",
     thumb: "/image/anu11.jpg",
-    html: "<h4>Photo by - <a href='https://unsplash.com/@katherine_xx11'>Katherine Gu</a></h4><p>For all those years we were alone and helpless.</p>",
+         
   },
   {
     src: "/image/anu13.jpg",
     thumb: "/image/anu13.jpg",
-    html: "<h4>Photo by - <a href='https://unsplash.com/@katherine_xx11'>Katherine Gu</a></h4><p>For all those years we were alone and helpless.</p>",
+         
   },
 ];
 const galleryData2 = [
   {
     src: "/image/excu01.jpg",
     thumb: "/image/excu01.jpg",
-    html: "<h4>Photo by - <a href='https://unsplash.com/@entrycube'>Diego Guzmán</a></h4><p>Location - <a href='https://unsplash.com/s/photos/fushimi-inari-taisha'>Kyoto, Japan</a></p>",
+      
   },
   {
     src: "/image/excu02.jpg",
     thumb: "/image/excu02.jpg",
-    html: "<h4>Photo by - <a href='https://unsplash.com/@entrycube'>Diego Guzmán</a></h4><p>Location - <a href='https://unsplash.com/s/photos/fushimi-inari-taisha'>Kyoto, Japan</a></p>",
+      
   },
   {
     src: "/image/excu03.jpg",
     thumb: "/image/excu03.jpg",
-    html: "<h4>Photo by - <a href='https://unsplash.com/@entrycube'>Diego Guzmán</a></h4><p>Location - <a href='https://unsplash.com/s/photos/fushimi-inari-taisha'>Kyoto, Japan</a></p>",
+      
   },
   {
     src: "/image/excu12.jpg",
     thumb: "/image/excu12.jpg",
-    html: "<h4>Photo by - <a href='https://unsplash.com/@entrycube'>Diego Guzmán</a></h4><p>Location - <a href='https://unsplash.com/s/photos/fushimi-inari-taisha'>Kyoto, Japan</a></p>",
+      
   },
   {
     src: "/image/excu05.jpg",
     thumb: "/image/excu05.jpg",
-    html: "<h4>Photo by - <a href='https://unsplash.com/@entrycube'>Diego Guzmán</a></h4><p>Location - <a href='https://unsplash.com/s/photos/fushimi-inari-taisha'>Kyoto, Japan</a></p>",
+      
   },
   
   {
     src: "/image/excu06.jpg",
     thumb: "/image/excu06.jpg",
-    html: "<h4>Photo by - <a href='https://unsplash.com/@entrycube'>Diego Guzmán</a></h4><p>Location - <a href='https://unsplash.com/s/photos/fushimi-inari-taisha'>Kyoto, Japan</a></p>",
+      
   },
   {
     src: "/image/excu07.jpg",
     thumb: "/image/excu07.jpg",
-    html: "<h4>Photo by - <a href='https://unsplash.com/@entrycube'>Diego Guzmán</a></h4><p>Location - <a href='https://unsplash.com/s/photos/fushimi-inari-taisha'>Kyoto, Japan</a></p>",
+      
   },
   {
     src: "/image/excu08.jpg",
     thumb: "/image/excu08.jpg",
-    html: "<h4>Photo by - <a href='https://unsplash.com/@entrycube'>Diego Guzmán</a></h4><p>Location - <a href='https://unsplash.com/s/photos/fushimi-inari-taisha'>Kyoto, Japan</a></p>",
+      
   },
   {
     src: "/image/excu09.jpg",
     thumb: "/image/excu09.jpg",
-    html: "<h4>Photo by - <a href='https://unsplash.com/@entrycube'>Diego Guzmán</a></h4><p>Location - <a href='https://unsplash.com/s/photos/fushimi-inari-taisha'>Kyoto, Japan</a></p>",
+      
   },
   {
     src: "/image/excu10.jpg",
     thumb: "/image/excu10.jpg",
-    html: "<h4>Photo by - <a href='https://unsplash.com/@entrycube'>Diego Guzmán</a></h4><p>Location - <a href='https://unsplash.com/s/photos/fushimi-inari-taisha'>Kyoto, Japan</a></p>",
+      
   },
   {
     src: "/image/excu11.jpg",
     thumb: "/image/excu11.jpg",
-    html: "<h4>Photo by - <a href='https://unsplash.com/@entrycube'>Diego Guzmán</a></h4><p>Location - <a href='https://unsplash.com/s/photos/fushimi-inari-taisha'>Kyoto, Japan</a></p>",
+      
   },
 ];
 const galleryData3 = [
@@ -172,53 +172,53 @@ const galleryData3 = [
     src: "/image/certi-gal01.jpg",
     thumb:
       "/image/certi-gal01.jpg",
-    html: "<h4>Photo by - <a href='https://unsplash.com/@asoshiation'>Shah</a></h4><p>Location - <a href='https://unsplash.com/s/photos/shinimamiya'>Osaka, Japan</a></p>",
+       
   },
    {
     src: "/image/certi-gal02.jpg",
     thumb:
       "/image/certi-gal02.jpg",
-    html: "<h4>Photo by - <a href='https://unsplash.com/@asoshiation'>Shah</a></h4><p>Location - <a href='https://unsplash.com/s/photos/shinimamiya'>Osaka, Japan</a></p>",
+       
   }, {
     src: "/image/certi-gal03.jpg",
     thumb:
       "/image/certi-gal03.jpg",
-    html: "<h4>Photo by - <a href='https://unsplash.com/@asoshiation'>Shah</a></h4><p>Location - <a href='https://unsplash.com/s/photos/shinimamiya'>Osaka, Japan</a></p>",
+       
   }, {
     src: "/image/certi-gal04.jpg",
     thumb:
       "/image/certi-gal04.jpg",
-    html: "<h4>Photo by - <a href='https://unsplash.com/@asoshiation'>Shah</a></h4><p>Location - <a href='https://unsplash.com/s/photos/shinimamiya'>Osaka, Japan</a></p>",
+       
   }, {
     src: "/image/certi-gal05.jpg",
     thumb:
       "/image/certi-gal05.jpg",
-    html: "<h4>Photo by - <a href='https://unsplash.com/@asoshiation'>Shah</a></h4><p>Location - <a href='https://unsplash.com/s/photos/shinimamiya'>Osaka, Japan</a></p>",
+       
   }, {
     src: "/image/certi-gal06.jpg",
     thumb:
       "/image/certi-gal06.jpg",
-    html: "<h4>Photo by - <a href='https://unsplash.com/@asoshiation'>Shah</a></h4><p>Location - <a href='https://unsplash.com/s/photos/shinimamiya'>Osaka, Japan</a></p>",
+       
   }, {
     src: "/image/certi-gal07.jpg",
     thumb:
       "/image/certi-gal07.jpg",
-    html: "<h4>Photo by - <a href='https://unsplash.com/@asoshiation'>Shah</a></h4><p>Location - <a href='https://unsplash.com/s/photos/shinimamiya'>Osaka, Japan</a></p>",
+       
   }, {
     src: "/image/certi-gal08.jpg",
     thumb:
       "/image/certi-gal08.jpg",
-    html: "<h4>Photo by - <a href='https://unsplash.com/@asoshiation'>Shah</a></h4><p>Location - <a href='https://unsplash.com/s/photos/shinimamiya'>Osaka, Japan</a></p>",
+       
   }, {
     src: "/image/certi-gal09.jpg",
     thumb:
       "/image/certi-gal09.jpg",
-    html: "<h4>Photo by - <a href='https://unsplash.com/@asoshiation'>Shah</a></h4><p>Location - <a href='https://unsplash.com/s/photos/shinimamiya'>Osaka, Japan</a></p>",
+       
   }, {
     src: "/image/certi-gal10.jpg",
     thumb:
       "/image/certi-gal10.jpg",
-    html: "<h4>Photo by - <a href='https://unsplash.com/@asoshiation'>Shah</a></h4><p>Location - <a href='https://unsplash.com/s/photos/shinimamiya'>Osaka, Japan</a></p>",
+       
   },
  
 ];
