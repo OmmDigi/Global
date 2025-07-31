@@ -43,8 +43,8 @@ function page() {
           <h1 className="text-5xl font-bold">Contact us</h1>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <container className="max-w-7xl mx-auto px-4 py-8 ">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white">
+        <container className="max-w-7xl mx-auto px-4 py-8 bg-white ">
           <branch>
             <div>
               <img
@@ -195,7 +195,7 @@ function page() {
           </div>
         </contactSection>
       </div>
-      <section className="max-w-6xl mx-auto px-4 py-10 text-gray-800 space-y-8">
+      <section className="max-w-6xl bg-white mx-auto px-4 py-10 text-gray-800 space-y-8">
         <div className="space-y-4">
           <h3 className="text-2xl font-bold border-b border-blue-600 pb-2">
             About Us:

@@ -21,6 +21,9 @@ import { useInView } from "react-intersection-observer";
 import Marquee from "react-fast-marquee";
 import AOSProvider from "@/components/AOSProvider";
 import { Gallery } from "@/components/Gallery";
+import Slider from "react-slick";
+import { useEffect, useState } from "react";
+import SocialMedia from "@/components/SocialMedia";
 
 const navigation1 = [
   { name: "HOME", href: "#" },
@@ -89,6 +92,25 @@ const responsive2 = {
     items: 1,
   },
 };
+const responsive3 = {
+  superLargeDesktop: {
+    // the naming can be any, depends on you.
+    breakpoint: { max: 4000, min: 1200 },
+    items: 4,
+  },
+  desktop: {
+    breakpoint: { max: 1200, min: 1024 },
+    items: 3,
+  },
+  tablet: {
+    breakpoint: { max: 1024, min: 464 },
+    items: 2,
+  },
+  mobile: {
+    breakpoint: { max: 464, min: 0 },
+    items: 2,
+  },
+};
 
 const CustomLeftArrow = ({ onClick }) => {
   return (
@@ -112,8 +134,57 @@ const CustomRightArrow = ({ onClick }) => {
   );
 };
 
+const slides = [
+  // { id: "slide-7263", image: "image/caros7.png" },
+  { id: "slide-7262", image: "image/caros10.png" },
+  { id: "slide-7265", image: "image/caros11.png" },
+  { id: "slide-8058", image: "image/caros12.png" },
+  { id: "slide-7272", image: "image/caros14.png" },
+  { id: "slide-8760", image: "image/caros15.png" },
+  { id: "slide-8660", image: "image/caros17.png" },
+];
 export default function Home() {
   const [ref, inView] = useInView({ triggerOnce: true });
+  const [current, setCurrent] = useState(0);
+  const [currentText, setCurrentText] = useState("");
+  const [textIndex, setTextIndex] = useState(0);
+  const careerTexts = ["Career", "Future", "Dream Job", "Path", "Opportunity"];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % slides.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+  useEffect(() => {
+    const typeText = () => {
+      const fullText = careerTexts[textIndex];
+      let charIndex = 0;
+
+      const typeInterval = setInterval(() => {
+        if (charIndex <= fullText.length) {
+          setCurrentText(fullText.slice(0, charIndex));
+          charIndex++;
+        } else {
+          clearInterval(typeInterval);
+          setTimeout(() => {
+            // Erase text
+            const eraseInterval = setInterval(() => {
+              if (charIndex > 0) {
+                setCurrentText(fullText.slice(0, charIndex - 1));
+                charIndex--;
+              } else {
+                clearInterval(eraseInterval);
+                setTextIndex((prev) => (prev + 1) % careerTexts.length);
+              }
+            }, 10);
+          }, 2000);
+        }
+      }, 10);
+    };
+
+    typeText();
+  }, [textIndex]);
 
   return (
     <>
@@ -121,172 +192,154 @@ export default function Home() {
         <Navbar />
 
         {/* home page description and content */}
-        <div className="relative bg-gray-300 overflow-hidden top-0 z-0 ">
+        <div className="relative bg-gray-300 overflow-hidden top-0 z-0 w-full ">
           {/* Background Image Layer */}
           <div
-            className="absolute inset-0 bg-cover bg-center "
-            style={{ backgroundImage: "url('/image/instit.jpg')" }}
+            className="absolute inset-0 bg-cover bg-center opacity-12 md:opacity-20 "
+            style={{ backgroundImage: "url('/image/bg.jpg')" }}
           ></div>
-          <div className="  grid grid-cols-1  bg-gray-100 md:grid-cols-2 md:gap-10 md:items-start  ">
-            <div className="w-12/12 md:ml-10  z-0 ">
-              <div className="text-[#944a00] hidden ml-10 mt-5 lg:flex flex-col">
-                <h1>ISO 9001:2015 CERTIFIED & AFFILATED TO BSS</h1>
-              </div>
-              <div className="mt-10 md:mt-15 px-4 md:px-8">
-                <h5 className="font-bold text-[#1174f7]">
-                  Where education meets innovation.
-                </h5>
-                <h1 className="font-bold text-[#b50000] text-4xl mt-5">
-                  Unlock Your Potential with Global Technical Institute{" "}
-                </h1>
-                <div
-                  ref={ref}
-                  className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center py-5"
-                >
-                  <div className="flex flex-col items-center">
-                    <div className="text-5xl font-bold text-blue-600">
-                      {inView && <CountUp end={15} duration={2} suffix="+" />}
-                    </div>
-                    <div className="mt-2 text-lg font-medium text-gray-700">
-                      Years Experience
-                    </div>
-                  </div>
 
-                  <div className="flex flex-col items-center">
-                    <div className="text-5xl font-bold text-blue-600">
-                      {inView && (
-                        <CountUp
-                          end={3000}
-                          duration={3}
-                          separator=","
-                          suffix="+"
-                        />
-                      )}
+          <div className="bg-gray-100 ">
+            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-15 px-2 ">
+              <div className="w-12/12 md:ml-10 flex justify-center  flex-col   z-0 ">
+                <div className="text-[#944a00] hidden  ml-2 mt-5 lg:flex flex-col">
+                  <h1>ISO 9001:2015 CERTIFIED & AFFILATED TO BSS</h1>
+                </div>
+                <div className="mt-3 md:mt-15 flex justify-center  md:items-start flex-col items-center md:px-2">
+                  <h5 className="font-bold text-[#1174f7]">
+                    Where education meets innovation. 
+                  </h5>
+                  <h1 className="font-bold text-[#b50000] text-2xl  md:text-4xl mt-2  md:mt-5">
+                    Unlock Your Potential with <span className="hidden md:flex mt-2"> Global Technical Institute</span>
+                  </h1>
+                   <h1 className="font-bold text-[#b50000] text-3xl md:hidden  md:text-4xl  md:mt-5">
+                    Global Technical Institute
+                  </h1>
+                  <div
+                    ref={ref}
+                    className="grid grid-cols-2 md:grid-cols-3   gap-6 text-center py-5"
+                  >
+                    <div className="flex flex-col items-center">
+                      <div className="text-4xl  md:text-5xl font-stretch-semi-condensed text-blue-800">
+                        {inView && (
+                          <CountUp
+                            end={3000}
+                            duration={3}
+                            separator=","
+                            suffix="+"
+                          />
+                        )}
+                      </div>
+                      <div className="mt-2 text-sm md:text-lg font-semibold text-gray-700">
+                        Pass out Students
+                      </div>
                     </div>
-                    <div className="mt-2 text-lg font-medium text-gray-700">
-                      Pass out Students
-                    </div>
-                  </div>
 
-                  <div className="flex flex-col items-center">
-                    <div className="text-5xl font-bold text-blue-600">
-                      {inView && (
-                        <CountUp
-                          end={2500}
-                          duration={3}
-                          separator=","
-                          suffix="+"
-                        />
-                      )}
+                    <div className="flex flex-col items-center">
+                      <div className="text-4xl  md:text-5xl  font-stretch-semi-condensed text-blue-800">
+                        {inView && (
+                          <CountUp
+                            end={2500}
+                            duration={3}
+                            separator=","
+                            suffix="+"
+                          />
+                        )}
+                      </div>
+                      <div className="mt-2 text-sm md:text-lg font-semibold text-gray-700">
+                        Placement
+                      </div>
                     </div>
-                    <div className="mt-2 text-lg font-medium text-gray-700">
-                      Placement
+
+                    <div className="hidden sm:flex flex-col items-center">
+                      <div className="text-5xl  font-stretch-semi-condensed text-blue-800">
+                        {inView && <CountUp end={15} duration={2} suffix="+" />}
+                      </div>
+                      <div className="mt-2 text-lg font-semibold text-gray-700">
+                        Years Experience
+                      </div>
                     </div>
                   </div>
                 </div>
-                {/* Marquee  */}
-                {/* <div className="relative flex w-12/12 overflow-x-hidden">
-              <div className="py-16 animate-marquee whitespace-nowrap">
-                <span className="text-4xl mx-4">Marquee Item 1</span>
-                <span className="text-4xl mx-4">Marquee Item 2</span>
-                <span className="text-4xl mx-4">Marquee Item 3</span>
-                <span className="text-4xl mx-4">Marquee Item 4</span>
-                <span className="text-4xl mx-4">Marquee Item 5</span>
-              </div>
-            </div> */}
+
+                <div className="w-full bg-gray-100 flex items-center space-x-4 overflow-hidden">
+                  <span className="bg-[#b50000] py-2 px-4 text-white   text-sm font-semibold shrink-0">
+                    Notice
+                  </span>
+                  <Marquee className="relative overflow-hidden flex-1">
+                    <ul className="flex whitespace-nowrap animate-marquee gap-12">
+                      <li className="text-gray-800 text-sm font-medium">
+                        Physiotherapy Course: Enroll now
+                      </li>
+                      <li className="text-gray-800 text-sm font-medium">
+                        Admission is going on: Online & Offline
+                      </li>
+                      <li className="text-gray-800 text-sm font-medium">
+                        ANM Nursing Training is going on: Enroll Now
+                      </li>
+                      <li className="text-gray-800 text-sm font-medium">
+                        Teacher’s Training are going on: Enroll now
+                      </li>
+                    </ul>
+                  </Marquee>
+                </div>
               </div>
 
-              <div className="w-full bg-gray-100  flex items-center space-x-4 overflow-hidden">
-                <span className="bg-[#b50000] py-2 px-4 text-white   text-sm font-semibold shrink-0">
-                  Notice
-                </span>
-                <Marquee className="relative overflow-hidden flex-1">
-                  <ul className="flex whitespace-nowrap animate-marquee gap-12">
-                    <li className="text-gray-800 text-sm font-medium">
-                      Physiotherapy Course: Enroll now
-                    </li>
-                    <li className="text-gray-800 text-sm font-medium">
-                      Admission is going on: Online & Offline
-                    </li>
-                    <li className="text-gray-800 text-sm font-medium">
-                      ANM Nursing Training is going on: Enroll Now
-                    </li>
-                    <li className="text-gray-800 text-sm font-medium">
-                      Teacher’s Training are going on: Enroll now
-                    </li>
-                  </ul>
-                </Marquee>
-              </div>
-            </div>
-
-            <div className="w-full flex justify-start items-start px-4 md:px-8 overflow-x-hidden ">
-              <div className="w-full md:w-11/12 ">
-                <Carousel
-                  responsive={responsive2}
-                  infinite={true}
-                  autoPlay={true}
-                  autoPlaySpeed={3000}
-                  keyBoardControl={true}
-                  transitionDuration={500}
-                  itemClass="carousel-item-padding-40-px"
-                  arrows={false}
-                  fade={true}
-                >
-                  <div>
-                    <img
-                      className="w-12/12 object-cover rounded-lg"
-                      src="image/carousal1.png"
-                      alt="teachers training institute in Kolkata"
-                    />
-                  </div>
-                  <div>
-                    <img
-                      className="w-12/12 h-auto object-cover rounded-lg"
-                      src="image/carousal2.png"
-                      alt="teachers training institute in Kolkata"
-                    />
-                  </div>
-                  <div>
-                    <img
-                      className="w-12/12 h-auto object-cover rounded-lg"
-                      src="image/carousal3.png"
-                      alt="teachers training institute in Kolkata"
-                    />
-                  </div>
-                  <div>
-                    <img
-                      className="w-12/12 h-auto object-cover rounded-lg"
-                      src="image/carousal4.png"
-                      alt="teachers training institute in Kolkata"
-                    />
-                  </div>
-                </Carousel>
+              <div className="relative w-full h-[200px] md:h-[400px]">
+                <div className="absolute top-0  w-full h-full">
+                  {slides.map((slide, index) => (
+                    <div
+                      key={slide.id}
+                      className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                        index === current ? "opacity-100 z-10" : "opacity-0 z-0"
+                      }`}
+                    >
+                      <div className="w-full h-full flex items-center justify-center">
+                        <div className="slide-inner">
+                          <img
+                            src={slide.image}
+                            alt="slide"
+                            className={`object-cover md:w-[500px] md:h-[380px] sm:w-[330px] sm:h-[200px] rounded-lg transition-transform duration-1000 ${
+                              index === current ? "scale-105" : "scale-100"
+                            }`}
+                          />
+                        </div>
+                      </div>
+                      <div className="slide-bg absolute inset-0"></div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Your Phone Number */}
-        <div className="flex relative justify-center sm:mt-[-140px] ml:mt-[120px] md:mt-[-140px] z-12">
-          <section className="bg-blue-500 py-1 p-10 w-12/12 md:w-[96%]   ">
-            <div className="container mx-auto flex flex-col md:flex-row items-center gap-10">
-              <div className="w-full md:w-1/2 text-center md:text-left">
-                <p className="text-3xl font-bold text-gray-100">
+        <div className="flex relative justify-center w-full z-12">
+          <section className="bg-blue-500 py-1  w-12/12 md:w-[96%]   ">
+            <div className="container mx-auto flex flex-col md:flex-row items-center ">
+              <div className="w-full md:w-1/2 text-center  md:text-left">
+                <p className="text-3xl font-bold text-gray-100 md:pl-5 pt-3 md:p-0  ">
                   Discover Your Ideal
-                  <span className="text-gray-100 typed-text"> Career</span>
-                  <span className="cursor">&nbsp;</span>
+                  <br className="  md:hidden flex"/> 
+                  <span className="text-gray-100 typed-text">
+                  <span className="cursor text-5xl">&nbsp;</span>
+                    {currentText}
+                  </span>
+
+                  <span className="cursor text-5xl">|</span>
                 </p>
               </div>
 
-              <div className="w-full md:w-1/2 rounded-lg p-6 ">
-                <p className="text-lg font-medium text-gray-100 mb-4">
+              <div className="w-full md:w-1/2 rounded-lg md:p-6 pl-2 pr-2 pb-3">
+                <p className="text-lg font-medium text-gray-100 mt-4">
                   <i className="fas fa-mobile-alt text-blue-500 mr-2"></i> Your
                   Phone Number
                 </p>
                 <form
                   method="POST"
                   action="#"
-                  className="flex flex-col md:flex-row items-center gap-4"
+                  className="flex flex-col md:flex-row items-center gap-4 "
                 >
                   <input
                     type="tel"
@@ -294,14 +347,14 @@ export default function Home() {
                     placeholder="(+91) 9800000000"
                     required
                     maxLength="15"
-                    className="flex-1 w-full px-4 py-2 border border-gray-300  focus:ring-2 focus:ring-gray-400 bg-gray-100 focus:outline-none"
+                    className="flex-1 w-full px-4 py-2  border rounded-4xl border-gray-300  focus:ring-2 focus:ring-gray-400 shadow-xl bg-gray-100 focus:outline-none"
                   />
 
                   <button
                     type="submit"
-                    className="bg-gray-100 text-gray-800 px-6 py-2  transition-all"
+                    className="bg-gray-100 text-gray-800 px-4 shadow-xl py-1 md:px-6 md:py-2 font-semibold rounded-4xl transition-all"
                   >
-                    CALL ME BACK
+                    Cal Me Back
                   </button>
                 </form>
               </div>
@@ -310,21 +363,23 @@ export default function Home() {
         </div>
 
         {/* carousal card section  */}
-        <div className=" relative mt-[-50] bg-gray-200">
-          <div className="w-full   items-start flex justify-evenly py-6">
-            <div className="w-full max-w-screen-xl mt-20  items-start ">
+        <div className=" grid grid-cols-1 md:grid-cols-1  relative mt-[-140] bg-gray-200 overflow-hidden">
+          <div className="w-full   items-start flex justify-evenly ">
+            <div className="w-full max-w-screen-xl mt-40  items-start ">
               <Carousel
-                swipeable={true}
-                draggable={true}
+                // swipeable={true}
+                // draggable={true}
                 // autoPlay={true}
                 responsive={responsive}
                 infinite={true}
                 autoPlaySpeed={1000}
-                transitionDuration={100}
-                containerClass="carousel-container"
+                keyBoardControl={true}
+                transitionDuration={500}
+                // containerClass="carousel-container"
+                itemClass="carousel-item-padding-40-px"
                 removeArrowOnDeviceType={["tablet", "mobile"]}
-                dotListClass="custom-dot-list-style"
-                className="px-0.5 py-6 "
+                // dotListClass="custom-dot-list-style"
+                // className="px-0.5 py-6 "
                 customLeftArrow={<CustomLeftArrow />}
                 customRightArrow={<CustomRightArrow />}
               >
@@ -488,7 +543,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
             {/* small About carousal  */}
 
-            <div data-aos="fade-right">
+            <div data-aos="fade-down">
               <Carousel
                 data-aos="fade-right"
                 responsive={responsive2}
@@ -501,7 +556,6 @@ export default function Home() {
                 customRightArrow={<CustomRightArrow />}
               >
                 <div>
-             
                   <img
                     className="w-full h-auto object-cover rounded-lg"
                     src="/image/hom-01.jpg"
@@ -523,7 +577,6 @@ export default function Home() {
                   />
                 </div>
                 <div>
-                  {" "}
                   <img
                     className="w-full h-auto object-cover rounded-lg"
                     src="/image/hom-04.jpg"
@@ -533,7 +586,7 @@ export default function Home() {
               </Carousel>
             </div>
 
-            <div data-aos="fade-left">
+            <div data-aos="fade-up">
               <div className="text-center md:text-left">
                 <p className="text-xs font-bold text-center text-red-500 uppercase mb-2">
                   What is Global Technical Institute?
@@ -586,9 +639,11 @@ export default function Home() {
         </section>
 
         {/* gallery  */}
-         <div className="text-center flex flex-col items-center  bg-[#e8f0ff]  text-[#0e3481] ">
-    <h1 className="text-xl md:text-2xl font-semibold mt-4 mb-0">Gallery</h1>
-  </div>
+        <div className="text-center flex flex-col items-center  bg-[#e8f0ff]  text-[#0e3481] ">
+          <h1 className="text-xl md:text-2xl font-semibold mt-4 mb-0">
+            Gallery
+          </h1>
+        </div>
         <Gallery />
 
         {/* Principal message  */}
@@ -685,14 +740,14 @@ export default function Home() {
           </div>
         </section>
         {/* google reviews */}
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto bg-white">
           <div className="text-center mb-10">
             <h4 className="text-2xl md:text-2xl  font-semibold text-blue-800  inline-block pb-2">
               Google Reviews
             </h4>
           </div>
         </div>
-        <div className="flex justify-center">
+        <div className="flex justify-center bg-white">
           <li className="flex text-center space-x-3">
             <img
               src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/11/Google-Reviews-1-30x31.png"
@@ -824,7 +879,7 @@ export default function Home() {
         </section>
 
         {/* Affiliations & Collaborations */}
-        <div className="flex justify-center ">
+        <div className="flex justify-center bg-white ">
           <section className="py-12 bg-gray-50 text-center w-11/12  ">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <h2 className="text-2xl font-semibold text-gray-800 mb-2">
@@ -840,14 +895,14 @@ export default function Home() {
                 swipeable={true}
                 draggable={true}
                 autoPlay={true}
-                responsive={responsive}
+                responsive={responsive3}
                 infinite={true}
                 autoPlaySpeed={1000}
                 transitionDuration={100}
                 containerClass="carousel-container"
                 removeArrowOnDeviceType={["tablet", "mobile"]}
                 dotListClass="custom-dot-list-style"
-                className="px-6 py-6 "
+                // className="px-6 py-6 "
                 customLeftArrow={<CustomLeftArrow />}
                 customRightArrow={<CustomRightArrow />}
               >
@@ -856,7 +911,7 @@ export default function Home() {
                   <img
                     src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/1.png"
                     alt="teachers training institute Kolkata"
-                    className="mx-auto h-24 object-contain"
+                    className="mx-auto h-16 w-16 object-contain"
                   />
                 </div>
                 <div>
@@ -944,8 +999,8 @@ export default function Home() {
 
         {/* Back To Top Button */}
         <BackToTopButton />
+        <SocialMedia/>
 
-       
         {/* <Carousel
         responsive={responsive}
         infinite={true}

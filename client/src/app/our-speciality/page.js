@@ -30,8 +30,8 @@ function page() {
       <div className="relative bg-gray-300 overflow-hidden top-0 z-0">
         {/* Background Image Layer */}
         <div
-          className="absolute inset-0 bg-cover bg-center opacity-5"
-          style={{ backgroundImage: "url('/image/instit.jpg')" }} // replace with your image path
+          className="absolute inset-0 bg-cover bg-center opacity-15"
+          style={{ backgroundImage: "url('/image/bg.jpg')" }} // replace with your image path
         ></div>
         <div className="flex justify-center text-center text-[#023b81] align-middle items-center  h-30">
           <h1 className="text-5xl font-bold"> Our Speciality</h1>
@@ -226,26 +226,26 @@ function page() {
 
           {/* Facility Grid */}
           <div className=" flex justify-center items-center">
-            <div className="grid grid-cols-1 text-start sm:grid-cols-2 md:grid-cols-4 gap-6 mb-8 w-11/12 ">
+            <div className="grid grid-cols-1 text-start sm:grid-cols-2 md:grid-cols-4  mb-8 w-11/12 ">
               {/* Column 1 */}
               <ul className="list-disc  list-inside text-gray-700 space-y-1">
                 <li>Campus interview assistance</li>
                 <li>Special facility for working candidates</li>
                 <li>100% job oriented training</li>
               </ul>
-
+  
               {/* Column 2 */}
               <ul className="list-disc list-inside text-gray-700 space-y-1">
-                <li>Smart class (Digital Class)</li>
+                <li>Smart className (Digital className)</li>
                 <li>Special attention to the weak students</li>
                 <li>C.C.T.V Surveillance</li>
               </ul>
 
               {/* Column 3 */}
               <ul className="list-disc list-inside text-gray-700 space-y-1">
-                <li>Smart class (Digital Class)</li>
+                <li>Smart className (Digital className)</li>
                 <li>Industry experienced faculty</li>
-                <li>Flexible class timing</li>
+                <li>Flexible className timing</li>
               </ul>
 
               {/* Column 4 */}
@@ -258,7 +258,7 @@ function page() {
           </div>
 
           {/* Conclusion Section */}
-          <div className="max-w-4xl mx-10 text-gray-800   leading-relaxed">
+          <div className="max-w-4xl mx-4 text-gray-800 md:ml-15  leading-relaxed">
             <h2 className="text-xl font-semibold mb-2">Conclusion</h2>
             <p>
               Our speciality makes it an excellent choice for students who want
@@ -287,15 +287,19 @@ function page() {
             </p>
           </div>
         </section>
-        <div className="max-w-7xl mx-auto md:px-15">
-          <img
-            src="https://globaltechnicalinstitute.com/wp-content/uploads/2024/05/dl.beatsnoop.com-kPXfGWFt8V.jpg"
-            alt="State-of-the-Art Facilities"
-            width={1241}
-            height={380}
-            className="mx-auto shadow-md "
-            loading="lazy"
-          />
+       
+        <div>
+          <div className="group relative m-0 flex h-full w-full  shadow-xl   ">
+            <div className="z-10   overflow-hidden  border border-gray-200 opacity-80 transition duration-300 ease-in-out group-hover:opacity-100 dark:opacity-70 w-full h-full flex justify-center items-center">
+              <img
+                src="/image/bg.jpg"
+                className="animate-fade-in block  scale-100 transform object-cover object-center opacity-100 transition duration-300 group-hover:scale-110"
+                alt="State-of-the-Art Facilities"
+                width={1000}
+                height={380}
+              />
+            </div>
+          </div>
         </div>
       </section>
 

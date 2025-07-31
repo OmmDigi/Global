@@ -43,12 +43,12 @@ function page() {
           <img
             src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/07/ot1.jpg"
             alt="CMSED Course 1"
-            className="rounded-lg shadow-lg w-full object-cover"
+            className=" shadow-lg w-full object-cover"
           />
           <img
             src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/07/ot2.jpg"
             alt="CMSED Course 2"
-            className="rounded-lg shadow-lg w-full object-cover"
+            className=" shadow-lg w-full object-cover"
           />
         </div>
 
@@ -121,7 +121,7 @@ function page() {
         </div>
       </section>
 
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-12 bg-white">
         <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
           <h2 className="text-3xl font-bold text-center text-blue-800 mb-6">
             Welcome to CMS &amp; ED Training!
