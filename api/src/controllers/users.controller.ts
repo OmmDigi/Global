@@ -2,6 +2,7 @@ import { pool } from "../config/db";
 import asyncErrorHandler from "../middlewares/asyncErrorHandler";
 import { decrypt, encrypt } from "../services/crypto";
 import { createToken } from "../services/jwt";
+import { verifyUser } from "../services/user.service";
 import { ApiResponse } from "../utils/ApiResponse";
 import { ErrorHandler } from "../utils/ErrorHandler";
 import { parsePagination } from "../utils/parsePagination";
@@ -17,21 +18,26 @@ export const loginUser = asyncErrorHandler(async (req, res) => {
   const { error, value } = VLoginUser.validate(req.body ?? {});
   if (error) throw new ErrorHandler(400, error.message);
 
-  const { rows, rowCount } = await pool.query(
-    "SELECT id, password, category FROM users WHERE email = $1 AND category = $2",
-    [value.email, value.category]
-  );
+  // const { rows, rowCount } = await pool.query(
+  //   "SELECT id, password, category FROM users WHERE username = $1 AND category = $2",
+  //   [value.username, value.category]
+  // );
 
-  if (rowCount === 0)
-    throw new ErrorHandler(404, "Unable to find your account", ["email"]);
+  // if (rowCount === 0)
+  //   throw new ErrorHandler(404, "Unable to find your account", ["username"]);
 
-  const { isError, decrypted } = decrypt(rows[0].password);
-  if (isError || decrypted !== value.password)
-    throw new ErrorHandler(400, "Wrong Password", ["password"]);
+  // const { isError, decrypted } = decrypt(rows[0].password);
+  // if (isError || decrypted !== value.password)
+  //   throw new ErrorHandler(400, "Wrong Password", ["password"]);
+
+  const { category, id } = await verifyUser({
+    password: value.password,
+    username: value.username,
+  });
 
   const token = createToken({
-    category: rows[0].category,
-    id: rows[0].id,
+    id,
+    category,
   });
 
   //set the http only cookie
@@ -45,8 +51,8 @@ export const loginUser = asyncErrorHandler(async (req, res) => {
 
   res.status(200).json(
     new ApiResponse(200, "Login Successfull", {
-      category: rows[0].category,
-      id: rows[0].id,
+      category,
+      id,
       token,
     })
   );

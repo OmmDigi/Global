@@ -10,8 +10,9 @@ CREATE TABLE IF NOT EXISTS users (
     designation VARCHAR(255) NULL,
     description TEXT,
     image TEXT,
+    username VARCHAR(255) NOT NULL,
     password TEXT NOT NULL,
-    UNIQUE (email)
+    UNIQUE (username)
 );
 -- Create Admin User
 SELECT * FROM public.users
@@ -23,6 +24,7 @@ INSERT INTO users (
         email,
         ph_no,
         designation,
+        username,
         password
     )
 SELECT 
@@ -31,11 +33,12 @@ SELECT
     'global.technical8.institute@gmail.com',
     '123456789',
     'Admin User',
+    'global.technical8.institute@gmail.com',
     '96b0dbb494195764415927a06d1964e0:d5697f8e382d96d3080524247206e0e3590d14:cd15b7b2ffe993681092f6ac2dfc3f46'
 WHERE NOT EXISTS (
         SELECT 1
         FROM users
-        WHERE email = 'global.technical8.institute@gmail.com'
+        WHERE username = 'global.technical8.institute@gmail.com'
     );
 
 -- TBL SESSION
@@ -49,11 +52,10 @@ CREATE TABLE IF NOT EXISTS session (
 CREATE TABLE IF NOT EXISTS course (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    session_id BIGINT,
-    FOREIGN KEY (session_id) REFERENCES session(id),
     payment_mode VARCHAR(255) NOT NULL,
     duration VARCHAR(255) NOT NULL,
     price DECIMAL(10, 2) DEFAULT 0.00,
+    min_pay DECIMAL(10, 2) DEFAULT 0.00,
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     is_active BOOLEAN DEFAULT false
@@ -90,3 +92,97 @@ CREATE TABLE IF NOT EXISTS batch (
     FOREIGN KEY (course_id) REFERENCES course(id) ON DELETE CASCADE,
     FOREIGN KEY (session_id) REFERENCES session(id) ON DELETE CASCADE
 );
+
+
+CREATE TABLE IF NOT EXISTS course_fee_head (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255),
+  is_active BOOLEAN DEFAULT false
+);
+
+CREATE TABLE IF NOT EXISTS course_fee_structure (
+  id SERIAL PRIMARY KEY,
+
+  course_id BIGINT,
+  fee_head_id BIGINT,
+
+  amount DECIMAL(10, 2) DEFAULT 0.00,
+
+  FOREIGN KEY (course_id) REFERENCES course(id) ON DELETE CASCADE,
+  FOREIGN KEY (fee_head_id) REFERENCES course_fee_head(id) ON DELETE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS fillup_forms (
+    id SERIAL PRIMARY KEY,
+    form_name VARCHAR(255),
+    student_id BIGINT NOT NULL,
+    status INT DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS form_fee_structure (
+  id SERIAL PRIMARY KEY,
+
+  form_id BIGINT,
+  fee_head_id BIGINT,
+
+  amount DECIMAL(10, 2) DEFAULT 0.00,
+
+  FOREIGN KEY (form_id) REFERENCES fillup_forms(id) ON DELETE CASCADE,
+  FOREIGN KEY (fee_head_id) REFERENCES course_fee_head(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS enrolled_courses (
+    id SERIAL PRIMARY KEY,
+    form_id BIGINT NOT NULL,
+    course_id BIGINT NOT NULL,
+    batch_id BIGINT NOT NULL,
+    session_id BIGINT NOT NULL,
+    course_price DECIMAL(10, 2) DEFAULT 0.00,
+    status INT DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (form_id) REFERENCES fillup_forms(id) ON DELETE CASCADE,
+    FOREIGN KEY (course_id) REFERENCES course(id) ON DELETE CASCADE,
+    FOREIGN KEY (batch_id) REFERENCES batch(id) ON DELETE CASCADE,
+    FOREIGN KEY (session_id) REFERENCES session(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS admission_data (
+    id SERIAL PRIMARY KEY,
+    form_id BIGINT NOT NULL,
+    student_id BIGINT NOT NULL,
+    admission_details TEXT,
+    FOREIGN KEY (form_id) REFERENCES fillup_forms(id) ON DELETE CASCADE,
+    FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS payments (
+    id SERIAL PRIMARY KEY,
+    form_id BIGINT NOT NULL,
+    
+    mode VARCHAR(50),
+    student_id BIGINT NOT NULL,
+    payment_name_id VARCHAR(255) NOT NULL,
+    order_id VARCHAR(255),
+    receipt_id VARCHAR(255),
+    amount DECIMAL(10, 2) DEFAULT 0.00,
+    fee_head_id BIGINT,
+
+    status INT DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (form_id) REFERENCES fillup_forms(id) ON DELETE CASCADE,
+    FOREIGN KEY (fee_head_id) REFERENCES course_fee_head(id) ON DELETE CASCADE,
+    FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE SEQUENCE fillup_form_seq;
+CREATE SEQUENCE receipt_no_seq;
+
+ALTER TABLE course DROP COLUMN payment_mode;
+ALTER TABLE course DROP COLUMN price;
+ALTER TABLE course DROP COLUMN min_pay;
+
+ALTER TABLE enrolled_courses DROP COLUMN course_price;

@@ -1,4 +1,5 @@
 import Joi from "joi";
+import { USER_CATEGORY_TYPES } from "../constant";
 
 export const VSingleUser = Joi.object({
   id: Joi.number().required(),
@@ -11,7 +12,7 @@ export const VGetUserList = Joi.object({
 });
 
 export const VLoginUser = Joi.object({
-  email: Joi.string().email().required().label("User Email"),
+  username: Joi.string().required().label("User name"),
   password: Joi.string().required(),
   category: Joi.string().required(),
 });
@@ -35,7 +36,7 @@ export const VUpdateUser = Joi.object({
   id: Joi.number().required(),
   category: Joi.string()
     .required()
-    .valid("Admin", "Teacher", "Stuff", "Student")
+    .valid(USER_CATEGORY_TYPES.join(", "))
     .label("Category"),
   name: Joi.string().required().label("Name"),
   email: Joi.string().email().required().label("Email"),

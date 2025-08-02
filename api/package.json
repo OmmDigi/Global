@@ -27,18 +27,19 @@
     "nodemailer": "^6.10.1",
     "nodemon": "^3.1.7",
     "pg": "^8.14.1",
+    "pg-sdk-node": "https://phonepe.mycloudrepo.io/public/repositories/phonepe-pg-sdk-node/releases/v2/phonepe-pg-sdk-node.tgz",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@types/axios": "^0.14.4",
-    "@types/crypto-js": "^4.2.2",
-    "@types/ejs": "^3.1.5",
-    "@types/nodemailer": "^6.4.17",
     "@types/cookie-parser": "^1.4.8",
     "@types/cors": "^2.8.17",
+    "@types/crypto-js": "^4.2.2",
+    "@types/ejs": "^3.1.5",
     "@types/express": "^5.0.1",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.14.1",
+    "@types/nodemailer": "^6.4.17",
     "@types/pg": "^8.11.12",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"

@@ -7,6 +7,8 @@ import { globalErrorController } from "./controllers/error.controller";
 import { usersRoutes } from "./routes/users.routes";
 import { courseRoutes } from "./routes/course.routes";
 import { noticeRoute } from "./routes/notice.route";
+import { admissionRoute } from "./routes/admission.routes";
+import { paymentRoute } from "./routes/payment.routes";
 // import fs from "fs";
 
 const app: Application = express();
@@ -47,6 +49,8 @@ app.use(cookieParser());
 app.use("/api/v1/users", usersRoutes);
 app.use("/api/v1/course", courseRoutes);
 app.use("/api/v1/notice", noticeRoute);
+app.use("/api/v1/admission", admissionRoute)
+app.use("/api/v1/payment", paymentRoute)
 
 // app.post("/api/v1/hack-cookie", (req, res) => {
 //   console.log("Cookie Received");

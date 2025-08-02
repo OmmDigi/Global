@@ -3,6 +3,7 @@ import { ALLOWED_BATCH_FIELDS, ALLOWED_COURSE_FIELDS } from "../constant";
 import asyncErrorHandler from "../middlewares/asyncErrorHandler";
 import { ApiResponse } from "../utils/ApiResponse";
 import { ErrorHandler } from "../utils/ErrorHandler";
+import { generatePlaceholders } from "../utils/generatePlaceholders";
 import {
   objectToSqlConverterUpdate,
   objectToSqlInsert,
@@ -11,10 +12,16 @@ import { parsePagination } from "../utils/parsePagination";
 import {
   VCreateBatches,
   VCreateCourse,
+  VCreateFeeHead,
+  VCreateFeeStructure,
   VCreateSession,
+  VGetFeeStructure,
   VGetSessionList,
+  VSingleFeeStructure,
   VSingleSession,
   VUpdateCourse,
+  VUpdateFeeHead,
+  VUpdateFeeStructure,
   VUpdateSession,
 } from "../validator/course.validator";
 
@@ -119,16 +126,178 @@ export const getSingleSession = asyncErrorHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, "Single Session", rows[0]));
 });
 
+// Fee Head
+export const createFeeHead = asyncErrorHandler(async (req, res) => {
+  const { error, value } = VCreateFeeHead.validate(req.body ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
+
+  await pool.query("INSERT INTO course_fee_head (name) VALUES ($1)", [
+    value.name,
+  ]);
+
+  res
+    .status(201)
+    .json(new ApiResponse(201, "Fee head has successfully created"));
+});
+
+export const updateFeeHead = asyncErrorHandler(async (req, res) => {
+  const { error, value } = VUpdateFeeHead.validate(req.body ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
+
+  const id = value.id;
+  delete value.id;
+  const { keys, paramsNum, values } = objectToSqlConverterUpdate(value);
+  values.push(id);
+
+  await pool.query(
+    `UPDATE course_fee_head SET ${keys} WHERE id = $${paramsNum}`,
+    values
+  );
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Fee head has successfully updated"));
+});
+
+export const getFeeHeadList = asyncErrorHandler(async (req, res) => {
+  // filtes
+  let filter = "";
+  const filterValues: string[] = [];
+  let pNum = 1;
+
+  if (typeof req.query.is_active !== "undefined") {
+    filter += `WHERE is_active = $${pNum}`;
+    pNum++;
+    filterValues.push(req.query.is_active.toString());
+  }
+
+  const { rows } = await pool.query(
+    `SELECT * FROM course_fee_head ${filter} ORDER BY id DESC`,
+    filterValues
+  );
+  res.status(200).json(new ApiResponse(200, "Fee head list", rows));
+});
+
+export const getSingleFeeHead = asyncErrorHandler(async (req, res) => {
+  const { error, value } = VSingleSession.validate(req.params ?? {});
+  if(error) throw new ErrorHandler(400, error.message);
+
+  const { rows, rowCount } = await pool.query("SELECT * FROM course_fee_head WHERE id = $1", [value.id]);
+  if(rowCount === 0) throw new ErrorHandler(404, "No course fee head avilable");
+
+  res.status(200).json(new ApiResponse(200, "Single Course Fee Head Data", rows[0]))
+})
+
+// Fee Structure
+// export const createFeeStructure = asyncErrorHandler(async (req, res) => {
+//   const { error, value } = VCreateFeeStructure.validate(req.body ?? {});
+//   if (error) throw new ErrorHandler(400, error.message);
+
+//   await pool.query(
+//     "INSERT INTO course_fee_structure (course_id, amount, fee_head_id) VALUES ($1, $2, $3)",
+//     [value.course_id, value.amount, value.fee_head_id]
+//   );
+
+//   res
+//     .status(201)
+//     .json(new ApiResponse(201, "Fee structure has successfully created"));
+// });
+
+// export const updateFeeStructure = asyncErrorHandler(async (req, res) => {
+//   const { error, value } = VUpdateFeeStructure.validate(req.body ?? {});
+//   if (error) throw new ErrorHandler(400, error.message);
+
+//   const id = value.id;
+//   delete value.id;
+//   const { keys, paramsNum, values } = objectToSqlConverterUpdate(value);
+//   if(values.length === 0) throw new ErrorHandler(400, "Nothing to update")
+//   values.push(id);
+
+//   await pool.query(
+//     `UPDATE course_fee_structure SET ${keys} WHERE id = $${paramsNum}`,
+//     values
+//   );
+
+//   res
+//     .status(200)
+//     .json(new ApiResponse(200, "Fee structure has successfully updated"));
+// });
+
+// export const getFeeStructureList = asyncErrorHandler(async (req, res) => {
+//   const { error, value } = VGetFeeStructure.validate(req.params ?? {});
+//   if(error) throw new ErrorHandler(400, error.message);
+
+//   const { rows } = await pool.query(
+//     `
+//     SELECT
+//       cfs.id,
+//       cfh.id as fee_head_id,
+//       cfs.amount
+//     FROM course_fee_structure cfs
+
+//     LEFT JOIN course_fee_head cfh
+//     ON cfs.fee_head_id = cfh.id
+
+//     WHERE cfs.course_id = $1
+//     `,
+//     [value.course_id]
+//   );
+//   res.status(200).json(new ApiResponse(200, "Fee structures list", rows));
+// });
+
+// export const deleteFeeStructure = asyncErrorHandler(async (req, res) => {
+//   const { error, value } = VSingleFeeStructure.validate(req.params ?? {});
+//   if (error) throw new ErrorHandler(400, error.message);
+
+//   await pool.query("DELETE FROM course_fee_structure WHERE id = $1", [value.id]);
+
+//   res.status(200).json(new ApiResponse(200, "Fee structure removed"))
+// });
+
 // Course Controllers
 export const createCourse = asyncErrorHandler(async (req, res) => {
   const { error, value } = await VCreateCourse.validate(req.body ?? {});
   if (error) throw new ErrorHandler(400, error?.message);
 
-  const { columns, params, values } = objectToSqlInsert(value);
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const { rows } = await client.query(
+      "INSERT INTO course (name, duration, description) VALUES ($1, $2, $3) RETURNING id",
+      [value.name, value.duration, value.description]
+    );
 
-  await pool.query(`INSERT INTO course ${columns} VALUES ${params}`, values);
+    const course_id = rows[0].id;
 
-  res.status(201).json(new ApiResponse(201, "New course has created"));
+    await client.query(
+      "DELETE FROM course_fee_structure WHERE course_id = $1",
+      [course_id]
+    );
+
+    const fee_structure = value.fee_structure as {
+      fee_head_id: number;
+      amount: number;
+    }[];
+    const placeholder = generatePlaceholders(fee_structure.length, 3);
+
+    await client.query(
+      `INSERT INTO course_fee_structure (course_id, fee_head_id, amount) VALUES ${placeholder}`,
+      fee_structure.flatMap((item) => [
+        course_id,
+        item.fee_head_id,
+        item.amount,
+      ])
+    );
+
+    await client.query("COMMIT");
+
+    res.status(201).json(new ApiResponse(201, "New course has created"));
+  } catch (error: any) {
+    await client.query("ROLLBACK");
+    throw new ErrorHandler(400, error.message);
+  } finally {
+    client.release();
+  }
 });
 
 export const getCourseList = asyncErrorHandler(async (req, res) => {
@@ -171,11 +340,13 @@ export const getCourseList = asyncErrorHandler(async (req, res) => {
         ${columns.join(", ")}
       FROM course c
 
-      LEFT JOIN session s
-      ON s.id = c.session_id
+      LEFT JOIN course_fee_structure cfs
+      ON cfs.course_id = c.id
 
       ${filter}
-      ORDER BY id DESC 
+
+      GROUP BY c.id
+      ORDER BY c.id DESC 
       ${TO_STRING}`,
     filterValues
   );
@@ -212,10 +383,12 @@ export const getSingleCourse = asyncErrorHandler(async (req, res) => {
       ${columns.join(", ")} 
      FROM course c
 
-     LEFT JOIN session s
-     ON s.id = c.session_id
+     LEFT JOIN course_fee_structure cfs
+     ON cfs.course_id = c.id
 
-     WHERE c.id =  $1`,
+     WHERE c.id = $1
+     
+     GROUP BY c.id`,
     [value.id]
   );
   if (rowCount === 0)
@@ -237,18 +410,91 @@ export const updateCourse = asyncErrorHandler(async (req, res) => {
   const { error, value } = VUpdateCourse.validate(req.body ?? {});
   if (error) throw new ErrorHandler(400, error.message);
 
-  const id_to_update = value.id;
-  delete value.id;
-  const { keys, paramsNum, values } = objectToSqlConverterUpdate(value);
-  values.push(id_to_update);
+  const client = await pool.connect();
 
-  await pool.query(
+  try {
+    await client.query("BEGIN");
+
+    const course_id = value.id;
+    delete value.id;
+    const { keys, paramsNum, values } = objectToSqlConverterUpdate(value);
+    values.push(course_id);
+
+    await pool.query(
+      `UPDATE course SET ${keys} WHERE id = $${paramsNum}`,
+      values
+    );
+
+    await client.query(
+      "DELETE FROM course_fee_structure WHERE course_id = $1",
+      [course_id]
+    );
+
+    const fee_structure = value.fee_structure as {
+      fee_head_id: number;
+      amount: number;
+    }[];
+    const placeholder = generatePlaceholders(fee_structure.length, 3);
+
+    await client.query(
+      `INSERT INTO course_fee_structure (course_id, fee_head_id, amount) VALUES (${placeholder})`,
+      fee_structure.flatMap((item) => [
+        course_id,
+        item.fee_head_id,
+        item.amount,
+      ])
+    );
+
+    await client.query("COMMIT");
+
+    res.status(200).json(new ApiResponse(200, "Course Info Updated"));
+  } catch (error: any) {
+    await client.query("ROLLBACK");
+    throw new ErrorHandler(400, error.message);
+  } finally {
+    client.release();
+  }
+});
+
+export const getCourseWithBatchSession = asyncErrorHandler(async (req, res) => {
+  const { rows } = await pool.query(
     `
-     UPDATE course SET ${keys} WHERE id = $${paramsNum}
-    `,
-    values
+     SELECT 
+      c.id,
+      c.name AS course_name,
+
+      -- Deduplicated sessions
+      COALESCE(
+        (
+          SELECT JSON_AGG(JSON_BUILD_OBJECT('session_id', session_id, 'session_name', session_name))
+          FROM (
+            SELECT DISTINCT s.id AS session_id, s.name AS session_name
+            FROM batch b2
+            LEFT JOIN session s ON b2.session_id = s.id
+            WHERE b2.course_id = c.id AND s.is_active = true AND s.id IS NOT NULL
+          ) AS unique_sessions
+        ),
+        '[]'::json
+      ) AS session,
+
+      -- Deduplicated batches
+      COALESCE(
+        (
+          SELECT JSON_AGG(JSON_BUILD_OBJECT('batch_id', batch_id, 'session_id', session_id, 'month_name', month_name))
+          FROM (
+            SELECT DISTINCT b3.id AS batch_id, b3.month_name, b3.session_id
+            FROM batch b3
+            WHERE b3.course_id = c.id AND b3.is_active = true AND b3.id IS NOT NULL
+          ) AS unique_batches
+        ),
+        '[]'::json
+      ) AS batch
+
+    FROM course c;
+    `
   );
-  res.status(200).json(new ApiResponse(200, "Course Info Updated"));
+
+  res.status(200).json(new ApiResponse(200, "Course Info For DropDown", rows));
 });
 
 // batch controllers
