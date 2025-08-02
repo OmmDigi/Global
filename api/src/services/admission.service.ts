@@ -12,7 +12,7 @@ type IFillUpForm = {
   client?: PoolClient;
 };
 
-export const fillupForm = async (data: IFillUpForm) => {
+export const doAdmission = async (data: IFillUpForm) => {
   if (data.fee_structure.length === 0)
     throw new ErrorHandler(400, "Please add some Fee Structure of this course");
 
