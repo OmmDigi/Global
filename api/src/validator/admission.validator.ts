@@ -8,3 +8,7 @@ export const VCreateAdmission = Joi.object({
   session_id: Joi.number().required().label("Session"),
   // payment_type : Joi.string().valid("Part Payment", "Full Payment").required()
 });
+
+export const VGetSingleAdmission = Joi.object({
+  form_id: Joi.number().required(),
+});

@@ -180,13 +180,19 @@ export const getFeeHeadList = asyncErrorHandler(async (req, res) => {
 
 export const getSingleFeeHead = asyncErrorHandler(async (req, res) => {
   const { error, value } = VSingleSession.validate(req.params ?? {});
-  if(error) throw new ErrorHandler(400, error.message);
+  if (error) throw new ErrorHandler(400, error.message);
 
-  const { rows, rowCount } = await pool.query("SELECT * FROM course_fee_head WHERE id = $1", [value.id]);
-  if(rowCount === 0) throw new ErrorHandler(404, "No course fee head avilable");
+  const { rows, rowCount } = await pool.query(
+    "SELECT * FROM course_fee_head WHERE id = $1",
+    [value.id]
+  );
+  if (rowCount === 0)
+    throw new ErrorHandler(404, "No course fee head avilable");
 
-  res.status(200).json(new ApiResponse(200, "Single Course Fee Head Data", rows[0]))
-})
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Single Course Fee Head Data", rows[0]));
+});
 
 // Fee Structure
 // export const createFeeStructure = asyncErrorHandler(async (req, res) => {
@@ -256,7 +262,7 @@ export const getSingleFeeHead = asyncErrorHandler(async (req, res) => {
 
 // Course Controllers
 export const createCourse = asyncErrorHandler(async (req, res) => {
-  const { error, value } = await VCreateCourse.validate(req.body ?? {});
+  const { error, value } = VCreateCourse.validate(req.body ?? {});
   if (error) throw new ErrorHandler(400, error?.message);
 
   const client = await pool.connect();
@@ -277,15 +283,19 @@ export const createCourse = asyncErrorHandler(async (req, res) => {
     const fee_structure = value.fee_structure as {
       fee_head_id: number;
       amount: number;
+      min_amount: number;
+      required: boolean;
     }[];
-    const placeholder = generatePlaceholders(fee_structure.length, 3);
+    const placeholder = generatePlaceholders(fee_structure.length, 5);
 
     await client.query(
-      `INSERT INTO course_fee_structure (course_id, fee_head_id, amount) VALUES ${placeholder}`,
+      `INSERT INTO course_fee_structure (course_id, fee_head_id, amount, min_amount, required) VALUES ${placeholder}`,
       fee_structure.flatMap((item) => [
         course_id,
         item.fee_head_id,
         item.amount,
+        item.min_amount,
+        item.required,
       ])
     );
 
@@ -415,8 +425,17 @@ export const updateCourse = asyncErrorHandler(async (req, res) => {
   try {
     await client.query("BEGIN");
 
+    const fee_structure =
+      (value?.fee_structure as {
+        fee_head_id: number;
+        amount: number;
+        min_amount: number;
+        required: boolean;
+      }[]) ?? [];
+
     const course_id = value.id;
     delete value.id;
+    delete value.fee_structure;
     const { keys, paramsNum, values } = objectToSqlConverterUpdate(value);
     values.push(course_id);
 
@@ -425,25 +444,25 @@ export const updateCourse = asyncErrorHandler(async (req, res) => {
       values
     );
 
-    await client.query(
-      "DELETE FROM course_fee_structure WHERE course_id = $1",
-      [course_id]
-    );
+    if (fee_structure.length !== 0) {
+      await client.query(
+        "DELETE FROM course_fee_structure WHERE course_id = $1",
+        [course_id]
+      );
 
-    const fee_structure = value.fee_structure as {
-      fee_head_id: number;
-      amount: number;
-    }[];
-    const placeholder = generatePlaceholders(fee_structure.length, 3);
+      const placeholder = generatePlaceholders(fee_structure.length, 5);
 
-    await client.query(
-      `INSERT INTO course_fee_structure (course_id, fee_head_id, amount) VALUES (${placeholder})`,
-      fee_structure.flatMap((item) => [
-        course_id,
-        item.fee_head_id,
-        item.amount,
-      ])
-    );
+      await client.query(
+        `INSERT INTO course_fee_structure (course_id, fee_head_id, amount, min_amount, required) VALUES ${placeholder}`,
+        fee_structure.flatMap((item) => [
+          course_id,
+          item.fee_head_id,
+          item.amount,
+          item.min_amount,
+          item.required,
+        ])
+      );
+    }
 
     await client.query("COMMIT");
 

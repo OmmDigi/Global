@@ -9,7 +9,7 @@ import { courseRoutes } from "./routes/course.routes";
 import { noticeRoute } from "./routes/notice.route";
 import { admissionRoute } from "./routes/admission.routes";
 import { paymentRoute } from "./routes/payment.routes";
-// import fs from "fs";
+import fs from "fs";
 
 const app: Application = express();
 

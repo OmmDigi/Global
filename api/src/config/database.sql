@@ -186,3 +186,11 @@ ALTER TABLE course DROP COLUMN price;
 ALTER TABLE course DROP COLUMN min_pay;
 
 ALTER TABLE enrolled_courses DROP COLUMN course_price;
+
+ALTER TABLE course_fee_structure ADD COLUMN min_amount DECIMAL(10, 2) DEFAULT 0.00;
+ALTER TABLE course_fee_structure ADD COLUMN required BOOLEAN DEFAULT false;
+
+ALTER TABLE form_fee_structure ADD COLUMN min_amount DECIMAL(10, 2) DEFAULT 0.00;
+ALTER TABLE form_fee_structure ADD COLUMN required BOOLEAN DEFAULT false;
+
+ALTER TABLE payments ADD COLUMN transition_id VARCHAR(255);

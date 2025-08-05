@@ -10,7 +10,7 @@ ALLOWED_COURSE_FIELDS.set("duration", "c.duration");
 ALLOWED_COURSE_FIELDS.set("description", "c.description");
 ALLOWED_COURSE_FIELDS.set("created_at", "c.created_at");
 ALLOWED_COURSE_FIELDS.set("is_active", "c.is_active");
-ALLOWED_COURSE_FIELDS.set("fee_structure", "COALESCE(JSON_AGG(JSON_BUILD_OBJECT('fee_head_id', cfs.fee_head_id, 'amount', cfs.amount)) FILTER (WHERE cfs.id IS NOT NULL), '[]') AS fee_structure");
+ALLOWED_COURSE_FIELDS.set("fee_structure", "COALESCE(JSON_AGG(JSON_BUILD_OBJECT('fee_head_id', cfs.fee_head_id, 'amount', cfs.amount, 'min_amount', cfs.min_amount, 'required', cfs.required)) FILTER (WHERE cfs.id IS NOT NULL), '[]') AS fee_structure");
 
 
 

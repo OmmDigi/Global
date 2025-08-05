@@ -1,6 +1,13 @@
 import { Router } from "express";
-import { createAdmission } from "../controllers/admission.controller";
+import {
+  createAdmission,
+  getAdmissionList,
+  getSingleAdmission,
+} from "../controllers/admission.controller";
 
 export const admissionRoute = Router();
 
-admissionRoute.post("/create", createAdmission);
+admissionRoute
+  .post("/create", createAdmission)
+  .get("/", getAdmissionList)
+  .get("/:form_id", getSingleAdmission)

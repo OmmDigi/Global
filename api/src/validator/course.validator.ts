@@ -1,4 +1,4 @@
-import Joi from "joi";
+import Joi, { required } from "joi";
 
 export const VCreateSession = Joi.object({
   name: Joi.string().required(),
@@ -29,7 +29,7 @@ export const VCreateFeeHead = Joi.object({
 
 export const VUpdateFeeHead = Joi.object({
   id: Joi.number().required(),
-  is_active : Joi.bool().optional(),
+  is_active: Joi.bool().optional(),
   name: Joi.string().optional(),
 });
 
@@ -69,6 +69,8 @@ export const VCreateCourse = Joi.object({
         id: Joi.number().optional(),
         fee_head_id: Joi.number().required(),
         amount: Joi.number().required(),
+        min_amount: Joi.number().required(),
+        required: Joi.boolean().required(),
       })
     )
     .required(),
@@ -98,9 +100,11 @@ export const VUpdateCourse = Joi.object({
         id: Joi.number().optional(),
         fee_head_id: Joi.number().required(),
         amount: Joi.number().required(),
+        min_amount: Joi.number().required(),
+        required: Joi.boolean().required(),
       })
     )
-    .required(),
+    .optional(),
 });
 
 // Batches

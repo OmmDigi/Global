@@ -8,7 +8,11 @@ import { IUserToken } from "../types";
 import { ApiResponse } from "../utils/ApiResponse";
 import { ErrorHandler } from "../utils/ErrorHandler";
 import { getAuthToken } from "../utils/getAuthToken";
-import { VCreateAdmission } from "../validator/admission.validator";
+import { parsePagination } from "../utils/parsePagination";
+import {
+  VCreateAdmission,
+  VGetSingleAdmission,
+} from "../validator/admission.validator";
 
 type IUserData = {
   userid: number | null;
@@ -79,11 +83,17 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
       const userName = admission_data?.username;
       const password = admission_data?.password;
       const profileImage = admission_data?.image;
-     
-      if(!password) throw new ErrorHandler(400, "Account password is required", ["password"])
-      if(!userName) throw new ErrorHandler(400, "Username is required", ["username"])
-      if(!studentPhNumber) throw new ErrorHandler(400, "Phone Number is required", ["phone"])
-      if(!studentName) throw new ErrorHandler(400, "Student Name is required", ["name"])
+
+      if (!password)
+        throw new ErrorHandler(400, "Account password is required", [
+          "password",
+        ]);
+      if (!userName)
+        throw new ErrorHandler(400, "Username is required", ["username"]);
+      if (!studentPhNumber)
+        throw new ErrorHandler(400, "Phone Number is required", ["phone"]);
+      if (!studentName)
+        throw new ErrorHandler(400, "Student Name is required", ["name"]);
 
       const encodedPassword = encrypt(password);
       const { id, name, ph_no, username } = await createNewUser({
@@ -93,7 +103,7 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
         name: studentName,
         designation: "Student",
         username: userName,
-        image : profileImage,
+        image: profileImage,
         password: encodedPassword,
         client,
       });
@@ -106,19 +116,30 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
 
     // get the coures info with course_fee_structure
     const { rows, rowCount } = await client.query(
-      `SELECT 
+      `
+      SELECT 
         c.*,
-        COALESCE(JSON_AGG(JSON_BUILD_OBJECT('fee_head_id', cfs.fee_head_id, 'fee_head_name', cfh.name, 'amount', cfs.amount)) FILTER (WHERE cfs.id IS NOT NULL), '[]') AS fee_structures
-       FROM course c
-
-       LEFT JOIN course_fee_structure cfs
-       ON cfs.course_id = c.id
-
-       LEFT JOIN course_fee_head cfh
-       ON cfs.fee_head_id = cfh.id
-
-       WHERE c.id = $1
-       GROUP BY c.id
+        COALESCE(
+            (
+                SELECT JSON_AGG(
+                    JSON_BUILD_OBJECT(
+                        'fee_head_id', cfs.fee_head_id,
+                        'fee_head_name', cfh.name,
+                        'amount', cfs.amount,
+                        'min_amount', cfs.min_amount,
+                        'required', cfs.required
+                    )
+                    ORDER BY cfs.id
+                )
+                FROM course_fee_structure cfs
+                LEFT JOIN course_fee_head cfh ON cfs.fee_head_id = cfh.id
+                  WHERE cfs.course_id = c.id
+              ),
+              '[]'::json
+          ) AS fee_structures
+      FROM course c
+      WHERE c.id = $1
+      GROUP BY c.id;
        `,
       [value.course_id]
     );
@@ -153,6 +174,133 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
   } catch (error: any) {
     await client.query("ROLLBACK");
     throw new ErrorHandler(400, error.message);
+  } finally {
+    client.release();
+  }
+});
+
+export const getAdmissionList = asyncErrorHandler(async (req, res) => {
+  const { TO_STRING } = parsePagination(req);
+  const { rows } = await pool.query(
+    `
+    SELECT
+      ff.id AS form_id,
+      ff.form_name,
+      u.name AS student_name,
+      u.image AS student_image,
+      c.name AS course_name,
+      (SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id) AS course_fee,
+      COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id), 0.00) - COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id), 0.00) AS due_amount,
+      b.month_name AS batch_name
+      -- JSON_AGG(JSON_BUILD_OBJECT('batch_id', b.id, 'batch_name', b.month_name)) AS batches
+    FROM fillup_forms ff
+
+    LEFT JOIN users u
+    ON u.id = ff.student_id
+
+    LEFT JOIN enrolled_courses ec
+    ON ec.form_id = ff.id
+
+    LEFT JOIN batch b
+    ON b.id = ec.batch_id
+
+    LEFT JOIN course c
+    ON c.id = ec.course_id
+
+    GROUP BY ff.id, u.id, c.id, b.id
+    ORDER BY ff.id DESC
+    ${TO_STRING}
+    `
+  );
+  res.status(200).json(new ApiResponse(200, "Admission List", rows));
+});
+
+export const getSingleAdmission = asyncErrorHandler(async (req, res) => {
+  const { error, value } = VGetSingleAdmission.validate(req.params ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
+
+  const form_id = value.form_id;
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const { rows: basicInfo } = await client.query(
+      `
+       SELECT
+          ff.id AS form_id,
+          ff.form_name,
+          u.name AS student_name,
+          u.image AS student_image,
+          c.name AS course_name,
+          b.month_name AS batch_name,
+          s.name AS session_name,
+          COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id), 0.00) AS course_fee,
+          COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id), 0.00) - COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id), 0.00) AS due_amount
+        FROM fillup_forms ff
+
+        LEFT JOIN users u
+        ON u.id = ff.student_id
+
+        LEFT JOIN enrolled_courses ec
+        ON ec.form_id = $1
+
+        LEFT JOIN course c
+        ON c.id = ec.course_id
+
+        LEFT JOIN batch b
+        ON b.id = ec.batch_id
+
+        LEFT JOIN session s
+        ON s.id = ec.session_id
+
+        WHERE ff.id = $1
+      `,
+      [form_id]
+    );
+    const { rows : feeStructureInfo} = await client.query(
+      `
+        SELECT
+          cfh.name AS fee_head_name,
+          cfh.id AS fee_head_id,
+          COALESCE(ffs.amount, 0.00) AS price,
+          COALESCE(ffs.amount, 0.00) - COALESCE(SUM(p.amount), 0.00) AS due_amount
+        FROM form_fee_structure ffs
+
+        LEFT JOIN course_fee_head cfh
+        ON cfh.id = ffs.fee_head_id
+
+        LEFT JOIN payments p
+        ON p.form_id = $1 AND cfh.id = p.fee_head_id
+
+        WHERE ffs.form_id = $1
+
+        GROUP BY cfh.id, ffs.id
+      `,
+      [form_id]
+    );
+    const { rows : admissionFormPayments } = await client.query(
+      `
+        SELECT
+          cfh.name AS fee_head_name,
+          p.*
+        FROM payments p
+
+        LEFT JOIN course_fee_head cfh
+        ON cfh.id = p.fee_head_id
+
+        WHERE p.form_id = $1
+      `,
+      [form_id]
+    );
+    await client.query("COMMIT");
+
+    res.status(200).json(new ApiResponse(200, "Fee Info", {
+      ... basicInfo[0],
+      fee_structure_info : feeStructureInfo,
+      payments_history : admissionFormPayments
+    }))
+  } catch (error) {
+    await client.query("ROLLBACK");
   } finally {
     client.release();
   }

@@ -7,7 +7,7 @@ type IFillUpForm = {
   course_id: number;
   batch_id: number;
   session_id: number;
-  fee_structure: { fee_head_id: number; amount: number }[];
+  fee_structure: { fee_head_id: number; amount: number, min_amount : number, required : boolean }[];
   admission_data?: string;
   client?: PoolClient;
 };
@@ -44,15 +44,17 @@ export const doAdmission = async (data: IFillUpForm) => {
 
   const placeholder = data.fee_structure
     .map(
-      (_, index) => `($${index * 2 + 1}, $${index * 2 + 2}, $${index * 2 + 3})`
+      (_, index) => `($${index * 5 + 1}, $${index * 5 + 2}, $${index * 5 + 3}, $${index * 5 + 4}, $${index * 5 + 5})`
     )
     .join(", ");
   await pgClient.query(
-    `INSERT INTO form_fee_structure (form_id, fee_head_id, amount) VALUES ${placeholder}`,
+    `INSERT INTO form_fee_structure (form_id, fee_head_id, amount, min_amount, required) VALUES ${placeholder}`,
     data.fee_structure.flatMap((item) => [
       form_id,
       item.fee_head_id,
       item.amount,
+      item.min_amount,
+      item.required
     ])
   );
 

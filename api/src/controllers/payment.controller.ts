@@ -19,8 +19,11 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
   try {
     await client.query("BEGIN");
 
-    const fee_head_ids = value.fee_head_ids as number[];
-    const placeholder = fee_head_ids
+    const fee_structure_info = value.fee_structure_info as {
+      fee_head_id: number;
+      custom_min_amount: number;
+    }[];
+    const placeholder = fee_structure_info
       .map((_, index) => `$${index + 2}`)
       .join(", ");
 
@@ -29,6 +32,8 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
       SELECT 
         ffs.fee_head_id,
         ffs.amount,
+        ffs.min_amount,
+        ffs.required,
         ff.form_name,
         u.id AS student_id,
         u.name AS student_name,
@@ -43,7 +48,7 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
 
       WHERE ffs.form_id = $1 AND ffs.fee_head_id IN (${placeholder})
       `,
-      fee_head_ids.flatMap((id) => [value.form_id, id])
+      [value.form_id, ...fee_structure_info.flatMap((item) => [item.fee_head_id])]
     );
 
     if (rowCount === 0) throw new ErrorHandler(400, "No admission form found");
@@ -53,10 +58,21 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
     const student_ph_number = rows[0].student_ph_number;
 
     let amountToPaid = 0;
-    const fee_head_ids_info: { fee_head_id: number; amount: number }[] = [];
+    const fee_head_ids_info: {
+      fee_head_id: number;
+      amount: number;
+    }[] = [];
 
     rows.forEach((item) => {
-      amountToPaid += parseFloat(item.amount);
+      const db_min_amount = parseFloat(item.min_amount);
+      const custom_amount = fee_structure_info.find(fs => fs.fee_head_id == item.fee_head_id)?.custom_min_amount ?? 0
+
+      if (custom_amount >= db_min_amount) {
+        amountToPaid += custom_amount;
+      } else {
+        amountToPaid += db_min_amount;
+      }
+
       fee_head_ids_info.push({
         fee_head_id: item.fee_head_id,
         amount: item.amount,
@@ -98,6 +114,7 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
     );
   } catch (error: any) {
     await client.query("ROLLBACK");
+    console.log(error)
     throw new ErrorHandler(400, error.message);
   } finally {
     client.release();
@@ -105,21 +122,29 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
 });
 
 export const verifyPayment = asyncErrorHandler(async (req, res) => {
-  const response = await phonePe().checkStatus(req.query.merchant_order_id?.toString() ?? "");
+  const response = await phonePe().checkStatus(
+    req.query.merchant_order_id?.toString() ?? ""
+  );
 
   // after verify add transactionId as payment_name_id and change the status of the payment table
-  const payment_status : any = {
-    'PENDING' : 1,
-    'COMPLETED' : 2,
-    'FAILED' : 3,
-  }
+  const payment_status: any = {
+    PENDING: 1,
+    COMPLETED: 2,
+    FAILED: 3,
+  };
 
   await pool.query(
-    "UPDATE payments SET payment_name_id = $1, status = $2 WHERE order_id = $3",
-    [response.data.transactionId, payment_status[response.data.state], req.query.merchant_order_id]
-  )
+    "UPDATE payments SET payment_name_id = $1, status = $2, transition_id = $3, order_id = $4 WHERE order_id = $4",
+    [
+      response.data.transactionId,
+      payment_status[response.data.state],
+      response.data.transactionId,
+      response.data.orderId,
+      req.query.merchant_order_id,
+    ]
+  );
 
-  if(!response.success) throw new ErrorHandler(400, response.message);
-  
+  if (!response.success) throw new ErrorHandler(400, response.message);
+
   res.status(200).json(new ApiResponse(200, "Payment Done"));
 });

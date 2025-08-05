@@ -8,7 +8,12 @@ export const getAuthToken = (req: Request) : string | null => {
     return null;
   }
 
-  const token = authHeader.split(" ")[1];
+  let token : null | string = null;
+  if(authHeader.includes(" ")) {
+   token = authHeader.split(" ")[1];
+  } else {
+    token = authHeader;
+  }
 
   if (!token) {
     return null;
