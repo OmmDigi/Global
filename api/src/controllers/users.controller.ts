@@ -1,3 +1,4 @@
+import { AxiosError } from "axios";
 import { pool } from "../config/db";
 import asyncErrorHandler from "../middlewares/asyncErrorHandler";
 import { decrypt, encrypt } from "../services/crypto";
@@ -13,6 +14,15 @@ import {
   VSingleUser,
   VUpdateUser,
 } from "../validator/users.validator";
+import { essl } from "../config/essl";
+import { IError } from "../config/types";
+import { CustomRequest } from "../types";
+import {
+  getAdmissions,
+  getSingleAdmissionData,
+} from "../services/admission.service";
+import { VGetSingleAdmission } from "../validator/admission.validator";
+import { getLeaveList } from "../services/leave.service";
 
 export const loginUser = asyncErrorHandler(async (req, res) => {
   const { error, value } = VLoginUser.validate(req.body ?? {});
@@ -30,14 +40,17 @@ export const loginUser = asyncErrorHandler(async (req, res) => {
   // if (isError || decrypted !== value.password)
   //   throw new ErrorHandler(400, "Wrong Password", ["password"]);
 
-  const { category, id } = await verifyUser({
+  const { category, id, permissions } = await verifyUser({
     password: value.password,
     username: value.username,
   });
 
+  const permissionArray = JSON.parse(permissions ?? "[]");
+
   const token = createToken({
     id,
     category,
+    permissions,
   });
 
   //set the http only cookie
@@ -54,6 +67,7 @@ export const loginUser = asyncErrorHandler(async (req, res) => {
       category,
       id,
       token,
+      permissions: permissionArray,
     })
   );
 });
@@ -64,33 +78,69 @@ export const createUser = asyncErrorHandler(async (req, res) => {
 
   const encrypt_pass = encrypt(value.password);
 
-  const { rowCount, rows } = await pool.query(
-    `
-      INSERT INTO users 
-        (category, name, email, ph_no, joining_date, designation, description, image, password) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-      ON CONFLICT (email) DO NOTHING
-      RETURNING id
-   `,
-    [
-      value.category,
-      value.name,
-      value.email,
-      value.ph_no,
-      value.joining_date,
-      value.designation,
-      value.description,
-      value.image,
-      encrypt_pass,
-    ]
-  );
+  const client = await pool.connect();
 
-  if (rowCount === 0)
-    throw new ErrorHandler(400, "User email already exists", ["email"]);
+  try {
+    await client.query("BEGIN");
 
-  res
-    .status(201)
-    .json(new ApiResponse(201, "New user has successfully created", rows[0]));
+    const permissionsString = JSON.stringify(value.permissions);
+
+    const { rowCount, rows } = await client.query(
+      `
+        INSERT INTO users 
+          (category, name, email, ph_no, joining_date, designation, description, image, username, password, permissions) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        ON CONFLICT (username) DO NOTHING
+        RETURNING id
+     `,
+      [
+        value.category,
+        value.name,
+        value.email,
+        value.ph_no,
+        value.joining_date,
+        value.designation,
+        value.description,
+        value.image,
+        value.email,
+        encrypt_pass,
+        permissionsString,
+      ]
+    );
+
+    if (rowCount === 0)
+      throw new ErrorHandler(400, "User email already exists", ["email"]);
+
+    const userID = rows[0].id as number;
+
+    // store data to the essl device
+    try {
+      await essl.setUser({
+        name: value.name,
+        password: value.password,
+        uid: userID.toString(),
+        userid: userID.toString(),
+      });
+    } catch (e) {
+      const error = e as AxiosError<IError>;
+      throw new ErrorHandler(
+        400,
+        error.response?.data.message ??
+          "Something went wrong while adding employee info to essl device"
+      );
+    }
+
+    res
+      .status(201)
+      .json(new ApiResponse(201, "New user has successfully created", rows[0]));
+
+    await client.query("COMMIT");
+  } catch (e: any) {
+    await client.query("ROLLBACK");
+    throw new ErrorHandler(400, e.message);
+  } finally {
+    client.release();
+  }
 });
 
 export const getOneUser = asyncErrorHandler(async (req, res) => {
@@ -103,6 +153,7 @@ export const getOneUser = asyncErrorHandler(async (req, res) => {
     `
     SELECT 
       *,
+      TO_CHAR(joining_date, 'YYYY-MM-DD') AS joining_date,
       TO_CHAR(joining_date, 'FMDD FMMonth, YYYY') AS formatted_joining_date
     FROM users WHERE id = $1
     `,
@@ -113,6 +164,7 @@ export const getOneUser = asyncErrorHandler(async (req, res) => {
 
   const { decrypted } = decrypt(rows[0].password);
   rows[0].password = decrypted;
+  rows[0].permissions = JSON.parse(rows[0].permissions ?? "[]");
 
   res.status(200).json(new ApiResponse(200, "Single User Info", rows[0]));
 });
@@ -169,36 +221,128 @@ export const updateUser = asyncErrorHandler(async (req, res) => {
 
   const encrypt_pass = encrypt(value.password);
 
-  await pool.query(
-    `
-      UPDATE users SET 
-        category = $1, name = $2, email = $3, ph_no = $4, joining_date = $5, designation = $6, description = $7, image = $8, password = $9
-      WHERE id = $10
-   `,
-    [
-      value.category,
-      value.name,
-      value.email,
-      value.ph_no,
-      value.joining_date,
-      value.designation,
-      value.description,
-      value.image,
-      encrypt_pass,
-      value.id,
-    ]
-  );
+  const client = await pool.connect();
 
-  res
-    .status(201)
-    .json(new ApiResponse(201, "User info has successfully updated"));
+  try {
+    await client.query("BEGIN");
+
+    const permissionsString = JSON.stringify(value.permissions);
+
+    await client.query(
+      `
+      UPDATE users SET 
+        category = $1, name = $2, email = $3, ph_no = $4, joining_date = $5, designation = $6, description = $7, image = $8, password = $9, permissions = $10
+      WHERE id = $11
+   `,
+      [
+        value.category,
+        value.name,
+        value.email,
+        value.ph_no,
+        value.joining_date,
+        value.designation,
+        value.description,
+        value.image,
+        encrypt_pass,
+        permissionsString,
+        value.id,
+      ]
+    );
+
+    // update to the essl device
+
+    try {
+      await essl.updateUser({
+        name: value.name,
+        password: value.password,
+        uid: value.id.toString(),
+        userid: value.id.toString(),
+      });
+    } catch (e) {
+      const error = e as AxiosError<IError>;
+      throw new ErrorHandler(
+        400,
+        error.response?.data.message ??
+          "Something went wrong while adding employee info to essl device"
+      );
+    }
+
+    res
+      .status(201)
+      .json(new ApiResponse(201, "User info has successfully updated"));
+
+    await client.query("COMMIT");
+  } catch (e: any) {
+    await client.query("ROLLBACK");
+    throw new ErrorHandler(400, e.message);
+  } finally {
+    client.release();
+  }
 });
 
 export const deleteUser = asyncErrorHandler(async (req, res) => {
   const { error, value } = VSingleUser.validate(req.params ?? {});
   if (error) throw new ErrorHandler(400, error.message);
 
-  await pool.query("DELETE FROM users WHERE id = $1", [value.id]);
+  const client = await pool.connect();
 
-  res.status(200).json(new ApiResponse(200, "User Deleted"));
+  try {
+    await client.query("BEGIN");
+
+    await client.query("DELETE FROM users WHERE id = $1", [value.id]);
+
+    // update to the essl device
+
+    try {
+      await essl.deleteUser({
+        uid: value.id.toString(),
+      });
+    } catch (e) {
+      const error = e as AxiosError<IError>;
+      throw new ErrorHandler(
+        400,
+        error.response?.data.message ??
+          "Something went wrong while adding employee info to essl device"
+      );
+    }
+
+    res.status(200).json(new ApiResponse(200, "User Deleted"));
+
+    await client.query("COMMIT");
+  } catch (e: any) {
+    await client.query("ROLLBACK");
+    throw new ErrorHandler(400, e.message);
+  } finally {
+    client.release();
+  }
 });
+
+export const getUserEnrolledCourseList = asyncErrorHandler(
+  async (req: CustomRequest, res) => {
+    const { rows } = await getAdmissions(req, req.user_info?.id);
+    res.status(200).json(new ApiResponse(200, "User Admission List", rows));
+  }
+);
+
+export const getUserSingleAdmissionData = asyncErrorHandler(
+  async (req: CustomRequest, res) => {
+    const { error, value } = VGetSingleAdmission.validate(req.params ?? {});
+    if (error) throw new ErrorHandler(400, error.message);
+
+    const response = await getSingleAdmissionData(
+      value.form_id,
+      req.user_info?.id
+    );
+
+    res
+      .status(200)
+      .json(new ApiResponse(200, "Single Admission Data", response));
+  }
+);
+
+export const getUserLeaveRequest = asyncErrorHandler(
+  async (req: CustomRequest, res) => {
+    const { rows } = await getLeaveList(req, req.user_info?.id);
+    res.status(200).json(new ApiResponse(200, "User Leave list", rows));
+  }
+);

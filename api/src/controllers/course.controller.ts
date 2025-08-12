@@ -509,7 +509,8 @@ export const getCourseWithBatchSession = asyncErrorHandler(async (req, res) => {
         '[]'::json
       ) AS batch
 
-    FROM course c;
+    FROM course c
+    WHERE c.is_active = true;
     `
   );
 

@@ -30,13 +30,14 @@ export const VCreateUser = Joi.object({
   description: Joi.string().optional().allow(""),
   image: Joi.string().optional().allow(""),
   password: Joi.string().required(),
+  permissions: Joi.array().items(Joi.number()).required(),
 });
 
 export const VUpdateUser = Joi.object({
   id: Joi.number().required(),
   category: Joi.string()
     .required()
-    .valid(USER_CATEGORY_TYPES.join(", "))
+    .valid("Admin", "Teacher", "Stuff", "Student")
     .label("Category"),
   name: Joi.string().required().label("Name"),
   email: Joi.string().email().required().label("Email"),
@@ -46,4 +47,5 @@ export const VUpdateUser = Joi.object({
   description: Joi.string().optional().allow(""),
   image: Joi.string().optional().allow(""),
   password: Joi.string().required(),
+  permissions: Joi.array().items(Joi.number()).required(),
 });

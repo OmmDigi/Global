@@ -9,7 +9,10 @@ import { courseRoutes } from "./routes/course.routes";
 import { noticeRoute } from "./routes/notice.route";
 import { admissionRoute } from "./routes/admission.routes";
 import { paymentRoute } from "./routes/payment.routes";
-import fs from "fs";
+import { attendanceRoute } from "./routes/attendance.routes";
+import { holidayRoutes } from "./routes/holiday.routes";
+import { leaveRoute } from "./routes/leave.routes";
+import { isAuthorized } from "./middlewares/isAuthorized";
 
 const app: Application = express();
 
@@ -49,8 +52,11 @@ app.use(cookieParser());
 app.use("/api/v1/users", usersRoutes);
 app.use("/api/v1/course", courseRoutes);
 app.use("/api/v1/notice", noticeRoute);
-app.use("/api/v1/admission", admissionRoute)
-app.use("/api/v1/payment", paymentRoute)
+app.use("/api/v1/admission", admissionRoute);
+app.use("/api/v1/payment", paymentRoute);
+app.use("/api/v1/holiday", holidayRoutes)
+app.use("/api/v1/attendance", attendanceRoute);
+app.use("/api/v1/leave", leaveRoute)
 
 // app.post("/api/v1/hack-cookie", (req, res) => {
 //   console.log("Cookie Received");

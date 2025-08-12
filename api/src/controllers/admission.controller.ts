@@ -1,6 +1,10 @@
 import { pool } from "../config/db";
 import asyncErrorHandler from "../middlewares/asyncErrorHandler";
-import { doAdmission } from "../services/admission.service";
+import {
+  doAdmission,
+  getAdmissions,
+  getSingleAdmissionData,
+} from "../services/admission.service";
 import { encrypt } from "../services/crypto";
 import { verifyToken } from "../services/jwt";
 import { createNewUser } from "../services/user.service";
@@ -12,6 +16,8 @@ import { parsePagination } from "../utils/parsePagination";
 import {
   VCreateAdmission,
   VGetSingleAdmission,
+  VGetSingleAdmissionForm,
+  VUpdateAdmission,
 } from "../validator/admission.validator";
 
 type IUserData = {
@@ -59,17 +65,18 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
 
       // fetch the user info from database
       const { rows, rowCount } = await pool.query(
-        "SELECT id, name, username, ph_no FROM users WHERE id = $1",
+        "SELECT id, name, username, ph_no FROM users WHERE id = $1 AND category = 'Student'",
         [data?.id]
       );
 
-      if (rowCount === 0) {
-        throw new ErrorHandler(404, "No user found for the admission");
+      if (rowCount !== 0) {
+        userData.userid = rows[0].id;
+        userData.name = rows[0].name;
+        userData.username = rows[0].username;
+        userData.ph_no = rows[0].ph_no;
       }
-      userData.userid = rows[0].id;
-      userData.name = rows[0].name;
-      userData.username = rows[0].username;
-      userData.ph_no = rows[0].ph_no;
+
+      // throw new ErrorHandler(404, "No user found for the admission");
     }
 
     // if new user create a new table in user table
@@ -179,39 +186,79 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
   }
 });
 
+export const updateAdmissionData = asyncErrorHandler(async (req, res) => {
+  const { error, value } = VUpdateAdmission.validate(req.body ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
+
+  const admission_data = JSON.parse(value.admission_data ?? "{}");
+  const studentName = admission_data?.candidateName;
+  const studentPhNumber = admission_data?.phone;
+  const userName = admission_data?.username;
+  const password = admission_data?.password;
+  const profileImage = admission_data?.image;
+
+  if (!password)
+    throw new ErrorHandler(400, "Account password is required", ["password"]);
+  if (!userName)
+    throw new ErrorHandler(400, "Username is required", ["username"]);
+  if (!studentPhNumber)
+    throw new ErrorHandler(400, "Phone Number is required", ["phone"]);
+  if (!studentName)
+    throw new ErrorHandler(400, "Student Name is required", ["name"]);
+
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const { rows: formTableInfo, rowCount } = await client.query(
+      "SELECT student_id FROM fillup_forms WHERE id = $1",
+      [value.form_id]
+    );
+    if (rowCount === 0) throw new ErrorHandler(404, "No form found");
+
+    const studentId = formTableInfo[0].student_id;
+    const encodedPassword = encrypt(password);
+
+    // update the student basic info accoding to the form
+    await client.query(
+      "UPDATE users SET username = $1, password = $2, name = $3, ph_no = $4, image = $5 WHERE id = $6",
+      [
+        userName,
+        encodedPassword,
+        studentName,
+        studentPhNumber,
+        profileImage,
+        studentId,
+      ]
+    );
+
+    // update the admission form in admission_data table if exist update else insert
+    await client.query(
+      `
+       INSERT INTO admission_data 
+        (form_id, student_id, admission_details) 
+       VALUES 
+         ($1, $2, $3)
+       ON CONFLICT (form_id, student_id) DO UPDATE
+         SET admission_details = EXCLUDED.admission_details
+      `,
+      [value.form_id, studentId, value.admission_data]
+    );
+
+    await client.query("COMMIT");
+
+    res.status(200).json(new ApiResponse(200, "Admission form updated"));
+  } catch (e: any) {
+    await client.query("ROLLBACK");
+    throw new ErrorHandler(400, e.message);
+  } finally {
+    client.release();
+  }
+});
+
 export const getAdmissionList = asyncErrorHandler(async (req, res) => {
-  const { TO_STRING } = parsePagination(req);
-  const { rows } = await pool.query(
-    `
-    SELECT
-      ff.id AS form_id,
-      ff.form_name,
-      u.name AS student_name,
-      u.image AS student_image,
-      c.name AS course_name,
-      (SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id) AS course_fee,
-      COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id), 0.00) - COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id), 0.00) AS due_amount,
-      b.month_name AS batch_name
-      -- JSON_AGG(JSON_BUILD_OBJECT('batch_id', b.id, 'batch_name', b.month_name)) AS batches
-    FROM fillup_forms ff
-
-    LEFT JOIN users u
-    ON u.id = ff.student_id
-
-    LEFT JOIN enrolled_courses ec
-    ON ec.form_id = ff.id
-
-    LEFT JOIN batch b
-    ON b.id = ec.batch_id
-
-    LEFT JOIN course c
-    ON c.id = ec.course_id
-
-    GROUP BY ff.id, u.id, c.id, b.id
-    ORDER BY ff.id DESC
-    ${TO_STRING}
-    `
-  );
+  const { rows } = await getAdmissions(req);
   res.status(200).json(new ApiResponse(200, "Admission List", rows));
 });
 
@@ -219,89 +266,35 @@ export const getSingleAdmission = asyncErrorHandler(async (req, res) => {
   const { error, value } = VGetSingleAdmission.validate(req.params ?? {});
   if (error) throw new ErrorHandler(400, error.message);
 
-  const form_id = value.form_id;
+  const response = await getSingleAdmissionData(value.form_id);
 
-  const client = await pool.connect();
-  try {
-    await client.query("BEGIN");
-    const { rows: basicInfo } = await client.query(
-      `
-       SELECT
-          ff.id AS form_id,
-          ff.form_name,
-          u.name AS student_name,
-          u.image AS student_image,
-          c.name AS course_name,
-          b.month_name AS batch_name,
-          s.name AS session_name,
-          COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id), 0.00) AS course_fee,
-          COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id), 0.00) - COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id), 0.00) AS due_amount
-        FROM fillup_forms ff
-
-        LEFT JOIN users u
-        ON u.id = ff.student_id
-
-        LEFT JOIN enrolled_courses ec
-        ON ec.form_id = $1
-
-        LEFT JOIN course c
-        ON c.id = ec.course_id
-
-        LEFT JOIN batch b
-        ON b.id = ec.batch_id
-
-        LEFT JOIN session s
-        ON s.id = ec.session_id
-
-        WHERE ff.id = $1
-      `,
-      [form_id]
-    );
-    const { rows : feeStructureInfo} = await client.query(
-      `
-        SELECT
-          cfh.name AS fee_head_name,
-          cfh.id AS fee_head_id,
-          COALESCE(ffs.amount, 0.00) AS price,
-          COALESCE(ffs.amount, 0.00) - COALESCE(SUM(p.amount), 0.00) AS due_amount
-        FROM form_fee_structure ffs
-
-        LEFT JOIN course_fee_head cfh
-        ON cfh.id = ffs.fee_head_id
-
-        LEFT JOIN payments p
-        ON p.form_id = $1 AND cfh.id = p.fee_head_id
-
-        WHERE ffs.form_id = $1
-
-        GROUP BY cfh.id, ffs.id
-      `,
-      [form_id]
-    );
-    const { rows : admissionFormPayments } = await client.query(
-      `
-        SELECT
-          cfh.name AS fee_head_name,
-          p.*
-        FROM payments p
-
-        LEFT JOIN course_fee_head cfh
-        ON cfh.id = p.fee_head_id
-
-        WHERE p.form_id = $1
-      `,
-      [form_id]
-    );
-    await client.query("COMMIT");
-
-    res.status(200).json(new ApiResponse(200, "Fee Info", {
-      ... basicInfo[0],
-      fee_structure_info : feeStructureInfo,
-      payments_history : admissionFormPayments
-    }))
-  } catch (error) {
-    await client.query("ROLLBACK");
-  } finally {
-    client.release();
-  }
+  res.status(200).json(new ApiResponse(200, "Fee Info", response));
 });
+
+export const getSingleAdmissionFormData = asyncErrorHandler(
+  async (req, res) => {
+    const { error, value } = VGetSingleAdmissionForm.validate(req.params ?? {});
+    if (error) throw new ErrorHandler(400, error.message);
+
+    const { rows, rowCount } = await pool.query(
+      `
+    SELECT
+      ff.id AS form_id,
+      ff.student_id,
+      (
+        SELECT admission_details FROM admission_data 
+        WHERE student_id = ff.student_id
+        ORDER BY id DESC
+        LIMIT 1
+      ) as admission_details
+    FROM fillup_forms ff
+    WHERE ff.id = $1
+    `,
+      [value.form_id]
+    );
+
+    if (rowCount === 0) throw new ErrorHandler(400, "No Form Data Found");
+
+    res.status(200).json(new ApiResponse(200, "Admision Details", rows[0]));
+  }
+);

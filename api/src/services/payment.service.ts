@@ -4,8 +4,9 @@ import { pool } from "../config/db";
 type IPaymentProps = {
   form_id: number;
   student_id: number;
-  order_id: string;
+  order_id?: string;
   mode: string;
+  transition_id?:string;
   fee_head_ids_info: { fee_head_id: number; amount: number }[];
   client?: PoolClient;
 };
@@ -22,13 +23,13 @@ export const setPayment = async (data: IPaymentProps) => {
   const placeholder = data.fee_head_ids_info
     .map(
       (_, index) =>
-        `($${index * 8 + 1}, $${index * 8 + 2}, $${index * 8 + 3}, $${
-          index * 8 + 4
-        }, $${index * 8 + 5}, $${index * 8 + 6}, $${index * 8 + 7}, $${index * 8 + 8})`
+        `($${index * 9 + 1}, $${index * 9 + 2}, $${index * 9 + 3}, $${
+          index * 9 + 4
+        }, $${index * 9 + 5}, $${index * 9 + 6}, $${index * 9 + 7}, $${index * 9 + 8}, $${index * 9 + 9})`
     )
     .join(", ");
   await pgClient.query(
-    `INSERT INTO payments (form_id, mode, student_id, payment_name_id, order_id, receipt_id, amount, fee_head_id) VALUES ${placeholder}`,
+    `INSERT INTO payments (form_id, mode, student_id, payment_name_id, order_id, receipt_id, amount, fee_head_id, transition_id) VALUES ${placeholder}`,
     data.fee_head_ids_info.flatMap((fee_head_info) => [
       data.form_id,
       data.mode,
@@ -38,6 +39,7 @@ export const setPayment = async (data: IPaymentProps) => {
       receipt_id,
       fee_head_info.amount,
       fee_head_info.fee_head_id,
+      data.transition_id
     ])
   );
 

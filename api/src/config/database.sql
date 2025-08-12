@@ -25,7 +25,8 @@ INSERT INTO users (
         ph_no,
         designation,
         username,
-        password
+        password,
+        permissions
     )
 SELECT 
     'Admin',
@@ -34,7 +35,8 @@ SELECT
     '123456789',
     'Admin User',
     'global.technical8.institute@gmail.com',
-    '96b0dbb494195764415927a06d1964e0:d5697f8e382d96d3080524247206e0e3590d14:cd15b7b2ffe993681092f6ac2dfc3f46'
+    '96b0dbb494195764415927a06d1964e0:d5697f8e382d96d3080524247206e0e3590d14:cd15b7b2ffe993681092f6ac2dfc3f46',
+    '[1,2,3,4,5,6,7,8,9,10,11]'
 WHERE NOT EXISTS (
         SELECT 1
         FROM users
@@ -194,3 +196,41 @@ ALTER TABLE form_fee_structure ADD COLUMN min_amount DECIMAL(10, 2) DEFAULT 0.00
 ALTER TABLE form_fee_structure ADD COLUMN required BOOLEAN DEFAULT false;
 
 ALTER TABLE payments ADD COLUMN transition_id VARCHAR(255);
+
+ALTER TABLE admission_data
+ADD CONSTRAINT unique_form_id_student_id UNIQUE (form_id, student_id);
+
+CREATE TABLE IF NOT EXISTS (
+    id SERIAL PRIMARY KEY,
+    holiday_name VARCHAR(255) NOT NULL,
+    date DATE NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS attendance (
+    id SERIAL PRIMARY KEY,
+    employee_id BIGINT NOT NULL,
+    in_time TIMESTAMP NOT NULL,
+    out_time TIMESTAMP,
+    date DATE DEFAULT CURRENT_DATE,
+    status VARCHAR(255) CHECK (status IN ('Present', 'Absent', 'Leave', 'Holiday')),
+
+    FOREIGN KEY (employee_id) REFERENCES users(id) ON DELETE CASCADE,
+
+    UNION(employee_id, date)
+);
+
+ALTER TABLE attendance
+ALTER COLUMN in_time DROP NOT NULL;
+
+CREATE TABLE IF NOT EXISTS leave (
+    id SERIAL PRIMARY KEY,
+    employee_id BIGINT NOT NULL,
+    from_date DATE NOT NULL,
+    to_date DATE NOT NULL,
+    reason TEXT,
+    status INT DEFAULT 1,
+
+    FOREIGN KEY (employee_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+ALTER TABLE users ADD COLUMN permissions TEXT;

@@ -6,6 +6,7 @@ export type IUserCategory = "Admin" | "Teacher" | "Stuff" | "Student";
 export interface IUserToken {
   id: number;
   category: IUserCategory;
+  permissions?: string;
 }
 
 export interface CustomRequest extends Request {

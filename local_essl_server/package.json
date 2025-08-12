@@ -1,0 +1,22 @@
+{
+  "name": "essl-bridge-server",
+  "version": "1.0.0",
+  "description": "Local bridge between ESSL device and cloud server",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "build": "pkg . --out-path dist"
+  },
+  "bin": "./index.js",
+  "pkg": {
+    "scripts": "./index.js",
+    "targets": [
+      "node18-win-x64"
+    ],
+    "outputPath": "dist"
+  },
+  "dependencies": {
+    "ws": "^8.18.3",
+    "zkteco-js": "1.7.1"
+  }
+}

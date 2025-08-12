@@ -56,7 +56,7 @@ export const verifyUser = async (data: IVerifyUsrProps) => {
   const pgClient = data.client ?? pool;
 
   const { rows, rowCount } = await pgClient.query(
-    "SELECT id, password, category FROM users WHERE username = $1",
+    "SELECT id, password, category, permissions FROM users WHERE username = $1",
     [data.username]
   );
 
@@ -70,5 +70,6 @@ export const verifyUser = async (data: IVerifyUsrProps) => {
   return {
     id: rows[0].id as number,
     category: rows[0].category as string,
+    permissions : (rows[0].permissions ?? '[]') as string
   };
 };

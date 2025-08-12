@@ -13,3 +13,18 @@ export const VCreateOrderValidator = Joi.object({
     .min(1)
     .required(),
 });
+
+export const VAddPayment = Joi.object({
+  form_id: Joi.number().required(),
+  payment_mode: Joi.string().required(),
+  payment_details : Joi.string().required(),
+  fee_structure_info: Joi.array()
+    .items(
+      Joi.object({
+        fee_head_id: Joi.number().required(),
+        custom_min_amount: Joi.number().required(),
+      })
+    )
+    .min(1)
+    .required(),
+});

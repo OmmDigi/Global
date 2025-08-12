@@ -1,13 +1,20 @@
 import { PoolClient } from "pg";
 import { pool } from "../config/db";
 import { ErrorHandler } from "../utils/ErrorHandler";
+import { parsePagination } from "../utils/parsePagination";
+import { Request } from "express";
 
 type IFillUpForm = {
   student_id: number;
   course_id: number;
   batch_id: number;
   session_id: number;
-  fee_structure: { fee_head_id: number; amount: number, min_amount : number, required : boolean }[];
+  fee_structure: {
+    fee_head_id: number;
+    amount: number;
+    min_amount: number;
+    required: boolean;
+  }[];
   admission_data?: string;
   client?: PoolClient;
 };
@@ -44,7 +51,10 @@ export const doAdmission = async (data: IFillUpForm) => {
 
   const placeholder = data.fee_structure
     .map(
-      (_, index) => `($${index * 5 + 1}, $${index * 5 + 2}, $${index * 5 + 3}, $${index * 5 + 4}, $${index * 5 + 5})`
+      (_, index) =>
+        `($${index * 5 + 1}, $${index * 5 + 2}, $${index * 5 + 3}, $${
+          index * 5 + 4
+        }, $${index * 5 + 5})`
     )
     .join(", ");
   await pgClient.query(
@@ -54,7 +64,7 @@ export const doAdmission = async (data: IFillUpForm) => {
       item.fee_head_id,
       item.amount,
       item.min_amount,
-      item.required
+      item.required,
     ])
   );
 
@@ -71,4 +81,135 @@ export const doAdmission = async (data: IFillUpForm) => {
     form_name,
     form_id,
   };
+};
+
+export const getAdmissions = async (req: Request, student_id?: number) => {
+  const { TO_STRING } = parsePagination(req);
+  return await pool.query(
+    `
+      SELECT
+        ff.id AS form_id,
+        ff.form_name,
+        u.name AS student_name,
+        u.image AS student_image,
+        c.name AS course_name,
+        (SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id) AS course_fee,
+        COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id), 0.00) - COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND status = 2), 0.00) AS due_amount,
+        b.month_name AS batch_name
+        -- JSON_AGG(JSON_BUILD_OBJECT('batch_id', b.id, 'batch_name', b.month_name)) AS batches
+      FROM fillup_forms ff
+  
+      LEFT JOIN users u
+      ON u.id = ff.student_id
+  
+      LEFT JOIN enrolled_courses ec
+      ON ec.form_id = ff.id
+  
+      LEFT JOIN batch b
+      ON b.id = ec.batch_id
+  
+      LEFT JOIN course c
+      ON c.id = ec.course_id
+
+      ${student_id !== undefined ? "WHERE ff.student_id = $1" : ""}
+  
+      GROUP BY ff.id, u.id, c.id, b.id
+      ORDER BY ff.id DESC
+      ${TO_STRING}
+      `,
+    student_id !== undefined ? [student_id] : []
+  );
+};
+
+export const getSingleAdmissionData = async (
+  form_id: number,
+  student_id?: number
+) => {
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+    const { rows: basicInfo } = await client.query(
+      `
+         SELECT
+            ff.id AS form_id,
+            ff.form_name,
+            u.name AS student_name,
+            u.image AS student_image,
+            c.name AS course_name,
+            b.month_name AS batch_name,
+            s.name AS session_name,
+            COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id), 0.00) AS course_fee,
+            COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id), 0.00) - COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND status = 2), 0.00) AS due_amount
+          FROM fillup_forms ff
+  
+          LEFT JOIN users u
+          ON u.id = ff.student_id
+  
+          LEFT JOIN enrolled_courses ec
+          ON ec.form_id = $1
+  
+          LEFT JOIN course c
+          ON c.id = ec.course_id
+  
+          LEFT JOIN batch b
+          ON b.id = ec.batch_id
+  
+          LEFT JOIN session s
+          ON s.id = ec.session_id
+  
+          WHERE ff.id = $1 ${student_id ? " AND ff.student_id = $2" : ""}
+        `,
+      student_id ? [form_id, student_id] : [form_id]
+    );
+    const { rows: feeStructureInfo } = await client.query(
+      `
+          SELECT
+            cfh.name AS fee_head_name,
+            cfh.id AS fee_head_id,
+            COALESCE(ffs.amount, 0.00) AS price,
+            COALESCE(ffs.amount, 0.00) - COALESCE(SUM(p.amount), 0.00) AS due_amount
+          FROM form_fee_structure ffs
+  
+          LEFT JOIN course_fee_head cfh
+          ON cfh.id = ffs.fee_head_id
+  
+          LEFT JOIN payments p
+          ON p.form_id = $1 AND cfh.id = p.fee_head_id AND p.status = 2
+  
+          WHERE ffs.form_id = $1
+  
+          GROUP BY cfh.id, ffs.id
+        `,
+      [form_id]
+    );
+    const { rows: admissionFormPayments } = await client.query(
+      `
+          SELECT
+            cfh.name AS fee_head_name,
+            p.*
+          FROM payments p
+  
+          LEFT JOIN course_fee_head cfh
+          ON cfh.id = p.fee_head_id
+  
+          WHERE p.form_id = $1 AND p.status = 2
+  
+          ORDER BY p.id DESC
+        `,
+      [form_id]
+    );
+    await client.query("COMMIT");
+
+    return {
+      ...basicInfo[0],
+      fee_structure_info: feeStructureInfo,
+      payments_history: admissionFormPayments,
+    };
+  } catch (error: any) {
+    await client.query("ROLLBACK");
+    throw new ErrorHandler(400, error.message);
+  } finally {
+    client.release();
+  }
 };

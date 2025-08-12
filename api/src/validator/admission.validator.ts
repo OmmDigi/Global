@@ -12,3 +12,12 @@ export const VCreateAdmission = Joi.object({
 export const VGetSingleAdmission = Joi.object({
   form_id: Joi.number().required(),
 });
+
+export const VGetSingleAdmissionForm = Joi.object({
+  form_id: Joi.number().required(),
+});
+
+export const VUpdateAdmission = Joi.object({
+  form_id: Joi.number().required(),
+  admission_data: Joi.string().required(),
+});
