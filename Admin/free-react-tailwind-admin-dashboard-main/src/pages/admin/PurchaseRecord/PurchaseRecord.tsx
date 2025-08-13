@@ -9,44 +9,85 @@ import Button from "../../../components/ui/button/Button";
 import Select from "../../../components/form/Select";
 import BasicTableCourses from "../../../components/tables/BasicTables/BasicTableCourses";
 import { Upload, X } from "lucide-react";
+import { uploadFiles } from "../../../utils/uploadFile";
+import { uploadUrl } from "../../../api/fatcher";
 
 export default function PurchaseRecord() {
-  const [message, setMessage] = useState("");
-  const [title, setTitle] = useState("");
-  const [sessions, setSessions] = useState("");
-  const [duration, setDuration] = useState("");
-  const [price, setPrice] = useState("");
-  const [selectedValues, setSelectedValues] = useState<string[]>([]);
-  const [photo, setPhoto] = useState(null);
+  const [loading, setLoading] = useState<number>();
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [id, setId] = useState<number>();
+  const [formData, setFormData] = useState({
+    image: "",
+    name: "",
+    bill_no: "",
+    per_item_rate: "",
+    company_details: "",
+    purchase_date:"",
+    expaire_date:"",
 
-  const options = [
-    { value: "online", label: "Online" },
-    { value: "cash", label: "Cash" },
-    { value: "cash-online", label: "Cash/Online" },
-  ];
+    
+    joining_date: "",
+    designation: "",
+    email: "",
+    ph_no: "",
+    password: "",
+    category: "Teacher",
+    description: "",
+  });
 
-  const submit = (e: React.MouseEvent<HTMLDivElement>) => {
+ 
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setTitle("");
-    setSessions("");
-    setDuration("");
-    setPrice("");
-    setSelectedValues([]);
-    setMessage("");
-    setSelectedValues([]);
+    setFormData((prev) => ({
+      ...prev,
+      category: "Teacher",
+    }));
 
-    console.log("Submitted Values:", {
-      selectedValues,
-      title,
-      sessions,
-      duration,
-      price,
-      paymentMode: options.find((option) => option.value === "online")?.label,
-      message,
-    });
+    // try {
+    //   const response = await create(formData);
+    //   mutate(
+    //     (currentData: any) => [...(currentData || []), response.data],
+    //     false
+    //   );
+    //   messageApi.open({
+    //     type: "success",
+    //     content: response.message,
+    //   });
+    //   console.log("Upload Success:", response);
+    //   setPhoto(null);
+    //   setFormData({
+    //     image: "",
+    //     name: "",
+    //     joining_date: "",
+    //     designation: "",
+    //     email: "",
+    //     ph_no: "",
+    //     password: "",
+    //     category: "Teacher",
+    //     description: "",
+    //   });
+    // } catch (error: any) {
+    //   messageApi.open({
+    //     type: "error",
+    //     content: error.response?.data?.message,
+    //   });
+    //   console.log("Upload Error:", error);
+    // }
+  };
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  const handleFileUpload = (
+  const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
     type: "photo"
   ) => {
@@ -59,7 +100,24 @@ export default function PurchaseRecord() {
           setPhoto(result);
         }
       };
+
+      console.log("formData2", file);
       reader.readAsDataURL(file);
+
+      uploadFiles({
+        url: `${uploadUrl}/api/v1/upload/multiple`,
+        files: [file],
+        folder: "profile_image",
+        onUploading(percent) {
+          setLoading(percent);
+        },
+        onUploaded(result) {
+          setFormData((prev) => ({
+            ...prev,
+            image: result[0].downloadUrl,
+          }));
+        },
+      });
     }
   };
 
@@ -79,104 +137,170 @@ export default function PurchaseRecord() {
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-1">
         <div className="space-y-6 ">
           <ComponentCard title="Purchase Record">
-            <div className="space-y-6">
-              <div>
-                <Label htmlFor="inputTwo">Item Name</Label>
-                <Input
-                  type="text"
-                  id="inputTwo"
-                  onChange={(e) => setTitle(e.target.value)}
-                  value={title}
-                  placeholder="Item Name"
-                />
-              </div>
+            <form
+              onSubmit={handleSubmit}
+              encType="multipart/form-data"
+              className="space-y-6"
+            >
+              <div className="space-y-6">
+                <div>
+                  <Label htmlFor="inputTwo">Item Name</Label>
+                  <Input
+                    type="text"
+                    id="inputTwo"
+                    name="name"
+                    onChange={handleChange}
+                    value={formData?.name}
+                    placeholder="Item Name"
+                  />
+                </div>
 
-              <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-                <div>
-                  <Label htmlFor="inputTwo">Quantity</Label>
-                  <Input
-                    type="number"
-                    id="inputTwo"
-                    onChange={(e) => setDuration(e.target.value)}
-                    value={duration}
-                    placeholder="Quantity"
-                  />
+                <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                  <div>
+                    <Label htmlFor="inputTwo">Bill No</Label>
+                    <Input
+                      type="number"
+                      id="inputTwo"
+                      name="bill_no"
+                      onChange={handleChange}
+                      value={formData?.bill_no}
+                      placeholder="Bill No"
+                    />
+                  </div>
+                  <div>
+                    <Label>Per Item Rate</Label>
+                    <Input
+                      type="number"
+                      id="inputTwo"
+                      name="per_item_rate"
+                      onChange={handleChange}
+                      value={formData?.per_item_rate}
+                      placeholder="Per Item Rate"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Label>Price</Label>
-                  <Input
-                    type="number"
-                    id="inputTwo"
-                    onChange={(e) => setPrice(e.target.value)}
-                    value={price}
-                    placeholder="Price"
-                  />
+                <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                  <div>
+                    <Label>Company Name , Address , PH No</Label>
+                    <TextArea
+                      type="number"
+                      id="inputTwo"
+                      name="company_details"
+                      value={formData?.company_details}
+                      onChange={handleChange}
+                      placeholder="Company Name , Address , PH No"
+                      rows={3}
+                    />
+                  </div>
+                  <div>
+                    <Label>Date of Purchase</Label>
+                    <Input
+                      type="date"
+                      id="inputTwo"
+                      name="purchase_date"
+                      onChange={handleChange}
+                      value={formData?.purchase_date}
+                      placeholder="Date of Purchase"
+                    />
+                  </div>
+
+                  {/* photo  */}
+                  {/* <div className="flex justify-center">
+                    <div className="w-32 h-40 border-2 border-gray-400 flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-800">
+                      {photo ? (
+                        <div className="relative w-full h-full">
+                          <img
+                            src={photo}
+                            alt="Candidate"
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            onClick={() => removeFile("photo")}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="text-center">
+                          <Upload
+                            size={24}
+                            className="mx-auto mb-2 text-gray-400"
+                          />
+                          <p className="text-xs text-gray-500">
+                            Paste Your Photo
+                          </p>
+                          <label className="cursor-pointer">
+                            <input
+                              type="file"
+                              name="file"
+                              // value={formData.image}
+                              accept="image/*"
+                              onChange={(e) => handleFileUpload(e, "photo")}
+                              className="hidden"
+                            />
+                            <span className="text-xs text-blue-500 hover:text-blue-700">
+                              Upload
+                            </span>
+                          </label>
+                        </div>
+                      )}
+                    </div>
+                  </div> */}
                 </div>
-              </div>
-              <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-                <div>
-                  <Label>Description</Label>
-                  <TextArea
-                    value={message}
-                    // placeholder="info@gmail.com"
-                    onChange={(value) => setMessage(value)}
-                    rows={6}
-                  />
+                <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                  <div>
+                    <Label>Expaire Date</Label>
+                    <Input
+                      type="date"
+                      id="inputTwo"
+                      name="expaire_date"
+                      onChange={handleChange}
+                      value={formData?.expaire_date}
+                      placeholder="Expaire Date"
+                    />
+                  </div>
+                  <div>
+                    <Label>Previous Balance</Label>
+                    <Input
+                      type="number"
+                      id="inputTwo"
+                      name="previousBalance"
+                      onChange={handleChange}
+                      value={formData?.previousBalance}
+                      placeholder="Expaire Date"
+                    />
+                  </div>
                 </div>
-                <div className="flex justify-center">
-                  <div className="w-32 h-40 border-2 border-gray-400 flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-800">
-                    {photo ? (
-                      <div className="relative w-full h-full">
-                        <img
-                          src={photo}
-                          alt="Candidate"
-                          className="w-full h-full object-cover"
-                        />
-                        <button
-                          onClick={() => removeFile("photo")}
-                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                        >
-                          <X size={12} />
-                        </button>
+
+
+                <div className="flex flex-wrap justify-center items-center gap-6">
+                  <div className="flex items-center gap-5">
+                   {id ? (
+                      <div
+                        // onClick={handleUpdate}
+                        className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                      >
+                        Update
                       </div>
                     ) : (
-                      <div className="text-center">
-                        <Upload
-                          size={24}
-                          className="mx-auto mb-2 text-gray-400"
-                        />
-                        <p className="text-xs font-bold text-gray-500">
-                          Paste Your Bill Photo
-                        </p>
-
-                        <label className="cursor-pointer">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => handleFileUpload(e, "photo")}
-                            className="hidden"
-                          />
-                          <span className="text-xs text-blue-500 hover:text-blue-700">
-                            Upload
-                          </span>
-                        </label>
-                      </div>
+                      <button
+                        type="submit"
+                        className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                      >
+                        Submit
+                      </button>
                     )}
                   </div>
                 </div>
               </div>
-              <div className="flex flex-wrap justify-center items-center gap-6">
-                <div onClick={submit} className="flex items-center gap-5">
-                  <Button size="md" variant="primary">
-                    Submit
-                  </Button>
-                </div>
-              </div>
-            </div>
-            <BasicTableCourses />
+            </form>
+            {/* <BasicTableCourses /> */}
           </ComponentCard>
         </div>
       </div>
     </div>
   );
 }
+
+

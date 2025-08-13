@@ -10,8 +10,13 @@ import { Upload, X } from "lucide-react";
 import { useScrollChecker } from "@/components/useScrollChecker";
 import { ToWords } from "to-words";
 import useSWR from "swr";
-import { fetcher } from "@/lib/fetcher";
+import useSWRMutation from "swr/mutation";
 
+import { fetcher, getFetcher, postFetcher } from "@/lib/fetcher";
+import { uploadFiles } from "@/utils/uploadFile";
+import { XMarkIcon } from "@heroicons/react/24/outline";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 const toWords = new ToWords();
 
 let words = toWords.convert(123);
@@ -30,19 +35,28 @@ const steps = [
     title: "Last",
     content: "Last-content",
   },
-  {
-    title: "Payment",
-    content: "Payment",
-  },
+  // {
+  //   title: "Payment",
+  //   content: "Payment",
+  // },
 ];
 
+const uploadUrl = process.env.NEXT_PUBLIC_UPLOAD_API_BASE_URL;
+console.log("uploadUrl333", uploadUrl);
+
 function page() {
+    const route = useRouter();
+  
   const [messageApi, contextHolder] = message.useMessage();
   const { token } = theme.useToken();
   const [current, setCurrent] = useState(0);
+
   const [formData, setFormData] = useState({
-    serialNo: "",
+    courseName: "",
+    sessionName: "",
+    batchName: "",
     date: "",
+    image: "",
     candidateName: "",
     fatherName: "",
     motherName: "",
@@ -64,6 +78,10 @@ function page() {
       pg: { subjects: "", board: "", year: "", marks: "" },
       others: { subjects: "", board: "", year: "", marks: "" },
     },
+    place: "",
+    name: "",
+    date: "",
+
     // Next page
     selfAttestedLastResult: [],
     ageProofAdmitCard: [],
@@ -111,10 +129,51 @@ function page() {
     parentGuardianDate: "",
     applicantSignature: "",
     applicantDate: "",
+
+    username: "",
+    password: "",
+  });
+  const [formData2, setFormData2] = useState({
+    form_id: "",
+    fee_structure_info: [],
   });
 
   const [photo, setPhoto] = useState(null);
-  const [signature, setSignature] = useState(null);
+  const [isadmissionPopup, setIsadmissionPopup] = useState(false);
+  const [feesStructure, setFeesStructure] = useState("");
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [enteredAmounts, setEnteredAmounts] = useState({});
+  const [checkedItems, setCheckedItems] = useState({});
+
+  // get Course list
+  const {
+    data: courseList,
+    loading: courseLoading,
+    error: courseError,
+  } = useSWR("api/v1/course/dropdown", getFetcher);
+  if (courseLoading) {
+    return <div>Loading ...</div>;
+  }
+  console.log("courseList", courseList);
+
+  // create Admission
+
+  const {
+    trigger: create,
+    data: dataCreate,
+    error: dataError,
+    isMutating: dataIsloading,
+  } = useSWRMutation("api/v1/admission/create", (url, { arg }) =>
+    postFetcher(url, arg)
+  );
+  const {
+    trigger: create2,
+    // data: dataCreate,
+    // error: dataError,
+    // isMutating: feesIsloading,
+  } = useSWRMutation("api/v1/payment/create-order", (url, { arg }) =>
+    postFetcher(url, arg)
+  );
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -123,12 +182,24 @@ function page() {
       [name]: value,
     }));
   };
-  const handleFileChange = (e) => {
-    const { name, files } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: Array.from(files),
-    }));
+
+  const handleFileChange = (e, name) => {
+    const files = e.target.files;
+
+    console.log("handleFileChange", files);
+
+    uploadFiles({
+      url: `${uploadUrl}api/v1/upload/multiple`,
+      files: files,
+      folder: "admission_doc",
+      onUploading(percent) {},
+      onUploaded(result) {
+        setFormData((prev) => ({
+          ...prev,
+          [name]: Array.from(files),
+        }));
+      },
+    });
   };
 
   const handleEducationChange = (level, field, value) => {
@@ -146,24 +217,36 @@ function page() {
 
   const handleFileUpload = (e, type) => {
     const file = e.target.files[0];
+    console.log("file", file);
+
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
         if (type === "photo") {
+          console.log("e.target.result", e.target.result);
           setPhoto(e.target.result);
-        } else if (type === "signature") {
-          setSignature(e.target.result);
         }
       };
       reader.readAsDataURL(file);
     }
+
+    uploadFiles({
+      url: `${uploadUrl}api/v1/upload/multiple`,
+      files: file,
+      folder: "profile_image",
+      onUploading(percent) {},
+      onUploaded(result) {
+        setFormData((prev) => ({
+          ...prev,
+          image: result[0],
+        }));
+      },
+    });
   };
 
   const removeFile = (type) => {
     if (type === "photo") {
       setPhoto(null);
-    } else if (type === "signature") {
-      setSignature(null);
     }
   };
   const removeFile2 = (fieldName, index) => {
@@ -172,14 +255,156 @@ function page() {
       [fieldName]: prev[fieldName].filter((_, i) => i !== index),
     }));
   };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Form Data:", formData);
-    console.log("Photo:", photo);
-    console.log("Signature:", signature);
-    alert("Form submitted successfully!");
+  const openAdmission = async (src) => {
+    setIsadmissionPopup(true);
   };
+  const closeModal = () => {
+    setIsadmissionPopup(false);
+  };
+
+  const admissionForm = {
+    course_id: formData.courseName,
+    batch_id: formData.batchName,
+    session_id: formData.sessionName,
+    admission_data: JSON.stringify(formData),
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await create(admissionForm);
+      setFeesStructure(response ? response : "");
+      messageApi.open({
+        type: "success",
+        content: response.message,
+      });
+      setFormData({
+        education: {},
+        selfAttestedLastResult: [],
+        ageProofAdmitCard: [],
+        stampSizePhotos: [],
+        addressProof: [],
+      });
+      setFormData2({
+        form_id: response?.data?.form_id,
+        fee_structure_info: response?.data?.fee_structure
+          .filter((fs) => fs.required == true)
+          .map((item) => ({
+            fee_head_id: item.fee_head_id,
+            custom_min_amount: item.min_amount,
+          })),
+      });
+      openAdmission();
+      setCurrent(0);
+    } catch (error) {
+      messageApi.open({
+        type: "error",
+        content: error.response?.data?.message
+          ? error.response?.data?.message
+          : "Try Again",
+      });
+      console.log("Upload Error:", error);
+      // alert("Form submitted successfully!");
+    }
+  };
+
+  const handleChangePayment = (e, item) => {
+    const { checked } = e.target;
+    const id = item.fee_head_id;
+    setCheckedItems((prev) => ({
+      ...prev,
+      [id]: checked,
+    }));
+
+    if (checked) {
+      setFormData2((prev) => {
+        const updatedFeeStructure = prev.fee_structure_info.filter(
+          (fee) => fee.fee_head_id !== id
+        );
+
+        const amount = enteredAmounts[id] ?? item.amount;
+
+        return {
+          ...prev,
+          fee_structure_info: [
+            ...updatedFeeStructure,
+            {
+              fee_head_id: id,
+              custom_min_amount: amount,
+            },
+          ],
+        };
+      });
+    } else {
+      // Remove from fee_structure_info if unchecked
+      setFormData2((prev) => ({
+        ...prev,
+        fee_structure_info: prev.fee_structure_info.filter(
+          (fee) => fee.fee_head_id !== id
+        ),
+      }));
+    }
+  };
+
+  const handleAmountChange = (e, item) => {
+    const value = Number(e.target.value);
+    const id = item.fee_head_id;
+
+    setEnteredAmounts((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
+
+    if (checkedItems[id] ?? item.required) {
+      setFormData2((prev) => {
+        const updatedFeeStructure = prev?.fee_structure_info?.filter(
+          (fee) => fee.fee_head_id !== id
+        );
+
+        return {
+          ...prev,
+          fee_structure_info: [
+            ...updatedFeeStructure,
+            {
+              fee_head_id: id,
+              custom_min_amount: value,
+            },
+          ],
+        };
+      });
+    }
+  };
+
+  const handleSubmit2 = async (e) => {
+    e.preventDefault();
+    console.log("formData2:", formData2);
+    setFormData2({
+      form_id: `${feesStructure?.data?.form_id}`,
+      fee_structure_info: [],
+    });
+
+    try {
+      const response2 = await create2(formData2);
+      console.log("response2", response2);
+
+      messageApi.open({
+        type: "success",
+        content: response2.message,
+      });
+
+      route.push(`${response2?.data?.payment_page_url}`);
+
+     
+    } catch (error) {
+      messageApi.open({
+        type: "error",
+        content: error.response2?.data?.message
+          ? error.response2?.data?.message
+          : "Try Again",
+      });
+      console.log("Upload Error:", error);
+    }
+  };  
 
   const jumpToTop = () => {
     window.scrollTo({
@@ -207,22 +432,23 @@ function page() {
     // border: `1px dashed ${token.colorBorder}`,
     marginTop: 16,
   };
-  const success = () => {
-    messageApi.open({
-      type: "success",
-      content: "This is a success message",
-    });
+
+  const [selectedCourseId, setSelectedCourseId] = useState(null);
+  const handleCourseChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    const courseId = parseInt(e.target.value);
+    setSelectedCourseId(courseId);
   };
 
-  const {
-    data: courseList,
-    loading: courseLoading,
-    error: courseError,
-  } = useSWR("api/v1/course?is_active=true", fetcher);
-  if (courseLoading) {
-    return <div>Loading ...</div>;
-  }
-  console.log("courseList", courseList);
+  const selectedCourse = Array.isArray(courseList?.data)
+    ? courseList?.data?.find((course) => course.id === selectedCourseId)
+    : null;
+
+  console.log("feesStructure", feesStructure);
 
   return (
     <>
@@ -236,6 +462,110 @@ function page() {
           direction="horizontal"
         />
       </div>
+
+      {isadmissionPopup && (
+        <div className="fixed inset-0 bg-gray-500/70 flex items-center justify-center z-50 ">
+          {/* Close Button */}
+          <button
+            className="absolute top-6 right-6 text-white bg-white/20 hover:bg-white/40 p-2 rounded-full transition duration-300"
+            onClick={closeModal}
+          >
+            <XMarkIcon aria-hidden="true" className="size-6" />
+          </button>
+
+          <popup className="max-w-screen-xl mx-auto p-6 bg-white rounded-lg shadow-lg w-11/12 md:w-8/12">
+            <div className="text-center mb-6">
+              <img
+                src="/image/global-logo2.png"
+                alt="Global Technical Institute Logo"
+                className="mx-auto w-[432px] h-auto"
+              />
+            </div>
+            <div className="flex justify-center items-center">
+              <p className="text-2xl text-white p-2 bg-red-500">Note*</p>
+              <p className="text-2xl text-white p-2 bg-red-400">
+                Don't Close or Refreash this page
+              </p>{" "}
+            </div>
+
+            <form onSubmit={handleSubmit2} className="space-y-6">
+              <div className="p-4 bg-gray-100 rounded-lg shadow-sm flex justify-center items-center">
+                <div className="space-y-6">
+                  {/* <div className="text-lg font-bold">
+                    Total Selected Amount: ₹{totalAmount}
+                  </div> */}
+                  {feesStructure?.data?.fee_structure?.map((item) => {
+                    const isAmountEditable = item?.min_amount < item?.amount;
+                    return (
+                      <div
+                        key={item.fee_head_id}
+                        className="flex flex-col gap-1"
+                      >
+                        <div className="flex items-center gap-4">
+                          <input
+                            type="checkbox"
+                            checked={
+                              checkedItems[item?.fee_head_id] ?? item?.required
+                            }
+                            onChange={(e) => {
+                              if (item.required == true) {
+                                message.warning("This");
+                                return;
+                              }
+                              handleChangePayment(e, item);
+                            }}
+                          />
+
+                          <label className="flex-1">
+                            {item.fee_head_name} : ₹{item.amount}
+                          </label>
+
+                          {isAmountEditable && (
+                            <input
+                              type="number"
+                              min={item?.min_amount}
+                              value={enteredAmounts[item.fee_head_id] || ""}
+                              onChange={(e) => handleAmountChange(e, item)}
+                              className="w-32 px-2 py-1 border rounded"
+                            />
+                          )}
+                        </div>
+
+                        {isAmountEditable &&
+                          enteredAmounts[item.fee_head_id] <
+                            item.min_amount && (
+                            <span className="text-red-600 text-sm ml-6">
+                              The minimum amount is ₹{item?.min_amount}
+                            </span>
+                          )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+                <div className="p-4 bg-gray-100 rounded-lg shadow-sm">
+                  <div className="space-x-4">
+                    <div className="flex flex-wrap justify-center font-bold items-center gap-10">
+                      <button className="bg-blue-200 p-4 hover:bg-blue-400 hover:text-gray-100 text-lg rounded-4xl">
+                        <Link href="/login">Cash Payment</Link>
+                      </button>
+
+                      <button
+                        type="submit"
+                        className="bg-blue-200 p-4 hover:bg-blue-400 hover:text-gray-100 text-lg rounded-4xl"
+                      >
+                        Online Payment
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </popup>
+        </div>
+      )}
 
       {/* form body  */}
       <div style={contentStyle}>
@@ -251,19 +581,64 @@ function page() {
                     Choose your Courses
                   </label>
                   <select
-                    name="category"
-                    value={formData.category}
-                    onChange={handleInputChange}
+                    name="courseName"
+                    // value={formData.courseName}
+                    onChange={handleCourseChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
+                    <option value="">Option</option>
                     {courseList?.data?.map((data, index) => (
-                      <div key={index}>
-                       
-                          <option value={`${data?.name}`}>{data?.name}</option>
-                   
-                      </div>
+                      <option key={index} value={`${data?.id}`}>
+                        {data?.course_name}
+                      </option>
                     ))}
                   </select>
+                </div>
+
+                <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 mb-10">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">
+                      Choose your Session
+                    </label>
+                    <select
+                      disabled={
+                        !selectedCourse || !selectedCourse.session.length
+                      }
+                      name="sessionName"
+                      value={formData.sessionName}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Option</option>
+
+                      {selectedCourse &&
+                        selectedCourse?.session?.map((session, index) => (
+                          <option key={index} value={`${session?.session_id}`}>
+                            {session.session_name}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">
+                      Choose your Batch
+                    </label>
+                    <select
+                      name="batchName"
+                      value={formData.batchName}
+                      disabled={!selectedCourse || !selectedCourse.batch.length}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Option</option>
+                      {selectedCourse &&
+                        selectedCourse?.batch?.map((batch, index) => (
+                          <option key={index} value={`${batch?.batch_id}`}>
+                            {batch.month_name}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
                 </div>
 
                 {/* Personal Details */}
@@ -542,7 +917,7 @@ function page() {
                         </tr>
                       </thead>
                       <tbody>
-                        {Object.entries(formData.education).map(
+                        {Object?.entries(formData?.education)?.map(
                           ([level, data]) => (
                             <tr key={level}>
                               <td className="border border-gray-300 p-2 font-start">
@@ -640,6 +1015,9 @@ function page() {
                       </label>
                       <input
                         type="text"
+                        name="place"
+                        value={formData.place}
+                        onChange={handleInputChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
@@ -649,6 +1027,9 @@ function page() {
                       </label>
                       <input
                         type="text"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
@@ -660,6 +1041,9 @@ function page() {
                       </label>
                       <input
                         type="date"
+                        name="date"
+                        value={formData.date}
+                        onChange={handleInputChange}
                         className="w-48 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
@@ -698,14 +1082,16 @@ function page() {
                         <input
                           type="file"
                           name="selfAttestedLastResult"
-                          onChange={handleFileChange}
+                          onChange={(e) =>
+                            handleFileChange(e, "selfAttestedLastResult")
+                          }
                           multiple
                           accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                           className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                         />
-                        {formData.selfAttestedLastResult.length > 0 && (
+                        {formData?.selfAttestedLastResult?.length > 0 && (
                           <div className="mt-2 space-y-1">
-                            {formData.selfAttestedLastResult.map(
+                            {formData?.selfAttestedLastResult?.map(
                               (file, index) => (
                                 <div
                                   key={index}
@@ -738,14 +1124,16 @@ function page() {
                         <input
                           type="file"
                           name="ageProofAdmitCard"
-                          onChange={handleFileChange}
+                          onChange={(e) =>
+                            handleFileChange(e, "ageProofAdmitCard")
+                          }
                           multiple
                           accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                           className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                         />
-                        {formData.ageProofAdmitCard.length > 0 && (
+                        {formData?.ageProofAdmitCard?.length > 0 && (
                           <div className="mt-2 space-y-1">
-                            {formData.ageProofAdmitCard.map((file, index) => (
+                            {formData?.ageProofAdmitCard?.map((file, index) => (
                               <div
                                 key={index}
                                 className="flex items-center justify-between bg-gray-50 p-2 rounded text-sm"
@@ -773,14 +1161,16 @@ function page() {
                         <input
                           type="file"
                           name="addressProof"
-                          onChange={handleFileChange}
+                          onChange={(e) =>
+                            handleFileChange(e, "ageProofAdmitCard")
+                          }
                           multiple
                           accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                           className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                         />
-                        {formData.addressProof.length > 0 && (
+                        {formData?.addressProof?.length > 0 && (
                           <div className="mt-2 space-y-1">
-                            {formData.addressProof.map((file, index) => (
+                            {formData?.addressProof?.map((file, index) => (
                               <div
                                 key={index}
                                 className="flex items-center justify-between bg-gray-50 p-2 rounded text-sm"
@@ -1114,6 +1504,7 @@ function page() {
                           will have to pay a sum of Rs.
                           <input
                             type="number"
+                            readOnly
                             name="admissionFeeAmount"
                             value={formData.admissionFeeAmount}
                             onChange={handleInputChange}
@@ -1121,7 +1512,7 @@ function page() {
                           />
                           /- (Rupees{" "}
                           <span className="test-lg font-bold">
-                            {toWords.convert(formData.admissionFeeAmount)}{" "}
+                            Five Thousand
                           </span>
                           ) only towards Admission Fee for Montessori Teachers'
                           Training course (6 Months) of
@@ -1214,6 +1605,7 @@ function page() {
                           will also have to pay a sum of Rs.
                           <input
                             type="number"
+                            readOnly
                             name="bssRegistrationFee"
                             value={formData.bssRegistrationFee}
                             onChange={handleInputChange}
@@ -1221,7 +1613,7 @@ function page() {
                           />
                           /- (Rupees{" "}
                           <span className="test-lg font-bold">
-                            {toWords.convert(formData.admissionFeeAmount)}{" "}
+                            Five Thousand
                           </span>
                           ) only towards BSS Registration Fee within 3 (Three)
                           months after 6 (Six) months of getting Admission for
@@ -1317,8 +1709,8 @@ function page() {
                     </label>
                     <input
                       type="text"
-                      name="relationshipType2"
-                      value={formData.relationshipType2}
+                      name="username"
+                      value={formData.username}
                       onChange={handleInputChange}
                       placeholder="User Name"
                       className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -1331,8 +1723,8 @@ function page() {
                     </label>
                     <input
                       type="password"
-                      name="relationName2"
-                      value={formData.relationName2}
+                      name="password"
+                      value={formData.password}
                       onChange={handleInputChange}
                       className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Set Your password"
@@ -1341,27 +1733,31 @@ function page() {
                 </div>
               </div>
             )}
+            <div className="mt-[20px] mb-[20px] flex justify-center">
+              {current > 0 && (
+                <Button style={{ margin: "0 8px" }} onClick={() => prev()}>
+                  Previous
+                </Button>
+              )}
+              {current === steps.length - 1 && (
+                <button
+                  className="bg-blue-400 h-8 w-20 rounded text-white"
+                  type="primary"
+                >
+                  Submit
+                </button>
+              )}
+              {current < steps.length - 1 && (
+                <Button type="primary" onClick={() => next()}>
+                  Next
+                </Button>
+              )}
+            </div>
           </form>
         </div>
       </div>
 
-      <div className="mt-[20px] mb-[20px] flex justify-center">
-        {current > 0 && (
-          <Button style={{ margin: "0 8px" }} onClick={() => prev()}>
-            Previous
-          </Button>
-        )}
-        {current === steps.length - 1 && (
-          <Button type="primary" onClick={success}>
-            Submit
-          </Button>
-        )}
-        {current < steps.length - 1 && (
-          <Button type="primary" onClick={() => next()}>
-            Next
-          </Button>
-        )}
-      </div>
+      {/* pre Admission  */}
 
       <Footer />
       <BackToTopButton />

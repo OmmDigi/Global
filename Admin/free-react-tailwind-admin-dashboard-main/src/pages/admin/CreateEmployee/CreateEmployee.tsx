@@ -16,12 +16,31 @@ import {
 } from "../../../api/fatcher";
 import { uploadFiles } from "../../../utils/uploadFile";
 import useSWR, { mutate } from "swr";
+import MultiSelect from "../../../components/form/MultiSelect";
+
 export default function CreateEmployee() {
+  interface FormData {
+    image: string;
+    name: string;
+    joining_date: string;
+    designation: string;
+    email: string;
+    ph_no: string;
+    password: string;
+    category: string;
+    permissions: []; // proper type
+    description: string;
+  }
   const [messageApi, contextHolder] = message.useMessage();
   const [loading, setLoading] = useState<number>();
   const [photo, setPhoto] = useState<string | null>(null);
   const [id, setId] = useState<number>();
-  const [formData, setFormData] = useState({
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePassword = () => {
+    setShowPassword((prev) => !prev);
+  };
+  const [formData, setFormData] = useState<FormData>({
     image: "",
     name: "",
     joining_date: "",
@@ -30,6 +49,7 @@ export default function CreateEmployee() {
     ph_no: "",
     password: "",
     category: "Teacher",
+    permissions: [],
     description: "",
   });
 
@@ -52,14 +72,6 @@ export default function CreateEmployee() {
   } = useSWRMutation("api/v1/users", (url, { arg }) => putFetcher(url, arg));
   console.log("dataUpdate", data);
 
-  // single data for edit
-  const {
-    data: editData,
-    loading: editLoading,
-    error: editError,
-  } = useSWR(`api/v1/users/${id}`, getFetcher);
-
-  // all employee list
   const {
     data: stufflist,
     loading: stuffLoading,
@@ -80,18 +92,27 @@ export default function CreateEmployee() {
     >
   ) => {
     const { name, value } = e.target;
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
+  const handleNameChange = (selected: string[]) => {
+    console.log("handleNameChange wewqe", selected);
+
+    setFormData((prev: any) => ({
+      ...prev,
+      permissions: selected,
+    }));
+  };
+
+  console.log("staates", formData);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setFormData((prev) => ({
-      ...prev,
-      category: "Teacher",
-    }));
+
+    console.log("formData hh", formData);
 
     try {
       const response = await create(formData);
@@ -114,6 +135,7 @@ export default function CreateEmployee() {
         ph_no: "",
         password: "",
         category: "Teacher",
+        permissions: [],
         description: "",
       });
     } catch (error: any) {
@@ -143,7 +165,7 @@ export default function CreateEmployee() {
       reader.readAsDataURL(file);
 
       uploadFiles({
-        url: `${uploadUrl}/api/v1/upload/multiple`,
+        url: `${uploadUrl}api/v1/upload/multiple`,
         files: [file],
         folder: "profile_image",
         onUploading(percent) {
@@ -165,7 +187,7 @@ export default function CreateEmployee() {
     }
   };
 
-  console.log("userData", editData);
+  // console.log("userData", editData);
 
   const handleEdit = async (id: number) => {
     try {
@@ -185,6 +207,7 @@ export default function CreateEmployee() {
         ph_no: userData?.ph_no,
         password: userData?.password,
         category: userData?.category,
+        permissions: userData?.permissions,
         description: userData?.description,
       });
 
@@ -202,6 +225,7 @@ export default function CreateEmployee() {
         type: "success",
         content: response.message,
       });
+      setId(0);
       console.log("Upload Success:", response);
       setPhoto(null);
       setFormData({
@@ -213,6 +237,7 @@ export default function CreateEmployee() {
         ph_no: "",
         password: "",
         category: "Teacher",
+        permissions: [],
         description: "",
       });
     } catch (error: any) {
@@ -223,13 +248,59 @@ export default function CreateEmployee() {
       console.log("Upload Error:", error);
     }
   };
-  
+
   const jumpToTop = () => {
     window.scrollTo({
       top: 0,
       behavior: "smooth",
     });
   };
+  const options = [
+    {
+      name: "Dashboard",
+      id: 1,
+    },
+    {
+      name: "Manage Holidays",
+      id: 2,
+    },
+    {
+      name: "Leave Apply",
+      id: 3,
+    },
+    {
+      name: "Manage Leave",
+      id: 4,
+    },
+    {
+      name: "Courses",
+      id: 5,
+    },
+    {
+      name: "Admission",
+      id: 6,
+    },
+    {
+      name: "Create Employee",
+      id: 7,
+    },
+    {
+      name: "Inventory Manage",
+      id: 8,
+    },
+    {
+      name: "Purchase Record",
+      id: 9,
+    },
+    {
+      name: "Maintenance Record",
+      id: 10,
+    },
+    {
+      name: "Stuff Attandance",
+      id: 11,
+    },
+  ];
 
   return (
     <div>
@@ -290,7 +361,6 @@ export default function CreateEmployee() {
                     )}
                   </div>
                 </div>
-
                 <div>
                   <Label htmlFor="inputTwo">Employee Name</Label>
                   <Input
@@ -302,7 +372,6 @@ export default function CreateEmployee() {
                     placeholder="Employee Name"
                   />
                 </div>
-
                 <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
                   <div>
                     <Label htmlFor="inputTwo">Joining Date</Label>
@@ -350,16 +419,30 @@ export default function CreateEmployee() {
                       placeholder="Phone Number"
                     />
                   </div>
+                </div>
+                <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
                   <div>
                     <Label>Password</Label>
-                    <Input
-                      type="password"
-                      id="inputTwo"
-                      name="password"
-                      onChange={handleChange}
-                      value={formData.password}
-                      placeholder="Password"
-                    />
+                    <div className="grid grid-cols-1 gap-6 xl:grid-cols-[85%_15%]">
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        id="inputTwo"
+                        name="password"
+                        onChange={handleChange}
+                        value={formData.password}
+                        placeholder="Password"
+                      />
+                      <span
+                        onClick={togglePassword}
+                        style={{
+                          cursor: "pointer",
+                          userSelect: "none",
+                          color: "#888",
+                        }}
+                      >
+                        {showPassword ? "Hide" : "Show"}
+                      </span>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm text-start mt-1 dark:text-gray-400 text-gray-700 mb-1">
@@ -369,7 +452,7 @@ export default function CreateEmployee() {
                       type="select"
                       id="inputTwo"
                       name="category"
-                      onChange={handleChange}
+                      onChange={(e) => handleChange(e)}
                       value={formData.category}
                       className="w-full px-3 py-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700 "
                     >
@@ -378,6 +461,20 @@ export default function CreateEmployee() {
                     </select>
                   </div>
                 </div>
+                <div>
+                  <MultiSelect
+                    label="permissions"
+                    id="inputTwo"
+                    options={options}
+                    name="permissions"
+                    onChange={(selected) => handleNameChange(selected)}
+                    value={options.filter((opt: any) =>
+                      formData.permissions.includes(opt.id)
+                    )}
+                    className="w-full px-3 py-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                  />
+                </div>
+
                 <div>
                   <Label>Description</Label>
                   <textarea

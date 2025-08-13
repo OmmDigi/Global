@@ -10,14 +10,13 @@ export default function Home() {
     console.log("token", query);
     const token = query.get("token");
     const category = query.get("category");
+    const permissions = query.get("permissions");
 
     if (token) {
       localStorage.setItem("token", token);
     }
     if (category) localStorage.setItem("category", category);
-
-    console.log("Token:", window.location.search);
-    console.log("Category:", category);
+    if (permissions) localStorage.setItem("permissions", permissions);
   }, []);
 
   return (
@@ -28,12 +27,11 @@ export default function Home() {
       />
       <div className="grid grid-cols-12 gap-4 md:gap-6">
         <div className="col-span-12 space-y-6 xl:col-span-7">
-         
-         <MonthlySalesChart/>
-         <EcommerceMetrics/>
+          <MonthlySalesChart />
+          <EcommerceMetrics />
         </div>
         <div className="col-span-12 xl:col-span-5">
-         <MonthlyTarget/>
+          <MonthlyTarget />
         </div>
 
         {/* <div className="col-span-12">

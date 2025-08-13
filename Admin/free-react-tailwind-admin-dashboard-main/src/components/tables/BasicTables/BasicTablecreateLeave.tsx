@@ -21,8 +21,8 @@ interface IProps {
 
 // Define the table data using the interface
 
-export default function BasicTableSession({
-  sessionList,
+export default function BasicTablecreateLeave({
+  leaveList,
   onEdit,
   onActive,
 }: IProps) {
@@ -33,20 +33,20 @@ export default function BasicTableSession({
     console.log(current, pageSize);
   };
 
-  // const { trigger: deleteUser, isMutating } = useSWRMutation(
-  //   "api/v1/course/session",
-  //   (url, { arg }: { arg: number }) => deleteFetcher(`${url}/${arg}`) // arg contains the id
-  // );
-  // const handleDelete = async (id: number) => {
-  //   try {
-  //     await deleteUser(id);
-  //     message.success("User deleted successfully");
-  //     mutate("api/v1/course/session");
-  //   } catch (error) {
-  //     console.error("Delete failed:", error);
-  //     message.error("Failed to delete user");
-  //   }
-  // };
+  const { trigger: deleteUser, isMutating } = useSWRMutation(
+    "api/v1/leave",
+    (url, { arg }: { arg: number }) => deleteFetcher(`${url}/${arg}`) // arg contains the id
+  );
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteUser(id);
+      message.success("User deleted successfully");
+      mutate("api/v1/leave");
+    } catch (error) {
+      console.error("Delete failed:", error);
+      message.error("Failed to delete user");
+    }
+  };
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
@@ -59,27 +59,33 @@ export default function BasicTableSession({
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Session name
+                Form Date
               </TableCell>
 
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Status
+                To Date
               </TableCell>
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Action
+               Status
+              </TableCell>
+                 <TableCell
+                isHeader
+                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+              >
+               Action
               </TableCell>
             </TableRow>
           </TableHeader>
 
           {/* Table Body */}
           <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-            {sessionList?.data?.map((order: any) => (
+            {leaveList?.data?.map((order: any) => (
               <TableRow key={order.id}>
                 <TableCell className="px-5 py-4 sm:px-6 text-start">
                   <div className="flex items-center gap-3">
@@ -88,37 +94,42 @@ export default function BasicTableSession({
                     </div>
                     <div>
                       <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                        {order.name}
+                        {order.from_date}
                       </span>
                     </div>
                   </div>
                 </TableCell>
-                <TableCell>
-                  <div className="pl-4">
-                    <Switch
-                      label=""
-                      defaultChecked={order.is_active}
-                      onChange={(defaultChecked) =>
-                        onActive(defaultChecked, order.id)
-                      }
-                    />
+                <TableCell className="px-5 py-4 sm:px-6 text-start">
+                  <div className="flex items-center gap-3">
+                    <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                      {order.to_date}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell className="px-5 py-4 sm:px-6 text-start">
+                  <div className="flex items-center gap-3">
+                    <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                      {order.status   }
+                    </span>
                   </div>
                 </TableCell>
 
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   <div className="flex items-center gap-2">
-                    <button
+                    {/* <button
                       onClick={() => onEdit(order.id)}
                       className="text-blue-500 hover:underline"
                     >
                       Edit
-                    </button>
-                    {/* <button
-                      onClick={() => handleDelete(order.id)}
-                      className="text-red-500 hover:underline"
-                    >
-                      Delete
                     </button> */}
+                    {order?.status == "Pending" ? (
+                      <button
+                        onClick={() => handleDelete(order.id)}
+                        className="text-red-500 hover:underline"
+                      >
+                        Delete
+                      </button>
+                    ) : order?.status == "Approved" ? "😊" : "😢"}
                   </div>
                 </TableCell>
               </TableRow>

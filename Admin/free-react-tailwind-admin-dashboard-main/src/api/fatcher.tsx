@@ -7,7 +7,7 @@ const API = axios.create({
   headers: {
     "Content-Type": "application/json",
     Authorization:
-      typeof window != "undefined" ? localStorage.getItem("token") : "",
+      typeof window != "undefined" ?  localStorage.getItem("token") : "",
   },
 });
 
@@ -39,9 +39,18 @@ export const putFetcher = async (url: string, data: object) => {
   const response = await API.put(url, data);
   return response.data;
 };
+// PATCH
+export const patchFetcher = async (url: string, data: object) => {
+  const response = await API.patch(url, data);
+  return response.data;
+};
 
 // DELETE
 export const deleteFetcher = async (url: string) => {
   const response = await API.delete(url);
   return response.data;
 };
+
+//  const permission = localStorage.getItem("permissions", permissions)
+// console.log("sadasdasdsadasd",permission);
+

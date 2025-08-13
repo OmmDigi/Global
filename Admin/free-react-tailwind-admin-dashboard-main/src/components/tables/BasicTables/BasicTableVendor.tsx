@@ -21,7 +21,7 @@ interface IProps {
 
 // Define the table data using the interface
 
-export default function BasicTableSession({
+export default function BasicTableVendor({
   sessionList,
   onEdit,
   onActive,

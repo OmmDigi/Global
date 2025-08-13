@@ -28,9 +28,7 @@ const BasicTableCourses: React.FC<IProps> = ({ courseList, onEdit, onActive, }) 
   ) => {
     console.log(current, pageSize);
   };
-  const handleSwitchChange = (checked: boolean) => {
-    console.log("Switch is now:", checked ? "ON" : "OFF");
-  };
+ 
 
   // for delete
   const { trigger: deleteUser, isMutating } = useSWRMutation(
@@ -170,18 +168,11 @@ const BasicTableCourses: React.FC<IProps> = ({ courseList, onEdit, onActive, }) 
           </TableBody>
         </Table>
 
-        <div>
-          <Pagination
-            showSizeChanger
-            onChange={onShowSizeChange}
-            defaultCurrent={1}
-            total={500}
-            // colorPrimaryHover={'#qwe23'}
-          />
-        </div>
+       
       </div>
     </div>
   );
 };
 
 export default BasicTableCourses;
+

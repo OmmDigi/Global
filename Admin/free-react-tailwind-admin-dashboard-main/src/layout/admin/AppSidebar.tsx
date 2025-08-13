@@ -8,7 +8,6 @@ import { BiPurchaseTagAlt } from "react-icons/bi";
 import { GrHostMaintenance } from "react-icons/gr";
 import { PiOfficeChairDuotone } from "react-icons/pi";
 
-// Assume these icons are imported from an icon library
 import {
   BoxCubeIcon,
   CalenderIcon,
@@ -28,121 +27,114 @@ type NavItem = {
   name: string;
   icon: React.ReactNode;
   path?: string;
-  subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
+  id: number;
+  subItems?: {
+    name: string;
+    path: string;
+    pro?: boolean;
+    new?: boolean;
+    id: number;
+  }[];
 };
+
+// const numbers = [4,5,6];
+
+// console.log("permissions", numbers);
 
 const navItems: NavItem[] = [
   {
-    icon: <GridIcon />,
     name: "Dashboard",
-    path: "/Admin",
-    // subItems: [{ name: "Ecommerce", path: "/Admin", pro: false }],
+    id: 1,
+    icon: <GridIcon />,
+    path: "/",
   },
-  // {
-  //   icon: <CalenderIcon />,
-  //   name: "Calendar",
-  //   path: "/calendar",
-  // },
   {
-    name: "Notice",
+    name: "Manage Holidays",
+    id: 2,
     icon: <ListIcon />,
-    path: "/form-elements-Stuff-Student",
+    path: "/manageHolidays",
+  },
+  {
+    name: "Leave Apply",
+    id: 3,
+    icon: <ListIcon />,
+    path: "/createLeave",
+  },
+  {
+    name: "Manage Leave",
+    id: 4,
+    icon: <ListIcon />,
+    path: "/manageLeave",
   },
   {
     name: "Courses",
+    id: 5,
     icon: <TbSchool />,
     path: "/courses",
-     subItems: [
-      { name: "Create Courses", path: "/courses", pro: false },
-      { name: "Create Session", path: "/session", pro: false },
-      { name: "Create Batch", path: "/batch", pro: false },
-
-      
+    subItems: [
+      { name: "Create Fees Head", id: 5.1, path: "/feeHead", pro: false },
+      { name: "Create Session", id: 5.2, path: "/session", pro: false },
+      { name: "Create Courses", id: 5.3, path: "/courses", pro: false },
+      { name: "Create Batch", id: 5.4, path: "/batch", pro: false },
     ],
   },
   {
     name: "Admission",
+    id: 6,
     icon: <FaUniversity />,
-    path: "/admission",
+    path: "/admissionAdmin",
   },
   {
     name: "Create Employee",
+    id: 7,
     icon: <MdWorkOutline />,
     path: "/create-employee",
   },
   {
     name: "Inventory Manage",
+    id: 8,
     icon: <MdOutlineInventory />,
     path: "/inventory-manage",
+    subItems: [
+      {
+        name: "Inventory Manage",
+        id: 5.1,
+        path: "/inventory-manage",
+        pro: false,
+      },
+      { name: "Vendor Manage", id: 5.1, path: "/vendorManage", pro: false },
+    ],
   },
   {
     name: "Purchase Record",
+    id: 9,
     icon: <BiPurchaseTagAlt />,
     path: "/purchase-record",
   },
   {
     name: "Maintenance Record",
+    id: 10,
     icon: <GrHostMaintenance />,
     path: "/maintenance-record",
   },
   {
     name: "Stuff Attandance",
+    id: 11,
     icon: <PiOfficeChairDuotone />,
     path: "/stuff-attandance",
   },
-
-  // {
-  //   name: "Tables",
-  //   icon: <TableIcon />,
-  //   subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
-  // },
-  // {
-  //   name: "Pages",
-  //   icon: <PageIcon />,
-  //   subItems: [
-  //     { name: "Blank Page", path: "/blank", pro: false },
-  //     { name: "404 Error", path: "/error-404", pro: false },
-  //   ],
-  // },
 ];
 
 const othersItems: NavItem[] = [
   {
     icon: <UserCircleIcon />,
+    id: 12,
     name: "User Profile",
     path: "/profile",
   },
-  // {
-  //   icon: <PieChartIcon />,
-  //   name: "Charts",
-  //   subItems: [
-  //     { name: "Line Chart", path: "/line-chart", pro: false },
-  //     { name: "Bar Chart", path: "/bar-chart", pro: false },
-  //   ],
-  // },
-  // {
-  //   icon: <BoxCubeIcon />,
-  //   name: "UI Elements",
-  //   subItems: [
-  //     { name: "Alerts", path: "/alerts", pro: false },
-  //     { name: "Avatar", path: "/avatars", pro: false },
-  //     { name: "Badge", path: "/badge", pro: false },
-  //     { name: "Buttons", path: "/buttons", pro: false },
-  //     { name: "Images", path: "/images", pro: false },
-  //     { name: "Videos", path: "/videos", pro: false },
-  //   ],
-  // },
-
-
-  // {
-  //   icon: <PlugInIcon />,
-  //   name: "Authentication",
-  //   subItems: [
-  //     { name: "Sign In", path: "/signin", pro: false },
-  //     { name: "Sign Up", path: "/signup", pro: false },
-  //   ],
-  // },
 ];
+
+// console.log("filteredNavItems", filteredNavItems);
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
@@ -156,17 +148,24 @@ const AppSidebar: React.FC = () => {
     {}
   );
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
-
+  const [control, setControl] = useState([]);
   // const isActive = (path: string) => location.pathname === path;
   const isActive = useCallback(
     (path: string) => location.pathname === path,
     [location.pathname]
   );
 
+  const permission = localStorage.getItem("permissions");
+  const numbers = permission?.split(",")?.map(Number);
+  const filteredNavItems = navItems.filter((item) =>
+    numbers?.includes(item.id)
+  );
+  console.log("controlqq", filteredNavItems);
+
   useEffect(() => {
     let submenuMatched = false;
     ["main", "others"].forEach((menuType) => {
-      const items = menuType === "main" ? navItems : othersItems;
+      const items = menuType === "main" ? filteredNavItems : othersItems;
       items.forEach((nav, index) => {
         if (nav.subItems) {
           nav.subItems.forEach((subItem) => {
@@ -180,7 +179,7 @@ const AppSidebar: React.FC = () => {
           });
         }
       });
-    });
+    }, []);
 
     if (!submenuMatched) {
       setOpenSubmenu(null);
@@ -393,7 +392,7 @@ const AppSidebar: React.FC = () => {
                   <HorizontaLDots className="size-6" />
                 )}
               </h2>
-              {renderMenuItems(navItems, "main")}
+              {renderMenuItems(filteredNavItems, "main")}
             </div>
             <div className="">
               <h2

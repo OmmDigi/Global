@@ -7,6 +7,15 @@ import BasicTableAdmission from "../../../components/tables/BasicTables/BasicTab
 import { Button, message, Steps, theme } from "antd";
 import { Minus, Plus, Upload, X } from "lucide-react";
 import { ToWords } from "to-words";
+import useSWR from "swr";
+import {
+  getFetcher,
+  postFetcher,
+  putFetcher,
+  uploadUrl,
+} from "../../../api/fatcher";
+import useSWRMutation from "swr/mutation";
+import { uploadFiles } from "../../../utils/uploadFile";
 
 const toWords = new ToWords();
 const steps = [
@@ -24,17 +33,20 @@ const steps = [
   },
 ];
 
-export default function Admission() {
+export default function AdmissionAdmin() {
   const [messageApi, contextHolder] = message.useMessage();
   const { token } = theme.useToken();
   const [current, setCurrent] = useState(0);
   const [photo, setPhoto] = useState(null);
-  const [signature, setSignature] = useState(null);
   const [montessoriTeachers, setMontessoriTeachers] = useState(false);
-
+  const [id, setId] = useState<number>();
+  const [editedFormId, setEditedFormId] = useState<number>(-1);
   const [formData, setFormData] = useState({
-    serialNo: "",
+    courseName: "",
+    sessionName: "",
+    batchName: "",
     date: "",
+    image: "",
     candidateName: "",
     fatherName: "",
     motherName: "",
@@ -56,6 +68,10 @@ export default function Admission() {
       pg: { subjects: "", board: "", year: "", marks: "" },
       others: { subjects: "", board: "", year: "", marks: "" },
     },
+    place: "",
+    name: "",
+    date: "",
+
     // Next page
     selfAttestedLastResult: [],
     ageProofAdmitCard: [],
@@ -66,7 +82,8 @@ export default function Admission() {
     declarationAccepted: false,
 
     // Signature section
-
+    applicantSignature: "",
+    applicantDate: "",
     guardianSignature: "",
     guardianDate: "",
 
@@ -100,9 +117,53 @@ export default function Admission() {
     // Signatures and Dates
     parentGuardianSignature: "",
     parentGuardianDate: "",
-    applicantSignature: "",
-    applicantDate: "",
+
+    username: "",
+    password: "",
   });
+
+  // get Course list
+  const {
+    data: courseList,
+    loading: courseLoading,
+    error: courseError,
+  } = useSWR("api/v1/course/dropdown", getFetcher);
+  if (courseLoading) {
+    return <div>Loading ...</div>;
+  }
+  console.log("courseList", courseList);
+
+  // get Admission list
+  const {
+    data: admissionlist,
+    loading: admissionLoading,
+    error: admissionError,
+    mutate,
+  } = useSWR("api/v1/admission", getFetcher);
+  if (admissionLoading) {
+    console.log("loading", admissionLoading);
+  }
+
+  console.log("admissionlist", admissionlist);
+
+  const {
+    trigger: create,
+    data: dataCreate,
+    error: dataError,
+    isMutating: dataIsloading,
+  } = useSWRMutation("api/v1/admission/create", (url, { arg }) =>
+    postFetcher(url, arg)
+  );
+
+  // update course
+  const {
+    trigger: update,
+    data,
+    error,
+    isMutating,
+  } = useSWRMutation("api/v1/admission/form", (url, { arg }) =>
+    putFetcher(url, arg)
+  );
 
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -114,14 +175,23 @@ export default function Admission() {
     }));
   };
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, files } = e.target;
-    if (files) {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: Array.from(files),
-      }));
-    }
+  const handleFileChange = (e, name) => {
+    const files = e.target.files;
+
+    console.log("handleFileChange", files);
+
+    uploadFiles({
+      url: `${uploadUrl}api/v1/upload/multiple`,
+      files: files,
+      folder: "admission_doc",
+      onUploading(percent) {},
+      onUploaded(result) {
+        setFormData((prev) => ({
+          ...prev,
+          [name]: Array.from(files),
+        }));
+      },
+    });
   };
 
   const handleEducationChange = (
@@ -141,30 +211,38 @@ export default function Admission() {
     }));
   };
 
-  const handleFileUpload = (
-    e: ChangeEvent<HTMLInputElement>,
-    type: "photo" | "signature"
-  ) => {
-    const file = e.target.files?.[0];
+  const handleFileUpload = (e, type) => {
+    const file = e.target.files[0];
+    console.log("file", file);
+
     if (file) {
       const reader = new FileReader();
-      reader.onload = (event: ProgressEvent<FileReader>) => {
-        const result = event.target?.result as string;
+      reader.onload = (e) => {
         if (type === "photo") {
-          setPhoto(result);
-        } else if (type === "signature") {
-          setSignature(result);
+          console.log("e.target.result", e.target.result);
+          setPhoto(e.target.result);
         }
       };
       reader.readAsDataURL(file);
+      console.log("uploadUrl", uploadUrl);
+
+      uploadFiles({
+        url: `${uploadUrl}api/v1/upload/multiple`,
+        files: file,
+        folder: "profile_image",
+        onUploaded(result) {
+          setFormData((prev) => ({
+            ...prev,
+            image: result[0],
+          }));
+        },
+      });
     }
   };
 
-  const removeFile = (type: "photo" | "signature") => {
+  const removeFile = (type: "photo") => {
     if (type === "photo") {
       setPhoto(null);
-    } else if (type === "signature") {
-      setSignature(null);
     }
   };
 
@@ -175,14 +253,102 @@ export default function Admission() {
     }));
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setMontessoriTeachers(true);
+  const admissionForm = {
+    course_id: formData.courseName,
+    batch_id: formData.batchName,
+    session_id: formData.sessionName,
+    admission_data: JSON.stringify(formData),
+  };
 
-    console.log("Form Data:", formData);
-    console.log("Photo:", photo);
-    console.log("Signature:", signature);
-    alert("Form submitted successfully!");
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      const response = await create(admissionForm);
+      messageApi.open({
+        type: "success",
+        content: response.message,
+      });
+
+      if (response.success === true) {
+        setFormData({
+          education: {},
+          selfAttestedLastResult: [],
+          ageProofAdmitCard: [],
+          stampSizePhotos: [],
+          addressProof: [],
+        });
+      }
+      setCurrent(0);
+    } catch (error) {
+      messageApi.open({
+        type: "error",
+        content: error.response?.data?.message
+          ? error.response?.data?.message
+          : "Try Again",
+      });
+      console.log("Upload Error:", error);
+      // alert("Form submitted successfully!");
+    }
+  };
+
+  const handleEdit = async (id: number) => {
+    try {
+      setId(id);
+      jumpToTop();
+      setMontessoriTeachers(true);
+      const response = await getFetcher(`api/v1/admission/form/${id}`);
+      const userData = JSON.parse(response?.data?.admission_details ?? "{}");
+      console.log("userDataform", userData);
+      const tempObj: any = {};
+
+      Object.entries(userData).forEach(([key, value]) => {
+        tempObj[key] = value;
+      });
+      //  setCurrent(0);
+      setFormData(tempObj);
+      setEditedFormId(response?.data?.form_id);
+      setSelectedCourseId(userData?.courseName);
+      // alert(typeof userData?.courseName);
+      // alert(userData?.courseName);
+
+      console.log("Edit data loaded:", userData);
+    } catch (error) {
+      console.error("Failed to fetch user data for edit:", error);
+    }
+  };
+
+  const admissionFormUpdate = {
+    form_id: id,
+    admission_data: JSON.stringify(formData),
+  };
+  const handleUpdate = async () => {
+    try {
+      const response = await update(admissionFormUpdate);
+      messageApi.open({
+        type: "success",
+        content: response.message,
+      });
+      mutate(`api/v1/course/dropdown?limit-1`);
+      setId(0);
+      setMontessoriTeachers(false);
+      setCurrent(0);
+
+      setFormData({
+        education: {},
+        selfAttestedLastResult: [],
+        ageProofAdmitCard: [],
+        stampSizePhotos: [],
+        addressProof: [],
+      });
+    } catch (error: any) {
+      messageApi.open({
+        type: "error",
+        content: error.response?.data?.message
+          ? error.response?.data?.message
+          : "Try Again",
+      });
+      console.log("Upload Error:", error);
+    }
   };
 
   const handleTeacherShow = () => {
@@ -209,7 +375,6 @@ export default function Admission() {
     setCurrent(current - 1);
   };
 
-  const items = steps.map((item) => ({ key: item.title, title: item.title }));
   const contentStyle = {
     // lineHeight: "260px",
     textAlign: "center",
@@ -219,14 +384,21 @@ export default function Admission() {
     border: `1px dashed ${token.colorBorder}`,
     marginTop: 16,
   };
-  const success = () => {
-    setMontessoriTeachers(false);
-    setCurrent(0);
-    messageApi.open({
-      type: "success",
-      content: "This is a success message",
-    });
+  const [selectedCourseId, setSelectedCourseId] = useState(null);
+
+  const handleCourseChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    const courseId = parseInt(e.target.value);
+    setSelectedCourseId(courseId);
   };
+
+  const selectedCourse = Array.isArray(courseList?.data)
+    ? courseList?.data?.find((course) => course.id == selectedCourseId)
+    : null;
 
   return (
     <div>
@@ -269,67 +441,101 @@ export default function Admission() {
                   />
                 </div> */}
 
-                <div style={{ ...contentStyle }}>
-                  <div className="max-w-4xl mx-auto p-6 bg-gray-100  dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700">
+                {/* form body  */}
+                <div style={contentStyle}>
+                  <div className="max-w-4xl mx-auto p-6 bg-white">
                     {/* Header Section */}
 
-                    <form
-                      onSubmit={handleSubmit}
-                      className="space-y-6 bg-gray-100 cursor-not-allowed dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700"
-                    >
+                    <form onSubmit={handleSubmit} className="space-y-6">
                       {/* Serial No and Date */}
                       {current === 0 && (
                         <div>
-                          <div className="w-12/12 pr-20 pl-20 mb-4">
-                            <label className="block text-lg font-bold dark:text-gray-400 text-gray-700 mb-1">
+                          <div className="w-12/12  mb-4">
+                            <label className="block text-lg font-bold text-gray-700 mb-1">
                               Choose your Courses
                             </label>
                             <select
-                              name="category"
-                              value={formData.category}
-                              onChange={handleInputChange}
+                              key={editedFormId + "courseName"}
+                              name="courseName"
+                              disabled={id ? true : false}
+                              defaultValue={formData?.courseName}
+                              // value={formData.courseName}
+                              onChange={handleCourseChange}
                               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
-                              <option value="">Select</option>
-                              <option value="teacher-training">
-                                Teacher Training
-                              </option>
-                              <option value="nursing-training">
-                                Nursing Training
-                              </option>
-                              <option value="lab-technicion-training">
-                                Lab Technicion Training
-                              </option>
-                              <option value="ECG-technicion-training">
-                                ECG Technicion Training
-                              </option>
-                              <option value="physiotherapy-training">
-                                Physiotherapy Training
-                              </option>
-                              <option value="OT-technicion-training">
-                                OT Technicion Training
-                              </option>
-                              <option value="X-Ray-&-imaging-technology">
-                                X-Ray & Imaging Technology
-                              </option>
-                              <option value="CMS-&-ED-training">
-                                CMS & ED Training
-                              </option>
+                              <option value="">Option</option>
+                              {courseList?.data?.map((data, index) => (
+                                <option key={index} value={`${data?.id}`}>
+                                  {data?.course_name}
+                                </option>
+                              ))}
                             </select>
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 mb-10">
+                            <div>
+                              <label className="block text-sm font-bold text-gray-700 mb-1">
+                                Choose your Session
+                              </label>
+                              <select
+                                key={editedFormId + "sessionName"}
+                                name="sessionName"
+                                disabled={id ? true : false}
+                                defaultValue={formData.sessionName}
+                                onChange={handleInputChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              >
+                                <option value="">Option</option>
+
+                                {selectedCourse?.session?.map(
+                                  (session, index) => (
+                                    <option
+                                      key={index}
+                                      value={`${session?.session_id}`}
+                                    >
+                                      {session.session_name}
+                                    </option>
+                                  )
+                                )}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-bold text-gray-700 mb-1">
+                                Choose your Batch
+                              </label>
+                              <select
+                                key={editedFormId + "batchName"}
+                                name="batchName"
+                                disabled={id ? true : false}
+                                defaultValue={formData.batchName}
+                                onChange={handleInputChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              >
+                                <option value="">Option</option>
+                                {selectedCourse?.batch?.map((batch, index) => (
+                                  <option
+                                    key={index}
+                                    value={`${batch?.batch_id}`}
+                                  >
+                                    {batch.month_name}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
                           </div>
 
                           {/* Personal Details */}
                           <div className=" border-gray-300 p-4">
-                            <h2 className="text-lg font-semibold mb-4 bg-gray-100  dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700">
+                            <h2 className="text-lg font-semibold mb-4 bg-gray-100 p-2">
                               Personal Details
                             </h2>
 
                             <div className="grid grid-cols-1 gap-4">
-                              <div className="grid grid-cols-3 gap-4">
+                              <div className="grid grid-cols-1 md:grid-cols-3  gap-4">
                                 <div></div>
                                 <div></div>
                                 <div className="ml-4 flex  justify-center">
-                                  <div className="w-32 h-40 border-2 border-gray-400 flex flex-col items-center justify-center bg-gray-100  dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700">
+                                  <div className="w-32 h-40 border-2 border-gray-400 flex flex-col items-center justify-center bg-gray-50">
                                     {photo ? (
                                       <div className="relative w-full h-full">
                                         <img
@@ -372,7 +578,7 @@ export default function Admission() {
                                 </div>
 
                                 <div>
-                                  <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-1">
+                                  <label className="block text-sm text-start text-gray-700 mb-1">
                                     Candidate's Name
                                   </label>
                                   <input
@@ -385,7 +591,7 @@ export default function Admission() {
                                 </div>
 
                                 <div>
-                                  <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-1">
+                                  <label className="block text-sm text-start text-gray-700 mb-1">
                                     Father's Name
                                   </label>
                                   <input
@@ -398,7 +604,7 @@ export default function Admission() {
                                 </div>
 
                                 <div>
-                                  <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-1">
+                                  <label className="block text-sm text-start text-gray-700 mb-1">
                                     Mother's Name
                                   </label>
                                   <input
@@ -411,7 +617,7 @@ export default function Admission() {
                                 </div>
 
                                 <div>
-                                  <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-1">
+                                  <label className="block text-sm text-start text-gray-700 mb-1">
                                     Guardian's Name
                                   </label>
                                   <input
@@ -424,7 +630,7 @@ export default function Admission() {
                                 </div>
 
                                 <div>
-                                  <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-1">
+                                  <label className="block text-sm text-start text-gray-700 mb-1">
                                     Address
                                   </label>
                                   <textarea
@@ -439,7 +645,7 @@ export default function Admission() {
 
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                  <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-1">
+                                  <label className="block text-sm text-start text-gray-700 mb-1">
                                     Phone
                                   </label>
                                   <input
@@ -451,7 +657,7 @@ export default function Admission() {
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-1">
+                                  <label className="block text-sm text-start text-gray-700 mb-1">
                                     Mobile
                                   </label>
                                   <input
@@ -464,9 +670,9 @@ export default function Admission() {
                                 </div>
                               </div>
 
-                              <div className="grid grid-cols-3 gap-4">
+                              <div className="grid grid-cols-1 md:grid-cols-3  gap-4">
                                 <div>
-                                  <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-1">
+                                  <label className="block text-sm text-start text-gray-700 mb-1">
                                     Sex
                                   </label>
                                   <select
@@ -481,7 +687,7 @@ export default function Admission() {
                                   </select>
                                 </div>
                                 <div>
-                                  <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-1">
+                                  <label className="block text-sm text-start text-gray-700 mb-1">
                                     Date of Birth
                                   </label>
                                   <input
@@ -493,7 +699,7 @@ export default function Admission() {
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-1">
+                                  <label className="block text-sm text-start text-gray-700 mb-1">
                                     Blood Group
                                   </label>
                                   <input
@@ -506,9 +712,9 @@ export default function Admission() {
                                 </div>
                               </div>
 
-                              <div className="grid grid-cols-3 gap-4">
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
-                                  <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-1">
+                                  <label className="block text-sm text-start text-gray-700 mb-1">
                                     Category
                                   </label>
                                   <select
@@ -525,7 +731,7 @@ export default function Admission() {
                                   </select>
                                 </div>
                                 <div>
-                                  <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-1">
+                                  <label className="block text-sm text-start text-gray-700 mb-1">
                                     Person with Disability
                                   </label>
                                   <select
@@ -540,7 +746,7 @@ export default function Admission() {
                                   </select>
                                 </div>
                                 <div>
-                                  <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-1">
+                                  <label className="block text-sm text-start text-gray-700 mb-1">
                                     Monthly Income (in Rupees)
                                   </label>
                                   <input
@@ -554,7 +760,7 @@ export default function Admission() {
                               </div>
 
                               <div>
-                                <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-1">
+                                <label className="block text-sm text-start text-gray-700 mb-1">
                                   Languages Known
                                 </label>
                                 <input
@@ -570,14 +776,14 @@ export default function Admission() {
 
                           {/* Education Qualification */}
                           <div className="border-2 border-gray-300 p-4">
-                            <h2 className="text-lg font-semibold mb-4 bg-gray-100  dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700">
+                            <h2 className="text-lg font-semibold mb-4 bg-gray-100 p-2">
                               Education Qualification
                             </h2>
 
                             <div className="overflow-x-auto">
                               <table className="w-full border-collapse border border-gray-300">
                                 <thead>
-                                  <tr className="bg-gray-100  dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700">
+                                  <tr className="bg-gray-100">
                                     <th className="border border-gray-300 p-2 text-left">
                                       Name of Examination
                                     </th>
@@ -596,7 +802,7 @@ export default function Admission() {
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {Object.entries(formData.education).map(
+                                  {Object?.entries(formData?.education)?.map(
                                     ([level, data]) => (
                                       <tr key={level}>
                                         <td className="border border-gray-300 p-2 font-start">
@@ -676,10 +882,10 @@ export default function Admission() {
 
                           {/* Declaration and Signature */}
                           <div className="border-2 border-gray-300 p-4 text-center">
-                            <h2 className="text-lg font-semibold mb-4 bg-gray-100  dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700">
+                            <h2 className="text-lg font-semibold mb-4 bg-gray-100 p-2">
                               Declaration
                             </h2>
-                            <p className="text-sm dark:text-gray-400 text-gray-700 mb-4">
+                            <p className="text-sm text-gray-700 mb-4">
                               I hereby declare that the information provided by
                               me is true and subject to verification by G.T.I. I
                               hereby acknowledge that I have read and understood
@@ -690,31 +896,40 @@ export default function Admission() {
 
                             <div className="grid grid-cols-2 gap-8">
                               <div>
-                                <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-1">
+                                <label className="block text-sm text-start text-gray-700 mb-1">
                                   Place
                                 </label>
                                 <input
                                   type="text"
+                                  name="place"
+                                  value={formData.place}
+                                  onChange={handleInputChange}
                                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                               </div>
                               <div>
-                                <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-1">
+                                <label className="block text-sm text-start text-gray-700 mb-1">
                                   Name
                                 </label>
                                 <input
                                   type="text"
+                                  name="name"
+                                  value={formData.name}
+                                  onChange={handleInputChange}
                                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                               </div>
                             </div>
                             <div className="grid grid-cols-2 gap-8">
                               <div className="mt-4">
-                                <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-1">
+                                <label className="block text-sm text-start text-gray-700 mb-1">
                                   Date
                                 </label>
                                 <input
                                   type="date"
+                                  name="date"
+                                  value={formData.date}
+                                  onChange={handleInputChange}
                                   className="w-48 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                               </div>
@@ -727,41 +942,46 @@ export default function Admission() {
 
                       {/* Submit Button */}
                       {/* <div className="text-center">
-              <button
-                type="submit"
-                className="bg-blue-600 text-white px-8 py-3 rounded-md font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                Submit Application
-              </button>
-            </div> */}
+                            <button
+                              type="submit"
+                              className="bg-blue-600 text-white px-8 py-3 rounded-md font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                              Submit Application
+                            </button>
+                          </div> */}
                       {current === 1 && (
-                        <div className="max-w-4xl mx-auto p-6  min-h-screen">
+                        <div className="max-w-4xl mx-auto   min-h-screen">
                           <div className="space-y-6">
                             {/* Header - Placeholder for logo */}
 
                             {/* Documents Section */}
-                            <div className="bg-gray-100  dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700 p-6 rounded-lg ">
+                            <div className="bg-white p-6 rounded-lg ">
                               <h2 className="text-lg font-semibold mb-4">
                                 Documents to be enclosed with the application
                               </h2>
 
-                              <div className="grid grid-cols-2 gap-4">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                  <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-2">
+                                  <label className="block text-sm text-start text-gray-700 mb-2">
                                     Self attested copies of last result
                                   </label>
                                   <input
                                     type="file"
                                     name="selfAttestedLastResult"
-                                    onChange={handleFileChange}
+                                    onChange={(e) =>
+                                      handleFileChange(
+                                        e,
+                                        "selfAttestedLastResult"
+                                      )
+                                    }
                                     multiple
                                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                                     className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                   />
-                                  {formData.selfAttestedLastResult.length >
+                                  {formData?.selfAttestedLastResult?.length >
                                     0 && (
                                     <div className="mt-2 space-y-1">
-                                      {formData.selfAttestedLastResult.map(
+                                      {formData?.selfAttestedLastResult?.map(
                                         (file, index) => (
                                           <div
                                             key={index}
@@ -790,20 +1010,22 @@ export default function Admission() {
                                 </div>
 
                                 <div>
-                                  <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-2">
+                                  <label className="block text-sm text-start text-gray-700 mb-2">
                                     Self Attested copies of Age Proof
                                   </label>
                                   <input
                                     type="file"
                                     name="ageProofAdmitCard"
-                                    onChange={handleFileChange}
+                                    onChange={(e) =>
+                                      handleFileChange(e, "ageProofAdmitCard")
+                                    }
                                     multiple
                                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                                     className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                   />
-                                  {formData.ageProofAdmitCard.length > 0 && (
+                                  {formData?.ageProofAdmitCard?.length > 0 && (
                                     <div className="mt-2 space-y-1">
-                                      {formData.ageProofAdmitCard.map(
+                                      {formData?.ageProofAdmitCard?.map(
                                         (file, index) => (
                                           <div
                                             key={index}
@@ -832,20 +1054,22 @@ export default function Admission() {
                                 </div>
 
                                 <div>
-                                  <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-2">
+                                  <label className="block text-sm text-start text-gray-700 mb-2">
                                     Address Proof
                                   </label>
                                   <input
                                     type="file"
                                     name="addressProof"
-                                    onChange={handleFileChange}
+                                    onChange={(e) =>
+                                      handleFileChange(e, "ageProofAdmitCard")
+                                    }
                                     multiple
                                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                                     className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                   />
-                                  {formData.addressProof.length > 0 && (
+                                  {formData?.addressProof?.length > 0 && (
                                     <div className="mt-2 space-y-1">
-                                      {formData.addressProof.map(
+                                      {formData?.addressProof?.map(
                                         (file, index) => (
                                           <div
                                             key={index}
@@ -876,12 +1100,12 @@ export default function Admission() {
                             </div>
 
                             {/* Declaration Section */}
-                            <div className="bg-gray-100  dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700 p-6 rounded-lg shadow-sm">
+                            <div className="bg-white p-6 rounded-lg shadow-sm">
                               <h2 className="text-lg font-semibold mb-4">
                                 Declaration
                               </h2>
 
-                              <div className="text-sm dark:text-gray-400 text-gray-700 mb-4 leading-relaxed">
+                              <div className="text-sm text-gray-700 mb-4 leading-relaxed">
                                 I hereby declare that all the particulars stated
                                 in this application form are true to the best of
                                 my knowledge and belief. In the event of
@@ -914,21 +1138,21 @@ export default function Admission() {
                                   onChange={handleInputChange}
                                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                                 />
-                                <label className="text-sm dark:text-gray-400 text-gray-700">
+                                <label className="text-sm text-gray-700">
                                   I accept the above declaration
                                 </label>
                               </div>
                             </div>
 
                             {/* Signature Section */}
-                            <div className="bg-gray-100  dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700 p-6 rounded-lg shadow-sm">
+                            <div className="bg-white p-6 rounded-lg shadow-sm">
                               <h2 className="text-lg font-semibold mb-4">
                                 Signatures
                               </h2>
 
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                  <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-2">
+                                  <label className="block text-sm text-start text-gray-700 mb-2">
                                     Signature of Applicant
                                   </label>
                                   <input
@@ -942,7 +1166,7 @@ export default function Admission() {
                                 </div>
 
                                 <div>
-                                  <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-2">
+                                  <label className="block text-sm text-start text-gray-700 mb-2">
                                     Signature of Parent/Guardian
                                   </label>
                                   <input
@@ -956,7 +1180,7 @@ export default function Admission() {
                                 </div>
 
                                 <div>
-                                  <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-2">
+                                  <label className="block text-sm text-start text-gray-700 mb-2">
                                     Date
                                   </label>
                                   <input
@@ -969,7 +1193,7 @@ export default function Admission() {
                                 </div>
 
                                 <div>
-                                  <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-2">
+                                  <label className="block text-sm text-start text-gray-700 mb-2">
                                     Date
                                   </label>
                                   <input
@@ -985,127 +1209,127 @@ export default function Admission() {
 
                             {/* Office Use Only Section */}
                             {/* <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
-                    <h2 className="text-lg font-semibold mb-4 text-gray-800">
-                      For Office Use Only
-                    </h2>
-
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-2">
-                          Admit Rejected with reason
-                        </label>
-                        <input
-                          type="text"
-                          name="admitRejectedReason"
-                          value={formData.admitRejectedReason}
-                          onChange={handleInputChange}
-                          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="Enter reason if rejected"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-2">
-                          Admission No.
-                        </label>
-                        <input
-                          type="text"
-                          name="admissionNo"
-                          value={formData.admissionNo}
-                          onChange={handleInputChange}
-                          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="Enter admission number"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-2">
-                          Remarks
-                        </label>
-                        <textarea
-                          name="remarks"
-                          value={formData.remarks}
-                          onChange={handleInputChange}
-                          rows="3"
-                          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="Enter any remarks"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                        <div>
-                          <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-2">
-                            Name of Authority
-                          </label>
-                          <input
-                            type="text"
-                            name="authoritySignature"
-                            value={formData.authoritySignature}
-                            onChange={handleInputChange}
-                            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="Authority signature"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-2">
-                            Name of Principal
-                          </label>
-                          <input
-                            type="text"
-                            name="principalSignature"
-                            value={formData.principalSignature}
-                            onChange={handleInputChange}
-                            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="Principal signature"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-2">
-                            Date
-                          </label>
-                          <input
-                            type="date"
-                            name="authorityDate"
-                            value={formData.authorityDate}
-                            onChange={handleInputChange}
-                            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm text-start dark:text-gray-400 text-gray-700 mb-2">
-                            Date
-                          </label>
-                          <input
-                            type="date"
-                            name="principalDate"
-                            value={formData.principalDate}
-                            onChange={handleInputChange}
-                            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div> */}
+                                  <h2 className="text-lg font-semibold mb-4 text-gray-800">
+                                    For Office Use Only
+                                  </h2>
+              
+                                  <div className="space-y-4">
+                                    <div>
+                                      <label className="block text-sm text-start text-gray-700 mb-2">
+                                        Admit Rejected with reason
+                                      </label>
+                                      <input
+                                        type="text"
+                                        name="admitRejectedReason"
+                                        value={formData.admitRejectedReason}
+                                        onChange={handleInputChange}
+                                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="Enter reason if rejected"
+                                      />
+                                    </div>
+              
+                                    <div>
+                                      <label className="block text-sm text-start text-gray-700 mb-2">
+                                        Admission No.
+                                      </label>
+                                      <input
+                                        type="text"
+                                        name="admissionNo"
+                                        value={formData.admissionNo}
+                                        onChange={handleInputChange}
+                                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="Enter admission number"
+                                      />
+                                    </div>
+              
+                                    <div>
+                                      <label className="block text-sm text-start text-gray-700 mb-2">
+                                        Remarks
+                                      </label>
+                                      <textarea
+                                        name="remarks"
+                                        value={formData.remarks}
+                                        onChange={handleInputChange}
+                                        rows="3"
+                                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="Enter any remarks"
+                                      />
+                                    </div>
+              
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                                      <div>
+                                        <label className="block text-sm text-start text-gray-700 mb-2">
+                                          Name of Authority
+                                        </label>
+                                        <input
+                                          type="text"
+                                          name="authoritySignature"
+                                          value={formData.authoritySignature}
+                                          onChange={handleInputChange}
+                                          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                          placeholder="Authority signature"
+                                        />
+                                      </div>
+              
+                                      <div>
+                                        <label className="block text-sm text-start text-gray-700 mb-2">
+                                          Name of Principal
+                                        </label>
+                                        <input
+                                          type="text"
+                                          name="principalSignature"
+                                          value={formData.principalSignature}
+                                          onChange={handleInputChange}
+                                          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                          placeholder="Principal signature"
+                                        />
+                                      </div>
+              
+                                      <div>
+                                        <label className="block text-sm text-start text-gray-700 mb-2">
+                                          Date
+                                        </label>
+                                        <input
+                                          type="date"
+                                          name="authorityDate"
+                                          value={formData.authorityDate}
+                                          onChange={handleInputChange}
+                                          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        />
+                                      </div>
+              
+                                      <div>
+                                        <label className="block text-sm text-start text-gray-700 mb-2">
+                                          Date
+                                        </label>
+                                        <input
+                                          type="date"
+                                          name="principalDate"
+                                          value={formData.principalDate}
+                                          onChange={handleInputChange}
+                                          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div> */}
 
                             {/* Submit Button */}
                             {/* <div className="text-center">
-                    <button
-                      type="button"
-                      onClick={handleSubmit}
-                      className="bg-blue-600 hover:bg-blue-700 text-white font-start py-3 px-8 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                    >
-                      Submit Application
-                    </button>
-                  </div> */}
+                                  <button
+                                    type="button"
+                                    onClick={handleSubmit}
+                                    className="bg-blue-600 hover:bg-blue-700 text-white font-start py-3 px-8 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                  >
+                                    Submit Application
+                                  </button>
+                                </div> */}
                           </div>
                         </div>
                       )}
 
                       {current === 2 && (
-                        <div className="max-w-4xl mx-auto p-6 bg-gray-100  dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700 min-h-screen">
+                        <div className="max-w-4xl mx-auto  bg-white min-h-screen">
                           <div className="space-y-8">
                             {/* Header */}
                             <div className="text-center">
@@ -1115,7 +1339,7 @@ export default function Admission() {
                             </div>
 
                             {/* First Declaration Section */}
-                            <div className="bg-gray-100  dark:bg-gray-800 dark:text-gray-400 p-6 rounded-lg">
+                            <div className="bg-gray-50 p-6 rounded-lg">
                               <h2 className="text-lg font-semibold mb-4 text-gray-800">
                                 First Declaration - Admission Fee
                               </h2>
@@ -1123,7 +1347,7 @@ export default function Admission() {
                               <div className="space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                   <div>
-                                    <label className="block text-sm font-medium text-start dark:text-gray-400 text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
                                       Title
                                     </label>
                                     <select
@@ -1140,7 +1364,7 @@ export default function Admission() {
                                   </div>
 
                                   <div className="md:col-span-3">
-                                    <label className="block text-sm font-medium text-start dark:text-gray-400 text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
                                       Full Name
                                     </label>
                                     <input
@@ -1156,7 +1380,7 @@ export default function Admission() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   <div>
-                                    <label className="block text-sm font-medium text-start dark:text-gray-400 text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
                                       Relationship Type
                                     </label>
                                     <select
@@ -1175,7 +1399,7 @@ export default function Admission() {
                                   </div>
 
                                   <div>
-                                    <label className="block text-sm font-medium text-start dark:text-gray-400 text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
                                       Father's/Husband's Name
                                     </label>
                                     <input
@@ -1189,12 +1413,13 @@ export default function Admission() {
                                   </div>
                                 </div>
 
-                                <div className="bg-gray-100  dark:bg-gray-800 dark:text-gray-400 p-4 rounded-md">
-                                  <p className="text-sm dark:text-gray-400 text-gray-700 mb-4">
+                                <div className="bg-blue-50 p-4 rounded-md">
+                                  <p className="text-sm text-gray-700 mb-4">
                                     <strong>Declaration:</strong> I hereby
                                     declare that I will have to pay a sum of Rs.
                                     <input
                                       type="number"
+                                      readOnly
                                       name="admissionFeeAmount"
                                       value={formData.admissionFeeAmount}
                                       onChange={handleInputChange}
@@ -1202,15 +1427,13 @@ export default function Admission() {
                                     />
                                     /- (Rupees{" "}
                                     <span className="test-lg font-bold">
-                                      {toWords.convert(
-                                        formData.admissionFeeAmount
-                                      )}{" "}
+                                      Five Thousand
                                     </span>
                                     ) only towards Admission Fee for Montessori
                                     Teachers' Training course (6 Months) of
                                   </p>
 
-                                  <p className="text-sm dark:text-gray-400 text-gray-700 mt-2">
+                                  <p className="text-sm text-gray-700 mt-2">
                                     within 3 (three) months from the date of
                                     getting Admission in the aforesaid Course.
                                   </p>
@@ -1219,7 +1442,7 @@ export default function Admission() {
                             </div>
 
                             {/* Second Declaration Section */}
-                            <div className="bg-gray-100  dark:bg-gray-800 dark:text-gray-400 p-6 rounded-lg">
+                            <div className="bg-gray-50 p-6 rounded-lg">
                               <h2 className="text-lg font-semibold mb-4 text-gray-800">
                                 Second Declaration - BSS Registration Fee
                               </h2>
@@ -1227,7 +1450,7 @@ export default function Admission() {
                               <div className="space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                   <div>
-                                    <label className="block text-sm font-medium text-start dark:text-gray-400 text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
                                       Title
                                     </label>
                                     <select
@@ -1244,7 +1467,7 @@ export default function Admission() {
                                   </div>
 
                                   <div className="md:col-span-3">
-                                    <label className="block text-sm font-medium text-start dark:text-gray-400 text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
                                       Full Name
                                     </label>
                                     <input
@@ -1260,7 +1483,7 @@ export default function Admission() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   <div>
-                                    <label className="block text-sm font-medium text-start dark:text-gray-400 text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
                                       Relationship Type
                                     </label>
                                     <select
@@ -1279,7 +1502,7 @@ export default function Admission() {
                                   </div>
 
                                   <div>
-                                    <label className="block text-sm font-medium text-start dark:text-gray-400 text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
                                       Father's/Husband's Name
                                     </label>
                                     <input
@@ -1293,13 +1516,14 @@ export default function Admission() {
                                   </div>
                                 </div>
 
-                                <div className="bg-gray-100  dark:bg-gray-800 dark:text-gray-400 p-4 rounded-md">
-                                  <p className="text-sm dark:text-gray-400 text-gray-700">
+                                <div className="bg-green-50 p-4 rounded-md">
+                                  <p className="text-sm text-gray-700">
                                     <strong>Declaration:</strong> I hereby
                                     declare that I will also have to pay a sum
                                     of Rs.
                                     <input
                                       type="number"
+                                      readOnly
                                       name="bssRegistrationFee"
                                       value={formData.bssRegistrationFee}
                                       onChange={handleInputChange}
@@ -1307,9 +1531,7 @@ export default function Admission() {
                                     />
                                     /- (Rupees{" "}
                                     <span className="test-lg font-bold">
-                                      {toWords.convert(
-                                        formData.admissionFeeAmount
-                                      )}{" "}
+                                      Five Thousand
                                     </span>
                                     ) only towards BSS Registration Fee within 3
                                     (Three) months after 6 (Six) months of
@@ -1321,7 +1543,7 @@ export default function Admission() {
                             </div>
 
                             {/* Signature Section */}
-                            <div className="bg-gray-100  dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700 p-6 rounded-lg border-2 border-gray-200">
+                            <div className="bg-white p-6 rounded-lg border-2 border-gray-200">
                               <h2 className="text-lg font-semibold mb-6 text-gray-800">
                                 Signatures
                               </h2>
@@ -1329,7 +1551,7 @@ export default function Admission() {
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-4">
                                   <div className="border-b-2 border-dashed border-gray-300 pb-4">
-                                    <label className="block text-sm font-medium text-start dark:text-gray-400 text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
                                       Signature of Parent/Guardian
                                     </label>
                                     <input
@@ -1343,7 +1565,7 @@ export default function Admission() {
                                   </div>
 
                                   <div>
-                                    <label className="block text-sm font-medium text-start dark:text-gray-400 text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
                                       Date
                                     </label>
                                     <input
@@ -1358,7 +1580,7 @@ export default function Admission() {
 
                                 <div className="space-y-4">
                                   <div className="border-b-2 border-dashed border-gray-300 pb-4">
-                                    <label className="block text-sm font-medium text-start dark:text-gray-400 text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
                                       Signature of the Applicant/Candidate
                                     </label>
                                     <input
@@ -1372,7 +1594,7 @@ export default function Admission() {
                                   </div>
 
                                   <div>
-                                    <label className="block text-sm font-medium text-start dark:text-gray-400 text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
                                       Date
                                     </label>
                                     <input
@@ -1386,10 +1608,50 @@ export default function Admission() {
                                 </div>
                               </div>
                             </div>
+
+                            {/* Submit Button */}
+                            {/* <div className="text-center">
+                                  <button
+                                    type="button"
+                                    onClick={handleSubmit}
+                                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium text-start py-3 px-8 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                  >
+                                    Submit Declaration
+                                  </button>
+                                </div> */}
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-10">
+                            <div>
+                              <label className="block text-sm font-medium text-start text-gray-700 mb-2">
+                                Set User Name
+                              </label>
+                              <input
+                                type="text"
+                                name="username"
+                                value={formData.username}
+                                onChange={handleInputChange}
+                                placeholder="User Name"
+                                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium text-start text-gray-700 mb-2">
+                                Set Your password
+                              </label>
+                              <input
+                                type="password"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleInputChange}
+                                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Set Your password"
+                              />
+                            </div>
                           </div>
                         </div>
                       )}
-
                       <div className="mt-[20px] mb-[20px] flex justify-center">
                         {current > 0 && (
                           <Button
@@ -1400,12 +1662,23 @@ export default function Admission() {
                           </Button>
                         )}
                         {current === steps.length - 1 && (
-                          <button
-                            type="submit"
-                            className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-                          >
-                            Submit
-                          </button>
+                          <div>
+                            {id ? (
+                              <div
+                                onClick={handleUpdate}
+                                className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                              >
+                                Update
+                              </div>
+                            ) : (
+                              <button
+                                type="submit"
+                                className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                              >
+                                Submit
+                              </button>
+                            )}
+                          </div>
                         )}
                         {current < steps.length - 1 && (
                           <Button type="primary" onClick={() => next()}>
@@ -1423,7 +1696,11 @@ export default function Admission() {
                 Admission List
               </h3>
             </div>
-            <BasicTableAdmission />
+
+            <BasicTableAdmission
+              admissionlist={admissionlist}
+              onEdit={handleEdit}
+            />
           </ComponentCard>
         </div>
       </div>

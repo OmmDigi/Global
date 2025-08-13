@@ -44,7 +44,7 @@ export const Gallery = () => {
 
       <LightGallery
         elementClassNames="flex  flex-wrap gap-4 md:gap-8 justify-center max-w-10xl mx-auto"
-        plugins={[lgZoom, lgHash]}
+        plugins={[lgZoom, lgHash ,lgShare]}
         speed={500}
       >
         {galleryMap[activeGallery].map(({ src, thumb, html }, i) => (
@@ -58,7 +58,7 @@ export const Gallery = () => {
               className=" md:w-[200px] md:h-[220px] w-[150px] h-[160px] overflow-hidden  shadow-md   hover:shadow-lg "
             >
               <img
-                src={thumb}
+                src={src}
                 alt={`Gallery Image ${i + 1}`}
                 className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
               />

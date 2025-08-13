@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useTransition } from "react";
 import BackToTopButton from "@/components/BackToTopButton";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
@@ -21,16 +21,16 @@ import { useRouter } from "next/navigation";
 
 function page() {
   const [formData, setFormData] = useState({
-    email: "",
+    username: "",
     password: "",
     category: "Student",
     // remember: false,
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [color, setColor] = useState("bg-blue-100");
   const [messageApi, contextHolder] = message.useMessage();
   const route = useRouter();
+  const [isPending, startTransition] = useTransition();
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
@@ -49,32 +49,39 @@ function page() {
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      const response = await axios.post("api/v1/users/login", formData);
-      messageApi.open({
-        type: "success",
-        content: response.data?.message,
-      });
+    startTransition(async () => {
+      // await new Promise( (resolve) => setTimeout(resolve,5000))
+      try {
+        const response = await axios.post("api/v1/users/login", formData);
+        messageApi.open({
+          type: "success",
+          content: response.data?.message,
+        });
 
-      localStorage.setItem("token", response.data?.data?.token);
-      localStorage.setItem("category", response.data?.data?.category);
+        // localStorage.setItem("token", response?.data?.data?.token);
+        // localStorage.setItem("category", response?.data?.data?.category);
+        // localStorage.setItem("permissions", response?.data?.data?.permissions);
 
-      const queryString = new URLSearchParams({
-        token: response.data?.data?.token,
-        category: response.data?.data?.category,
-      }).toString();
-      route.push(
-        `http://192.168.0.214:5173/${response.data?.data?.category}?${queryString}`
-      );
-    } catch (error) {
-      messageApi.open({
-        type: "error",
-        content: error.response?.data?.message,
-      });
-      console.error("aaaa", error);
-    }
+        const queryString = new URLSearchParams({
+          token: response.data?.data?.token,
+          category: response.data?.data?.category,
+          permissions: response?.data?.data?.permissions,
+        });
+        route.push(
+          `http://192.168.0.214:5173/?${queryString}`
+        );
+      } catch (error) {
+        messageApi.open({
+          type: "error",
+          content: error.response?.data?.message
+            ? error.response?.data?.message
+            : "Try Again",
+        });
+        console.error("aaaa", error);
+      }
+    });
   };
 
   return (
@@ -190,8 +197,9 @@ function page() {
                     onChange={handleChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
+                    <option value="">Choose</option>
                     <option value="Student">Student</option>
-                    <option value="Teacher">Teacher</option>
+                    <option value="Stuff">Stuff</option>
                     <option value="Admin">Admin</option>
                   </select>
                 </div>
@@ -208,10 +216,10 @@ function page() {
                       <Mail className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
+                      id="username"
+                      name="username"
+                      type="text"
+                      value={formData.username}
                       onChange={handleChange}
                       className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
                       placeholder="you@example.com"
@@ -261,10 +269,10 @@ function page() {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isPending}
                   className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  {isLoading ? (
+                  {isPending ? (
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   ) : (
                     "Sign In"
