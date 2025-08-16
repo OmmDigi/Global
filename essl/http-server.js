@@ -2,7 +2,11 @@ import express from "express";
 import http from "http";
 import { WebSocketServer } from "ws";
 import dotenv from "dotenv";
-import { addNewEmployee, deleteEmployee, updateEmployee } from "./controllers/employee.controller.js";
+import {
+  addNewEmployee,
+  deleteEmployee,
+  updateEmployee,
+} from "./controllers/employee.controller.js";
 import { globalErrorController } from "./controllers/error.controller.js";
 import { clients } from "./constant.js";
 
@@ -32,6 +36,23 @@ wss.on("connection", (ws, req) => {
 
   clients.set(deviceId, ws);
 
+  if (!ws || ws.readyState !== WebSocket.OPEN) {
+    throw new ErrorHandler(
+      400,
+      "Essl local server software not running please run it first"
+    );
+  }
+  // we are sending device connection info to the essl localserver so essl local server will connect with the device
+  ws.send(
+    JSON.stringify({
+      action: "connect_device",
+      deviceinfo: {
+        device_ip: process.env.ESSL_DEVICE_IP,
+        device_port: process.env.ESSL_DEVICE_PORT,
+      },
+    })
+  );
+
   ws.on("message", (msg) => {
     console.log(`📨 Message from ${deviceId}:`, msg.toString());
   });
@@ -40,13 +61,16 @@ wss.on("connection", (ws, req) => {
     console.log(`❌ Device ${deviceId} disconnected`);
     clients.delete(deviceId);
   });
+
+  ws.on("error", (error) => {
+    console.error("❌ ", error.message);
+  });
 });
 
 // Example: Endpoint to trigger sending employee data to connected device
 app.post("/api/v1/employee", addNewEmployee);
 app.delete("/api/v1/employee", deleteEmployee);
 app.put("/api/v1/employee", updateEmployee);
-
 
 app.use(globalErrorController);
 

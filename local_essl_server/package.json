@@ -9,7 +9,9 @@
   },
   "bin": "./index.js",
   "pkg": {
-    "scripts": "./index.js",
+    "assets": [
+      "config.json"
+    ],
     "targets": [
       "node18-win-x64"
     ],
