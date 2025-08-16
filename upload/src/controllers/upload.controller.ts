@@ -20,7 +20,7 @@ export const uploadSingleFile = asyncErrorHandler(
 
     let download_url = "";
 
-    if(access === "public") {
+    if (access === "public") {
       download_url = `${process.env.HOST_NAME}/${pathName}/${req.file.filename}`;
     } else {
       download_url = `/${pathName}/${req.file.filename}`;
@@ -54,11 +54,13 @@ export const uploadMultipleFile = asyncErrorHandler(async (req, res) => {
 
   const blobResult: IBlob[] = [];
 
+  if (req.files.length === 0) throw new ErrorHandler(400, "No file for upload");
+
   if (Array.isArray(req.files)) {
     req.files.forEach((file) => {
       let download_url = "";
 
-      if(access === "public") {
+      if (access === "public") {
         download_url = `${hostname}/${pathName}/${file.filename}`;
       } else {
         download_url = `/${pathName}/${file.filename}`;

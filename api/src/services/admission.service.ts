@@ -95,7 +95,8 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
         c.name AS course_name,
         (SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id) AS course_fee,
         COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id), 0.00) - COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND status = 2), 0.00) AS due_amount,
-        b.month_name AS batch_name
+        b.month_name AS batch_name,
+        CASE WHEN ff.status = 2 THEN true ELSE false END AS form_status
         -- JSON_AGG(JSON_BUILD_OBJECT('batch_id', b.id, 'batch_name', b.month_name)) AS batches
       FROM fillup_forms ff
   
@@ -167,6 +168,7 @@ export const getSingleAdmissionData = async (
           SELECT
             cfh.name AS fee_head_name,
             cfh.id AS fee_head_id,
+            COALESCE(ffs.min_amount, 0.00) AS min_amount,
             COALESCE(ffs.amount, 0.00) AS price,
             COALESCE(ffs.amount, 0.00) - COALESCE(SUM(p.amount), 0.00) AS due_amount
           FROM form_fee_structure ffs

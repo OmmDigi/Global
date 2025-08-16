@@ -18,27 +18,52 @@ export const createLeaveRequest = asyncErrorHandler(
     });
     if (error) throw new ErrorHandler(400, error.message);
 
-    const query = `
-    INSERT INTO leave (employee_id, from_date, to_date, reason)
-    SELECT $1, $2::date, $3::date, $4
-    WHERE $2::date >= CURRENT_DATE
-        AND $3::date >= CURRENT_DATE
-    `;
+    // while creating leave it should not collapse holiday date
 
-    const { rowCount } = await pool.query(query, [
-      value.employee_id,
-      value.from_date,
-      value.to_date,
-      value.reason,
-    ]);
+    const client = await pool.connect();
 
-    if (rowCount === 0)
-      throw new ErrorHandler(
-        400,
-        "Leave not inserted: dates are before today."
+    try {
+      await client.query("BEGIN");
+
+      const { rowCount: holidayCount, rows: holiday } = await client.query(
+        "SELECT TO_CHAR(date, 'FMDD FMMonth, YYYY') AS date FROM holiday WHERE date BETWEEN $1::date AND $2::date",
+        [value.from_date, value.to_date]
       );
 
-    res.status(201).json(new ApiResponse(201, "Leave request created"));
+      if (holidayCount !== 0) {
+        const dates = holiday.map((item) => item.date).join(", ");
+        throw new ErrorHandler(
+          400,
+          `${dates} ${
+            holidayCount !== null && holidayCount > 1 ? "are" : "is"
+          } holiday you cannot take leave on holiday`
+        );
+      }
+
+      const { rowCount } = await client.query(
+        `
+        INSERT INTO leave (employee_id, from_date, to_date, reason)
+        SELECT $1, $2::date, $3::date, $4
+        WHERE $2::date >= CURRENT_DATE
+          AND $3::date >= CURRENT_DATE`,
+        [value.employee_id, value.from_date, value.to_date, value.reason]
+      );
+
+      await client.query("COMMIT");
+
+      if (rowCount === 0)
+        throw new ErrorHandler(
+          400,
+          "Leave not inserted: dates are before today."
+        );
+
+      res.status(201).json(new ApiResponse(201, "Leave request created"));
+    } catch (error: any) {
+      await client.query("ROLLBACK");
+      throw new ErrorHandler(500, error.message);
+    } finally {
+      client.release();
+    }
   }
 );
 

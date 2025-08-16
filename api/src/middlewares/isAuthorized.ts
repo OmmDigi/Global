@@ -33,7 +33,8 @@ export const isAuthorized = (
     ) as number[];
 
     if (!user_permissions_array.includes(route_id)) {
-      const currentRequestId = req.params.id ?? req.query.user_id ?? req.body.user_id;
+      const currentRequestId =
+        req.params.id ?? req.query.user_id ?? req.body.user_id;
       if (view_own_only === true && parseInt(currentRequestId) == userInfo.id) {
         next();
         return;

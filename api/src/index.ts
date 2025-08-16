@@ -12,7 +12,10 @@ import { paymentRoute } from "./routes/payment.routes";
 import { attendanceRoute } from "./routes/attendance.routes";
 import { holidayRoutes } from "./routes/holiday.routes";
 import { leaveRoute } from "./routes/leave.routes";
-import { isAuthorized } from "./middlewares/isAuthorized";
+import { vendorRoute } from "./routes/vendor.routes";
+import { dashboardRoutes } from "./routes/dashboard.routes";
+import { purchaseRoute } from "./routes/purchase.routes";
+import { inventoryRoutes } from "./routes/inventory.routes";
 
 const app: Application = express();
 
@@ -49,14 +52,18 @@ app.use(express.json({ limit: "100mb" }));
 app.use(express.urlencoded({ extended: true, limit: "100mb" }));
 app.use(cookieParser());
 
+app.use("/api/v1/dashboard", dashboardRoutes);
 app.use("/api/v1/users", usersRoutes);
 app.use("/api/v1/course", courseRoutes);
 app.use("/api/v1/notice", noticeRoute);
 app.use("/api/v1/admission", admissionRoute);
 app.use("/api/v1/payment", paymentRoute);
-app.use("/api/v1/holiday", holidayRoutes)
+app.use("/api/v1/holiday", holidayRoutes);
 app.use("/api/v1/attendance", attendanceRoute);
-app.use("/api/v1/leave", leaveRoute)
+app.use("/api/v1/leave", leaveRoute);
+app.use("/api/v1/vendor", vendorRoute);
+app.use("/api/v1/purchase", purchaseRoute);
+app.use("/api/v1/inventory", inventoryRoutes);
 
 // app.post("/api/v1/hack-cookie", (req, res) => {
 //   console.log("Cookie Received");

@@ -22,10 +22,13 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
   try {
     await client.query("BEGIN");
 
-    const fee_structure_info = value.fee_structure_info as {
-      fee_head_id: number;
-      custom_min_amount: number;
-    }[];
+    const fee_structure_info = (
+      value.fee_structure_info as {
+        fee_head_id: number;
+        custom_min_amount: number;
+      }[]
+    ).filter((item) => item.custom_min_amount != 0);
+
     const placeholder = fee_structure_info
       .map((_, index) => `$${index + 2}`)
       .join(", ");
@@ -111,6 +114,7 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
       student_id: student_id,
       fee_head_ids_info: fee_head_ids_info,
       client: client,
+      status: 1,
     });
 
     await client.query("COMMIT");
@@ -148,13 +152,29 @@ export const verifyPayment = asyncErrorHandler(async (req, res) => {
       payment_status[response.data.state],
       response.data.transactionId,
       response.data.orderId,
-      req.query.merchant_order_id,
+      req.query.merchant_order_id?.toString(),
     ]
   );
 
-  if (!response.success) throw new ErrorHandler(400, response.message);
+  // if (!response.success) {
+  //   res.render("payment-status", {
+  //   status: response.data.state === "COMPLETED" ? "success" : "failed",
+  //   orderId: response.data.orderId,
+  //   amount: response.data.amount / 100,
+  //   transactionId : response.data.transactionId,
+  //   frontendhomepage : process.env.FRONTEND_HOST_URL
+  // });
+  //   throw new ErrorHandler(400, response.message);
+  // }
 
-  res.status(200).json(new ApiResponse(200, "Payment Done"));
+  res.render("payment-status", {
+    status: response.data.state === "COMPLETED" ? "success" : "failed",
+    orderId: response.data.orderId,
+    amount: response.data.amount / 100,
+    transactionId : response.data.transactionId,
+    frontendhomepage : process.env.FRONTEND_HOST_URL
+  });
+
 });
 
 // this is from admin panel only
@@ -162,12 +182,15 @@ export const addPayment = asyncErrorHandler(async (req, res) => {
   const { error, value } = VAddPayment.validate(req.body ?? {});
   if (error) throw new ErrorHandler(400, error.message);
 
-  const client_fee_structure_info = (value.fee_structure_info as {
-    fee_head_id: number;
-    custom_min_amount: number;
-  }[]).filter(item => item.custom_min_amount != 0);
+  const client_fee_structure_info = (
+    value.fee_structure_info as {
+      fee_head_id: number;
+      custom_min_amount: number;
+    }[]
+  ).filter((item) => item.custom_min_amount != 0);
 
-  if(client_fee_structure_info.length === 0) throw new ErrorHandler(400, "No Payment Amount To Add")
+  if (client_fee_structure_info.length === 0)
+    throw new ErrorHandler(400, "No Payment Amount To Add");
 
   // const { rows } = await pool.query(
   //   `
@@ -219,6 +242,8 @@ export const addPayment = asyncErrorHandler(async (req, res) => {
   if (rowCount === 0)
     throw new ErrorHandler(404, "No student found of this form");
 
+  console.log(rows);
+
   await setPayment({
     fee_head_ids_info: client_fee_structure_info.map((item) => ({
       fee_head_id: item.fee_head_id,
@@ -228,6 +253,7 @@ export const addPayment = asyncErrorHandler(async (req, res) => {
     mode: value.payment_mode,
     student_id: rows[0].student_id,
     transition_id: value.payment_details,
+    status: 2,
   });
 
   res.status(200).json(new ApiResponse(200, "New payment details added"));
