@@ -27,19 +27,20 @@ export default function VendorManage() {
     data: dataCreate,
     error: dataError,
     isMutating: dataIsloading,
-  } = useSWRMutation("api/v1/course/session", (url, { arg }) =>
+  } = useSWRMutation("api/v1/vendor", (url, { arg }) =>
     postFetcher(url, arg)
   );
 
-  //   get session list
+  //   get vendorList
   const {
-    data: sessionList,
-    loading: sessionLoading,
-    error: sessionError,
-  } = useSWR("api/v1/course/session", getFetcher);
-  if (sessionLoading) {
+    data: vendorList,
+    loading: vendorLoading,
+    error: vendorError,
+  } = useSWR("api/v1/vendor", getFetcher);
+  if (vendorLoading) {
     return <div>Loading ...</div>;
   }
+console.log("vendorList",vendorList);
 
   //   get single data
   // const {
@@ -54,14 +55,14 @@ export default function VendorManage() {
     data: updateData,
     error: updateError,
     isMutating: updateLoading,
-  } = useSWRMutation("api/v1/course/session", (url, { arg }) =>
+  } = useSWRMutation("api/v1/course/vendor", (url, { arg }) =>
     putFetcher(url, arg)
   );
 
   const handleEdit = async (id: number) => {
     try {
       setId(id);
-      const response = await getFetcher(`api/v1/course/session/${id}`);
+      const response = await getFetcher(`api/v1/vendor/${id}`);
       const userData = response.data;
       setFormData({
         id: id,
@@ -92,7 +93,7 @@ export default function VendorManage() {
   const handleUpdate = async () => {
     try {
       const response = await update(formData);
-      mutate("api/v1/course/session");
+      mutate("api/v1/vendor");
       messageApi.open({
         type: "success",
         content: response.message,
@@ -114,60 +115,60 @@ export default function VendorManage() {
     }
   };
 
-  const handleActive = async (isActive: boolean, id: number) => {
-    console.log("isactiveaaaa ", isActive);
+  // const handleActive = async (isActive: boolean, id: number) => {
+  //   console.log("isactiveaaaa ", isActive);
 
+  //   try {
+  //     const response = await update({
+  //       id: id,
+  //       is_active: isActive,
+  //     });
+
+  //     mutate("api/v1/vendor");
+  //     messageApi.open({
+  //       type: "success",
+  //       content: response.message,
+  //     });
+  //     console.log("Upload Success:", response);
+  //   } catch (error: any) {
+  //     messageApi.open({
+  //       type: "error",
+  //       content: error.response?.data?.message,
+  //     });
+  //     console.log("Upload Error:", error);
+  //   }
+  // };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log("formaaaaa", formData);
     try {
-      const response = await update({
-        id: id,
-        is_active: isActive,
-      });
-
-      mutate("api/v1/course/session");
+      const response = await create(formData);
+      //   mutate(
+      //     (currentData: any) => [...(currentData || []), response.data],
+      //     false
+      //   );
       messageApi.open({
         type: "success",
         content: response.message,
       });
       console.log("Upload Success:", response);
+
+      setFormData({
+        name: "",
+        service_type: "",
+        address: "",
+        contact_details: "",
+      });
     } catch (error: any) {
       messageApi.open({
         type: "error",
-        content: error.response?.data?.message,
+        content: error.response?.data?.message
+          ? error.response?.data?.message
+          : " try again ",
       });
       console.log("Upload Error:", error);
     }
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    console.log("formaaaaa", formData);
-    // try {
-    //   const response = await create(formData);
-    //   //   mutate(
-    //   //     (currentData: any) => [...(currentData || []), response.data],
-    //   //     false
-    //   //   );
-    //   messageApi.open({
-    //     type: "success",
-    //     content: response.message,
-    //   });
-    //   console.log("Upload Success:", response);
-
-    //   setFormData({
-    //     name: "",
-    //     service_type: "",
-    //     address: "",
-    //     contact_details: "",
-    //   });
-    // } catch (error: any) {
-    //   messageApi.open({
-    //     type: "error",
-    //     content: error.response?.data?.message
-    //       ? error.response?.data?.message
-    //       : " try again ",
-    //   });
-      // console.log("Upload Error:", error);
-    // }
   };
   const jumpToTop = () => {
     window.scrollTo({
@@ -260,9 +261,9 @@ export default function VendorManage() {
               </form>
             </div>
             <BasicTableVendor
-              sessionList={sessionList}
+              sessionList={vendorList}
               onEdit={handleEdit}
-              onActive={handleActive}
+              // onActive={handleActive}
             />
           </ComponentCard>
         </div>

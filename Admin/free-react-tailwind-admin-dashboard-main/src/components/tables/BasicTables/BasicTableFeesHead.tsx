@@ -17,6 +17,7 @@ import { Pagination } from "antd";
 interface IProps {
   sessionList: any;
   onEdit: (id: number) => void;
+  onActive: (checked: boolean, id: number) => void;
 }
 
 // Define the table data using the interface
@@ -26,12 +27,12 @@ export default function BasicTableFeesHead({
   onEdit,
   onActive,
 }: IProps) {
-  const onShowSizeChange: PaginationProps["onShowSizeChange"] = (
-    current,
-    pageSize
-  ) => {
-    console.log(current, pageSize);
-  };
+  // const onShowSizeChange: PaginationProps["onShowSizeChange"] = (
+  //   current,
+  //   pageSize
+  // ) => {
+  //   console.log(current, pageSize);
+  // };
 
 //   const { trigger: deleteUser, isMutating } = useSWRMutation(
 //     "api/v1/course/session",
@@ -126,7 +127,7 @@ export default function BasicTableFeesHead({
           </TableBody>
         </Table>
         {/* Pagination  */}
-        <div>
+        {/* <div>
           <Pagination
             showSizeChanger
             onChange={onShowSizeChange}
@@ -134,7 +135,7 @@ export default function BasicTableFeesHead({
             total={500}
             // colorPrimaryHover={'#qwe23'}
           />
-        </div>
+        </div> */}
       </div>
     </div>
   );

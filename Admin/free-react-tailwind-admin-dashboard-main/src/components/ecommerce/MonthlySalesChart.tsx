@@ -1,11 +1,30 @@
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import { Dropdown } from "../ui/dropdown/Dropdown";
-import { DropdownItem } from "../ui/dropdown/DropdownItem";
-import { MoreDotIcon } from "../../icons";
+
 import { useState } from "react";
+import useSWR from "swr";
+import { getFetcher } from "../../api/fatcher";
 
 export default function MonthlySalesChart() {
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  console.log("selectedYear", selectedYear);
+ // get course list
+  const {
+    data: admission,
+    loading: admissionLoading,
+    error: admissionError,
+  } = useSWR(`api/v1/dashboard/admission?year=${selectedYear}`, getFetcher);
+  if (admissionLoading) {
+    return <div>Loading ...</div>;
+  }
+
+
+  
+  const months = admission?.data?.map((item:any) => item.month);
+  const admissions = admission?.data?.map((item:any) => Number(item.admission));
+  
+  console.log("admission",months,admissions);
+
   const options: ApexOptions = {
     colors: ["#465fff"],
     chart: {
@@ -33,20 +52,7 @@ export default function MonthlySalesChart() {
       colors: ["transparent"],
     },
     xaxis: {
-      categories: [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ],
+      categories: months,
       axisBorder: {
         show: false,
       },
@@ -88,7 +94,7 @@ export default function MonthlySalesChart() {
   const series = [
     {
       name: "Admissions",
-      data: [168, 385, 201, 298, 187, 195, 291, 110, 215, 390, 280, 112],
+      data: admissions,
     },
   ];
   const [isOpen, setIsOpen] = useState(false);
@@ -106,29 +112,20 @@ export default function MonthlySalesChart() {
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
           Monthly Admissions
         </h3>
-        <div className="relative inline-block">
-          <button className="dropdown-toggle" onClick={toggleDropdown}>
-            <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-6" />
-          </button>
-          <Dropdown
-            isOpen={isOpen}
-            onClose={closeDropdown}
-            className="w-40 p-2"
-          >
-            <DropdownItem
-              onItemClick={closeDropdown}
-              className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-            >
-              View More
-            </DropdownItem>
-            <DropdownItem
-              onItemClick={closeDropdown}
-              className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-            >
-              Delete
-            </DropdownItem>
-          </Dropdown>
-        </div>
+        <select
+          className="border rounded-md px-2 py-1 text-sm dark:bg-gray-800 dark:text-white"
+          value={selectedYear}
+          onChange={(e) => setSelectedYear(e.target.value as any)}
+        >
+          {Array.from({ length: 5 }, (_, i) => {
+            const year = new Date().getFullYear() - i;
+            return (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            );
+          })}
+        </select>
       </div>
 
       <div className="max-w-full overflow-x-auto custom-scrollbar">

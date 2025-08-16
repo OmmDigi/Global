@@ -17,21 +17,23 @@ import { Pagination } from "antd";
 interface IProps {
   batchList: any;
 //   onEdit: (id: number) => void;
+  onActive: (checked: boolean, id: number) => void;
+
 }
 
 // Define the table data using the interface
 
 export default function BasicTableSession({
   batchList,
-  onEdit,
   onActive,
 }: IProps) {
-  const onShowSizeChange: PaginationProps["onShowSizeChange"] = (
-    current,
-    pageSize
-  ) => {
-    console.log(current, pageSize);
-  };
+
+  // const onShowSizeChange: PaginationProps["onShowSizeChange"] = (
+  //   current,
+  //   pageSize
+  // ) => {
+  //   console.log(current, pageSize);
+  // };
 
   const { trigger: deleteUser, isMutating } = useSWRMutation(
     "api/v1/course/batch",
@@ -99,12 +101,12 @@ export default function BasicTableSession({
             "session_name": "2026 - 2027",
             "course_name": " CMS & ED Training" */}
           <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-            {batchList?.data?.map((order: any) => (
+            {batchList?.data?.map((order: any,index:any) => (
               <TableRow key={order.id}>
                 <TableCell className="px-5 py-4 sm:px-6 text-start">
                   <div className="flex items-center gap-3">
                     <div className="block font-medium text-gray-500 text-theme-xs dark:text-gray-400]">
-                      {order.id}
+                      {index + 1 }
                     </div>
                     <div>
                       <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
@@ -164,7 +166,7 @@ export default function BasicTableSession({
           </TableBody>
         </Table>
         {/* Pagination  */}
-        <div>
+        {/* <div>
           <Pagination
             showSizeChanger
             onChange={onShowSizeChange}
@@ -172,7 +174,7 @@ export default function BasicTableSession({
             total={500}
             // colorPrimaryHover={'#qwe23'}
           />
-        </div>
+        </div> */}
       </div>
     </div>
   );

@@ -30,8 +30,8 @@ export default function Courses() {
     name: "",
     duration: "",
     fee_structure: [
-      { fee_head_id: "", amount: "", min_amount: "", required: false },
-      { fee_head_id: "", amount: "", min_amount: "", required: false },
+      { fee_head_id: "", amount: "", min_amount: "", required: "" },
+      { fee_head_id: "", amount: "", min_amount: "", required: "" },
     ],
     description: "",
   });
@@ -106,10 +106,10 @@ export default function Courses() {
         name: "",
         duration: "",
         description: "",
-         fee_structure: [
-      { fee_head_id: "", amount: "", min_amount: "", requierd: false },
-      { fee_head_id: "", amount: "", min_amount: "", requierd: false },
-    ],
+        fee_structure: [
+          { fee_head_id: "", amount: "", min_amount: "", requierd: false },
+          { fee_head_id: "", amount: "", min_amount: "", requierd: false },
+        ],
       });
     } catch (error: any) {
       messageApi.open({
@@ -127,6 +127,7 @@ export default function Courses() {
 
       const response = await getFetcher(`api/v1/course/${id}`);
       const userData = response.data;
+
       setFormData({
         id: id,
         name: userData?.name,
@@ -137,7 +138,7 @@ export default function Courses() {
               fee_head_id: item.fee_head_id || "",
               amount: item.amount || "",
               min_amount: item.min_amount || "",
-              required: item.required || "",
+              required: item.required == true ,
             }))
           : [
               { fee_head_id: "", amount: "", min_amount: "", requierd: false },
@@ -164,10 +165,10 @@ export default function Courses() {
         name: "",
         duration: "",
         description: "",
-         fee_structure: [
-      { fee_head_id: "", amount: "", min_amount: "", requierd: false },
-      { fee_head_id: "", amount: "", min_amount: "", requierd: false },
-    ],
+        fee_structure: [
+          { fee_head_id: "", amount: "", min_amount: "", requierd: false },
+          { fee_head_id: "", amount: "", min_amount: "", requierd: false },
+        ],
       });
     } catch (error: any) {
       messageApi.open({
@@ -212,7 +213,7 @@ export default function Courses() {
   };
 
   const handleAdd = () => {
-    setFormData((prev:any) => ({
+    setFormData((prev: any) => ({
       ...prev,
       fee_structure: [
         ...prev.fee_structure,
@@ -316,30 +317,30 @@ export default function Courses() {
 
                       <Input
                         type="number"
-                        placeholder="Enter value"
+                        placeholder="Fees"
                         value={entry.amount}
                         onChange={(e) =>
                           handleChangeEntries(index, "amount", e.target.value)
                         }
                         className="flex-1 border px-3 py-1 rounded-md"
                       />
-                        <Input
+                      <Input
                         type="number"
-                        placeholder="Enter value"
+                        placeholder="Minimum to Pay"
                         value={entry.min_amount}
                         onChange={(e) =>
-                          handleChangeEntries(index, "min_amount", e.target.value)
+                          handleChangeEntries(
+                            index,
+                            "min_amount",
+                            e.target.value
+                          )
                         }
                         className="flex-1 border px-3 py-1 rounded-md"
                       />
                       <select
                         value={entry.required}
                         onChange={(e) =>
-                          handleChangeEntries(
-                            index,
-                            "required",
-                            e.target.value
-                          )
+                          handleChangeEntries(index, "required", e.target.value)
                         }
                         className="w-auto px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
                       >
@@ -347,7 +348,6 @@ export default function Courses() {
 
                         <option value="true">yes</option>
                         <option value="false">No</option>
-                       
                       </select>
 
                       {formData.fee_structure.length > 1 && (

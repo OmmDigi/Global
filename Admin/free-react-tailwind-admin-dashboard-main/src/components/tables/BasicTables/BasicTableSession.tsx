@@ -7,16 +7,12 @@ import {
 } from "../../ui/table";
 
 import Switch from "../../form/switch/Switch";
-import useSWRMutation from "swr/mutation";
-import { deleteFetcher } from "../../../api/fatcher";
-import { message } from "antd";
-import { mutate } from "swr";
-import type { PaginationProps } from "antd";
-import { Pagination } from "antd";
+
 
 interface IProps {
   sessionList: any;
   onEdit: (id: number) => void;
+  onActive: (checked: boolean, id: number) => void;
 }
 
 // Define the table data using the interface
@@ -26,12 +22,12 @@ export default function BasicTableSession({
   onEdit,
   onActive,
 }: IProps) {
-  const onShowSizeChange: PaginationProps["onShowSizeChange"] = (
-    current,
-    pageSize
-  ) => {
-    console.log(current, pageSize);
-  };
+  // const onShowSizeChange: PaginationProps["onShowSizeChange"] = (
+  //   current,
+  //   pageSize
+  // ) => {
+  //   console.log(current, pageSize);
+  // };
 
   // const { trigger: deleteUser, isMutating } = useSWRMutation(
   //   "api/v1/course/session",
@@ -126,7 +122,7 @@ export default function BasicTableSession({
           </TableBody>
         </Table>
         {/* Pagination  */}
-        <div>
+        {/* <div>
           <Pagination
             showSizeChanger
             onChange={onShowSizeChange}
@@ -134,7 +130,7 @@ export default function BasicTableSession({
             total={500}
             // colorPrimaryHover={'#qwe23'}
           />
-        </div>
+        </div> */}
       </div>
     </div>
   );

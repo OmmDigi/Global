@@ -9,18 +9,34 @@ import {
 import Switch from "../../form/switch/Switch";
 import { useNavigate } from "react-router";
 
-
-
-export default function BasicTableAdmission({admissionlist,onEdit}:any) {
+export default function BasicTableAdmission({
+  admissionlist,
+  onEdit,
+  onActive,
+}: any) {
   const navigate = useNavigate();
 
-  const handleSwitchChange = (checked: boolean) => {
-    console.log("Switch is now:", checked ? "ON" : "OFF");
-  };
-  
+  //  const onShowSizeChange: PaginationProps["onShowSizeChange"] = (
+  //   current,
+  //   pageSize
+  // ) => {
+  //   console.log(current, pageSize);
+  // };
+  //   const {
+  //   data: admissionlist,
+  //   loading: admissionLoading,
+  //   error: admissionError,
+  //   mutate,
+  // } = useSWR("api/v1/admission", getFetcher);
+  // if (admissionLoading) {
+  //   console.log("loading", admissionLoading);
+  // }
+
+  // console.log("admissionlist", admissionlist);
+
   const handleDetailsClick = (id: number) => {
-  navigate(`/courseDetailsAdmin/${id}`);
-};
+    navigate(`/courseDetailsAdmin/${id}`);
+  };
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
@@ -41,7 +57,7 @@ export default function BasicTableAdmission({admissionlist,onEdit}:any) {
               >
                 Course name
               </TableCell>
-               <TableCell
+              <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
@@ -65,7 +81,7 @@ export default function BasicTableAdmission({admissionlist,onEdit}:any) {
               >
                 Due Amount
               </TableCell>
-              
+
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
@@ -78,7 +94,7 @@ export default function BasicTableAdmission({admissionlist,onEdit}:any) {
               >
                 Action
               </TableCell>
-               <TableCell
+              <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
@@ -89,7 +105,7 @@ export default function BasicTableAdmission({admissionlist,onEdit}:any) {
 
           {/* Table Body */}
           <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-            {admissionlist?.data?.map((order,index) => (
+            {admissionlist?.data?.map((order: any, index: number) => (
               <TableRow key={index}>
                 <TableCell className="px-5 py-4 sm:px-6 text-start">
                   <div className="flex items-center gap-3">
@@ -104,48 +120,61 @@ export default function BasicTableAdmission({admissionlist,onEdit}:any) {
                       <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
                         {order.student_name}
                       </span>
-                      
                     </div>
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  {order.course_name }
+                  {order.course_name}
                 </TableCell>
-                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  {order.batch_name }
+                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                  {order.batch_name}
                 </TableCell>
-                
+
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   {order.form_name}
                 </TableCell>
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   {order.course_fee}
                 </TableCell>
-                <TableCell className={`px-4 py-3 ${ Number(order.due_amount) === 0 ? "text-green-500 dark:text-green-400" : "text-red-500 dark:text-red-500 " }  text-start text-theme-sm `}>
+                <TableCell
+                  className={`px-4 py-3 ${
+                    Number(order.due_amount) === 0
+                      ? "text-green-500 dark:text-green-400"
+                      : "text-red-500 dark:text-red-500 "
+                  }  text-start text-theme-sm `}
+                >
                   {order.due_amount}
                 </TableCell>
-              
+
                 <TableCell>
                   <div className="pl-4">
                     <Switch
                       label=""
-                      defaultChecked={false}
-                      onChange={handleSwitchChange}
+                      defaultChecked={order.form_status}
+                      onChange={(defaultChecked) =>
+                        onActive(defaultChecked, order.form_id)
+                      }
                     />
                   </div>
                 </TableCell>
 
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   <div className="flex items-center gap-2">
-                    <button  onClick={() => onEdit(order.form_id)} className="text-blue-500 hover:underline">
+                    <button
+                      onClick={() => onEdit(order.form_id)}
+                      className="text-blue-500 hover:underline"
+                    >
                       Edit
                     </button>
                   </div>
                 </TableCell>
 
-                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   <div className="flex items-center gap-2">
-                    <button  onClick={() => handleDetailsClick(order.form_id)} className="text-blue-500 hover:underline">
+                    <button
+                      onClick={() => handleDetailsClick(order.form_id)}
+                      className="text-blue-500 hover:underline"
+                    >
                       Details
                     </button>
                   </div>
@@ -154,6 +183,16 @@ export default function BasicTableAdmission({admissionlist,onEdit}:any) {
             ))}
           </TableBody>
         </Table>
+
+        {/* <div>
+          <Pagination
+            showSizeChanger
+            onChange={onShowSizeChange}
+            defaultCurrent={1}
+            total={500}
+            // colorPrimaryHover={'#qwe23'}
+          />
+        </div> */}
       </div>
     </div>
   );

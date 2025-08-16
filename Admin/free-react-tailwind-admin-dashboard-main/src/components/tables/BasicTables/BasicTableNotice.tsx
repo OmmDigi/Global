@@ -6,34 +6,28 @@ import {
   TableRow,
 } from "../../ui/table";
 
-import Badge from "../../ui/badge/Badge";
-import { Pagination, PaginationProps } from "antd";
+import { message, Pagination, PaginationProps } from "antd";
 import { useState } from "react";
 import { BiSolidShow } from "react-icons/bi";
 import { deleteFetcher } from "../../../api/fatcher";
 import useSWRMutation from "swr/mutation";
+import { mutate } from "swr";
 
-interface Order {
-  id: number;
-  user: {
-    image: string;
-    name: string;
-    role: string;
-  };
-  projectName: string;
-  team: {
-    images: string[];
-  };
-  status: string;
-  budget: string;
-}
+
 
 // Define the table data using the interface
 
-
+interface Message {
+  id: number;
+  title: string;
+  description: string;
+  created_at: string; 
+  send_to: string[];
+}
 export default function BasicTableNotice({ noticeList }: any) {
-  const [selectedMessage, setSelectedMessage] = useState(null);
+const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
 
   const handleDetailsClick = (project: any) => {
     setSelectedMessage(project);
@@ -54,23 +48,24 @@ export default function BasicTableNotice({ noticeList }: any) {
 
 
    // for delete
-  const { trigger: deleteUser, isMutating } = useSWRMutation(
+  const { trigger: deleteUser } = useSWRMutation(
     "api/v1/notice",
     (url, { arg }: { arg: number }) => deleteFetcher(`${url}/${arg}`) // arg contains the id
   );
   const handleDelete = async (id: number) => {
     try {
       await deleteUser(id);
-      message.success("User deleted successfully");
+      messageApi?.success("User deleted successfully");
       mutate("api/v1/notice");
     } catch (error) {
       console.error("Delete failed:", error);
-      message.error("Failed to delete user");
+      messageApi.error("Failed to delete user");
     }
   };
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
+     {contextHolder}
       <div className="max-w-full overflow-x-auto">
         <Table>
           {/* Table Header */}
@@ -105,7 +100,7 @@ export default function BasicTableNotice({ noticeList }: any) {
 
           {/* Table Body */}
           <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-            {noticeList?.data?.map((order, index) => (
+            {noticeList?.data?.map((order:any, index:number) => (
               <TableRow key={order.id}>
                 <TableCell className="px-5 py-4 sm:px-6 text-start">
                   <div className="flex items-center gap-3">
@@ -176,7 +171,7 @@ export default function BasicTableNotice({ noticeList }: any) {
             </p>
             <p className="flex gap-2">
               <strong>Sended to:</strong>  
-              {selectedMessage?.send_to?.map((send) =>(
+              {selectedMessage?.send_to?.map((send:any) =>(
                 <p> {send} , </p>
               ))}
             </p>

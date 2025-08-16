@@ -60,14 +60,12 @@ export default function FeeHead() {
       const response = await getFetcher(`api/v1/course/fee-head/${id}`);
       const userData = response.data;
       setFormData({
-        id: id,
+        // id: id,
         name: userData?.name,
       });
-    }
-      catch (error){
+    } catch (error) {
       console.error("Failed to fetch user data for edit:", error);
-
-      }
+    }
 
     jumpToTop();
   };
@@ -86,7 +84,7 @@ export default function FeeHead() {
 
   const handleUpdate = async () => {
     try {
-      const response = await update(formData);
+      const response = await update(null , formData as any);
       mutate("api/v1/course/session");
       messageApi.open({
         type: "success",
@@ -105,12 +103,12 @@ export default function FeeHead() {
       console.log("Upload Error:", error);
     }
   };
-  
+
   const handleActive = async (isActive: boolean, id: number) => {
     console.log("isactiveaaaa ", isActive);
 
     try {
-      const response = await update({
+      const response = await update(null, {
         id: id,
         is_active: isActive,
       });
@@ -134,7 +132,7 @@ export default function FeeHead() {
     e.preventDefault();
     console.log("form", formData);
     try {
-      const response = await create(formData);
+      const response = await create( null , formData as any);
       //   mutate(
       //     (currentData: any) => [...(currentData || []), response.data],
       //     false
@@ -222,5 +220,3 @@ export default function FeeHead() {
     </div>
   );
 }
-
-

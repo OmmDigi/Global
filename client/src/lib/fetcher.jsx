@@ -8,9 +8,10 @@ const API = axios.create({
   headers: {
     "Content-Type": "application/json",
     Authorization:
-      typeof window != "undefined" ? localStorage.getItem("token") : "",
+       localStorage.getItem("token") ? localStorage.getItem("token") : "",
   },
 });
+
 
 // API.interceptors.request.use((config) => {
 //   const token = localStorage.getItem("token");
