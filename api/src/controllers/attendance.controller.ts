@@ -99,24 +99,30 @@ export const getSingleEmployeeAttendanceList = asyncErrorHandler(
 
     const queryGetAttenList = `
       WITH month_days AS (
-        SELECT generate_series(
-          date_trunc('month', to_date($2, 'DD-MM-YYYY')),
-          LEAST(
-            date_trunc('month', to_date($2, 'DD-MM-YYYY')) + interval '1 month' - interval '1 day',
-            CURRENT_DATE
-          ),
-          interval '1 day'
-        )::date AS day
+          SELECT generate_series(
+            date_trunc('month', to_date($2, 'DD-MM-YYYY')),
+            LEAST(
+              date_trunc('month', to_date($2, 'DD-MM-YYYY')) + interval '1 month' - interval '1 day',
+              CURRENT_DATE
+            ),
+            interval '1 day'
+          )::date AS day
       )
       SELECT 
-        to_char(md.day, 'DD-MM-YYYY') AS date,
-        to_char(a.in_time, 'HH12:MI am') AS in_time,
-        to_char(a.out_time, 'HH12:MI am') AS out_time,
-        a.status
+          to_char(md.day, 'DD-MM-YYYY') AS date,
+          to_char(a.in_time, 'HH12:MI am') AS in_time,
+          to_char(a.out_time, 'HH12:MI am') AS out_time,
+          CASE 
+              WHEN h.holiday_name IS NOT NULL THEN h.holiday_name  -- If holiday exists
+              WHEN EXTRACT(DOW FROM md.day) = 0 THEN 'Sunday'      -- If Sunday
+              ELSE a.status                                        -- Otherwise attendance status
+          END AS status
       FROM month_days md
       LEFT JOIN attendance a
-        ON a.date = md.day
-        AND a.employee_id = $1
+          ON a.date = md.day
+          AND a.employee_id = $1
+      LEFT JOIN holiday h
+          ON h.date = md.day
       ORDER BY md.day;
     `;
 
@@ -128,8 +134,8 @@ export const getSingleEmployeeAttendanceList = asyncErrorHandler(
         u.designation,
         COUNT(*) FILTER (WHERE a.status = 'Present') AS present_count,
         COUNT(*) FILTER (WHERE a.status = 'Absent') AS absent_count,
-        0 AS total_taken_leave,
-        0 AS total_pending_leave
+        COUNT(*) FILTER (WHERE a.status = 'Leave') AS total_taken_leave,
+        10 - (COUNT(*) FILTER (WHERE a.status = 'Leave')) AS total_pending_leave
       FROM users u
 
       LEFT JOIN attendance a

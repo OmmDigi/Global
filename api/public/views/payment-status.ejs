@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment <%= status==='success' ? 'Successful' : 'Failed' %>
+    </title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            padding: 60px 40px;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            transform: translateX(-100%);
+        }
+
+        .container.success::before {
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            animation: slideIn 0.8s ease-out 0.3s forwards;
+        }
+
+        .container.failed::before {
+            background: linear-gradient(90deg, #f44336, #d32f2f);
+            animation: slideIn 0.8s ease-out 0.3s forwards;
+        }
+
+        .icon-container {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 30px;
+            position: relative;
+            animation: iconPop 0.8s ease-out 0.2s both;
+        }
+
+        .icon {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .success-icon {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.3);
+        }
+
+        .failed-icon {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            box-shadow: 0 10px 30px rgba(244, 67, 54, 0.3);
+        }
+
+        .icon::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: ripple 2s infinite;
+        }
+
+        .checkmark {
+            position: relative;
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+        }
+
+        .checkmark::before,
+        .checkmark::after {
+            content: '';
+            position: absolute;
+            background: white;
+            border-radius: 2px;
+        }
+
+        .checkmark::before {
+            width: 4px;
+            height: 12px;
+            left: 8px;
+            top: 16px;
+            transform: rotate(45deg);
+            animation: checkmarkShort 0.4s ease-out 0.6s both;
+        }
+
+        .checkmark::after {
+            width: 4px;
+            height: 20px;
+            left: 16px;
+            top: 8px;
+            transform: rotate(-45deg);
+            animation: checkmarkLong 0.4s ease-out 0.8s both;
+        }
+
+        .cross {
+            position: relative;
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+        }
+
+        .cross::before,
+        .cross::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: 28px;
+            background: white;
+            border-radius: 2px;
+            left: 50%;
+            top: 50%;
+            transform-origin: center;
+        }
+
+        .cross::before {
+            transform: translate(-50%, -50%) rotate(45deg);
+            animation: crossLine1 0.4s ease-out 0.6s both;
+        }
+
+        .cross::after {
+            transform: translate(-50%, -50%) rotate(-45deg);
+            animation: crossLine2 0.4s ease-out 0.8s both;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            animation: fadeInUp 0.6s ease-out 0.4s both;
+        }
+
+        .success-title {
+            color: #4CAF50;
+        }
+
+        .failed-title {
+            color: #f44336;
+        }
+
+        p {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 40px;
+            line-height: 1.6;
+            animation: fadeInUp 0.6s ease-out 0.6s both;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+            animation: fadeInUp 0.6s ease-out 0.8s both;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #666;
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            border-color: #667eea;
+            color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .transaction-info {
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 1s both;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+        }
+
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            color: #888;
+            font-weight: 500;
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes iconPop {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+
+            80% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes ripple {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 1;
+            }
+
+            100% {
+                width: 120px;
+                height: 120px;
+                opacity: 0;
+            }
+        }
+
+        @keyframes checkmarkShort {
+            from {
+                height: 0;
+            }
+
+            to {
+                height: 12px;
+            }
+        }
+
+        @keyframes checkmarkLong {
+            from {
+                height: 0;
+            }
+
+            to {
+                height: 20px;
+            }
+        }
+
+        @keyframes crossLine1 {
+            from {
+                height: 0;
+            }
+
+            to {
+                height: 28px;
+            }
+        }
+
+        @keyframes crossLine2 {
+            from {
+                height: 0;
+            }
+
+            to {
+                height: 28px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 40px 24px;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container <%= status === 'success' ? 'success' : 'failed' %>">
+        <div class="icon-container">
+            <div class="icon <%= status === 'success' ? 'success-icon' : 'failed-icon' %>">
+                <% if (status==='success' ) { %>
+                    <div class="checkmark"></div>
+                    <% } else { %>
+                        <div class="cross"></div>
+                        <% } %>
+            </div>
+        </div>
+
+        <% if (status==='success' ) { %>
+            <h1 class="success-title">Payment Successful!</h1>
+            <p>Your payment has been processed successfully. You will receive a confirmation email shortly.</p>
+            <% } else { %>
+                <h1 class="failed-title">Payment Failed</h1>
+                <p>We couldn't process your payment. Please check your payment details and try again.</p>
+                <% } %>
+
+                    <% if (typeof transactionId !=='undefined' || typeof amount !=='undefined' || typeof orderId
+                        !=='undefined' ) { %>
+                        <div class="transaction-info">
+                            <% if (typeof orderId !=='undefined' ) { %>
+                                <div class="info-row">
+                                    <span class="info-label">Order ID:</span>
+                                    <span class="info-value"><%= orderId %></span>
+                                </div>
+                                <% } %>
+                                    <% if (typeof amount !=='undefined' ) { %>
+                                        <div class="info-row">
+                                            <span class="info-label">Amount:</span>
+                                            <span class="info-value">₹<%= amount %></span>
+                                        </div>
+                                        <% } %>
+                                            <% if (typeof transactionId !=='undefined' ) { %>
+                                                <div class="info-row">
+                                                    <span class="info-label">Transaction ID:</span>
+                                                    <span class="info-value">
+                                                        <%= transactionId %>
+                                                    </span>
+                                                </div>
+                                                <% } %>
+                                                    <div class="info-row">
+                                                        <span class="info-label">Date:</span>
+                                                        <span class="info-value" id="currentDate"></span>
+                                                    </div>
+                        </div>
+                        <% } %>
+
+                            <div class="buttons">
+                                <% if (status==='success' ) { %>
+                                    <a href="<%= frontendhomepage %>" class="btn btn-primary">Go Home</a>
+                                    <% } else { %>
+                                        
+                                        <a href="<%= frontendhomepage %>" class="btn btn-secondary">Go Home</a>
+                                        <% } %>
+                            </div>
+    </div>
+
+    <script>
+        // Set current date
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        // Add some interactive effects
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('mouseenter', function () {
+                this.style.transform = 'translateY(-2px) scale(1.02)';
+            });
+
+            btn.addEventListener('mouseleave', function () {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // Optional: Auto redirect after success (uncomment if needed)
+        // if ('<%= status %>' === 'success') {
+        //     setTimeout(() => {
+        //         window.location.href = '/';
+        //     }, 5000); // Redirect after 5 seconds
+        // }
+    </script>
+</body>
+
+</html>

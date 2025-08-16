@@ -12,12 +12,12 @@ import { IUserToken } from "../types";
 import { ApiResponse } from "../utils/ApiResponse";
 import { ErrorHandler } from "../utils/ErrorHandler";
 import { getAuthToken } from "../utils/getAuthToken";
-import { parsePagination } from "../utils/parsePagination";
 import {
   VCreateAdmission,
   VGetSingleAdmission,
   VGetSingleAdmissionForm,
   VUpdateAdmission,
+  VUpdateAdmissionStatus,
 } from "../validator/admission.validator";
 
 type IUserData = {
@@ -91,6 +91,8 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
       const password = admission_data?.password;
       const profileImage = admission_data?.image;
 
+      console.log(admission_data);
+
       if (!password)
         throw new ErrorHandler(400, "Account password is required", [
           "password",
@@ -150,6 +152,7 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
        `,
       [value.course_id]
     );
+
     if (rowCount === 0) throw new ErrorHandler(404, "No course found");
 
     const fee_structure = rows[0].fee_structures;
@@ -260,6 +263,21 @@ export const updateAdmissionData = asyncErrorHandler(async (req, res) => {
 export const getAdmissionList = asyncErrorHandler(async (req, res) => {
   const { rows } = await getAdmissions(req);
   res.status(200).json(new ApiResponse(200, "Admission List", rows));
+});
+
+export const updateAdmissionStatus = asyncErrorHandler(async (req, res) => {
+  const { error, value } = VUpdateAdmissionStatus.validate(req.body ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
+
+  const status_number = value.form_status == true ? 2 : 3;
+  const status_text = value.form_status == true ? "Approve" : "Cancel";
+
+  await pool.query("UPDATE fillup_forms SET status = $1 WHERE id = $2", [
+    status_number,
+    value.form_id,
+  ]);
+
+  res.status(200).json(new ApiResponse(200, `Admission ${status_text}`));
 });
 
 export const getSingleAdmission = asyncErrorHandler(async (req, res) => {
