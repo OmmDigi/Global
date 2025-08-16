@@ -10,6 +10,8 @@ import useSWR, { mutate } from "swr";
 import useSWRMutation from "swr/mutation";
 import { message } from "antd";
 
+const options = ["Option 1", "Option 2", "Option 3"];
+
 export default function Courses() {
   const [messageApi, contextHolder] = message.useMessage();
   const [id, setId] = useState<number>();
@@ -26,14 +28,18 @@ export default function Courses() {
 
   const [formData, setFormData] = useState({
     name: "",
-    session_id: sessionList?.data[0]?.id ? sessionList?.data[0]?.id : "",
-    payment_mode: "UPI",
     duration: "",
-    price: "",
+    fee_structure: [
+      { fee_head_id: "", amount: "", min_amount: "", required: false },
+      { fee_head_id: "", amount: "", min_amount: "", required: false },
+    ],
     description: "",
   });
-  console.log("sessionList", sessionList);
-  console.log("sessionListdata", sessionList?.data[0]?.id);
+  // const [fee_structure, setFormData] = useState<Entry[]>([
+  //   { id: 1, fee_head_id: "", amount: "" },
+  // ]);
+
+  // const formData = { ...formData, ...fee_structure };
 
   // create course
   const {
@@ -53,6 +59,17 @@ export default function Courses() {
     return <div>Loading ...</div>;
   }
 
+  //  get fees head
+  const {
+    data: feehead,
+    loading: feeheadLoading,
+    error: feeheadError,
+  } = useSWR("api/v1/course/fee-head", getFetcher);
+  if (feeheadLoading) {
+    return <div>Loading ...</div>;
+  }
+  console.log("feehead", feehead);
+
   // edit course
   const {
     trigger: update,
@@ -60,7 +77,6 @@ export default function Courses() {
     error,
     isMutating,
   } = useSWRMutation("api/v1/course", (url, { arg }) => putFetcher(url, arg));
-  console.log("dataUpdate", data);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -76,15 +92,7 @@ export default function Courses() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("form", formData);
-    // setFormData({
-    //   name: "",
-    //   session_id: sessionList?.data[0]?.id,
-    //   payment_mode: "UPI",
-    //   duration: "",
-    //   price: "",
-    //   description: "",
-    // });
+    console.log("formcourse", formData);
 
     try {
       const response = await create(formData);
@@ -93,15 +101,15 @@ export default function Courses() {
         type: "success",
         content: response.message,
       });
-      console.log("Upload Success:", formData);
 
       setFormData({
         name: "",
-        session_id: sessionList?.data[0]?.id,
-        payment_mode: "UPI",
         duration: "",
-        price: "",
         description: "",
+         fee_structure: [
+      { fee_head_id: "", amount: "", min_amount: "", requierd: false },
+      { fee_head_id: "", amount: "", min_amount: "", requierd: false },
+    ],
       });
     } catch (error: any) {
       messageApi.open({
@@ -122,11 +130,19 @@ export default function Courses() {
       setFormData({
         id: id,
         name: userData?.name,
-        session_id: userData?.session_id,
-        payment_mode: userData?.payment_mode,
         duration: userData?.duration,
-        price: userData?.price,
         description: userData?.description,
+        fee_structure: Array.isArray(userData?.fee_structure)
+          ? userData.fee_structure.map((item) => ({
+              fee_head_id: item.fee_head_id || "",
+              amount: item.amount || "",
+              min_amount: item.min_amount || "",
+              required: item.required || "",
+            }))
+          : [
+              { fee_head_id: "", amount: "", min_amount: "", requierd: false },
+              { fee_head_id: "", amount: "", min_amount: "", requierd: false },
+            ],
       });
 
       console.log("Edit data loaded:", userData);
@@ -146,11 +162,12 @@ export default function Courses() {
       setId(0);
       setFormData({
         name: "",
-        session_id: sessionList?.data[0]?.id ? sessionList?.data[0]?.id : "",
-        payment_mode: "UPI",
         duration: "",
-        price: "",
         description: "",
+         fee_structure: [
+      { fee_head_id: "", amount: "", min_amount: "", requierd: false },
+      { fee_head_id: "", amount: "", min_amount: "", requierd: false },
+    ],
       });
     } catch (error: any) {
       messageApi.open({
@@ -193,6 +210,37 @@ export default function Courses() {
       behavior: "smooth",
     });
   };
+
+  const handleAdd = () => {
+    setFormData((prev:any) => ({
+      ...prev,
+      fee_structure: [
+        ...prev.fee_structure,
+        { id: Date.now(), fee_head_id: "", amount: "" },
+      ],
+    }));
+  };
+
+  const handleRemove = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      fee_structure: prev.fee_structure.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleChangeEntries = (
+    index: number,
+    field: keyof Entry,
+    value: string
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      fee_structure: prev.fee_structure.map((entry, i) =>
+        i === index ? { ...entry, [field]: value } : entry
+      ),
+    }));
+  };
+
   return (
     <div>
       {contextHolder}
@@ -218,7 +266,7 @@ export default function Courses() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+                <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
                   <div>
                     <Label htmlFor="inputTwo">Duration</Label>
                     <Input
@@ -230,32 +278,89 @@ export default function Courses() {
                       placeholder="Duration"
                     />
                   </div>
-                  <div>
-                    <Label>Price</Label>
-                    <Input
-                      type="number"
-                      id="inputTwo"
-                      name="price"
-                      onChange={handleChange}
-                      value={formData.price}
-                      placeholder="Price"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-start mt-1 dark:text-gray-400 text-gray-700 mb-1">
-                      Payment Mode
-                    </label>
-                    <select
-                      id="inputTwo"
-                      name="payment_mode"
-                      onChange={handleChange}
-                      value={formData.payment_mode}
-                      className="w-full px-3 py-2 border border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700 "
-                    >
-                      <option value="Online">Online</option>
-                      <option value="Cash">Cash</option>
-                    </select>
-                  </div>
+                </div>
+                <div className="flex justify-between ">
+                  <h2 className="w-auto px-3 py-3   text-3xl   dark:hover:border-gray-800        dark:text-gray-300 text-gray-700">
+                    Add Fees Structure
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={handleAdd}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-md"
+                  >
+                    + Add More
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 gap-6 xl:grid-cols-1">
+                  {formData?.fee_structure?.map((entry, index) => (
+                    <div key={index} className="flex gap-4 items-center">
+                      <select
+                        value={entry.fee_head_id}
+                        onChange={(e) =>
+                          handleChangeEntries(
+                            index,
+                            "fee_head_id",
+                            e.target.value
+                          )
+                        }
+                        className="w-auto px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                      >
+                        <option value="">Choose</option>
+                        {feehead?.data?.map((opt, i) => (
+                          <option key={i} value={opt.id}>
+                            {opt.name}
+                          </option>
+                        ))}
+                      </select>
+
+                      <Input
+                        type="number"
+                        placeholder="Enter value"
+                        value={entry.amount}
+                        onChange={(e) =>
+                          handleChangeEntries(index, "amount", e.target.value)
+                        }
+                        className="flex-1 border px-3 py-1 rounded-md"
+                      />
+                        <Input
+                        type="number"
+                        placeholder="Enter value"
+                        value={entry.min_amount}
+                        onChange={(e) =>
+                          handleChangeEntries(index, "min_amount", e.target.value)
+                        }
+                        className="flex-1 border px-3 py-1 rounded-md"
+                      />
+                      <select
+                        value={entry.required}
+                        onChange={(e) =>
+                          handleChangeEntries(
+                            index,
+                            "required",
+                            e.target.value
+                          )
+                        }
+                        className="w-auto px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                      >
+                        <option value="">Choose</option>
+
+                        <option value="true">yes</option>
+                        <option value="false">No</option>
+                       
+                      </select>
+
+                      {formData.fee_structure.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemove(index)}
+                          className="text-red-600 font-bold text-xl"
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
+                  ))}
                 </div>
                 <div>
                   <Label>Description</Label>

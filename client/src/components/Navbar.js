@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Dialog, DialogPanel } from "@headlessui/react";
+import { Button, Dialog, DialogPanel, Label } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import ourBranch from "../components/ourBranch";
 // import Image from "../../public/image/booking.png";
@@ -9,6 +9,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { useScrollChecker } from "./useScrollChecker";
+import { Flex, message, Radio } from "antd";
+import axios from "@/lib/axios";
+
 
 export default function Navbar() {
   const router = useRouter();
@@ -17,45 +20,33 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenPopup, setIsOpenPopup] = useState(false);
-  const [imgSrc, setImgSrc] = useState("");
-  const [showNavbar, setShowNavbar] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const [isadmissionPopup, setIsadmissionPopup] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const { isScrolling, scrollingDirection } = useScrollChecker();
+    const [messageApi, contextHolder] = message.useMessage();
 
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+    category: "Student",
+  });
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
   };
 
   const openImage = (src) => {
-    setImgSrc(src);
     setIsOpenPopup(true);
+  };
+  const openAdmission = (src) => {
+    setIsadmissionPopup(true);
   };
 
   const closeModal = () => {
     setIsOpenPopup(false);
-    setTimeout(() => setImgSrc(""), 300); // Delay clearing src until after animation
+    setIsadmissionPopup(false);
   };
 
-  //   useEffect(() => {
-  //     const handleScroll = () => {
-  //       const currentScrollY = window.scrollY;
-
-  //       setShowNavbar(currentScrollY <= 300);
-  //       setLastScrollY(currentScrollY);
-  //     };
-
-  //     window.addEventListener("scroll", handleScroll);
-  //     return () => window.removeEventListener("scroll", handleScroll);
-  //   }, [lastScrollY]);
-  useEffect(() => {
-    window.addEventListener("scroll", () => {
-      if (window.scrollY > 200) {
-        setShowNavbar(false);
-      } else {
-        setShowNavbar(true);
-      }
-    });
-  });
-
+  
 
   const navigation3 = [
     {
@@ -72,7 +63,7 @@ export default function Navbar() {
     },
     {
       name: "Join Our Courses",
-      href: "/admission",
+      href: "#",
       image: "/image/form.gif",
       detail: "Admission Form",
     },
@@ -113,17 +104,73 @@ export default function Navbar() {
       router.push("/news-events");
     }
     if (index === 2) {
-      router.push("/admission");
+      openAdmission();
+      // router.push("/admission");
     }
     if (index === 4) {
       router.push("/login");
     }
     // news-events
   };
-  const { isScrolling, scrollingDirection } = useScrollChecker();
+
+  const handleNewAdmission = () => {
+    router.push("/admission");
+  };
+
+  const handleExistiongAdmission = () => {
+    setFormOpen((prev) => !prev);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+
+
+   const handleSubmit = async (e) => {
+      e.preventDefault();
+      // startTransition(async () => {
+        // await new Promise( (resolve) => setTimeout(resolve,5000)) 
+        try {
+          const response = await axios.post("api/v1/users/login", formData);
+          console.log("response_login",response);
+          
+          messageApi.open({
+            type: "success",
+            content: response.data?.message,
+          });
+  
+          localStorage.setItem("token", response.data?.data?.token);
+          localStorage.setItem("category", response.data?.data?.category);
+          router.push("/existingAdmission");
+
+        } catch (error) {
+          messageApi.open({
+            type: "error",
+            content: error.response?.data?.message ? error.response?.data?.message : "Try Again",
+          });
+          console.error("aaaa", error);
+        }
+      // });
+    };
+
+
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+  //   console.log("FormData", formData);
+  //   router.push("/existingAdmission");
+  // };
+
 
   return (
+    <>
+    {contextHolder}
     <div className="sticky  top-0 z-50">
+      
       <div className="bg-gray-300">
         <header className="inset-x-0 top-0 relative ">
           <div
@@ -420,10 +467,9 @@ export default function Navbar() {
               } shadow justify-center  p-2 lg:px-8 w-12/12 h-12  bg-white`}
             >
               <div className="  flex justify-center pb-2 pt-2 ">
-                <Link
-                  key={navigation3[2].name}
-                  href={navigation3[2].href}
-                  onClick={(e) => open(e, navigation3[2], index)}
+                <div
+                  // href={navigation3[2].href}
+                  onClick={openAdmission}
                   className={`flex  font-semibold text-sm/4 text-gray-900 transition-transform duration-300 hover:scale-105  `}
                 >
                   <Image
@@ -445,16 +491,8 @@ export default function Navbar() {
                         </span>
                       </div>
                     )}
-                    <div className={`${2 === 2 ? "hidden" : ""}`}>
-                      {navigation3[2].name}
-                    </div>
-                    <div
-                      className={`text-blue-900 ${2 === 2 ? "hidden" : ""} `}
-                    >
-                      {navigation3[2].detail}
-                    </div>
                   </div>
-                </Link>
+                </div>
               </div>
             </nav>
           </div>
@@ -507,8 +545,8 @@ export default function Navbar() {
                             OUR COURSES{" "}
                             <svg
                               className={`w-2.5 h-2.5 ml-2.5 transition-transform duration-300 ${
-                        isOpen == true ? "rotate-180 text-blue-500" : ""
-                      } `}
+                                isOpen == true ? "rotate-180 text-blue-500" : ""
+                              } `}
                               aria-hidden="true"
                               xmlns="http://www.w3.org/2000/svg"
                               fill="none"
@@ -631,11 +669,9 @@ export default function Navbar() {
             </DialogPanel>
           </Dialog>
         </header>
+
         {isOpenPopup && (
-          <div
-            className="fixed inset-0 bg-gray-500/70 flex items-center justify-center z-50 "
-            onClick={closeModal}
-          >
+          <div className="fixed inset-0 bg-gray-500/70 flex items-center justify-center z-50 ">
             {/* Close Button */}
             <button
               className="absolute top-6 right-6 text-white bg-white/20 hover:bg-white/40 p-2 rounded-full transition duration-300"
@@ -644,56 +680,57 @@ export default function Navbar() {
               <XMarkIcon aria-hidden="true" className="size-6" />
             </button>
 
-            <popup class="max-w-screen-xl mx-auto p-6 bg-white rounded-lg shadow-lg w-11/12">
-              <div class="text-center mb-6">
+            <popup className="max-w-screen-xl mx-auto p-6 bg-white rounded-lg shadow-lg w-11/12">
+              <div className="text-center mb-6">
                 <img
                   src="/image/global-logo2.png"
                   alt="Global Technical Institute Logo"
-                  class="mx-auto w-[432px] h-auto"
+                  className="mx-auto w-[432px] h-auto"
                 />
               </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <office class="p-4 bg-gray-100 rounded-lg shadow-sm">
-                  <div class="flex items-start space-x-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <office className="p-4 bg-gray-100 rounded-lg shadow-sm">
+                  <div className="flex items-start space-x-4">
                     <img
                       src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/location-40x40.png"
                       alt="Location Icon"
-                      class="w-10 h-10"
+                      className="w-10 h-10"
                     />
                     <div>
-                      <h4 class="text-lg font-semibold text-blue-700">
+                      <h4 className="text-lg font-semibold text-blue-700">
                         Head Office
                       </h4>
-                      <p class="text-gray-700">
+                      <p className="text-gray-700">
                         Beliaghata 17A, Haramohan Ghosh Lane, Kolkata 700085
                         <br />
                         Landmark: Near Surah Kanya Vidyalaya.
                       </p>
-                      <p class="mt-2 text-blue-800 font-medium">
-                        <i class="fas fa-phone-square-alt mr-2"></i>8961008489,
-                        9231551285, 9230113485
+                      <p className="mt-2 text-blue-800 font-medium">
+                        <i className="fas fa-phone-square-alt mr-2"></i>
+                        8961008489, 9231551285, 9230113485
                       </p>
                     </div>
                   </div>
                 </office>
-                <office class="p-4 bg-gray-100 rounded-lg shadow-sm">
-                  <div class="flex items-start space-x-4">
+                <office className="p-4 bg-gray-100 rounded-lg shadow-sm">
+                  <div className="flex items-start space-x-4">
                     <img
                       src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/location-40x40.png"
                       alt="Location Icon"
-                      class="w-10 h-10"
+                      className="w-10 h-10"
                     />
                     <div>
-                      <h4 class="text-lg font-semibold text-blue-700">
+                      <h4 className="text-lg font-semibold text-blue-700">
                         Garia Branch
                       </h4>
-                      <p class="text-gray-700">
+                      <p className="text-gray-700">
                         251/A/6 N.S.C bose road, Naktala, Kolkata-700047
                         <br />
                         Near : Geetanjali metro station and Naktala Sib mandir.
                       </p>
-                      <p class="mt-2 text-blue-800 font-medium">
-                        <i class="fas fa-phone-square-alt mr-2"></i>90516 29028
+                      <p className="mt-2 text-blue-800 font-medium">
+                        <i className="fas fa-phone-square-alt mr-2"></i>90516
+                        29028
                       </p>
                     </div>
                   </div>
@@ -703,8 +740,100 @@ export default function Navbar() {
           </div>
         )}
 
+        {/* pre Admission  */}
+        {isadmissionPopup && (
+          <div className="fixed inset-0 bg-gray-500/70 flex items-center justify-center z-50 ">
+            {/* Close Button */}
+            <button
+              className="absolute top-6 right-6 text-white bg-white/20 hover:bg-white/40 p-2 rounded-full transition duration-300"
+              onClick={closeModal}
+            >
+              <XMarkIcon aria-hidden="true" className="size-6" />
+            </button>
+
+            <popup className="max-w-screen-xl mx-auto p-6 bg-white rounded-lg shadow-lg w-11/12 md:w-8/12">
+              <div className="text-center mb-6">
+                <img
+                  src="/image/global-logo2.png"
+                  alt="Global Technical Institute Logo"
+                  className="mx-auto w-[432px] h-auto"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+                <office className="p-4 bg-gray-100 rounded-lg shadow-sm">
+                  <div className=" space-x-4">
+                    <div className="flex flex-wrap justify-center font-bold items-center gap-10">
+                      {formOpen ? (
+                        ""
+                      ) : (
+                        <Button
+                          onClick={handleNewAdmission}
+                          variant="contained"
+                          className="bg-blue-200 p-4  hover:bg-blue-400 hover:text-gray-100 text-lg rounded-4xl"
+                        >
+                          New Admission
+                        </Button>
+                      )}
+                      <Button
+                        onClick={handleExistiongAdmission}
+                        variant="contained"
+                        className="bg-blue-200 p-4 hover:bg-blue-400 hover:text-gray-100 text-lg rounded-4xl"
+                      >
+                        Existing Student
+                      </Button>
+                    </div>
+                  </div>
+                  {formOpen && (
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-10">
+                        <div>
+                          <label className="block text-sm font-medium text-start text-gray-700 mb-2">
+                            Set User Name
+                          </label>
+                          <input
+                            type="text"
+                            name="username"
+                            value={formData.username}
+                            onChange={handleInputChange}
+                            placeholder="User Name"
+                            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-start text-gray-700 mb-2">
+                            Set Your password
+                          </label>
+                          <input
+                            type="password"
+                            name="password"
+                            value={formData.password}
+                            onChange={handleInputChange}
+                            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="Set Your password"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-center items-center">
+                        <button
+                          className="bg-blue-400 h-8 w-20 rounded items-center text-white"
+                          type="primary"
+                        >
+                          Submit
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </office>
+               
+              </div>
+            </popup>
+          </div>
+        )}
+
         {/* <ourBranch /> */}
       </div>
     </div>
+    </>
   );
 }

@@ -7,45 +7,30 @@ import Input from "../../../components/form/input/InputField";
 import TextArea from "../../../components/form/input/TextArea";
 import Button from "../../../components/ui/button/Button";
 import Select from "../../../components/form/Select";
-import BasicTableCourses from "../../../components/tables/BasicTables/BasicTableCourses";
+import BasicTableAttandance from "../../../components/tables/BasicTables/BasicTableAttandance";
+import useSWR from "swr";
+import { getFetcher } from "../../../api/fatcher";
+import dayjs from "dayjs";
 
 export default function StuffAttandance() {
-  const [message, setMessage] = useState("");
-  const [title, setTitle] = useState("");
-  const [sessions, setSessions] = useState("");
-  const [duration, setDuration] = useState("");
-  const [price, setPrice] = useState("");
-  const [selectedValues, setSelectedValues] = useState<string[]>([]);
+ 
+   const {
+    data: attandancelist,
+    loading: attandanceLoading,
+    error: attandanceError,
+  } = useSWR("api/v1/attendance", getFetcher);
 
-  const options = [
-    { value: "online", label: "Online" },
-    { value: "cash", label: "Cash" },
-    { value: "cash-online", label: "Cash/Online" },
-  ];
-  const handleSelectChange = (value: string) => {
-    console.log("Selected value:", value);
-  };
-
-  const submit = (e: React.MouseEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setTitle("");
-    setSessions("");
-    setDuration("");
-    setPrice("");
-    setSelectedValues([]);
-    setMessage("");
-    setSelectedValues([]);
-
-    console.log("Submitted Values:", {
-      selectedValues,
-      title,
-      sessions,
-      duration,
-      price,
-      paymentMode: options.find((option) => option.value === "online")?.label,
-      message,
-    });
-  };
+  if (attandanceLoading) {
+    console.log("loading", attandanceLoading);
+  }
+  if (attandanceError) {
+    console.log("stuffError", attandanceError);
+  }
+    console.log("attandancelist", attandancelist);
+ 
+ 
+const today = new Date();
+console.log("today",dayjs(today).format("DD-MM-YYYY"));
 
   return (
     <div>
@@ -56,8 +41,8 @@ export default function StuffAttandance() {
       <PageBreadcrumb pageTitle="Stuff Attandance" />
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-1">
         <div className="space-y-6 ">
-          <ComponentCard title="Stuff Attandance">
-            <BasicTableCourses />
+          <ComponentCard title="Stuff Attandance" desc={`${dayjs(today).format("DD-MM-YYYY")}`}>
+            <BasicTableAttandance  attandancelist={attandancelist }/>
           </ComponentCard>
         </div>
       </div>

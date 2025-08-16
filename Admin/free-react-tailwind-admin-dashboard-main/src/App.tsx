@@ -19,13 +19,13 @@ import AppLayoutStudent from "./layout/student/AppLayout";
 
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/admin/Dashboard/Home";
-import FormElementsStuffStudent from "./pages/admin/Notice/FormElementsStuffStudent";
+import ManageHolidays from "./pages/admin/Notice/ManageHolidays";
 import Courses from "./pages/admin/Courses/Courses";
 import CreateEmployee from "./pages/admin/CreateEmployee/CreateEmployee";
 import InventoryManage from "./pages/admin/InventoryManage/InventoryManage";
 import PurchaseRecord from "./pages/admin/PurchaseRecord/PurchaseRecord";
 import MaintenanceRecord from "./pages/admin/MaintenanceRecord/MaintenanceRecord";
-import Admission from "./pages/admin/Admission/Admission";
+import Admission from "./pages/admin/AdmissionAdmin/AdmissionAdmin";
 import StuffAttandance from "./pages/admin/StuffAttandance/StuffAttandance";
 // student
 import HomeStudent from "./pages/student/Dashboard/Home";
@@ -37,6 +37,12 @@ import { useEffect, useState } from "react";
 import CourseDetails from "./pages/student/CourseDetails/CourseDetails";
 import Session from "./pages/admin/Session/Session";
 import Batch from "./pages/admin/Batch/Batch";
+import FeeHead from "./pages/admin/FeeHead/FeeHead";
+import CourseDetailsAdmin from "./pages/admin/CourseDetailsAdmin/CourseDetailsAdmin";
+import StuffAttandancdDetails from "./pages/admin/StuffAttandance/StuffAttandancdDetails";
+import CreateLeave from "./pages/admin/Leave/CreateLeave";
+import ManageLeave from "./pages/admin/ManageLeave/ManageLeave";
+import VendorManage from "./pages/admin/VendorManage/VendorManage";
 
 export default function App() {
   const [user, setUser] = useState<string | null>(null);
@@ -45,15 +51,28 @@ export default function App() {
     const query = new URLSearchParams(window.location.search);
     const token = query.get("token");
     const category = query.get("category");
-
-    setUser(category ? category : localStorage.getItem("category"));
-
-    if (token) localStorage.setItem("token", token);
+    const permissions = query.get("permissions");
+    if (category) {
+      setUser(category);
+    } else if (localStorage.getItem("category")) {
+      setUser(localStorage.getItem("category"));
+    } else {
+      window.location.href = "http://localhost:3000/login";
+      return;
+    }
+    if (token) {
+      localStorage.setItem("token", token);
+    }
     if (category) localStorage.setItem("category", category);
+    if (permissions) localStorage.setItem("permissions", permissions);
 
-    console.log("Token:", window.location.search);
-    console.log("Category:", category);
+    if (!localStorage.getItem("pageReloaded")) {
+      localStorage.setItem("pageReloaded", "true");
+      window.location.reload();
+    }
   }, []);
+
+  console.log("asdad", user);
 
   return (
     <>
@@ -61,33 +80,34 @@ export default function App() {
         <ScrollToTop />
         <Routes>
           {/* Dashboard Layout */}
-          {user === "Admin" && (
+          {user === "Admin" || user === "Stuff" ? (
             <Route element={<AppLayout />}>
-              <Route index path="/Admin" element={<Home />} />
-
+              <Route index path={`/`} element={<Home />} />
               {/* Others Page */}
               <Route path="/profile" element={<UserProfiles />} />
               <Route path="/calendar" element={<Calendar />} />
               <Route path="/blank" element={<Blank />} />
-
               {/* Notice */}
-              <Route
-                path="/form-elements-Stuff-Student"
-                element={<FormElementsStuffStudent />}
-              />
+              <Route path="/manageHolidays" element={<ManageHolidays />} />
               {/* Courses */}
               <Route path="/courses" element={<Courses />} />
               <Route path="/session" element={<Session />} />
               <Route path="/batch" element={<Batch />} />
-
-
-              
+              <Route path="/feeHead" element={<FeeHead />} />
               {/* Admission */}
-              <Route path="/admission" element={<Admission />} />
+              <Route path="/admissionAdmin" element={<Admission />} />
+              <Route path="/createLeave" element={<CreateLeave />} />
+              <Route path="/manageLeave" element={<ManageLeave />} />
+              <Route
+                path="/courseDetailsAdmin/:id"
+                element={<CourseDetailsAdmin />}
+              />
               {/* CreateEmployee */}
               <Route path="/create-employee" element={<CreateEmployee />} />
               {/* InventoryManage */}
               <Route path="/inventory-manage" element={<InventoryManage />} />
+              <Route path="/vendorManage" element={<VendorManage />} />
+              
               {/* PurchaseRecord */}
               <Route path="/purchase-record" element={<PurchaseRecord />} />
               {/* MaintenanceRecord */}
@@ -97,10 +117,12 @@ export default function App() {
               />
               {/* StuffAttandance */}
               <Route path="/stuff-attandance" element={<StuffAttandance />} />
-
+              <Route
+                path="/stuffAttandancdDetails/:id"
+                element={<StuffAttandancdDetails />}
+              />
               {/* Tables */}
               <Route path="/basic-tables" element={<BasicTables />} />
-
               {/* Ui Elements */}
               <Route path="/alerts" element={<Alerts />} />
               <Route path="/avatars" element={<Avatars />} />
@@ -112,13 +134,13 @@ export default function App() {
               <Route path="/line-chart" element={<LineChart />} />
               <Route path="/bar-chart" element={<BarChart />} />
             </Route>
-          )}
+          ) : null}
 
           {user === "Student" && (
             <Route element={<AppLayoutStudent />}>
-              <Route index path="/Student" element={<HomeStudent />} />
+              <Route index path="/" element={<HomeStudent />} />
 
-              <Route path="/projects/:id" element={<CourseDetails />} />
+              <Route path="/courseDetails/:id" element={<CourseDetails />} />
 
               {/* Others Page */}
               <Route path="/profile" element={<UserProfilesStudent />} />

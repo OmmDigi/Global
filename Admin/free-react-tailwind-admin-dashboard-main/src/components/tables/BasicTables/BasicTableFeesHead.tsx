@@ -21,7 +21,7 @@ interface IProps {
 
 // Define the table data using the interface
 
-export default function BasicTableSession({
+export default function BasicTableFeesHead({
   sessionList,
   onEdit,
   onActive,
@@ -33,20 +33,20 @@ export default function BasicTableSession({
     console.log(current, pageSize);
   };
 
-  // const { trigger: deleteUser, isMutating } = useSWRMutation(
-  //   "api/v1/course/session",
-  //   (url, { arg }: { arg: number }) => deleteFetcher(`${url}/${arg}`) // arg contains the id
-  // );
-  // const handleDelete = async (id: number) => {
-  //   try {
-  //     await deleteUser(id);
-  //     message.success("User deleted successfully");
-  //     mutate("api/v1/course/session");
-  //   } catch (error) {
-  //     console.error("Delete failed:", error);
-  //     message.error("Failed to delete user");
-  //   }
-  // };
+//   const { trigger: deleteUser, isMutating } = useSWRMutation(
+//     "api/v1/course/session",
+//     (url, { arg }: { arg: number }) => deleteFetcher(`${url}/${arg}`) // arg contains the id
+//   );
+//   const handleDelete = async (id: number) => {
+//     try {
+//       await deleteUser(id);
+//       message.success("User deleted successfully");
+//       mutate("api/v1/course/session");
+//     } catch (error) {
+//       console.error("Delete failed:", error);
+//       message.error("Failed to delete user");
+//     }
+//   };
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">

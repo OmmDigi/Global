@@ -139,7 +139,7 @@ const slides = [
   { id: "slide-7262", image: "image/caros10.png" },
   { id: "slide-7265", image: "image/caros11.png" },
   { id: "slide-8058", image: "image/caros12.png" },
-  { id: "slide-7272", image: "image/caros14.png" },
+  // { id: "slide-7272", image: "image/caros14.png" },
   { id: "slide-8760", image: "image/caros15.png" },
   { id: "slide-8660", image: "image/caros17.png" },
 ];
@@ -150,41 +150,43 @@ export default function Home() {
   const [textIndex, setTextIndex] = useState(0);
   const careerTexts = ["Career", "Future", "Dream Job", "Path", "Opportunity"];
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % slides.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
-  useEffect(() => {
-    const typeText = () => {
-      const fullText = careerTexts[textIndex];
-      let charIndex = 0;
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setCurrent((prev) => (prev + 1) % slides.length);
+  //   }, 3000);
+  //   return () => clearInterval(interval);
+  // }, []);
+  
 
-      const typeInterval = setInterval(() => {
-        if (charIndex <= fullText.length) {
-          setCurrentText(fullText.slice(0, charIndex));
-          charIndex++;
-        } else {
-          clearInterval(typeInterval);
-          setTimeout(() => {
-            // Erase text
-            const eraseInterval = setInterval(() => {
-              if (charIndex > 0) {
-                setCurrentText(fullText.slice(0, charIndex - 1));
-                charIndex--;
-              } else {
-                clearInterval(eraseInterval);
-                setTextIndex((prev) => (prev + 1) % careerTexts.length);
-              }
-            }, 10);
-          }, 2000);
-        }
-      }, 10);
-    };
+  // useEffect(() => {
+  //   const typeText = () => {
+  //     const fullText = careerTexts[textIndex];
+  //     let charIndex = 0;
 
-    typeText();
-  }, [textIndex]);
+  //     const typeInterval = setInterval(() => {
+  //       if (charIndex <= fullText.length) {
+  //         setCurrentText(fullText.slice(0, charIndex));
+  //         charIndex++;
+  //       } else {
+  //         clearInterval(typeInterval);
+  //         setTimeout(() => {
+  //           // Erase text
+  //           const eraseInterval = setInterval(() => {
+  //             if (charIndex > 0) {
+  //               setCurrentText(fullText.slice(0, charIndex - 1));
+  //               charIndex--;
+  //             } else {
+  //               clearInterval(eraseInterval);
+  //               setTextIndex((prev) => (prev + 1) % careerTexts.length);
+  //             }
+  //           }, 10);
+  //         }, 2000);
+  //       }
+  //     }, 10);
+  //   };
+
+  //   typeText();
+  // }, [textIndex]);
 
   return (
     <>

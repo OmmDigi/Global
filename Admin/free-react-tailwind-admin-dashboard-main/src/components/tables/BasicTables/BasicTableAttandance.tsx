@@ -6,47 +6,23 @@ import {
   TableRow,
 } from "../../ui/table";
 
+import Badge from "../../ui/badge/Badge";
 import Switch from "../../form/switch/Switch";
+import dayjs from "dayjs";
 import useSWRMutation from "swr/mutation";
 import { deleteFetcher } from "../../../api/fatcher";
-import { message } from "antd";
+import { message, Pagination, PaginationProps } from "antd";
 import { mutate } from "swr";
-import type { PaginationProps } from "antd";
-import { Pagination } from "antd";
-
-interface IProps {
-  sessionList: any;
-  onEdit: (id: number) => void;
-}
+import { useNavigate } from "react-router";
 
 // Define the table data using the interface
 
-export default function BasicTableSession({
-  sessionList,
-  onEdit,
-  onActive,
-}: IProps) {
-  const onShowSizeChange: PaginationProps["onShowSizeChange"] = (
-    current,
-    pageSize
-  ) => {
-    console.log(current, pageSize);
-  };
+const BasicTableAttandance = ({ attandancelist }: any) => {
+  const navigate = useNavigate();
 
-  // const { trigger: deleteUser, isMutating } = useSWRMutation(
-  //   "api/v1/course/session",
-  //   (url, { arg }: { arg: number }) => deleteFetcher(`${url}/${arg}`) // arg contains the id
-  // );
-  // const handleDelete = async (id: number) => {
-  //   try {
-  //     await deleteUser(id);
-  //     message.success("User deleted successfully");
-  //     mutate("api/v1/course/session");
-  //   } catch (error) {
-  //     console.error("Delete failed:", error);
-  //     message.error("Failed to delete user");
-  //   }
-  // };
+  const handleDetailsClick = (id: number) => {
+    navigate(`/stuffAttandancdDetails/${id}`);
+  };
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
@@ -59,9 +35,26 @@ export default function BasicTableSession({
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Session name
+                Stuff Name
               </TableCell>
-
+              <TableCell
+                isHeader
+                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+              >
+                Designation
+              </TableCell>
+              <TableCell
+                isHeader
+                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+              >
+                IN Time
+              </TableCell>
+              <TableCell
+                isHeader
+                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+              >
+                OUT Time
+              </TableCell>
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
@@ -72,19 +65,26 @@ export default function BasicTableSession({
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Action
+                Detail
               </TableCell>
             </TableRow>
           </TableHeader>
 
           {/* Table Body */}
           <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-            {sessionList?.data?.map((order: any) => (
+            {attandancelist?.data?.map((order: any) => (
               <TableRow key={order.id}>
                 <TableCell className="px-5 py-4 sm:px-6 text-start">
                   <div className="flex items-center gap-3">
                     <div className="block font-medium text-gray-500 text-theme-xs dark:text-gray-400]">
                       {order.id}
+                    </div>
+                    <div className="block font-medium text-gray-500 text-theme-xs dark:text-gray-400]">
+                      <img
+                        src={order.image}
+                        alt={order.name}
+                        className="h-8 w-8 rounded-full"
+                      />
                     </div>
                     <div>
                       <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
@@ -93,7 +93,24 @@ export default function BasicTableSession({
                     </div>
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                  {order.designation}
+                </TableCell>
+                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                  {order.in_time ? order.in_time : "--:--:--"}
+                </TableCell>
+                <TableCell className="px-4 py-3 text-gray-500  text-start text-theme-sm dark:text-gray-400">
+                  {order.out_time ? order.out_time : "--:--:--"}
+                </TableCell>
+                <TableCell
+                  className={`px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400`}
+                >
+                  {order.status &&
+                  <div className={`  ${order.status == "Present" ? "bg-green-300 text-gray-900 " :"bg-red-400 text-gray-900 " } p-1 rounded-2xl text-center font-semibold`}>{order.status}</div>
+                  }
+                </TableCell>
+
+                {/* <TableCell>
                   <div className="pl-4">
                     <Switch
                       label=""
@@ -103,39 +120,25 @@ export default function BasicTableSession({
                       }
                     />
                   </div>
-                </TableCell>
+                </TableCell> */}
 
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => onEdit(order.id)}
+                      onClick={() => handleDetailsClick(order.id)}
                       className="text-blue-500 hover:underline"
                     >
-                      Edit
+                      Details
                     </button>
-                    {/* <button
-                      onClick={() => handleDelete(order.id)}
-                      className="text-red-500 hover:underline"
-                    >
-                      Delete
-                    </button> */}
                   </div>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
-        {/* Pagination  */}
-        <div>
-          <Pagination
-            showSizeChanger
-            onChange={onShowSizeChange}
-            defaultCurrent={1}
-            total={500}
-            // colorPrimaryHover={'#qwe23'}
-          />
-        </div>
       </div>
     </div>
   );
-}
+};
+
+export default BasicTableAttandance;

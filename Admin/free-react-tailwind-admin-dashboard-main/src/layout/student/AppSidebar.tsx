@@ -23,18 +23,18 @@ const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
     name: "Dashboard",
-    path: "/Student",
+    path: "/",
   },
-  {
-    name: "Notice / Message",
-    icon: <ListIcon />,
-    path: "/form-elements-Student",
-  },
-  {
-    name: "Admission",
-    icon: <FaUniversity />,
-    path: "/admission",
-  },
+  // {
+  //   name: "Notice / Message",
+  //   icon: <ListIcon />,
+  //   path: "/form-elements-Student",
+  // },
+  // {
+  //   name: "Admission",
+  //   icon: <FaUniversity />,
+  //   path: "/admission",
+  // },
 ];
 
 const othersItems: NavItem[] = [

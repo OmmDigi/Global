@@ -75,6 +75,12 @@ const BasicTableCreateEmployee: React.FC<IProps> = ({ stufflist, onEdit }) => {
               >
                 Phone No
               </TableCell>
+               <TableCell
+                isHeader
+                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+              >
+                Essl ID
+              </TableCell>
 
               <TableCell
                 isHeader
@@ -117,6 +123,9 @@ const BasicTableCreateEmployee: React.FC<IProps> = ({ stufflist, onEdit }) => {
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   {order.ph_no}
                 </TableCell>
+                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                  {order.id} 
+                </TableCell>
 
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   <div className="flex items-center gap-2">
@@ -138,15 +147,7 @@ const BasicTableCreateEmployee: React.FC<IProps> = ({ stufflist, onEdit }) => {
             ))}
           </TableBody>
         </Table>
-        <div>
-          <Pagination
-            showSizeChanger
-            onChange={onShowSizeChange}
-            defaultCurrent={1}
-            total={500}
-            // colorPrimaryHover={'#qwe23'}
-          />
-        </div>
+      
       </div>
     </div>
   );

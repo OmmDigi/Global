@@ -3,6 +3,8 @@ import PageMeta from "../../../components/common/PageMeta";
 import { useEffect } from "react";
 import ComponentCard from "../../../components/common/ComponentCard";
 import BasicTableCourses from "../../../components/tables/studentTable/BasicTableCourses";
+import { getFetcher } from "../../../api/fatcher";
+import useSWR from "swr";
 
 export default function Home() {
 
@@ -18,6 +20,19 @@ export default function Home() {
     console.log("Token:", window.location.search);
     console.log("Category:", category);
   }, []);
+
+
+  const {
+    data: courseList,
+    loading: courseLoading,
+    error: courseError,
+  } = useSWR("api/v1/users/course", getFetcher);
+  if (courseLoading) {
+    return <div>Loading ...</div>;
+  }
+ 
+  console.log("courseList",courseList);
+  
   return (
     <>
       <PageMeta
@@ -28,7 +43,7 @@ export default function Home() {
         <div className="col-span-12 space-y-6 xl:col-span-7">
           {/* <EcommerceMetrics /> */}
           <ComponentCard title="Student DashBoard">
-            <BasicTableCourses /> 
+            <BasicTableCourses  courseList={courseList} /> 
           </ComponentCard>
         </div>
 

@@ -6,13 +6,14 @@ export default function MonthlyTarget() {
 
   const data = [
     ["Task", "Hours per Day"],
-    ["Cash", 8],
-    ["UPI", 2],
-    ["Cheque/NEFT", 2],
+    ["Cash", 80],
+    ["UPI", 20],
+    ["Cheque/NEFT", 11],
    
   ];
 
   const options = {
+     backgroundColor: "transparent", 
     // title: "My Daily Activities",
     pieHole: 0.4, // Creates a Donut Chart. Does not do anything when is3D is enabled
     is3D: true, // Enables 3D view
@@ -25,7 +26,7 @@ export default function MonthlyTarget() {
       position: "bottom",
       alignment: "center",
       textStyle: {
-        color: "#233238",
+        color: "#fffff",
         fontSize: 14,
       },
     },
@@ -47,7 +48,7 @@ export default function MonthlyTarget() {
           </div>
         </div>
         <div className="relative ">
-          <div className="max-h-[330px] " id="chartDarkStyle">
+          <div className="max-h-[630px] " id="chartDarkStyle">
             <Chart
               chartType="PieChart"
               data={data}

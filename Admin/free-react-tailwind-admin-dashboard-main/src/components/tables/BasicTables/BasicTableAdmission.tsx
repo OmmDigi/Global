@@ -6,103 +6,21 @@ import {
   TableRow,
 } from "../../ui/table";
 
-import Badge from "../../ui/badge/Badge";
 import Switch from "../../form/switch/Switch";
+import { useNavigate } from "react-router";
 
-interface Order {
-  id: number;
-  user: {
-    image: string;
-    name: string;
-    role: string;
-  };
-  projectName: string;
-  duration: string;
-  paymentMode: string;
-  // price: string;
-  date: string;
-  status: string;
-  budget: string;
-}
 
-// Define the table data using the interface
-const tableData: Order[] = [
-  {
-    id: 1,
-    user: {
-      image: "/images/user/user-17.jpg",
-      name: "Lindsey Curtis",
-      role: "Web Designer",
-    },
-    projectName: "Agency Website",
-    date: "12/07/2-25",
-    duration: "2 ",
-    paymentMode: "oline",
-    budget: "3.9K",
-    status: "Active",
-  },
-  {
-    id: 2,
-    user: {
-      image: "/images/user/user-18.jpg",
-      name: "Kaiya George",
-      role: "Project Manager",
-    },
-    projectName: "Technology",
-    date: "12/07/2-25",
-    duration: "2 ",
-    paymentMode: "oline",
-    budget: "24.9K",
-    status: "Pending",
-  },
-  {
-    id: 3,
-    user: {
-      image: "/images/user/user-17.jpg",
-      name: "Zain Geidt",
-      role: "Content Writing",
-    },
-    projectName: "Blog Writing",
-    date: "12/07/2-25",
-    duration: "2 ",
-    paymentMode: "oline",
-    budget: "12.7K",
-    status: "Active",
-  },
-  {
-    id: 4,
-    user: {
-      image: "/images/user/user-20.jpg",
-      name: "Abram Schleifer",
-      role: "Digital Marketer",
-    },
-    projectName: "Social Media",
-    date: "12/07/2-25",
-    duration: "2 ",
-    paymentMode: "oline",
-    budget: "2.8K",
-    status: "Cancel",
-  },
-  {
-    id: 5,
-    user: {
-      image: "/images/user/user-21.jpg",
-      name: "Carla George",
-      role: "Front-end Developer",
-    },
-    projectName: "Website",
-    date: "12/07/2-25",
-    duration: "2 ",
-    paymentMode: "oline",
-    budget: "4.5K",
-    status: "Active",
-  },
-];
 
-export default function BasicTableAdmission() {
+export default function BasicTableAdmission({admissionlist,onEdit}:any) {
+  const navigate = useNavigate();
+
   const handleSwitchChange = (checked: boolean) => {
     console.log("Switch is now:", checked ? "ON" : "OFF");
   };
+  
+  const handleDetailsClick = (id: number) => {
+  navigate(`/courseDetailsAdmin/${id}`);
+};
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
@@ -115,38 +33,39 @@ export default function BasicTableAdmission() {
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
+                Student name
+              </TableCell>
+              <TableCell
+                isHeader
+                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+              >
                 Course name
               </TableCell>
-              <TableCell
+               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Session
+                Batch
               </TableCell>
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Duration
+                Form No
               </TableCell>
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Payment Mode
+                Total Fees
               </TableCell>
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Price
+                Due Amount
               </TableCell>
-              <TableCell
-                isHeader
-                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >
-                Date
-              </TableCell>
+              
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
@@ -159,47 +78,53 @@ export default function BasicTableAdmission() {
               >
                 Action
               </TableCell>
+               <TableCell
+                isHeader
+                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+              >
+                Details
+              </TableCell>
             </TableRow>
           </TableHeader>
 
           {/* Table Body */}
           <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-            {tableData.map((order) => (
-              <TableRow key={order.id}>
+            {admissionlist?.data?.map((order,index) => (
+              <TableRow key={index}>
                 <TableCell className="px-5 py-4 sm:px-6 text-start">
                   <div className="flex items-center gap-3">
                     <div className="block font-medium text-gray-500 text-theme-xs dark:text-gray-400]">
                       <img
-                        src={order.user.image}
-                        alt={order.user.name}
+                        src={order.student_image}
+                        alt={order.student_image}
                         className="h-8 w-8 rounded-full"
                       />
                     </div>
                     <div>
                       <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                        {order.user.name}
+                        {order.student_name}
                       </span>
-                      <span className="block text-gray-500 text-theme-xs dark:text-gray-400">
-                        {order.user.role}
-                      </span>
+                      
                     </div>
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  {order.projectName}
+                  {order.course_name }
+                </TableCell>
+                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                  {order.batch_name }
+                </TableCell>
+                
+                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                  {order.form_name}
                 </TableCell>
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  {order.duration}
+                  {order.course_fee}
                 </TableCell>
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  {order.paymentMode}
+                <TableCell className={`px-4 py-3 ${ Number(order.due_amount) === 0 ? "text-green-500 dark:text-green-400" : "text-red-500 dark:text-red-500 " }  text-start text-theme-sm `}>
+                  {order.due_amount}
                 </TableCell>
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  {order.budget}
-                </TableCell>
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  {order.date}
-                </TableCell>
+              
                 <TableCell>
                   <div className="pl-4">
                     <Switch
@@ -212,11 +137,16 @@ export default function BasicTableAdmission() {
 
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   <div className="flex items-center gap-2">
-                    <button className="text-blue-500 hover:underline">
+                    <button  onClick={() => onEdit(order.form_id)} className="text-blue-500 hover:underline">
                       Edit
                     </button>
-                    <button className="text-red-500 hover:underline">
-                      Delete
+                  </div>
+                </TableCell>
+
+                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                  <div className="flex items-center gap-2">
+                    <button  onClick={() => handleDetailsClick(order.form_id)} className="text-blue-500 hover:underline">
+                      Details
                     </button>
                   </div>
                 </TableCell>
