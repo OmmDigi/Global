@@ -6,35 +6,24 @@ import {
   TableRow,
 } from "../../ui/table";
 
-import Badge from "../../ui/badge/Badge";
-import { Pagination, PaginationProps } from "antd";
 import { useState } from "react";
 import { BiSolidShow } from "react-icons/bi";
-import { deleteFetcher } from "../../../api/fatcher";
-import useSWRMutation from "swr/mutation";
 
-interface Order {
-  id: number;
-  user: {
-    image: string;
-    name: string;
-    role: string;
-  };
-  projectName: string;
-  team: {
-    images: string[];
-  };
-  status: string;
-  budget: string;
-}
+
 
 // Define the table data using the interface
-
+interface Message {
+  id: number;
+  name: string;
+  reason: string;
+  from_date: string; 
+  to_date:string ;
+}
 export default function BasicTableManageLeave({
   leaveList,
   handleChange,
 }: any) {
-  const [selectedMessage, setSelectedMessage] = useState(null);
+  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [showModal, setShowModal] = useState(false);
 
   const handleDetailsClick = (project: any) => {
@@ -90,7 +79,7 @@ export default function BasicTableManageLeave({
 
           {/* Table Body */}
           <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-            {leaveList?.data?.map((order, index) => (
+            {leaveList?.data?.map((order:any, index:number) => (
               <TableRow key={order.id}>
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   <div className="flex items-center gap-3">

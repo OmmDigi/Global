@@ -190,7 +190,7 @@ function page() {
 
     uploadFiles({
       url: `${uploadUrl}api/v1/upload/multiple`,
-      files: files,
+      files: [files],
       folder: "admission_doc",
       onUploading(percent) {},
       onUploaded(result) {

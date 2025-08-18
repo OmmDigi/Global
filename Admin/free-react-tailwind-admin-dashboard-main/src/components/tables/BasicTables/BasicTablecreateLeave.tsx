@@ -15,23 +15,22 @@ import type { PaginationProps } from "antd";
 import { Pagination } from "antd";
 
 interface IProps {
-  sessionList: any;
-  onEdit: (id: number) => void;
+  leaveList: any;
+
 }
 
 // Define the table data using the interface
 
 export default function BasicTablecreateLeave({
   leaveList,
-  onEdit,
-  onActive,
+ 
 }: IProps) {
-  const onShowSizeChange: PaginationProps["onShowSizeChange"] = (
-    current,
-    pageSize
-  ) => {
-    console.log(current, pageSize);
-  };
+  // const onShowSizeChange: PaginationProps["onShowSizeChange"] = (
+  //   current,
+  //   pageSize
+  // ) => {
+  //   console.log(current, pageSize);
+  // };
 
   const { trigger: deleteUser, isMutating } = useSWRMutation(
     "api/v1/leave",
@@ -129,7 +128,7 @@ export default function BasicTablecreateLeave({
                       >
                         Delete
                       </button>
-                    ) : order?.status == "Approved" ? "😊" : "😢"}
+                    ) : order?.status == "Approved" ? <p className="text-2xl">😊</p> : <p className="text-2xl">😢</p>}
                   </div>
                 </TableCell>
               </TableRow>
@@ -137,7 +136,7 @@ export default function BasicTablecreateLeave({
           </TableBody>
         </Table>
         {/* Pagination  */}
-        <div>
+        {/* <div>
           <Pagination
             showSizeChanger
             onChange={onShowSizeChange}
@@ -145,7 +144,7 @@ export default function BasicTablecreateLeave({
             total={500}
             // colorPrimaryHover={'#qwe23'}
           />
-        </div>
+        </div> */}
       </div>
     </div>
   );

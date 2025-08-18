@@ -6,10 +6,10 @@ import BasicTableAdmission from "../../../components/tables/BasicTables/BasicTab
 
 import { Button, message, Steps, theme } from "antd";
 import { Minus, Plus, Upload, X } from "lucide-react";
-import { ToWords } from "to-words";
 import useSWR from "swr";
 import {
   getFetcher,
+  patchFetcher,
   postFetcher,
   putFetcher,
   uploadUrl,
@@ -17,21 +17,7 @@ import {
 import useSWRMutation from "swr/mutation";
 import { uploadFiles } from "../../../utils/uploadFile";
 
-const toWords = new ToWords();
-const steps = [
-  {
-    title: "First",
-    content: "First-content",
-  },
-  {
-    title: "Second",
-    content: "Second-content",
-  },
-  {
-    title: "Last",
-    content: "Last-content",
-  },
-];
+
 
 export default function AdmissionAdmin() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -45,7 +31,6 @@ export default function AdmissionAdmin() {
     courseName: "",
     sessionName: "",
     batchName: "",
-    date: "",
     image: "",
     candidateName: "",
     fatherName: "",
@@ -125,19 +110,17 @@ export default function AdmissionAdmin() {
   // get Course list
   const {
     data: courseList,
-    loading: courseLoading,
-    error: courseError,
+    // isLoading: courseLoading,
   } = useSWR("api/v1/course/dropdown", getFetcher);
-  if (courseLoading) {
-    return <div>Loading ...</div>;
-  }
+  // if (courseLoading) {
+  //   return <div>Loading ...</div>;
+  // }
   console.log("courseList", courseList);
 
   // get Admission list
   const {
     data: admissionlist,
-    loading: admissionLoading,
-    error: admissionError,
+    isLoading: admissionLoading,
     mutate,
   } = useSWR("api/v1/admission", getFetcher);
   if (admissionLoading) {
@@ -148,21 +131,19 @@ export default function AdmissionAdmin() {
 
   const {
     trigger: create,
-    data: dataCreate,
-    error: dataError,
-    isMutating: dataIsloading,
+   
   } = useSWRMutation("api/v1/admission/create", (url, { arg }) =>
     postFetcher(url, arg)
   );
 
   // update course
-  const {
-    trigger: update,
-    data,
-    error,
-    isMutating,
-  } = useSWRMutation("api/v1/admission/form", (url, { arg }) =>
-    putFetcher(url, arg)
+  const { trigger: update } = useSWRMutation(
+    "api/v1/admission/form",
+    (url, { arg }) => putFetcher(url, arg)
+  );
+  const { trigger: update2 } = useSWRMutation(
+    "api/v1/admission",
+    (url, { arg }) => patchFetcher(url, arg)
   );
 
   const handleInputChange = (
@@ -175,7 +156,7 @@ export default function AdmissionAdmin() {
     }));
   };
 
-  const handleFileChange = (e, name) => {
+  const handleFileChange = (e:any, name:string) => {
     const files = e.target.files;
 
     console.log("handleFileChange", files);
@@ -199,7 +180,7 @@ export default function AdmissionAdmin() {
     field: string,
     value: string
   ) => {
-    setFormData((prev) => ({
+    setFormData((prev:any) => ({
       ...prev,
       education: {
         ...prev.education,
@@ -211,16 +192,16 @@ export default function AdmissionAdmin() {
     }));
   };
 
-  const handleFileUpload = (e, type) => {
+  const handleFileUpload = (e:any, type:string) => {
     const file = e.target.files[0];
     console.log("file", file);
 
     if (file) {
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = (event: ProgressEvent<FileReader>) => {
+        const result = event.target?.result as string;
         if (type === "photo") {
-          console.log("e.target.result", e.target.result);
-          setPhoto(e.target.result);
+          setPhoto( result as any);
         }
       };
       reader.readAsDataURL(file);
@@ -228,12 +209,12 @@ export default function AdmissionAdmin() {
 
       uploadFiles({
         url: `${uploadUrl}api/v1/upload/multiple`,
-        files: file,
+        files: [file],
         folder: "profile_image",
         onUploaded(result) {
           setFormData((prev) => ({
             ...prev,
-            image: result[0],
+            image: result[0]?.downloadUrl,
           }));
         },
       });
@@ -247,7 +228,7 @@ export default function AdmissionAdmin() {
   };
 
   const removeFile2 = (fieldName: string, index: number) => {
-    setFormData((prev) => ({
+    setFormData((prev:any) => ({
       ...prev,
       [fieldName]: prev[fieldName]?.filter((_: any, i: number) => i !== index),
     }));
@@ -261,9 +242,11 @@ export default function AdmissionAdmin() {
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    console.log("formDataaa", formData);
+
     e.preventDefault();
     try {
-      const response = await create(admissionForm);
+      const response = await create(null ,admissionForm as any);
       messageApi.open({
         type: "success",
         content: response.message,
@@ -279,7 +262,7 @@ export default function AdmissionAdmin() {
         });
       }
       setCurrent(0);
-    } catch (error) {
+    } catch (error:any) {
       messageApi.open({
         type: "error",
         content: error.response?.data?.message
@@ -300,10 +283,11 @@ export default function AdmissionAdmin() {
       const userData = JSON.parse(response?.data?.admission_details ?? "{}");
       console.log("userDataform", userData);
       const tempObj: any = {};
-
+      
       Object.entries(userData).forEach(([key, value]) => {
         tempObj[key] = value;
       });
+
       //  setCurrent(0);
       setFormData(tempObj);
       setEditedFormId(response?.data?.form_id);
@@ -312,7 +296,8 @@ export default function AdmissionAdmin() {
       // alert(userData?.courseName);
 
       console.log("Edit data loaded:", userData);
-    } catch (error) {
+    } 
+    catch (error) {
       console.error("Failed to fetch user data for edit:", error);
     }
   };
@@ -323,7 +308,7 @@ export default function AdmissionAdmin() {
   };
   const handleUpdate = async () => {
     try {
-      const response = await update(admissionFormUpdate);
+      const response = await update(null , admissionFormUpdate as any);
       messageApi.open({
         type: "success",
         content: response.message,
@@ -346,6 +331,30 @@ export default function AdmissionAdmin() {
         content: error.response?.data?.message
           ? error.response?.data?.message
           : "Try Again",
+      });
+      console.log("Upload Error:", error);
+    }
+  };
+
+  const handleActive = async (isActive: boolean, id: number) => {
+    console.log("isactiveaaaa ", id);
+
+    try {
+      const response = await update2( null , {
+        form_id: id,
+        form_status: isActive,
+      });
+
+      mutate();
+      messageApi.open({
+        type: "success",
+        content: response.message,
+      });
+      console.log("Upload Success:", response);
+    } catch (error: any) {
+      messageApi.open({
+        type: "error",
+        content: error.response?.data?.message,
       });
       console.log("Upload Error:", error);
     }
@@ -386,18 +395,18 @@ export default function AdmissionAdmin() {
   };
   const [selectedCourseId, setSelectedCourseId] = useState(null);
 
-  const handleCourseChange = (e) => {
+  const handleCourseChange = (e:any) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
     const courseId = parseInt(e.target.value);
-    setSelectedCourseId(courseId);
+    setSelectedCourseId(courseId as any );
   };
 
   const selectedCourse = Array.isArray(courseList?.data)
-    ? courseList?.data?.find((course) => course.id == selectedCourseId)
+    ? courseList?.data?.find((course :any ) => course.id == selectedCourseId)
     : null;
 
   return (
@@ -464,7 +473,7 @@ export default function AdmissionAdmin() {
                               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
                               <option value="">Option</option>
-                              {courseList?.data?.map((data, index) => (
+                              {courseList?.data?.map((data:any, index:number) => (
                                 <option key={index} value={`${data?.id}`}>
                                   {data?.course_name}
                                 </option>
@@ -488,7 +497,7 @@ export default function AdmissionAdmin() {
                                 <option value="">Option</option>
 
                                 {selectedCourse?.session?.map(
-                                  (session, index) => (
+                                  (session:any, index:number) => (
                                     <option
                                       key={index}
                                       value={`${session?.session_id}`}
@@ -512,7 +521,7 @@ export default function AdmissionAdmin() {
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                               >
                                 <option value="">Option</option>
-                                {selectedCourse?.batch?.map((batch, index) => (
+                                {selectedCourse?.batch?.map((batch:any, index:number) => (
                                   <option
                                     key={index}
                                     value={`${batch?.batch_id}`}
@@ -561,6 +570,7 @@ export default function AdmissionAdmin() {
                                         </p>
                                         <label className="cursor-pointer">
                                           <input
+                                            name="image"
                                             type="file"
                                             accept="image/*"
                                             onChange={(e) =>
@@ -982,13 +992,13 @@ export default function AdmissionAdmin() {
                                     0 && (
                                     <div className="mt-2 space-y-1">
                                       {formData?.selfAttestedLastResult?.map(
-                                        (file, index) => (
+                                        (file:any, index:number) => (
                                           <div
                                             key={index}
                                             className="flex items-center justify-between bg-gray-50 p-2 rounded text-sm"
                                           >
                                             <span className="truncate">
-                                              {file.name}
+                                              {file?.name}
                                             </span>
                                             <button
                                               type="button"
@@ -1026,13 +1036,13 @@ export default function AdmissionAdmin() {
                                   {formData?.ageProofAdmitCard?.length > 0 && (
                                     <div className="mt-2 space-y-1">
                                       {formData?.ageProofAdmitCard?.map(
-                                        (file, index) => (
+                                        (file:any, index:number) => (
                                           <div
                                             key={index}
                                             className="flex items-center justify-between bg-gray-50 p-2 rounded text-sm"
                                           >
                                             <span className="truncate">
-                                              {file.name}
+                                              {file?.name}
                                             </span>
                                             <button
                                               type="button"
@@ -1070,7 +1080,7 @@ export default function AdmissionAdmin() {
                                   {formData?.addressProof?.length > 0 && (
                                     <div className="mt-2 space-y-1">
                                       {formData?.addressProof?.map(
-                                        (file, index) => (
+                                        (file :any, index:number) => (
                                           <div
                                             key={index}
                                             className="flex items-center justify-between bg-gray-50 p-2 rounded text-sm"
@@ -1700,6 +1710,7 @@ export default function AdmissionAdmin() {
             <BasicTableAdmission
               admissionlist={admissionlist}
               onEdit={handleEdit}
+              onActive={handleActive}
             />
           </ComponentCard>
         </div>

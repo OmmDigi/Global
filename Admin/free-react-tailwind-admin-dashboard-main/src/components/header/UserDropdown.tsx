@@ -18,8 +18,8 @@ export default function UserDropdown() {
     localStorage.removeItem("token");
     localStorage.removeItem("category");
     localStorage.removeItem("permissions");
-
-    window.location.href = "http://192.168.0.214:3000/";
+    localStorage.removeItem("pageReloaded");
+    window.location.href = import.meta.env.VITE_HOMEPAGE_URL;
   };
 
   return (

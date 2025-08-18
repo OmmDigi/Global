@@ -7,11 +7,16 @@ import tseslint from 'typescript-eslint'
 export default tseslint.config(
   { ignores: ['dist'] },
   {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    // ⚠️ remove "recommended" type-checking configs
+    extends: [js.configs.recommended, ...tseslint.configs.recommendedTypeChecked], // ❌ remove this line
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
+      parser: tseslint.parser, // use parser only
+      parserOptions: {
+        project: null, // disable type-aware linting
+      },
     },
     plugins: {
       'react-hooks': reactHooks,

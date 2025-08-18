@@ -15,17 +15,18 @@ import useSWR, { mutate } from "swr";
 import useSWRMutation from "swr/mutation";
 import { message } from "antd";
 import BasicTableHoliday from "../../../components/tables/BasicTables/BasicTableHoliday";
-
+type LeaveForm = {
+  id: string | number; // or just string, depending on your `id`
+  date: string;
+  holiday_name: string;
+};
 export default function ManageHolidays() {
   const [messageApi, contextHolder] = message.useMessage();
 
-  const [selectedValue, setSelectedValue] = useState<string>("Stuff");
-  const [dropdownOpen, setDropdownOpen] = useState(
-    "Select Stuff Catagory / Catagories"
-  );
+
   const [id, setId] = useState<number>();
-  const [formData, setFormData] = useState({
-      id:id,
+  const [formData, setFormData] = useState<LeaveForm>({
+    id: "",
     date: "",
     holiday_name: "",
   });
@@ -36,26 +37,20 @@ export default function ManageHolidays() {
     loading: stuffLoading,
     error: stuffError,
   } = useSWR("api/v1/users", getFetcher);
-  if (stuffLoading) {
-    return <div>Loading ...</div>;
-  }
-
-  console.log("stufflist", stufflist);
-
-  // get course list
-
+    
+  
   // create Holiday
-  const {
-    trigger: create,
-    data: dataCreate,
-    error: dataError,
-    isMutating: dataIsloading,
-  } = useSWRMutation("api/v1/holiday", (url, { arg }) => postFetcher(url, arg));
+  const { trigger: create } = useSWRMutation("api/v1/holiday", (url, { arg }) =>
+    postFetcher(url, arg)
+);
+if (stuffLoading) {
+  return <div>Loading ...</div>;
+}
 
   // get Holiday List
   const {
     data: holidayList,
-    loading: noticeLoading,
+    isLoading: noticeLoading,
     error: noticeError,
   } = useSWR("api/v1/holiday", getFetcher);
 
@@ -66,9 +61,7 @@ export default function ManageHolidays() {
   // Update course
   const {
     trigger: update,
-    data,
-    error,
-    isMutating,
+  
   } = useSWRMutation("api/v1/holiday", (url, { arg }) => putFetcher(url, arg));
 
   console.log("holidayList", holidayList);
@@ -77,7 +70,7 @@ export default function ManageHolidays() {
     e.preventDefault();
 
     try {
-      const response = await create(formData);
+      const response = await create(formData as any);
       mutate(
         (currentData: any) => [...(currentData || []), response.data],
         false
@@ -101,6 +94,7 @@ export default function ManageHolidays() {
     }
   };
 
+
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -121,8 +115,8 @@ export default function ManageHolidays() {
       const response = await getFetcher(`api/v1/holiday/${id}`);
       const userData = response.data;
       setFormData({
-        id:id
-,        date: userData?.date,
+        id: id,
+        date: userData?.date,
         holiday_name: userData?.holiday_name,
       });
 
@@ -134,7 +128,7 @@ export default function ManageHolidays() {
 
   const handleUpdate = async () => {
     try {
-      const response = await update(formData);
+      const response = await update(formData as any);
       mutate("api/v1/holiday?limit=-1");
       messageApi.open({
         type: "success",
@@ -168,7 +162,7 @@ export default function ManageHolidays() {
   //       content: response.message,
   //     });
   //     mutate("api/v1/holiday");
-  //   } 
+  //   }
   //   catch (error: any) {
   //     messageApi.open({
   //       type: "error",

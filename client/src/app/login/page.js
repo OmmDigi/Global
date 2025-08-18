@@ -67,10 +67,12 @@ function page() {
         const queryString = new URLSearchParams({
           token: response.data?.data?.token,
           category: response.data?.data?.category,
+          id: response.data?.data?.id,
           permissions: response?.data?.data?.permissions,
         });
         route.push(
-          `http://192.168.0.214:5173/?${queryString}`
+          // `http://192.168.0.214:5173/home?${queryString}`
+          `${process.env.NEXT_PUBLIC_ADMIN}home?${queryString}`
         );
       } catch (error) {
         messageApi.open({

@@ -12,22 +12,21 @@ import MultiSelectName from "../../../components/form/MultiSelectName";
 
 interface Option {
   name: string;
- 
 }
 
 const options: Option[] = [
-  { name: "JAN", },
-  { name: "FEB", },
-  { name: "MER", },
-  { name: "APR", },
-  { name: "MAY",  },
-  { name: "JUN",  },
-  { name: "JULY", },
-  { name: "AUG",  },
-  { name: "SEPT", },
-  { name: "OCT",  },
-  { name: "NOV",  },
-  { name: "DEC",  },
+  { name: "JAN" },
+  { name: "FEB" },
+  { name: "MER" },
+  { name: "APR" },
+  { name: "MAY" },
+  { name: "JUN" },
+  { name: "JULY" },
+  { name: "AUG" },
+  { name: "SEPT" },
+  { name: "OCT" },
+  { name: "NOV" },
+  { name: "DEC" },
 ];
 export default function Batch() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -41,12 +40,9 @@ export default function Batch() {
   //   get Course list
   const {
     data: courseList,
-    loading: courseLoading,
-    error: courseError,
+  
   } = useSWR("api/v1/course?is_active=true", getFetcher);
-  if (courseLoading) {
-    return <div>Loading ...</div>;
-  }
+
 
   //   get session list
   const {
@@ -61,9 +57,6 @@ export default function Batch() {
   //   create Batch
   const {
     trigger: create,
-    data: dataCreate,
-    error: dataError,
-    isMutating: dataIsloading,
   } = useSWRMutation("api/v1/course/batch", (url, { arg }) =>
     postFetcher(url, arg)
   );
@@ -71,7 +64,7 @@ export default function Batch() {
   //   get batch list
   const {
     data: batchList,
-    loading: batchLoading,
+    isLoading: batchLoading,
     error: batchError,
   } = useSWR("api/v1/course/batch", getFetcher);
   if (sessionLoading) {
@@ -95,21 +88,7 @@ export default function Batch() {
     putFetcher(url, arg)
   );
 
-  const handleEdit = async (id: number) => {
-    try {
-      setId(id);
-      const response = await getFetcher(`api/v1/course/batch/${id}`);
-      const userData = response.data;
-      setFormData({
-        id: id,
-        name: userData?.name,
-      });
-    } catch (error) {
-      console.error("Failed to fetch user data for edit:", error);
-    }
-
-    jumpToTop();
-  };
+ 
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -232,6 +211,7 @@ export default function Batch() {
                       onChange={handleChange}
                       className="w-full px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
                     >
+                      <option value="">Choose</option>
                       {courseList?.data?.map((data, index) => (
                         <div key={index}>
                           <option value={data?.id}>{data?.name}</option>
@@ -249,6 +229,7 @@ export default function Batch() {
                       onChange={handleChange}
                       className="w-full px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
                     >
+                      <option value="">Choose</option>
                       {sessionList?.data?.map((data, index) => (
                         <div key={index}>
                           <option value={data?.id}>{data?.name}</option>
@@ -260,7 +241,7 @@ export default function Batch() {
                     <Label htmlFor="inputOne">{"Select Batch Month"}</Label>
                     <MultiSelectName
                       options={options}
-                      selectedValues={formData.month_names}
+                      selectedValues={formData.month_names }
                       onChange={(selected) =>
                         setFormData((prev) => ({
                           ...prev,

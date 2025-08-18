@@ -1,5 +1,5 @@
 import PageMeta from "../../../components/common/PageMeta";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import { useNavigate, useParams } from "react-router-dom";
 import { message, Radio } from "antd";
@@ -15,8 +15,8 @@ export default function CourseDetails() {
   // const router = useRouter();
 
   const [messageApi, contextHolder] = message.useMessage();
+  const [isPending, startTransition] = useTransition();
 
-  // const [feesStructure, setFeesStructure] = useState("");
   const [enteredAmounts, setEnteredAmounts] = useState({});
   const [paymentMode, setPaymentMode] = useState("");
   const [paymentDetails, setPaymentDetails] = useState("");
@@ -85,23 +85,25 @@ export default function CourseDetails() {
 
     // setFormData2(finalFormData);
     console.log("Submitted FormData:", finalFormData);
-    try {
-      const response = await create2(finalFormData);
-      messageApi.open({
-        type: "success",
-        content: response.message,
-      });
-      refetch();
-      window.location.href = response?.data?.payment_page_url;
-    } catch (error) {
-      messageApi.open({
-        type: "error",
-        content: error?.response?.data?.message
-          ? error?.response?.data?.message
-          : "Try Again",
-      });
-      console.log("Upload Error:", error);
-    }
+    startTransition(async () => {
+      try {
+        const response = await create2(finalFormData);
+        messageApi.open({
+          type: "success",
+          content: response.message,
+        });
+        refetch();
+        window.location.href = response?.data?.payment_page_url;
+      } catch (error) {
+        messageApi.open({
+          type: "error",
+          content: error?.response?.data?.message
+            ? error?.response?.data?.message
+            : "Try Again",
+        });
+        console.log("Upload Error:", error);
+      }
+    });
   };
 
   // const mutateClick = () => {
@@ -123,7 +125,7 @@ export default function CourseDetails() {
             <BasicTableNotice />
           </ComponentCard> */}
 
-          <h1 className="text-gray-800 dark:text-amber-50 text-7xl">{id}</h1>
+          {/* <h1 className="text-gray-800 dark:text-amber-50 text-7xl">{id}</h1> */}
         </div>
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[35%_65%]">
           <div className="space-y-6  ">
@@ -131,7 +133,8 @@ export default function CourseDetails() {
               <div className="space-y-6">
                 <div className=" font-medium flex justify-center text-gray-500 text-theme-xs dark:text-gray-400 mb-10">
                   <img
-                    src="/images/chat/chat.jpg"
+                   src={feesStructure?.data?.student_image ? feesStructure?.data?.student_image : "/images/chat/chat.jpg"}
+                    // src="/images/chat/chat.jpg"
                     alt="/images/chat/chat.jpg"
                     className="h-30 w-30 rounded-full"
                   />
@@ -218,17 +221,30 @@ export default function CourseDetails() {
                                     {item.due_amount}
                                   </span>
                                 </label>
-                                <input
-                                  disabled={
-                                    Number(item?.due_amount) === 0
-                                      ? true
-                                      : false
-                                  }
-                                  type="number"
-                                  // value={formData2.fee_structure_info.fee_head_id}
-                                  onChange={(e) => handleAmountChange(e, item)}
-                                  className="w-32 px-2 py-1 border rounded"
-                                />
+                                <div>
+                                  <input
+                                    disabled={
+                                      Number(item?.due_amount) === 0
+                                        ? true
+                                        : false
+                                    }
+                                    type="number"
+                                    min={item?.min_amount}
+                                    max={item?.price}
+                                    // value={formData2.fee_structure_info.fee_head_id}
+                                    onChange={(e) =>
+                                      handleAmountChange(e, item)
+                                    }
+                                    className="w-32 px-2 py-1 border rounded"
+                                  />
+                                  {item?.min_amount > 0 &&
+                                  item?.due_amount > 0 ? (
+                                    <p className="text-xs text-red-300">
+                                      {" "}
+                                      Minimum to pay {item?.min_amount}
+                                    </p>
+                                  ) : null}
+                                </div>
                               </div>
                             </div>
                           );
@@ -252,11 +268,16 @@ export default function CourseDetails() {
                       <div className="space-x-4">
                         <div className="flex flex-wrap justify-center font-bold items-center gap-10">
                           <button
+                            disabled={isPending}
                             type="submit"
                             // onClick={mutateClick}
                             className="bg-blue-200 p-4 hover:bg-blue-400 hover:text-gray-100 text-lg rounded-4xl"
                           >
-                            Click For Payment
+                            {isPending ? (
+                              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                              " Click For Payment"
+                            )}
                           </button>
                         </div>
                       </div>

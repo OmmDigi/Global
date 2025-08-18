@@ -1,8 +1,9 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router";
+import { BrowserRouter as Router } from "react-router";
+import { Routes, Route } from "react-router-dom";
+
 import SignIn from "./pages/admin/AuthPages/SignIn";
 import SignUp from "./pages/admin/AuthPages/SignUp";
 import UserProfiles from "./pages/admin/UserProfiles";
-import NotFound from "./pages/admin/OtherPage/NotFound";
 import Videos from "./pages/admin/UiElements/Videos";
 import Images from "./pages/admin/UiElements/Images";
 import Alerts from "./pages/admin/UiElements/Alerts";
@@ -19,7 +20,7 @@ import AppLayoutStudent from "./layout/student/AppLayout";
 
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/admin/Dashboard/Home";
-import ManageHolidays from "./pages/admin/Notice/ManageHolidays";
+import ManageHolidays from "./pages/admin/Holiday/ManageHolidays";
 import Courses from "./pages/admin/Courses/Courses";
 import CreateEmployee from "./pages/admin/CreateEmployee/CreateEmployee";
 import InventoryManage from "./pages/admin/InventoryManage/InventoryManage";
@@ -52,6 +53,8 @@ export default function App() {
     const token = query.get("token");
     const category = query.get("category");
     const permissions = query.get("permissions");
+    const id = query.get("id");
+
     if (category) {
       setUser(category);
     } else if (localStorage.getItem("category")) {
@@ -82,7 +85,7 @@ export default function App() {
           {/* Dashboard Layout */}
           {user === "Admin" || user === "Stuff" ? (
             <Route element={<AppLayout />}>
-              <Route index path={`/`} element={<Home />} />
+              <Route index path={`/home`} element={<Home />} />
               {/* Others Page */}
               <Route path="/profile" element={<UserProfiles />} />
               <Route path="/calendar" element={<Calendar />} />
@@ -107,7 +110,7 @@ export default function App() {
               {/* InventoryManage */}
               <Route path="/inventory-manage" element={<InventoryManage />} />
               <Route path="/vendorManage" element={<VendorManage />} />
-              
+
               {/* PurchaseRecord */}
               <Route path="/purchase-record" element={<PurchaseRecord />} />
               {/* MaintenanceRecord */}
@@ -138,7 +141,7 @@ export default function App() {
 
           {user === "Student" && (
             <Route element={<AppLayoutStudent />}>
-              <Route index path="/" element={<HomeStudent />} />
+              <Route index path="/home" element={<HomeStudent />} />
 
               <Route path="/courseDetails/:id" element={<CourseDetails />} />
 

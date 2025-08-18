@@ -5,21 +5,14 @@ import { FaUniversity } from "react-icons/fa";
 import { MdWorkOutline } from "react-icons/md";
 import { MdOutlineInventory } from "react-icons/md";
 import { BiPurchaseTagAlt } from "react-icons/bi";
-import { GrHostMaintenance } from "react-icons/gr";
 import { PiOfficeChairDuotone } from "react-icons/pi";
 
 import {
-  BoxCubeIcon,
-  CalenderIcon,
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
   ListIcon,
-  PageIcon,
-  PieChartIcon,
-  PlugInIcon,
-  TableIcon,
-  UserCircleIcon,
+
 } from "../../icons";
 import { useSidebar } from "../../context/SidebarContext";
 
@@ -46,7 +39,7 @@ const navItems: NavItem[] = [
     name: "Dashboard",
     id: 1,
     icon: <GridIcon />,
-    path: "/",
+    path: "/home",
   },
   {
     name: "Manage Holidays",
@@ -111,12 +104,12 @@ const navItems: NavItem[] = [
     icon: <BiPurchaseTagAlt />,
     path: "/purchase-record",
   },
-  {
-    name: "Maintenance Record",
-    id: 10,
-    icon: <GrHostMaintenance />,
-    path: "/maintenance-record",
-  },
+  // {
+  //   name: "Maintenance Record",
+  //   id: 10,
+  //   icon: <GrHostMaintenance />,
+  //   path: "/maintenance-record",
+  // },
   {
     name: "Stuff Attandance",
     id: 11,
@@ -126,12 +119,12 @@ const navItems: NavItem[] = [
 ];
 
 const othersItems: NavItem[] = [
-  {
-    icon: <UserCircleIcon />,
-    id: 12,
-    name: "User Profile",
-    path: "/profile",
-  },
+  // {
+  //   icon: <UserCircleIcon />,
+  //   id: 12,
+  //   name: "User Profile",
+  //   path: "/profile",
+  // },
 ];
 
 // console.log("filteredNavItems", filteredNavItems);
@@ -148,7 +141,6 @@ const AppSidebar: React.FC = () => {
     {}
   );
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const [control, setControl] = useState([]);
   // const isActive = (path: string) => location.pathname === path;
   const isActive = useCallback(
     (path: string) => location.pathname === path,

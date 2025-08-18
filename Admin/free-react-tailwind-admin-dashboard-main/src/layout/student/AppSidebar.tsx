@@ -1,13 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
-import { FaUniversity } from "react-icons/fa";
 
 // Assume these icons are imported from an icon library
 import {
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
-  ListIcon,
   UserCircleIcon,
 } from "../../icons";
 import { useSidebar } from "../../context/SidebarContext";
@@ -23,7 +21,7 @@ const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
     name: "Dashboard",
-    path: "/",
+    path: "/home",
   },
   // {
   //   name: "Notice / Message",
