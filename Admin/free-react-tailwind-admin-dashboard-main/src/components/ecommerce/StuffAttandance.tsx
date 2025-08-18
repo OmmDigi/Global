@@ -16,11 +16,10 @@ export default function StuffAttandance() {
  
  const {
     data: attendance,
-    loading: attandanceLoading,
-    error: attandanceError,
+    isLoading: attandanceLoading,
   } = useSWR( `api/v1/dashboard/attendance?date=${dayjs(selectedDate).format("YYYY-MM-DD")}`, getFetcher);
   if (attandanceLoading) {
-    return <div>Loading ...</div>;
+    return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }
   console.log("attendance",attendance);
 
@@ -43,7 +42,7 @@ export default function StuffAttandance() {
                     
 
             selected={selectedDate}
-            onChange={(date) => setSelectedDate(date)}
+            onChange={(date) => setSelectedDate(date as any)}
             dateFormat="dd/MM/yyyy"
             className="border rounded-md px-2 py-1 text-sm dark:bg-gray-800 dark:text-white"
             calendarClassName="!bg-white dark:!bg-gray-200"

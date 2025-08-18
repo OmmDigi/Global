@@ -6,13 +6,11 @@ import {
   TableRow,
 } from "../../ui/table";
 
-import Switch from "../../form/switch/Switch";
 import useSWRMutation from "swr/mutation";
 import { deleteFetcher } from "../../../api/fatcher";
 import { message } from "antd";
 import { mutate } from "swr";
-import type { PaginationProps } from "antd";
-import { Pagination } from "antd";
+
 
 interface IProps {
   leaveList: any;
@@ -32,7 +30,7 @@ export default function BasicTablecreateLeave({
   //   console.log(current, pageSize);
   // };
 
-  const { trigger: deleteUser, isMutating } = useSWRMutation(
+  const { trigger: deleteUser } = useSWRMutation(
     "api/v1/leave",
     (url, { arg }: { arg: number }) => deleteFetcher(`${url}/${arg}`) // arg contains the id
   );

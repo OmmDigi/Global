@@ -1,8 +1,8 @@
 import PageMeta from "../../../components/common/PageMeta";
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
-import { useNavigate, useParams } from "react-router-dom";
-import { message, Radio } from "antd";
+import { useParams } from "react-router-dom";
+import { message } from "antd";
 import ComponentCard from "../../../components/common/ComponentCard";
 import Label from "../../../components/form/Label";
 import useSWR from "swr";
@@ -11,53 +11,45 @@ import { getFetcher, postFetcher } from "../../../api/fatcher";
 import BasicTableCourseDetailsAdmin from "../../../components/tables/BasicTables/BasicTableCourseDetailsAdmin";
 
 export default function CourseDetails() {
-  const navigate = useNavigate();
-  // const router = useRouter();
-
   const [messageApi, contextHolder] = message.useMessage();
   const [isPending, startTransition] = useTransition();
 
-  const [enteredAmounts, setEnteredAmounts] = useState({});
-  const [paymentMode, setPaymentMode] = useState("");
-  const [paymentDetails, setPaymentDetails] = useState("");
+  const [enteredAmounts, setEnteredAmounts] = useState<Record<string, number>>(
+    {}
+  );
 
-  const [formData2, setFormData2] = useState({
+  const formData2 = {
     form_id: "",
     fee_structure_info: [],
-  });
+  };
   const { id } = useParams();
 
   const {
     data: feesStructure,
-    loading: feesStructureLoading,
-    error: feesStructureError,
+    isLoading: feesStructureLoading,
     mutate: refetch,
   } = useSWR(`api/v1/users/admission/${id}`, getFetcher);
+
+  // admin payment
+  // const {
+  //   trigger: create,
+  //   data: dataCreate,
+  //   error: dataError,
+  //   isMutating: dataIsloading,
+  // } = useSWRMutation(`api/v1/payment/add`, (url, { arg }) =>
+  //   postFetcher(url, arg)
+  // );
+
+  const { trigger: create2 } = useSWRMutation(
+    "api/v1/payment/create-order",
+    (url, { arg }) => postFetcher(url, arg)
+  );
   if (feesStructureLoading) {
-    return <div>Loading ...</div>;
+    return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }
   console.log("feesStructure", feesStructure);
 
-  // admin payment
-  const {
-    trigger: create,
-    data: dataCreate,
-    error: dataError,
-    isMutating: dataIsloading,
-  } = useSWRMutation(`api/v1/payment/add`, (url, { arg }) =>
-    postFetcher(url, arg)
-  );
-
-  const {
-    trigger: create2,
-    data: paymentCreate,
-    error: paymentError,
-    isMutating: paymentIsloading,
-  } = useSWRMutation("api/v1/payment/create-order", (url, { arg }) =>
-    postFetcher(url, arg)
-  );
-
-  const handleAmountChange = (e, item) => {
+  const handleAmountChange = (e: any, item: any) => {
     const value = e.target.value;
     const id = item.fee_head_id;
 
@@ -68,11 +60,11 @@ export default function CourseDetails() {
   };
 
   // api/v1/payment/create-order
-  const handleSubmit2 = async (e) => {
+  const handleSubmit2 = async (e: any) => {
     e.preventDefault();
     console.log("formData2:", formData2);
     const fee_structure_info = feesStructure?.data?.fee_structure_info?.map(
-      (item) => ({
+      (item: any) => ({
         fee_head_id: item.fee_head_id,
         custom_min_amount: enteredAmounts[item.fee_head_id] || 0,
       })
@@ -87,14 +79,14 @@ export default function CourseDetails() {
     console.log("Submitted FormData:", finalFormData);
     startTransition(async () => {
       try {
-        const response = await create2(finalFormData);
+        const response = await create2(null, finalFormData as any);
         messageApi.open({
           type: "success",
           content: response.message,
         });
         refetch();
         window.location.href = response?.data?.payment_page_url;
-      } catch (error) {
+      } catch (error: any) {
         messageApi.open({
           type: "error",
           content: error?.response?.data?.message
@@ -113,6 +105,7 @@ export default function CourseDetails() {
   const fees_structure_table = feesStructure?.data?.payments_history;
   return (
     <>
+      {contextHolder}
       <PageMeta
         title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
         description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
@@ -133,7 +126,11 @@ export default function CourseDetails() {
               <div className="space-y-6">
                 <div className=" font-medium flex justify-center text-gray-500 text-theme-xs dark:text-gray-400 mb-10">
                   <img
-                   src={feesStructure?.data?.student_image ? feesStructure?.data?.student_image : "/images/chat/chat.jpg"}
+                    src={
+                      feesStructure?.data?.student_image
+                        ? feesStructure?.data?.student_image
+                        : "/images/chat/chat.jpg"
+                    }
                     // src="/images/chat/chat.jpg"
                     alt="/images/chat/chat.jpg"
                     className="h-30 w-30 rounded-full"
@@ -195,7 +192,7 @@ export default function CourseDetails() {
                                           Total Selected Amount: ₹{totalAmount}
                                         </div> */}
                       {feesStructure?.data?.fee_structure_info?.map(
-                        (item, index) => {
+                        (item: any, index: number) => {
                           // const isAmountEditable = item?.min_amount < item?.amount;
                           return (
                             <div

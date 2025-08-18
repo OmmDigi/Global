@@ -15,8 +15,8 @@ import BarChart from "./pages/admin/Charts/BarChart";
 import Calendar from "./pages/admin/Calendar";
 import BasicTables from "./pages/admin/Tables/BasicTables";
 import Blank from "./pages/admin/Blank";
-import AppLayout from "./layout/admin/AppLayout";
-import AppLayoutStudent from "./layout/student/AppLayout";
+import AppLayout1 from "./layout/admin/AppLayout";
+import AppLayout2 from "./layout/student/AppLayout";
 
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/admin/Dashboard/Home";
@@ -30,8 +30,7 @@ import Admission from "./pages/admin/AdmissionAdmin/AdmissionAdmin";
 import StuffAttandance from "./pages/admin/StuffAttandance/StuffAttandance";
 // student
 import HomeStudent from "./pages/student/Dashboard/Home";
-import FormElementsStudent from "./pages/student/Notice/FormElementsStudent";
-import AdmissionStudent from "./pages/student/Admission/Admission";
+// import FormElementsStudent from "./pages/student/Notice/FormElementsStudent";
 import UserProfilesStudent from "./pages/student/UserProfiles";
 
 import { useEffect, useState } from "react";
@@ -53,7 +52,7 @@ export default function App() {
     const token = query.get("token");
     const category = query.get("category");
     const permissions = query.get("permissions");
-    const id = query.get("id");
+    // const id = query.get("id");
 
     if (category) {
       setUser(category);
@@ -84,7 +83,7 @@ export default function App() {
         <Routes>
           {/* Dashboard Layout */}
           {user === "Admin" || user === "Stuff" ? (
-            <Route element={<AppLayout />}>
+            <Route element={<AppLayout1 />}>
               <Route index path={`/home`} element={<Home />} />
               {/* Others Page */}
               <Route path="/profile" element={<UserProfiles />} />
@@ -140,7 +139,7 @@ export default function App() {
           ) : null}
 
           {user === "Student" && (
-            <Route element={<AppLayoutStudent />}>
+            <Route element={<AppLayout2 />}>
               <Route index path="/home" element={<HomeStudent />} />
 
               <Route path="/courseDetails/:id" element={<CourseDetails />} />
@@ -149,12 +148,12 @@ export default function App() {
               <Route path="/profile" element={<UserProfilesStudent />} />
 
               {/* Notice */}
-              <Route
+              {/* <Route
                 path="/form-elements-Student"
                 element={<FormElementsStudent />}
-              />
+              /> */}
               {/* Admission  */}
-              <Route path="/admission" element={<AdmissionStudent />} />
+              {/* <Route path="/admission" element={<AdmissionStudent />} /> */}
             </Route>
           )}
 

@@ -6,8 +6,6 @@ import Label from "../../../components/form/Label";
 import Input from "../../../components/form/input/InputField";
 import TextArea from "../../../components/form/input/TextArea";
 import Button from "../../../components/ui/button/Button";
-import Select from "../../../components/form/Select";
-import BasicTableCourses from "../../../components/tables/BasicTables/BasicTableCourses";
 
 export default function MaintenanceRecord() {
   const [message, setMessage] = useState("");
@@ -22,9 +20,7 @@ export default function MaintenanceRecord() {
     { value: "cash", label: "Cash" },
     { value: "cash-online", label: "Cash/Online" },
   ];
-  const handleSelectChange = (value: string) => {
-    console.log("Selected value:", value);
-  };
+ 
 
   const submit = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -138,7 +134,7 @@ export default function MaintenanceRecord() {
                 </div>
               </div>
             </div>
-            <BasicTableCourses />
+            {/* <BasicTableCourses /> */}
           </ComponentCard>
         </div>
       </div>

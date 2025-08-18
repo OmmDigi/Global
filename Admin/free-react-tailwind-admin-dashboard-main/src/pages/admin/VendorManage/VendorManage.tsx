@@ -4,7 +4,6 @@ import PageMeta from "../../../components/common/PageMeta";
 import ComponentCard from "../../../components/common/ComponentCard";
 import Label from "../../../components/form/Label";
 import Input from "../../../components/form/input/InputField";
-import BasicTableSession from "../../../components/tables/BasicTables/BasicTableSession";
 import useSWRMutation from "swr/mutation";
 import { getFetcher, postFetcher, putFetcher } from "../../../api/fatcher";
 import { message } from "antd";
@@ -15,6 +14,7 @@ export default function VendorManage() {
   const [messageApi, contextHolder] = message.useMessage();
   const [id, setId] = useState<number>(0);
   const [formData, setFormData] = useState({
+    // id: "",
     name: "",
     service_type: "",
     address: "",
@@ -22,25 +22,15 @@ export default function VendorManage() {
   });
 
   //   create Seaaion
-  const {
-    trigger: create,
-    data: dataCreate,
-    error: dataError,
-    isMutating: dataIsloading,
-  } = useSWRMutation("api/v1/vendor", (url, { arg }) =>
+  const { trigger: create } = useSWRMutation("api/v1/vendor", (url, { arg }) =>
     postFetcher(url, arg)
   );
 
   //   get vendorList
-  const {
-    data: vendorList,
-    loading: vendorLoading,
-    error: vendorError,
-  } = useSWR("api/v1/vendor", getFetcher);
-  if (vendorLoading) {
-    return <div>Loading ...</div>;
-  }
-console.log("vendorList",vendorList);
+  const { data: vendorList, isLoading: vendorLoading } = useSWR(
+    "api/v1/vendor",
+    getFetcher
+  );
 
   //   get single data
   // const {
@@ -50,14 +40,13 @@ console.log("vendorList",vendorList);
   // } = useSWR(`api/v1/course/session/${id}`, getFetcher);
 
   //   get updated data
-  const {
-    trigger: update,
-    data: updateData,
-    error: updateError,
-    isMutating: updateLoading,
-  } = useSWRMutation("api/v1/course/vendor", (url, { arg }) =>
-    putFetcher(url, arg)
+  const { trigger: update } = useSWRMutation(
+    "api/v1/course/vendor",
+    (url, { arg }) => putFetcher(url, arg)
   );
+  if (vendorLoading) {
+    return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
+  }
 
   const handleEdit = async (id: number) => {
     try {
@@ -92,7 +81,7 @@ console.log("vendorList",vendorList);
 
   const handleUpdate = async () => {
     try {
-      const response = await update(formData);
+      const response = await update( formData as any);
       mutate("api/v1/vendor");
       messageApi.open({
         type: "success",
@@ -101,6 +90,7 @@ console.log("vendorList",vendorList);
       console.log("Upload Success:", response);
 
       setFormData({
+       
         name: "",
         service_type: "",
         address: "",
@@ -141,9 +131,8 @@ console.log("vendorList",vendorList);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("formaaaaa", formData);
     try {
-      const response = await create(formData);
+      const response = await create( formData as any);
       //   mutate(
       //     (currentData: any) => [...(currentData || []), response.data],
       //     false
@@ -152,9 +141,9 @@ console.log("vendorList",vendorList);
         type: "success",
         content: response.message,
       });
-      console.log("Upload Success:", response);
 
       setFormData({
+       
         name: "",
         service_type: "",
         address: "",
@@ -202,7 +191,7 @@ console.log("vendorList",vendorList);
                       placeholder="name"
                     />
                   </div>
-                   <div>
+                  <div>
                     <Label htmlFor="inputTwo">Service type</Label>
                     <Input
                       type="text"
@@ -226,7 +215,7 @@ console.log("vendorList",vendorList);
                       placeholder="address"
                     />
                   </div>
-                   <div>
+                  <div>
                     <Label htmlFor="inputTwo">Contact details</Label>
                     <Input
                       type="number"

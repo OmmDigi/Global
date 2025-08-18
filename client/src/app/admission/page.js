@@ -45,8 +45,8 @@ const uploadUrl = process.env.NEXT_PUBLIC_UPLOAD_API_BASE_URL;
 console.log("uploadUrl333", uploadUrl);
 
 function page() {
-    const route = useRouter();
-  
+  const route = useRouter();
+
   const [messageApi, contextHolder] = message.useMessage();
   const { token } = theme.useToken();
   const [current, setCurrent] = useState(0);
@@ -152,7 +152,8 @@ function page() {
     error: courseError,
   } = useSWR("api/v1/course/dropdown", getFetcher);
   if (courseLoading) {
-    return <div>Loading ...</div>;
+    return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
+    console.log("leaveList", leaveList);
   }
   console.log("courseList", courseList);
 
@@ -393,8 +394,6 @@ function page() {
       });
 
       route.push(`${response2?.data?.payment_page_url}`);
-
-     
     } catch (error) {
       messageApi.open({
         type: "error",
@@ -404,7 +403,7 @@ function page() {
       });
       console.log("Upload Error:", error);
     }
-  };  
+  };
 
   const jumpToTop = () => {
     window.scrollTo({

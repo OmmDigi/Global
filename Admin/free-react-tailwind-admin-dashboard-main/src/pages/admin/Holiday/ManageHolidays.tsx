@@ -2,14 +2,10 @@ import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import { useState } from "react";
 import PageMeta from "../../../components/common/PageMeta";
 import ComponentCard from "../../../components/common/ComponentCard";
-import Radio from "../../../components/form/input/Radio";
-import MultiSelect from "../../../components/form/MultiSelect";
+
 import Label from "../../../components/form/Label";
 import Input from "../../../components/form/input/InputField";
-import TextArea from "../../../components/form/input/TextArea";
-import Button from "../../../components/ui/button/Button";
-import BasicTableOne from "../../../components/tables/BasicTables/BasicTableNotice";
-import BasicTableNotice from "../../../components/tables/BasicTables/BasicTableNotice";
+
 import { getFetcher, postFetcher, putFetcher } from "../../../api/fatcher";
 import useSWR, { mutate } from "swr";
 import useSWRMutation from "swr/mutation";
@@ -25,37 +21,24 @@ export default function ManageHolidays() {
 
 
   const [id, setId] = useState<number>();
-  const [formData, setFormData] = useState<LeaveForm>({
-    id: "",
+  const [formData, setFormData] = useState({
+    // id: "",
     date: "",
     holiday_name: "",
   });
 
-  // all employee list
+  // get Holiday List
   const {
-    data: stufflist,
-    loading: stuffLoading,
-    error: stuffError,
-  } = useSWR("api/v1/users", getFetcher);
-    
-  
+    data: holidayList,
+    isLoading: holidayLoading,
+  } = useSWR("api/v1/holiday", getFetcher);
   // create Holiday
   const { trigger: create } = useSWRMutation("api/v1/holiday", (url, { arg }) =>
     postFetcher(url, arg)
 );
-if (stuffLoading) {
-  return <div>Loading ...</div>;
-}
 
-  // get Holiday List
-  const {
-    data: holidayList,
-    isLoading: noticeLoading,
-    error: noticeError,
-  } = useSWR("api/v1/holiday", getFetcher);
-
-  if (noticeLoading) {
-    console.log("loading", noticeLoading);
+  if (holidayLoading) {
+    console.log("loading", holidayLoading);
   }
 
   // Update course
@@ -81,6 +64,7 @@ if (stuffLoading) {
       });
 
       setFormData({
+        id: "",
         date: "",
         holiday_name: "",
       });
@@ -136,6 +120,7 @@ if (stuffLoading) {
       });
       setId(0);
       setFormData({
+        id: "",
         date: "",
         holiday_name: "",
       });

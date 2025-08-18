@@ -4,9 +4,7 @@ import PageMeta from "../../../components/common/PageMeta";
 import ComponentCard from "../../../components/common/ComponentCard";
 import Label from "../../../components/form/Label";
 import Input from "../../../components/form/input/InputField";
-import TextArea from "../../../components/form/input/TextArea";
-import Button from "../../../components/ui/button/Button";
-import Select from "../../../components/form/Select";
+
 import BasicTablePurchase from "../../../components/tables/BasicTables/BasicTablePurchase";
 import { Upload, X } from "lucide-react";
 import { uploadFiles } from "../../../utils/uploadFile";
@@ -18,16 +16,15 @@ import {
 } from "../../../api/fatcher";
 import useSWRMutation from "swr/mutation";
 import useSWR, { mutate } from "swr";
-import BasicTableCourseDetailsAdmin from "../../../components/tables/BasicTables/BasicTableCourseDetailsAdmin";
 import { message } from "antd";
 
 export default function PurchaseRecord() {
   const [messageApi, contextHolder] = message.useMessage();
 
-  const [loading, setLoading] = useState<number>();
   const [photo, setPhoto] = useState<string | null>(null);
   const [id, setId] = useState<number>();
   const [formData, setFormData] = useState({
+      // id: 0,
     file: "",
     name: "",
     bill_no: "",
@@ -41,56 +38,45 @@ export default function PurchaseRecord() {
   });
 
   // all employee list
-  const {
-    data: stufflist,
-    loading: stuffLoading,
-    error: stuffError,
-  } = useSWR("api/v1/users", getFetcher);
-  if (stuffLoading) {
-    return <div>Loading ...</div>;
-  }
-
-  console.log("stufflist", stufflist);
+  const { data: stufflist, isLoading: stuffLoading } = useSWR(
+    "api/v1/users",
+    getFetcher
+  );
 
   // create Holiday
-  const {
-    trigger: create,
-    data: dataCreate,
-    error: dataError,
-    isMutating: dataIsloading,
-  } = useSWRMutation("api/v1/purchase", (url, { arg }) =>
-    postFetcher(url, arg)
+  const { trigger: create } = useSWRMutation(
+    "api/v1/purchase",
+    (url, { arg }) => postFetcher(url, arg)
   );
 
   // get purchaseList
-  const {
-    data: purchaseList,
-    loading: purchaseLoding,
-    error: purchaseError,
-  } = useSWR("api/v1/purchase", getFetcher);
-
-  if (purchaseLoding) {
-    console.log("loading", purchaseLoding);
-  }
-  console.log("purchaseList", purchaseList);
+  const { data: purchaseList, isLoading: purchaseLoding } = useSWR(
+    "api/v1/purchase",
+    getFetcher
+  );
 
   // Update purchaseList
 
-  const {
-    trigger: update,
-    data,
-    error,
-    isMutating,
-  } = useSWRMutation("api/v1/purchase", (url, { arg }) => putFetcher(url, arg));
-
+  const { trigger: update } = useSWRMutation(
+    "api/v1/purchase",
+    (url, { arg }) => putFetcher(url, arg)
+  );
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (stuffLoading) {
+      return (
+        <div className="text-gray-800 dark:text-gray-200">Loading ...</div>
+      );
+    }
 
-    console.log("formdataaa", formData);
+    console.log("stufflist", stufflist);
+    if (purchaseLoding) {
+      console.log("loading", purchaseLoding);
+    }
 
     try {
-      const response = await create(formData);
+      const response = await create(formData as any);
       mutate(
         (currentData: any) => [...(currentData || []), response.data],
         false
@@ -102,16 +88,17 @@ export default function PurchaseRecord() {
       console.log("Upload Success:", response);
       setPhoto(null);
       setFormData({
-        file: "",
-        name: "",
-        bill_no: "",
-        per_item_rate: "",
-        company_details: "",
-        purchase_date: "",
-        expaire_date: "",
-        previousBalance: "",
-        presentBalance: "",
-        quantityReceived: "",
+       id: 0,
+    file: "",
+    name: "",
+    bill_no: "",
+    per_item_rate: "",
+    company_details: "",
+    purchase_date: "",
+    expaire_date: "",
+    previousBalance: "",
+    presentBalance: "",
+    quantityReceived: "",
       });
     } catch (error: any) {
       messageApi.open({
@@ -154,9 +141,7 @@ export default function PurchaseRecord() {
         url: `${uploadUrl}api/v1/upload/multiple`,
         files: [file],
         folder: "profile_image",
-        onUploading(percent) {
-          setLoading(percent);
-        },
+       
         onUploaded(result) {
           setFormData((prev) => ({
             ...prev,
@@ -190,9 +175,8 @@ export default function PurchaseRecord() {
         previousBalance: userData?.previousBalance,
         presentBalance: userData?.presentBalance,
         quantityReceived: userData?.quantityReceived,
-      })
-       setPhoto(userData?.file)
-      
+      });
+      setPhoto(userData?.file);
     } catch (error) {
       console.error("Failed to fetch user data for edit:", error);
     }
@@ -202,7 +186,7 @@ export default function PurchaseRecord() {
 
   const handleUpdate = async () => {
     try {
-      const response = await update(formData);
+      const response = await update( formData as any);
       mutate("api/v1/purchase");
       messageApi.open({
         type: "success",
@@ -211,16 +195,17 @@ export default function PurchaseRecord() {
       console.log("Upload Success:", response);
 
       setFormData({
-       file: "",
-        name: "",
-        bill_no: "",
-        per_item_rate: "",
-        company_details: "",
-        purchase_date: "",
-        expaire_date: "",
-        previousBalance: "",
-        presentBalance: "",
-        quantityReceived: "",
+       id: 0,
+    file: "",
+    name: "",
+    bill_no: "",
+    per_item_rate: "",
+    company_details: "",
+    purchase_date: "",
+    expaire_date: "",
+    previousBalance: "",
+    presentBalance: "",
+    quantityReceived: "",
       });
     } catch (error: any) {
       messageApi.open({

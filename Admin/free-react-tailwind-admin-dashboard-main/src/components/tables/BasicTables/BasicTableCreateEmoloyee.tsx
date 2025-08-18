@@ -6,12 +6,11 @@ import {
   TableRow,
 } from "../../ui/table";
 
-import Badge from "../../ui/badge/Badge";
-import Switch from "../../form/switch/Switch";
-import useSWR, { mutate } from "swr";
+
+import  { mutate } from "swr";
 import { deleteFetcher } from "../../../api/fatcher";
 import useSWRMutation from "swr/mutation";
-import { message, Pagination, PaginationProps } from "antd";
+import { message,  } from "antd";
 
 interface IProps {
   stufflist: any;
@@ -31,7 +30,7 @@ const BasicTableCreateEmployee: React.FC<IProps> = ({ stufflist, onEdit }) => {
   // for delete
     const [messageApi, contextHolder] = message.useMessage();
 
-  const { trigger: deleteUser, isMutating } = useSWRMutation(
+  const { trigger: deleteUser } = useSWRMutation(
     "/api/v1/users",
     (url, { arg }: { arg: number }) => deleteFetcher(`${url}/${arg}`) // arg contains the id
   );

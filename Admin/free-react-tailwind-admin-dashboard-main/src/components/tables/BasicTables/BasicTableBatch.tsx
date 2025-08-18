@@ -11,8 +11,7 @@ import useSWRMutation from "swr/mutation";
 import { deleteFetcher } from "../../../api/fatcher";
 import { message } from "antd";
 import { mutate } from "swr";
-import type { PaginationProps } from "antd";
-import { Pagination } from "antd";
+
 
 interface IProps {
   batchList: any;
@@ -35,7 +34,7 @@ export default function BasicTableSession({
   //   console.log(current, pageSize);
   // };
 
-  const { trigger: deleteUser, isMutating } = useSWRMutation(
+  const { trigger: deleteUser } = useSWRMutation(
     "api/v1/course/batch",
     (url, { arg }: { arg: number }) => deleteFetcher(`${url}/${arg}`) // arg contains the id
   );
@@ -179,3 +178,4 @@ export default function BasicTableSession({
     </div>
   );
 }
+

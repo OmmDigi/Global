@@ -37,15 +37,15 @@ const steps = [
     content: "Last-content",
   },
   // {
-    //   title: "Payment",
-    //   content: "Payment",
-    // },
-  ];
-  
-  const uploadUrl = process.env.NEXT_PUBLIC_UPLOAD_API_BASE_URL;
-  console.log("uploadUrl333", uploadUrl);
-  
-  function page() {
+  //   title: "Payment",
+  //   content: "Payment",
+  // },
+];
+
+const uploadUrl = process.env.NEXT_PUBLIC_UPLOAD_API_BASE_URL;
+console.log("uploadUrl333", uploadUrl);
+
+function page() {
   const route = useRouter();
   const [messageApi, contextHolder] = message.useMessage();
   const [isadmissionPopup, setIsadmissionPopup] = useState(false);
@@ -254,7 +254,8 @@ const steps = [
     error: courseError,
   } = useSWR("api/v1/course/dropdown", getFetcher);
   if (courseLoading) {
-    return <div>Loading ...</div>;
+    return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
+    console.log("leaveList", leaveList);
   }
   console.log("courseList", courseList);
 

@@ -15,14 +15,14 @@ export default defineConfig({
       },
     }),
   ],
-   esbuild: {
-    tsconfigRaw: {
-      compilerOptions: {
-        // disables type checking
-        checkJs: false,
-        noEmit: true,
-        skipLibCheck: true,
-      },
-    },
-  },
+  //  esbuild: {
+  //   tsconfigRaw: {
+  //     compilerOptions: {
+  //       // disables type checking
+  //       checkJs: false,
+  //       noEmit: true,
+  //       skipLibCheck: true,
+  //     },
+  //   },
+  // },
 });

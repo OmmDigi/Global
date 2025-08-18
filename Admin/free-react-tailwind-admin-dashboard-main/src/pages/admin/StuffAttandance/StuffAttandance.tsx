@@ -1,12 +1,7 @@
-import { useState } from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import PageMeta from "../../../components/common/PageMeta";
 import ComponentCard from "../../../components/common/ComponentCard";
-import Label from "../../../components/form/Label";
-import Input from "../../../components/form/input/InputField";
-import TextArea from "../../../components/form/input/TextArea";
-import Button from "../../../components/ui/button/Button";
-import Select from "../../../components/form/Select";
+
 import BasicTableAttandance from "../../../components/tables/BasicTables/BasicTableAttandance";
 import useSWR from "swr";
 import { getFetcher } from "../../../api/fatcher";
@@ -16,7 +11,7 @@ export default function StuffAttandance() {
  
    const {
     data: attandancelist,
-    loading: attandanceLoading,
+    isLoading: attandanceLoading,
     error: attandanceError,
   } = useSWR("api/v1/attendance", getFetcher);
 

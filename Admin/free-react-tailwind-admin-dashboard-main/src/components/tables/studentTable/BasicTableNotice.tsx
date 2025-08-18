@@ -6,8 +6,7 @@ import {
   TableRow,
 } from "../../ui/table";
 
-import Badge from "../../ui/badge/Badge";
-import { useNavigate } from "react-router";
+
 import { useState } from "react";
 
 interface Order {
@@ -112,7 +111,7 @@ const tableData: Order[] = [
 ];
 
 export default function BasicTableNotice() {
-  const [selectedMessage, setSelectedMessage] = useState(null);
+  const [selectedMessage, setSelectedMessage] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
 
   const handleDetailsClick = (project: any) => {

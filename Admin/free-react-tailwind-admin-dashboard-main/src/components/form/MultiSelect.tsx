@@ -148,7 +148,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                       }`}
                     >
                       <div className="mx-2 leading-6 text-gray-800 dark:text-white/90">
-                        {option.name || option.text}
+                        {option.name || index}
                       </div>
                     </div>
                   </div>

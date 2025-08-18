@@ -11,11 +11,10 @@ export default function MonthlySalesChart() {
  // get course list
   const {
     data: admission,
-    loading: admissionLoading,
-    error: admissionError,
+    isLoading: admissionLoading,
   } = useSWR(`api/v1/dashboard/admission?year=${selectedYear}`, getFetcher);
   if (admissionLoading) {
-    return <div>Loading ...</div>;
+    return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }
 
 
@@ -97,15 +96,8 @@ export default function MonthlySalesChart() {
       data: admissions,
     },
   ];
-  const [isOpen, setIsOpen] = useState(false);
 
-  function toggleDropdown() {
-    setIsOpen(!isOpen);
-  }
 
-  function closeDropdown() {
-    setIsOpen(false);
-  }
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-5 pt-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6">
       <div className="flex items-center justify-between">

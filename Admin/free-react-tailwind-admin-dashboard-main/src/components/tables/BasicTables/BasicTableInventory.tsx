@@ -16,7 +16,7 @@ import Input from "../../form/input/InputField";
 import Label from "../../form/Label";
 
 interface IProps {
-  stufflist: any;
+  inventoryList: any;
   onEdit: (id: number) => void;
 }
 
@@ -82,7 +82,7 @@ const BasicTableInventory: React.FC<IProps> = ({
     ];
 
     try {
-      const response = await create(null, payload as any);
+      const response = await create( payload as any);
 
       messageApi.open({
         type: "success",

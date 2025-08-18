@@ -6,32 +6,32 @@ import {
   TableRow,
 } from "../../ui/table";
 
-import Badge from "../../ui/badge/Badge";
 import Switch from "../../form/switch/Switch";
 import dayjs from "dayjs";
 import useSWRMutation from "swr/mutation";
 import { deleteFetcher } from "../../../api/fatcher";
-import { message, Pagination, PaginationProps } from "antd";
+import { message, } from "antd";
 import { mutate } from "swr";
 
 interface IProps {
-  stufflist: any;
+  courseList: any;
   onEdit: (id: number) => void;
+  onActive: (checked: boolean, id: number) => void;
 }
 
 // Define the table data using the interface
 
 const BasicTableCourses: React.FC<IProps> = ({ courseList, onEdit, onActive, }) => {
-  const onShowSizeChange: PaginationProps["onShowSizeChange"] = (
-    current,
-    pageSize
-  ) => {
-    console.log(current, pageSize);
-  };
+  // const onShowSizeChange: PaginationProps["onShowSizeChange"] = (
+  //   current,
+  //   pageSize
+  // ) => {
+  //   console.log(current, pageSize);
+  // };
  
 
   // for delete
-  const { trigger: deleteUser, isMutating } = useSWRMutation(
+  const { trigger: deleteUser } = useSWRMutation(
     "api/v1/course",
     (url, { arg }: { arg: number }) => deleteFetcher(`${url}/${arg}`) // arg contains the id
   );

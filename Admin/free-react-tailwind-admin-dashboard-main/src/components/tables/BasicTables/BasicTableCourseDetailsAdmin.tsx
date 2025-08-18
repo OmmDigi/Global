@@ -10,7 +10,7 @@ import {
 import ComponentCard from "../../common/ComponentCard";
 
 interface IProps {
-  batchList: any;
+  // batchList: any;
   fees_structure_table:any;
   //   onEdit: (id: number) => void;
 }

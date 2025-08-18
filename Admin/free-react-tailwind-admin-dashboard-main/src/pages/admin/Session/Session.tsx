@@ -14,49 +14,32 @@ export default function Session() {
   const [messageApi, contextHolder] = message.useMessage();
   const [id, setId] = useState<number>(0);
   const [formData, setFormData] = useState({
+    //  id: 0,
     name: "",
   });
 
   //   create Seaaion
-  const {
-    trigger: create,
-    data: dataCreate,
-    error: dataError,
-    isMutating: dataIsloading,
-  } = useSWRMutation("api/v1/course/session", (url, { arg }) =>
-    postFetcher(url, arg)
+  const { trigger: create } = useSWRMutation(
+    "api/v1/course/session",
+    (url, { arg }) => postFetcher(url, arg)
   );
 
   //   get session list
-  const {
-    data: sessionList,
-    loading: sessionLoading,
-    error: sessionError,
-  } = useSWR("api/v1/course/session", getFetcher);
-  if (sessionLoading) {
-    return <div>Loading ...</div>;
-  }
-
-  //   get single data
-  // const {
-  //   data: editData,
-  //   loading: editLoading,
-  //   error: editError,
-  // } = useSWR(`api/v1/course/session/${id}`, getFetcher);
-
-  //   get updated data
-  const {
-    trigger: update,
-    data: updateData,
-    error: updateError,
-    isMutating: updateLoading,
-  } = useSWRMutation("api/v1/course/session", (url, { arg }) =>
-    putFetcher(url, arg)
+  const { data: sessionList, isLoading: sessionLoading } = useSWR(
+    "api/v1/course/session",
+    getFetcher
   );
+
+  const { trigger: update } = useSWRMutation(
+    "api/v1/course/session",
+    (url, { arg }) => putFetcher(url, arg)
+  );
+  if (sessionLoading) {
+    return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
+  }
 
   const handleEdit = async (id: number) => {
     try {
-
       setId(id);
       const response = await getFetcher(`api/v1/course/session/${id}`);
       const userData = response.data;
@@ -64,11 +47,9 @@ export default function Session() {
         id: id,
         name: userData?.name,
       });
-    }
-      catch (error){
+    } catch (error) {
       console.error("Failed to fetch user data for edit:", error);
-
-      }
+    }
 
     jumpToTop();
   };
@@ -87,7 +68,7 @@ export default function Session() {
 
   const handleUpdate = async () => {
     try {
-      const response = await update(formData);
+      const response = await update( formData as any);
       mutate("api/v1/course/session");
       messageApi.open({
         type: "success",
@@ -96,7 +77,8 @@ export default function Session() {
       console.log("Upload Success:", response);
 
       setFormData({
-        name: "",
+           id: 0,
+    name: "",
       });
     } catch (error: any) {
       messageApi.open({
@@ -106,16 +88,20 @@ export default function Session() {
       console.log("Upload Error:", error);
     }
   };
-  
+
   const handleActive = async (isActive: boolean, id: number) => {
     console.log("isactiveaaaa ", isActive);
 
+    type UpdateFormPayload = {
+      id: string | number; // depends on your API, choose one
+      is_active: boolean;
+    };
+    const UpdateFormPayload: UpdateFormPayload = {
+      id: id,
+      is_active: isActive,
+    };
     try {
-      const response = await update({
-        id: id,
-        is_active: isActive,
-      });
-
+      const response = await update( UpdateFormPayload as any);
       mutate("api/v1/course/session");
       messageApi.open({
         type: "success",
@@ -135,7 +121,7 @@ export default function Session() {
     e.preventDefault();
     console.log("form", formData);
     try {
-      const response = await create(formData);
+      const response = await create(formData as any);
       //   mutate(
       //     (currentData: any) => [...(currentData || []), response.data],
       //     false
@@ -147,7 +133,8 @@ export default function Session() {
       console.log("Upload Success:", response);
 
       setFormData({
-        name: "",
+           id: 0,
+    name: "",
       });
     } catch (error: any) {
       messageApi.open({

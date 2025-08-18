@@ -36,7 +36,6 @@ export const uploadFiles = async ({
   folder,
   onUploaded,
   onUploading,
-  convartToWebp = false,
   onError,
 }: IProps) => {
   let data: IUploadedFile[] = [];

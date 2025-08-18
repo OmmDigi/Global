@@ -4,7 +4,7 @@ import AppHeader from "./AppHeader";
 import Backdrop from "./Backdrop";
 import AppSidebar from "./AppSidebar";
 type AppLayoutProps = {
-  user: string | null;
+  "user": string ;
 };
 
 const LayoutContent: React.FC = () => {

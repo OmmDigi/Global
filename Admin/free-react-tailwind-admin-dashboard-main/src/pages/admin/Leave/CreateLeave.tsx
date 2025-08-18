@@ -4,7 +4,7 @@ import PageMeta from "../../../components/common/PageMeta";
 import ComponentCard from "../../../components/common/ComponentCard";
 import Label from "../../../components/form/Label";
 import useSWRMutation from "swr/mutation";
-import { getFetcher, postFetcher, putFetcher } from "../../../api/fatcher";
+import { getFetcher, postFetcher } from "../../../api/fatcher";
 import {  message } from "antd";
 import useSWR, { mutate } from "swr";
 import { DatePicker, Space } from "antd";
@@ -15,7 +15,6 @@ const { RangePicker } = DatePicker;
 
 export default function CreateLeave() {
   const [messageApi, contextHolder] = message.useMessage();
-  const [id, setId] = useState<number>(0);
   const [date, setDate] = useState([]);
   const [formData, setFormData] = useState({
     date: [],
@@ -33,17 +32,13 @@ const {
   isLoading: leaveLoading,
 } = useSWR("api/v1/users/leave", getFetcher);
 
-const {
-  trigger: update,
-} = useSWRMutation("api/v1/course/fee-head", (url, { arg }) =>
-  putFetcher(url, arg)
-);
+
 
 if (leaveLoading) {
-  return <div>Loading ...</div>;
+  return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>
+console.log("leaveList", leaveList);;
 }
 
-console.log("leaveList", leaveList);
 
   const onOk = (value: RangePickerProps["value"]) => {
     setDate(value as any);
@@ -64,28 +59,7 @@ console.log("leaveList", leaveList);
     }));
   };
 
-  const handleUpdate = async () => {
-    try {
-      const response = await update(formData as any);
-      mutate("api/v1/course/session");
-      messageApi.open({
-        type: "success",
-        content: response.message,
-      });
-      console.log("Upload Success:", response);
 
-      setFormData({
-        date: [],
-        description: "",
-      });
-    } catch (error: any) {
-      messageApi.open({
-        type: "error",
-        content: error.response?.data?.message,
-      });
-      console.log("Upload Error:", error);
-    }
-  };
 
   const newFormDate = {
     from_date: date[0],
@@ -163,21 +137,14 @@ console.log("leaveList", leaveList);
 
                 <div className="flex flex-wrap justify-center items-center gap-6">
                   <div className="flex items-center gap-5">
-                    {id ? (
-                      <div
-                        onClick={handleUpdate}
-                        className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-                      >
-                        Update
-                      </div>
-                    ) : (
+                    
                       <button
                         type="submit"
                         className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
                       >
                         Submit
                       </button>
-                    )}
+                  
                   </div>
                 </div>
               </form>

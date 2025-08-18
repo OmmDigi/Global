@@ -16,10 +16,63 @@ import {
 } from "../../../api/fatcher";
 import { uploadFiles } from "../../../utils/uploadFile";
 import useSWR, { mutate } from "swr";
-import MultiSelect from "../../../components/form/MultiSelect";
+// import MultiSelect from "../../../components/form/MultiSelect";
+import MultiSelectName from "../../../components/form/MultiSelectName";
+
+interface Option {
+  name: string;
+  id: number;
+}
+const options: Option[] = [
+  {
+    name: "Dashboard",
+    id: 1,
+  },
+  {
+    name: "Manage Holidays",
+    id: 2,
+  },
+  {
+    name: "Leave Apply",
+    id: 3,
+  },
+  {
+    name: "Manage Leave",
+    id: 4,
+  },
+  {
+    name: "Courses",
+    id: 5,
+  },
+  {
+    name: "Admission",
+    id: 6,
+  },
+  {
+    name: "Create Employee",
+    id: 7,
+  },
+  {
+    name: "Inventory Manage",
+    id: 8,
+  },
+  {
+    name: "Purchase Record",
+    id: 9,
+  },
+  {
+    name: "Maintenance Record",
+    id: 10,
+  },
+  {
+    name: "Stuff Attandance",
+    id: 11,
+  },
+];
 
 export default function CreateEmployee() {
   interface FormData {
+    id: number;
     image: string;
     name: string;
     joining_date: string;
@@ -32,7 +85,6 @@ export default function CreateEmployee() {
     description: string;
   }
   const [messageApi, contextHolder] = message.useMessage();
-  const [loading, setLoading] = useState<number>();
   const [photo, setPhoto] = useState<string | null>(null);
   const [id, setId] = useState<number>();
   const [showPassword, setShowPassword] = useState(false);
@@ -40,7 +92,8 @@ export default function CreateEmployee() {
   const togglePassword = () => {
     setShowPassword((prev) => !prev);
   };
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState({
+    // id: 0,
     image: "",
     name: "",
     joining_date: "",
@@ -54,27 +107,21 @@ export default function CreateEmployee() {
   });
 
   // create employee
-  const {
-    trigger: create,
-    data: dataCreate,
-    error: dataError,
-    isMutating: dataIsloading,
-  } = useSWRMutation("api/v1/users/create", (url, { arg }) =>
-    postFetcher(url, arg)
+  const { trigger: create } = useSWRMutation(
+    "api/v1/users/create",
+    (url, { arg }) => postFetcher(url, arg)
   );
 
   // edit employee
-  const {
-    trigger: update,
-    data,
-    error,
-    isMutating,
-  } = useSWRMutation("api/v1/users", (url, { arg }) => putFetcher(url, arg));
+  const { trigger: update, data } = useSWRMutation(
+    "api/v1/users",
+    (url, { arg }) => putFetcher(url, arg)
+  );
   console.log("dataUpdate", data);
 
   const {
     data: stufflist,
-    loading: stuffLoading,
+    isLoading: stuffLoading,
     error: stuffError,
   } = useSWR("api/v1/users", getFetcher);
 
@@ -115,7 +162,7 @@ export default function CreateEmployee() {
     console.log("formData hh", formData);
 
     try {
-      const response = await create(formData);
+      const response = await create(formData as any);
       mutate(
         (currentData: any) => [...(currentData || []), response.data],
         false
@@ -127,6 +174,7 @@ export default function CreateEmployee() {
       console.log("Upload Success:", response);
       setPhoto(null);
       setFormData({
+        // id: 0,
         image: "",
         name: "",
         joining_date: "",
@@ -168,9 +216,7 @@ export default function CreateEmployee() {
         url: `${uploadUrl}api/v1/upload/multiple`,
         files: [file],
         folder: "profile_image",
-        onUploading(percent) {
-          setLoading(percent);
-        },
+
         onUploaded(result) {
           setFormData((prev) => ({
             ...prev,
@@ -219,7 +265,7 @@ export default function CreateEmployee() {
 
   const handleUpdate = async () => {
     try {
-      const response = await update(formData);
+      const response = await update(formData as any);
       mutate("api/v1/users");
       messageApi.open({
         type: "success",
@@ -229,6 +275,7 @@ export default function CreateEmployee() {
       console.log("Upload Success:", response);
       setPhoto(null);
       setFormData({
+        // id: 0,
         image: "",
         name: "",
         joining_date: "",
@@ -255,52 +302,6 @@ export default function CreateEmployee() {
       behavior: "smooth",
     });
   };
-  const options = [
-    {
-      name: "Dashboard",
-      id: 1,
-    },
-    {
-      name: "Manage Holidays",
-      id: 2,
-    },
-    {
-      name: "Leave Apply",
-      id: 3,
-    },
-    {
-      name: "Manage Leave",
-      id: 4,
-    },
-    {
-      name: "Courses",
-      id: 5,
-    },
-    {
-      name: "Admission",
-      id: 6,
-    },
-    {
-      name: "Create Employee",
-      id: 7,
-    },
-    {
-      name: "Inventory Manage",
-      id: 8,
-    },
-    {
-      name: "Purchase Record",
-      id: 9,
-    },
-    {
-      name: "Maintenance Record",
-      id: 10,
-    },
-    {
-      name: "Stuff Attandance",
-      id: 11,
-    },
-  ];
 
   return (
     <div>
@@ -449,7 +450,6 @@ export default function CreateEmployee() {
                       Category
                     </label>
                     <select
-                      type="select"
                       id="inputTwo"
                       name="category"
                       onChange={(e) => handleChange(e)}
@@ -462,16 +462,15 @@ export default function CreateEmployee() {
                   </div>
                 </div>
                 <div>
-                  <MultiSelect
+                  <MultiSelectName
                     label="permissions"
-                    id="inputTwo"
-                    options={options}
-                    name="permissions"
+                    options={options as any}
+                    defaultSelected={formData?.permissions}
                     onChange={(selected) => handleNameChange(selected)}
-                    value={options.filter((opt: any) =>
-                      formData.permissions.includes(opt.id)
-                    )}
-                    className="w-full px-3 py-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                    // value={options.filter((opt: any) =>
+                    //   formData?.permissions?.includes(opt.id )
+                    // ) }
+                    // className="w-full px-3 py-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
                   />
                 </div>
 
