@@ -44,7 +44,6 @@ export default function Session() {
       const response = await getFetcher(`api/v1/course/session/${id}`);
       const userData = response.data;
       setFormData({
-        id: id,
         name: userData?.name,
       });
     } catch (error) {
@@ -68,7 +67,7 @@ export default function Session() {
 
   const handleUpdate = async () => {
     try {
-      const response = await update( formData as any);
+      const response = await update(formData as any);
       mutate("api/v1/course/session");
       messageApi.open({
         type: "success",
@@ -77,8 +76,7 @@ export default function Session() {
       console.log("Upload Success:", response);
 
       setFormData({
-           id: 0,
-    name: "",
+        name: "",
       });
     } catch (error: any) {
       messageApi.open({
@@ -101,7 +99,7 @@ export default function Session() {
       is_active: isActive,
     };
     try {
-      const response = await update( UpdateFormPayload as any);
+      const response = await update(UpdateFormPayload as any);
       mutate("api/v1/course/session");
       messageApi.open({
         type: "success",
@@ -133,8 +131,7 @@ export default function Session() {
       console.log("Upload Success:", response);
 
       setFormData({
-           id: 0,
-    name: "",
+        name: "",
       });
     } catch (error: any) {
       messageApi.open({

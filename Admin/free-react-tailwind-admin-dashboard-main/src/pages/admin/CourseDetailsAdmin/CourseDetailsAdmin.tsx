@@ -270,7 +270,7 @@ export default function CourseDetailsAdmin() {
                     {paymentMode === "Online" && (
                       <div className="mt-4">
                         <label className="block mb-1 font-medium">
-                          Enter Tranjuction Number
+                          Enter Transaction Number
                         </label>
                         <input
                           type="text"

@@ -11,11 +11,7 @@ import useSWR, { mutate } from "swr";
 import useSWRMutation from "swr/mutation";
 import { message } from "antd";
 import BasicTableHoliday from "../../../components/tables/BasicTables/BasicTableHoliday";
-type LeaveForm = {
-  id: string | number; // or just string, depending on your `id`
-  date: string;
-  holiday_name: string;
-};
+
 export default function ManageHolidays() {
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -64,7 +60,7 @@ export default function ManageHolidays() {
       });
 
       setFormData({
-        id: "",
+      
         date: "",
         holiday_name: "",
       });
@@ -120,7 +116,7 @@ export default function ManageHolidays() {
       });
       setId(0);
       setFormData({
-        id: "",
+       
         date: "",
         holiday_name: "",
       });

@@ -16,8 +16,7 @@ import {
 } from "../../../api/fatcher";
 import { uploadFiles } from "../../../utils/uploadFile";
 import useSWR, { mutate } from "swr";
-// import MultiSelect from "../../../components/form/MultiSelect";
-import MultiSelectName from "../../../components/form/MultiSelectName";
+import MultiSelect from "../../../components/form/MultiSelect";
 
 interface Option {
   name: string;
@@ -462,15 +461,14 @@ export default function CreateEmployee() {
                   </div>
                 </div>
                 <div>
-                  <MultiSelectName
+                  <MultiSelect
                     label="permissions"
                     options={options as any}
-                    defaultSelected={formData?.permissions}
                     onChange={(selected) => handleNameChange(selected)}
-                    // value={options.filter((opt: any) =>
-                    //   formData?.permissions?.includes(opt.id )
-                    // ) }
-                    // className="w-full px-3 py-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                    value={options.filter((opt: any) =>
+                      formData?.permissions?.includes(opt.id )
+                    ) }
+                    className="w-full h-auto px-3 py-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
                   />
                 </div>
 

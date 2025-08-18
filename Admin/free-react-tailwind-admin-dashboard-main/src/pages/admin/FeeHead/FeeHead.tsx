@@ -14,7 +14,6 @@ export default function FeeHead() {
   const [messageApi, contextHolder] = message.useMessage();
   const [id, setId] = useState<number>(0);
   const [formData, setFormData] = useState({
-    // id: 0,
     name: "",
   });
 
