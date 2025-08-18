@@ -1,46 +1,11 @@
 const ZKLib = require("zkteco-js");
 const { WebSocket } = require("ws");
-const path = require("path");
-const fs = require("fs");
 
-// const config = {
-//   cloud_api_url: "http://localhost:8081",
-//   device_id: "ESSL-001",
-//   auth_token: "YOUR_SECRET_TOKEN",
-// };
-
-// Function to detect if running inside a pkg exe
-function isPkg() {
-  return process.hasOwnProperty("pkg");
-}
-
-// Config file path
-let configPath;
-if (isPkg()) {
-  // When running as .exe → keep config.json outside the exe in the same folder
-  configPath = path.join(path.dirname(process.execPath), "config.json");
-} else {
-  // When running with node → use local config.json
-  configPath = path.join(__dirname, "config.json");
-}
-
-// Load config
-let config = {};
-try {
-  if (fs.existsSync(configPath)) {
-    config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
-    console.log("✅ Loaded config from:", configPath);
-  } else {
-    console.error("❌ Config file not found:", configPath);
-    process.exit(1);
-  }
-} catch (err) {
-  console.error("❌ Failed to read config.json:", err.message);
-  process.exit(1);
-}
-
-// Example server using config
-// console.log("Server starting with config:", config);
+const config = {
+  cloud_api_url: "http://localhost:8081",
+  device_id: "ESSL-001",
+  auth_token: "YOUR_SECRET_TOKEN",
+};
 
 // controllers
 async function sendUserToDevice(zk, user) {
