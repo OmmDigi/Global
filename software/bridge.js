@@ -109,6 +109,7 @@ function connectWebSocket() {
       }
 
       if (!zk) {
+        ws.send(JSON.stringify({ action: "connection_failed" }));
         console.error("❌ Could not start bridge. Check device connection.");
         return;
       }

@@ -54,7 +54,13 @@ wss.on("connection", (ws, req) => {
   );
 
   ws.on("message", (msg) => {
-    console.log(`📨 Message from ${deviceId}:`, msg.toString());
+    const data = JSON.parse(msg);
+    if (data) {
+      if (data.action === "connection_failed") {
+        clients.delete(deviceId);
+      }
+    }
+    // console.log(`📨 Message from ${deviceId}:`, msg.toString());
   });
 
   ws.on("close", () => {

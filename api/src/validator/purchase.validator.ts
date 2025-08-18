@@ -1,7 +1,7 @@
 import Joi from "joi";
 
 export const VAddPurchase = Joi.object({
-  file: Joi.string().optional(),
+  file: Joi.string().optional().allow(""),
   name: Joi.string().required(),
   bill_no: Joi.string().optional().allow(""),
   per_item_rate: Joi.number().required(),
