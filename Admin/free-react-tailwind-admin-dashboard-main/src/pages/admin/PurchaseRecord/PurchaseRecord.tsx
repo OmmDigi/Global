@@ -88,7 +88,7 @@ export default function PurchaseRecord() {
       console.log("Upload Success:", response);
       setPhoto(null);
       setFormData({
-       id: 0,
+     
     file: "",
     name: "",
     bill_no: "",
@@ -195,7 +195,7 @@ export default function PurchaseRecord() {
       console.log("Upload Success:", response);
 
       setFormData({
-       id: 0,
+      
     file: "",
     name: "",
     bill_no: "",

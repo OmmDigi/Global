@@ -12,7 +12,6 @@ import {
   GridIcon,
   HorizontaLDots,
   ListIcon,
-
 } from "../../icons";
 import { useSidebar } from "../../context/SidebarContext";
 
@@ -42,24 +41,6 @@ const navItems: NavItem[] = [
     path: "/home",
   },
   {
-    name: "Manage Holidays",
-    id: 2,
-    icon: <ListIcon />,
-    path: "/manageHolidays",
-  },
-  {
-    name: "Leave Apply",
-    id: 3,
-    icon: <ListIcon />,
-    path: "/createLeave",
-  },
-  {
-    name: "Manage Leave",
-    id: 4,
-    icon: <ListIcon />,
-    path: "/manageLeave",
-  },
-  {
     name: "Courses",
     id: 5,
     icon: <TbSchool />,
@@ -83,6 +64,32 @@ const navItems: NavItem[] = [
     icon: <MdWorkOutline />,
     path: "/create-employee",
   },
+  {
+    name: "Stuff Attandance",
+    id: 11,
+    icon: <PiOfficeChairDuotone />,
+    path: "/stuff-attandance",
+  },
+  
+  {
+    name: "Manage Holidays",
+    id: 2,
+    icon: <ListIcon />,
+    path: "/manageHolidays",
+  },
+  {
+    name: "Leave Apply",
+    id: 3,
+    icon: <ListIcon />,
+    path: "/createLeave",
+  },
+  {
+    name: "Manage Leave",
+    id: 4,
+    icon: <ListIcon />,
+    path: "/manageLeave",
+  },
+
   {
     name: "Inventory Manage",
     id: 8,
@@ -110,12 +117,6 @@ const navItems: NavItem[] = [
   //   icon: <GrHostMaintenance />,
   //   path: "/maintenance-record",
   // },
-  {
-    name: "Stuff Attandance",
-    id: 11,
-    icon: <PiOfficeChairDuotone />,
-    path: "/stuff-attandance",
-  },
 ];
 
 const othersItems: NavItem[] = [
