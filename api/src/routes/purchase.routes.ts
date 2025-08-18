@@ -6,7 +6,7 @@ import {
   getSinglePurchaseRecord,
   //   deletePurchaseRecored,
   updatePurchaseRecord,
-} from "../controllers/purchase.routes";
+} from "../controllers/purchase.controller";
 
 export const purchaseRoute = Router();
 
