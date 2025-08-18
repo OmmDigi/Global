@@ -1,4 +1,3 @@
-
 import PageMeta from "../../../components/common/PageMeta";
 import { useEffect } from "react";
 import ComponentCard from "../../../components/common/ComponentCard";
@@ -7,8 +6,6 @@ import { getFetcher } from "../../../api/fatcher";
 import useSWR from "swr";
 
 export default function Home() {
-
-  
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
     const token = query.get("token");
@@ -21,18 +18,16 @@ export default function Home() {
     console.log("Category:", category);
   }, []);
 
-
   const {
     data: courseList,
-    loading: courseLoading,
-    error: courseError,
+    isLoading: courseLoading,
   } = useSWR("api/v1/users/course", getFetcher);
   if (courseLoading) {
-    return <div>Loading ...</div>;
+    return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }
- 
-  console.log("courseList",courseList);
-  
+
+  console.log("courseList", courseList);
+
   return (
     <>
       <PageMeta
@@ -43,7 +38,7 @@ export default function Home() {
         <div className="col-span-12 space-y-6 xl:col-span-7">
           {/* <EcommerceMetrics /> */}
           <ComponentCard title="Student DashBoard">
-            <BasicTableCourses  courseList={courseList} /> 
+            <BasicTableCourses courseList={courseList} />
           </ComponentCard>
         </div>
 

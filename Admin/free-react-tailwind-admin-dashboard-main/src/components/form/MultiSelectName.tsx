@@ -134,7 +134,7 @@ const MultiSelectName: React.FC<MultiSelectProps> = ({
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex flex-col">
-                {options.map((option, index) => (
+                {options.map((option :any, index : number) => (
                   <div
                     key={index}
                     className={`hover:bg-primary/5 w-full cursor-pointer rounded-t border-b border-gray-200 dark:border-gray-800`}
@@ -148,7 +148,7 @@ const MultiSelectName: React.FC<MultiSelectProps> = ({
                       }`}
                     >
                       <div className="mx-2 leading-6 text-gray-800 dark:text-white/90">
-                        {option.name || option.text}
+                        {option.name || index}
                       </div>
                     </div>
                   </div>

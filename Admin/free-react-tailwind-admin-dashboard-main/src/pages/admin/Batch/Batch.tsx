@@ -38,38 +38,25 @@ export default function Batch() {
   });
 
   //   get Course list
-  const {
-    data: courseList,
-  
-  } = useSWR("api/v1/course?is_active=true", getFetcher);
-
+  const { data: courseList } = useSWR(
+    "api/v1/course?is_active=true",
+    getFetcher
+  );
 
   //   get session list
-  const {
-    data: sessionList,
-    loading: sessionLoading,
-    error: sessionError,
-  } = useSWR("api/v1/course/session?limit=-1&is_active=true", getFetcher);
-  if (sessionLoading) {
-    return <div>Loading ...</div>;
-  }
+  const { data: sessionList, isLoading: sessionLoading } = useSWR(
+    "api/v1/course/session?limit=-1&is_active=true",
+    getFetcher
+  );
 
   //   create Batch
-  const {
-    trigger: create,
-  } = useSWRMutation("api/v1/course/batch", (url, { arg }) =>
-    postFetcher(url, arg)
+  const { trigger: create } = useSWRMutation(
+    "api/v1/course/batch",
+    (url, { arg }) => postFetcher(url, arg)
   );
 
   //   get batch list
-  const {
-    data: batchList,
-    isLoading: batchLoading,
-    error: batchError,
-  } = useSWR("api/v1/course/batch", getFetcher);
-  if (sessionLoading) {
-    return <div>Loading ...</div>;
-  }
+  const { data: batchList } = useSWR("api/v1/course/batch", getFetcher);
 
   //   get single data
   // const {
@@ -79,16 +66,16 @@ export default function Batch() {
   // } = useSWR(`api/v1/course/batch/${id}`, getFetcher);
 
   //   get updated data
-  const {
-    trigger: update,
-    data: updateData,
-    error: updateError,
-    isMutating: updateLoading,
-  } = useSWRMutation("api/v1/course/batch", (url, { arg }) =>
-    putFetcher(url, arg)
+  const { trigger: update } = useSWRMutation(
+    "api/v1/course/batch",
+    (url, { arg }) => putFetcher(url, arg)
   );
-
- 
+  if (sessionLoading) {
+    return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
+  }
+  if (sessionLoading) {
+    return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
+  }
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -104,7 +91,7 @@ export default function Batch() {
 
   const handleUpdate = async () => {
     try {
-      const response = await update(formData);
+      const response = await update( formData as any);
       mutate("api/v1/course/batch");
       messageApi.open({
         type: "success",
@@ -128,12 +115,16 @@ export default function Batch() {
 
   const handleActive = async (isActive: boolean, id: number) => {
     console.log("isactiveaaaa ", isActive);
-
+    type UpdateFormPayload = {
+      id: string | number; // depends on your API, choose one
+      is_active: boolean;
+    };
+    const UpdateFormPayload: UpdateFormPayload = {
+      id: id,
+      is_active: isActive,
+    };
     try {
-      const response = await update({
-        id: id,
-        is_active: isActive,
-      });
+      const response = await update( UpdateFormPayload as any);
 
       mutate("api/v1/course/batch");
       messageApi.open({
@@ -154,7 +145,7 @@ export default function Batch() {
     e.preventDefault();
     console.log("form", formData);
     try {
-      const response = await create(formData);
+      const response = await create(null, formData as any);
       //   mutate(
       //     (currentData: any) => [...(currentData || []), response.data],
       //     false
@@ -179,12 +170,6 @@ export default function Batch() {
       });
       console.log("Upload Error:", error);
     }
-  };
-  const jumpToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
   };
 
   return (
@@ -212,7 +197,7 @@ export default function Batch() {
                       className="w-full px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
                     >
                       <option value="">Choose</option>
-                      {courseList?.data?.map((data, index) => (
+                      {courseList?.data?.map((data: any, index: number) => (
                         <div key={index}>
                           <option value={data?.id}>{data?.name}</option>
                         </div>
@@ -230,7 +215,7 @@ export default function Batch() {
                       className="w-full px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
                     >
                       <option value="">Choose</option>
-                      {sessionList?.data?.map((data, index) => (
+                      {sessionList?.data?.map((data: any, index: number) => (
                         <div key={index}>
                           <option value={data?.id}>{data?.name}</option>
                         </div>
@@ -241,9 +226,11 @@ export default function Batch() {
                     <Label htmlFor="inputOne">{"Select Batch Month"}</Label>
                     <MultiSelectName
                       options={options}
-                      selectedValues={formData.month_names }
+                      defaultSelected={formData.month_names}
+                      label="Select Batch Month"
+                      // selectedValues={formData.month_names}
                       onChange={(selected) =>
-                        setFormData((prev) => ({
+                        setFormData((prev: any) => ({
                           ...prev,
                           month_names: selected,
                         }))

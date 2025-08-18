@@ -24,7 +24,7 @@ const BasicTableHoliday: React.FC<IProps> = ({ holidayList, onEdit, }) => {
  
 
   // for delete
-  const { trigger: deleteUser, isMutating } = useSWRMutation(
+  const { trigger: deleteUser } = useSWRMutation(
     "api/v1/holiday",
     (url, { arg }: { arg: number }) => deleteFetcher(`${url}/${arg}`) // arg contains the id
   );

@@ -6,13 +6,7 @@ import {
   TableRow,
 } from "../../ui/table";
 
-import Badge from "../../ui/badge/Badge";
-import Switch from "../../form/switch/Switch";
-import dayjs from "dayjs";
-import useSWRMutation from "swr/mutation";
-import { deleteFetcher } from "../../../api/fatcher";
-import { message, Pagination, PaginationProps } from "antd";
-import { mutate } from "swr";
+
 import { useNavigate } from "react-router";
 
 // Define the table data using the interface

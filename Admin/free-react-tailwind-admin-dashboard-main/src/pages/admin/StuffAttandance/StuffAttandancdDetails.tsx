@@ -1,25 +1,19 @@
 import PageMeta from "../../../components/common/PageMeta";
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
-import { Link, useParams } from "react-router-dom";
+import {  useParams } from "react-router-dom";
 import ComponentCard from "../../../components/common/ComponentCard";
-import Label from "../../../components/form/Label";
-import Input from "../../../components/form/input/InputField";
-import { message, Radio, RadioChangeEvent } from "antd";
-import { getFetcher, postFetcher } from "../../../api/fatcher";
-import useSWRMutation from "swr/mutation";
+import { getFetcher, } from "../../../api/fatcher";
 import useSWR from "swr";
 import BasicTableAttandanceDetails from "../../../components/tables/BasicTables/BasicTableAttandanceDetails";
 import type { DatePickerProps } from "antd";
 import { DatePicker, Space } from "antd";
 import dayjs from "dayjs";
-import { PieChart } from "@mui/x-charts/PieChart";
 import Chart from "react-google-charts";
 
 export default function StuffAttandancdDetails() {
   const { id } = useParams();
   const [datePicker, setDatePicker] = useState("");
-  const [messageApi, contextHolder] = message.useMessage();
 
   const onChange: DatePickerProps["onChange"] = (dateString: any) => {
     setDatePicker(dayjs(dateString).format("YYYY-MM"));
@@ -32,8 +26,7 @@ export default function StuffAttandancdDetails() {
   // get Holiday List
   const {
     data: attandanceList,
-    loading: attandanceLoading,
-    error: attandanceError,
+    isLoading: attandanceLoading,
   } = useSWR(
     `api/v1/attendance/${id}?month_year=${datePicker ? datePicker : todayDate}`,
     getFetcher
@@ -84,7 +77,7 @@ export default function StuffAttandancdDetails() {
 
   return (
     <>
-      {contextHolder}
+      
       <PageMeta
         title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
         description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"

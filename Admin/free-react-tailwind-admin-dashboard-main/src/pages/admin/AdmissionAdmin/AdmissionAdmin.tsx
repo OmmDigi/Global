@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import PageMeta from "../../../components/common/PageMeta";
 import ComponentCard from "../../../components/common/ComponentCard";
@@ -17,7 +17,85 @@ import {
 import useSWRMutation from "swr/mutation";
 import { uploadFiles } from "../../../utils/uploadFile";
 
+const initialFormData = {
+  courseName: "",
+  sessionName: "",
+  batchName: "",
+  image: "",
+  candidateName: "",
+  fatherName: "",
+  motherName: "",
+  guardianName: "",
+  address: "",
+  phone: "",
+  mobile: "",
+  sex: "",
+  dateOfBirth: "",
+  bloodGroup: "",
+  category: "",
+  disability: "",
+  monthlyIncome: "",
+  languages: "",
+  education: {
+    madhyamik: { subjects: "", board: "", year: "", marks: "" },
+    hsH2: { subjects: "", board: "", year: "", marks: "" },
+    degree: { subjects: "", board: "", year: "", marks: "" },
+    pg: { subjects: "", board: "", year: "", marks: "" },
+    others: { subjects: "", board: "", year: "", marks: "" },
+  },
+  place: "",
+  name: "",
+  date: "",
 
+  // Next page
+  selfAttestedLastResult: [],
+  ageProofAdmitCard: [],
+  stampSizePhotos: [],
+  addressProof: [],
+
+  // Declaration section
+  declarationAccepted: false,
+
+  // Signature section
+  applicantSignature: "",
+  applicantDate: "",
+  guardianSignature: "",
+  guardianDate: "",
+
+  // Office use section
+  admitRejectedReason: "",
+  admissionNo: "",
+  remarks: "",
+  authoritySignature: "",
+  authorityDate: "",
+  principalSignature: "",
+  principalDate: "",
+
+  // First Declaration
+  applicantTitle1: "",
+  applicantName1: "",
+  relationshipType1: "",
+  relationName1: "",
+  admissionFeeAmount: "5000",
+  admissionFeeWords: "Five thousand",
+  courseDetails: "",
+  batchNumber: "",
+
+  // Second Declaration
+  applicantTitle2: "",
+  applicantName2: "",
+  relationshipType2: "",
+  relationName2: "",
+  bssRegistrationFee: "5000",
+  bssRegistrationFeeWords: "Five thousand",
+
+  // Signatures and Dates
+  parentGuardianSignature: "",
+  parentGuardianDate: "",
+
+  username: "",
+  password: "",
+};
 
 export default function AdmissionAdmin() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -27,85 +105,7 @@ export default function AdmissionAdmin() {
   const [montessoriTeachers, setMontessoriTeachers] = useState(false);
   const [id, setId] = useState<number>();
   const [editedFormId, setEditedFormId] = useState<number>(-1);
-  const [formData, setFormData] = useState({
-    courseName: "",
-    sessionName: "",
-    batchName: "",
-    image: "",
-    candidateName: "",
-    fatherName: "",
-    motherName: "",
-    guardianName: "",
-    address: "",
-    phone: "",
-    mobile: "",
-    sex: "",
-    dateOfBirth: "",
-    bloodGroup: "",
-    category: "",
-    disability: "",
-    monthlyIncome: "",
-    languages: "",
-    education: {
-      madhyamik: { subjects: "", board: "", year: "", marks: "" },
-      hsH2: { subjects: "", board: "", year: "", marks: "" },
-      degree: { subjects: "", board: "", year: "", marks: "" },
-      pg: { subjects: "", board: "", year: "", marks: "" },
-      others: { subjects: "", board: "", year: "", marks: "" },
-    },
-    place: "",
-    name: "",
-    date: "",
-
-    // Next page
-    selfAttestedLastResult: [],
-    ageProofAdmitCard: [],
-    stampSizePhotos: [],
-    addressProof: [],
-
-    // Declaration section
-    declarationAccepted: false,
-
-    // Signature section
-    applicantSignature: "",
-    applicantDate: "",
-    guardianSignature: "",
-    guardianDate: "",
-
-    // Office use section
-    admitRejectedReason: "",
-    admissionNo: "",
-    remarks: "",
-    authoritySignature: "",
-    authorityDate: "",
-    principalSignature: "",
-    principalDate: "",
-
-    // First Declaration
-    applicantTitle1: "",
-    applicantName1: "",
-    relationshipType1: "",
-    relationName1: "",
-    admissionFeeAmount: "5000",
-    admissionFeeWords: "Five thousand",
-    courseDetails: "",
-    batchNumber: "",
-
-    // Second Declaration
-    applicantTitle2: "",
-    applicantName2: "",
-    relationshipType2: "",
-    relationName2: "",
-    bssRegistrationFee: "5000",
-    bssRegistrationFeeWords: "Five thousand",
-
-    // Signatures and Dates
-    parentGuardianSignature: "",
-    parentGuardianDate: "",
-
-    username: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState(initialFormData);
 
   // get Course list
   const {
@@ -129,11 +129,9 @@ export default function AdmissionAdmin() {
 
   console.log("admissionlist", admissionlist);
 
-  const {
-    trigger: create,
-   
-  } = useSWRMutation("api/v1/admission/create", (url, { arg }) =>
-    postFetcher(url, arg)
+  const { trigger: create } = useSWRMutation(
+    "api/v1/admission/create",
+    (url, { arg }) => postFetcher(url, arg)
   );
 
   // update course
@@ -156,7 +154,7 @@ export default function AdmissionAdmin() {
     }));
   };
 
-  const handleFileChange = (e:any, name:string) => {
+  const handleFileChange = (e: any, name: string) => {
     const files = e.target.files;
 
     console.log("handleFileChange", files);
@@ -165,8 +163,8 @@ export default function AdmissionAdmin() {
       url: `${uploadUrl}api/v1/upload/multiple`,
       files: files,
       folder: "admission_doc",
-      onUploading(percent) {},
-      onUploaded(result) {
+
+      onUploaded() {
         setFormData((prev) => ({
           ...prev,
           [name]: Array.from(files),
@@ -180,7 +178,7 @@ export default function AdmissionAdmin() {
     field: string,
     value: string
   ) => {
-    setFormData((prev:any) => ({
+    setFormData((prev: any) => ({
       ...prev,
       education: {
         ...prev.education,
@@ -192,7 +190,7 @@ export default function AdmissionAdmin() {
     }));
   };
 
-  const handleFileUpload = (e:any, type:string) => {
+  const handleFileUpload = (e: any, type: string) => {
     const file = e.target.files[0];
     console.log("file", file);
 
@@ -201,7 +199,7 @@ export default function AdmissionAdmin() {
       reader.onload = (event: ProgressEvent<FileReader>) => {
         const result = event.target?.result as string;
         if (type === "photo") {
-          setPhoto( result as any);
+          setPhoto(result as any);
         }
       };
       reader.readAsDataURL(file);
@@ -228,7 +226,7 @@ export default function AdmissionAdmin() {
   };
 
   const removeFile2 = (fieldName: string, index: number) => {
-    setFormData((prev:any) => ({
+    setFormData((prev: any) => ({
       ...prev,
       [fieldName]: prev[fieldName]?.filter((_: any, i: number) => i !== index),
     }));
@@ -246,23 +244,17 @@ export default function AdmissionAdmin() {
 
     e.preventDefault();
     try {
-      const response = await create(null ,admissionForm as any);
+      const response = await create(null, admissionForm as any);
       messageApi.open({
         type: "success",
         content: response.message,
       });
 
       if (response.success === true) {
-        setFormData({
-          education: {},
-          selfAttestedLastResult: [],
-          ageProofAdmitCard: [],
-          stampSizePhotos: [],
-          addressProof: [],
-        });
+        setFormData(initialFormData);
       }
       setCurrent(0);
-    } catch (error:any) {
+    } catch (error: any) {
       messageApi.open({
         type: "error",
         content: error.response?.data?.message
@@ -283,7 +275,7 @@ export default function AdmissionAdmin() {
       const userData = JSON.parse(response?.data?.admission_details ?? "{}");
       console.log("userDataform", userData);
       const tempObj: any = {};
-      
+
       Object.entries(userData).forEach(([key, value]) => {
         tempObj[key] = value;
       });
@@ -296,8 +288,7 @@ export default function AdmissionAdmin() {
       // alert(userData?.courseName);
 
       console.log("Edit data loaded:", userData);
-    } 
-    catch (error) {
+    } catch (error) {
       console.error("Failed to fetch user data for edit:", error);
     }
   };
@@ -308,7 +299,7 @@ export default function AdmissionAdmin() {
   };
   const handleUpdate = async () => {
     try {
-      const response = await update(null , admissionFormUpdate as any);
+      const response = await update( admissionFormUpdate as any);
       messageApi.open({
         type: "success",
         content: response.message,
@@ -318,13 +309,7 @@ export default function AdmissionAdmin() {
       setMontessoriTeachers(false);
       setCurrent(0);
 
-      setFormData({
-        education: {},
-        selfAttestedLastResult: [],
-        ageProofAdmitCard: [],
-        stampSizePhotos: [],
-        addressProof: [],
-      });
+      setFormData(initialFormData);
     } catch (error: any) {
       messageApi.open({
         type: "error",
@@ -338,12 +323,16 @@ export default function AdmissionAdmin() {
 
   const handleActive = async (isActive: boolean, id: number) => {
     console.log("isactiveaaaa ", id);
-
+    type UpdateFormPayload = {
+      form_id: number; // depends on your API, choose one
+      form_status: boolean;
+    };
+    const UpdateFormPayload: UpdateFormPayload = {
+      form_id: id,
+      form_status: isActive,
+    };
     try {
-      const response = await update2( null , {
-        form_id: id,
-        form_status: isActive,
-      });
+      const response = await update2(UpdateFormPayload as any);
 
       mutate();
       messageApi.open({
@@ -385,8 +374,7 @@ export default function AdmissionAdmin() {
   };
 
   const contentStyle = {
-    // lineHeight: "260px",
-    textAlign: "center",
+    // textAlign: "center",
     color: token.colorTextTertiary,
     backgroundColor: token.colorFillAlter,
     borderRadius: token.borderRadiusLG,
@@ -395,18 +383,18 @@ export default function AdmissionAdmin() {
   };
   const [selectedCourseId, setSelectedCourseId] = useState(null);
 
-  const handleCourseChange = (e:any) => {
+  const handleCourseChange = (e: any) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
     const courseId = parseInt(e.target.value);
-    setSelectedCourseId(courseId as any );
+    setSelectedCourseId(courseId as any);
   };
 
   const selectedCourse = Array.isArray(courseList?.data)
-    ? courseList?.data?.find((course :any ) => course.id == selectedCourseId)
+    ? courseList?.data?.find((course: any) => course.id == selectedCourseId)
     : null;
 
   return (
@@ -473,11 +461,13 @@ export default function AdmissionAdmin() {
                               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
                               <option value="">Option</option>
-                              {courseList?.data?.map((data:any, index:number) => (
-                                <option key={index} value={`${data?.id}`}>
-                                  {data?.course_name}
-                                </option>
-                              ))}
+                              {courseList?.data?.map(
+                                (data: any, index: number) => (
+                                  <option key={index} value={`${data?.id}`}>
+                                    {data?.course_name}
+                                  </option>
+                                )
+                              )}
                             </select>
                           </div>
 
@@ -497,7 +487,7 @@ export default function AdmissionAdmin() {
                                 <option value="">Option</option>
 
                                 {selectedCourse?.session?.map(
-                                  (session:any, index:number) => (
+                                  (session: any, index: number) => (
                                     <option
                                       key={index}
                                       value={`${session?.session_id}`}
@@ -521,14 +511,16 @@ export default function AdmissionAdmin() {
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                               >
                                 <option value="">Option</option>
-                                {selectedCourse?.batch?.map((batch:any, index:number) => (
-                                  <option
-                                    key={index}
-                                    value={`${batch?.batch_id}`}
-                                  >
-                                    {batch.month_name}
-                                  </option>
-                                ))}
+                                {selectedCourse?.batch?.map(
+                                  (batch: any, index: number) => (
+                                    <option
+                                      key={index}
+                                      value={`${batch?.batch_id}`}
+                                    >
+                                      {batch.month_name}
+                                    </option>
+                                  )
+                                )}
                               </select>
                             </div>
                           </div>
@@ -647,7 +639,7 @@ export default function AdmissionAdmin() {
                                     name="address"
                                     value={formData.address}
                                     onChange={handleInputChange}
-                                    rows="3"
+                                    // rows="3"
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                   />
                                 </div>
@@ -992,7 +984,7 @@ export default function AdmissionAdmin() {
                                     0 && (
                                     <div className="mt-2 space-y-1">
                                       {formData?.selfAttestedLastResult?.map(
-                                        (file:any, index:number) => (
+                                        (file: any, index: number) => (
                                           <div
                                             key={index}
                                             className="flex items-center justify-between bg-gray-50 p-2 rounded text-sm"
@@ -1036,7 +1028,7 @@ export default function AdmissionAdmin() {
                                   {formData?.ageProofAdmitCard?.length > 0 && (
                                     <div className="mt-2 space-y-1">
                                       {formData?.ageProofAdmitCard?.map(
-                                        (file:any, index:number) => (
+                                        (file: any, index: number) => (
                                           <div
                                             key={index}
                                             className="flex items-center justify-between bg-gray-50 p-2 rounded text-sm"
@@ -1080,7 +1072,7 @@ export default function AdmissionAdmin() {
                                   {formData?.addressProof?.length > 0 && (
                                     <div className="mt-2 space-y-1">
                                       {formData?.addressProof?.map(
-                                        (file :any, index:number) => (
+                                        (file: any, index: number) => (
                                           <div
                                             key={index}
                                             className="flex items-center justify-between bg-gray-50 p-2 rounded text-sm"
@@ -1671,7 +1663,7 @@ export default function AdmissionAdmin() {
                             Previous
                           </Button>
                         )}
-                        {current === steps.length - 1 && (
+                        {current === Steps.length - 1 && (
                           <div>
                             {id ? (
                               <div
@@ -1690,7 +1682,7 @@ export default function AdmissionAdmin() {
                             )}
                           </div>
                         )}
-                        {current < steps.length - 1 && (
+                        {current < Steps.length - 1 && (
                           <Button type="primary" onClick={() => next()}>
                             Next
                           </Button>

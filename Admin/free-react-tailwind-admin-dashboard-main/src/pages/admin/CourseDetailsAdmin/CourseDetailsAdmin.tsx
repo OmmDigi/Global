@@ -1,38 +1,23 @@
 import PageMeta from "../../../components/common/PageMeta";
 import { useEffect, useState } from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import ComponentCard from "../../../components/common/ComponentCard";
 import Label from "../../../components/form/Label";
-import Input from "../../../components/form/input/InputField";
-import { message, Radio, RadioChangeEvent } from "antd";
+import { message, Radio } from "antd";
 import { getFetcher, postFetcher } from "../../../api/fatcher";
 import useSWRMutation from "swr/mutation";
 import useSWR from "swr";
-import BasicTableCourses from "../../../components/tables/studentTable/BasicTableCourses";
 import BasicTableCourseDetailsAdmin from "../../../components/tables/BasicTables/BasicTableCourseDetailsAdmin";
-const style: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "center",
-  flexDirection: "row",
-  gap: 40,
-  fontSize: "16px",
-};
 
 export default function CourseDetailsAdmin() {
   const [messageApi, contextHolder] = message.useMessage();
 
   // const [feesStructure, setFeesStructure] = useState("");
-  const [enteredAmounts, setEnteredAmounts] = useState({});
+  const [enteredAmounts, setEnteredAmounts] = useState<any>({});
   const [paymentMode, setPaymentMode] = useState("");
   const [paymentDetails, setPaymentDetails] = useState("");
 
-  const [formData2, setFormData2] = useState({
-    form_id: "",
-    payment_mode: "",
-    payment_details: "",
-    fee_structure_info: [],
-  });
   const { id } = useParams();
 
   useEffect(() => {
@@ -49,36 +34,31 @@ export default function CourseDetailsAdmin() {
   //   get Fees head
   const {
     data: feesStructure,
-    loading: feesStructureLoading,
-    error: feesStructureError,
+    isLoading: feesStructureLoading,
     mutate: refetch,
   } = useSWR(`api/v1/admission/${id}`, getFetcher);
+
+  // admin payment
+  const { trigger: create } = useSWRMutation(
+    `api/v1/payment/add`,
+    (url, { arg }) => postFetcher(url, arg)
+  );
   if (feesStructureLoading) {
-    return <div>Loading ...</div>;
+    return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }
   console.log("feesStructure", feesStructure);
 
-  // admin payment
-  const {
-    trigger: create,
-    data: dataCreate,
-    error: dataError,
-    isMutating: dataIsloading,
-  } = useSWRMutation(`api/v1/payment/add`, (url, { arg }) =>
-    postFetcher(url, arg)
-  );
-
-  const handleAmountChange = (e, item) => {
+  const handleAmountChange = (e: any, item: any) => {
     const value = e.target.value;
     const id = item.fee_head_id;
 
-    setEnteredAmounts((prev) => ({
+    setEnteredAmounts((prev:any) => ({
       ...prev,
       [id]: value,
     }));
   };
 
-  const onChange = (e) => {
+  const onChange = (e: any) => {
     setPaymentMode(e.target.value);
   };
 
@@ -86,7 +66,7 @@ export default function CourseDetailsAdmin() {
     e.preventDefault();
 
     const fee_structure_info = feesStructure?.data?.fee_structure_info?.map(
-      (item) => ({
+      (item: any) => ({
         fee_head_id: item.fee_head_id,
         custom_min_amount: enteredAmounts[item.fee_head_id] || 0,
       })
@@ -102,7 +82,7 @@ export default function CourseDetailsAdmin() {
     // setFormData2(finalFormData);
     console.log("Submitted FormData:", finalFormData);
     try {
-      const response = await create(finalFormData);
+      const response = await create(finalFormData as any);
       messageApi.open({
         type: "success",
         content: response.message,
@@ -205,7 +185,7 @@ export default function CourseDetailsAdmin() {
                                   Total Selected Amount: ₹{totalAmount}
                                 </div> */}
                     {feesStructure?.data?.fee_structure_info?.map(
-                      (item, index) => {
+                      (item: any, index: number) => {
                         // const isAmountEditable = item?.min_amount < item?.amount;
                         return (
                           <div
@@ -245,7 +225,8 @@ export default function CourseDetailsAdmin() {
                                   onChange={(e) => handleAmountChange(e, item)}
                                   className="w-32 px-2 py-1 border rounded"
                                 />
-                                {item?.min_amount > 0 && item?.due_amount > 0 ?  (
+                                {item?.min_amount > 0 &&
+                                item?.due_amount > 0 ? (
                                   <p className="text-xs text-red-300">
                                     {" "}
                                     Minimum to pay {item?.min_amount}

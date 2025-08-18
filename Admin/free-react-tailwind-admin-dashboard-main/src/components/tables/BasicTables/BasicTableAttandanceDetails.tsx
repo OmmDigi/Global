@@ -7,12 +7,10 @@ import {
 } from "../../ui/table";
 
 
-import { useNavigate } from "react-router";
 
 // Define the table data using the interface
 
 const BasicTableAttandanceDetails = ({ attandanceList_table }: any) => {
-  const navigate = useNavigate();
 
   // const handleDetailsClick = (id: number) => {
   //   navigate(`/stuffAttandancdDetails/${id}`);

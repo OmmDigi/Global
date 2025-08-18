@@ -4,11 +4,7 @@ import PageMeta from "../../../components/common/PageMeta";
 import ComponentCard from "../../../components/common/ComponentCard";
 import Label from "../../../components/form/Label";
 import Input from "../../../components/form/input/InputField";
-import TextArea from "../../../components/form/input/TextArea";
-import Button from "../../../components/ui/button/Button";
-import Select from "../../../components/form/Select";
-import BasicTableCourses from "../../../components/tables/BasicTables/BasicTableCourses";
-import BasicTablePurchase from "../../../components/tables/BasicTables/BasicTablePurchase";
+
 import useSWR, { mutate } from "swr";
 import useSWRMutation from "swr/mutation";
 import { getFetcher, postFetcher, putFetcher } from "../../../api/fatcher";
@@ -18,66 +14,52 @@ import BasicTableInventory from "../../../components/tables/BasicTables/BasicTab
 export default function InventoryManage() {
   const [messageApi, contextHolder] = message.useMessage();
 
-  const [loading, setLoading] = useState<number>();
-  const [photo, setPhoto] = useState<string | null>(null);
   const [id, setId] = useState<number>();
-  const [formData, setFormData] = useState(
-    {
-      item_name: "",
-      vendor_id: "",
-      created_at: "",
-      minimum_quantity: "",
-    },
-  );
+  const [formData, setFormData] = useState({
+    // item_id: 0,
+    item_name: "",
+    vendor_id: "",
+    created_at: "",
+    minimum_quantity: "",
+  });
 
-  const {
-    data: vendorList,
-    loading: vendorLoading,
-    error: vendorError,
-  } = useSWR("api/v1/vendor", getFetcher);
-  if (vendorLoading) {
-    return <div>Loading ...</div>;
-  }
-  console.log("vendorList", vendorList);
+  const { data: vendorList, isLoading: vendorLoading } = useSWR(
+    "api/v1/vendor",
+    getFetcher
+  );
+  // get inventory  List
+  const { data: inventoryList, isLoading: inventoryLoding } = useSWR(
+    "api/v1/inventory/item",
+    getFetcher
+  );
 
   // create inventory
-  const {
-    trigger: create,
-    data: dataCreate,
-    error: dataError,
-    isMutating: dataIsloading,
-  } = useSWRMutation("api/v1/inventory/item/add", (url, { arg }) =>
-    postFetcher(url, arg)
+  const { trigger: create } = useSWRMutation(
+    "api/v1/inventory/item/add",
+    (url, { arg }) => postFetcher(url, arg)
   );
-
-  // get inventory  List
-  const {
-    data: inventoryList,
-    loading: inventoryLoding,
-    error: inventoryeError,
-  } = useSWR("api/v1/inventory/item", getFetcher);
-
-  if (inventoryLoding) {
-    console.log("loading", inventoryLoding);
-  }
-  console.log("inventoryList", inventoryList);
+  
 
   // Update purchaseList
 
-  const {
-    trigger: update,
-    data,
-    error,
-    isMutating,
-  } = useSWRMutation("api/v1/inventory/item/edit", (url, { arg }) => putFetcher(url, arg));
+  const { trigger: update } = useSWRMutation(
+    "api/v1/inventory/item/edit",
+    (url, { arg }) => putFetcher(url, arg)
+  );
+  if (inventoryLoding) {
+    console.log("loading", inventoryLoding);
+  }
+  if (vendorLoading) {
+    return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     console.log("formdataaa", formData);
-    const multiForm = [formData]
+    const multiForm = [formData];
     try {
-      const response = await create(multiForm);
+      const response = await create(multiForm as any);
       mutate(
         (currentData: any) => [...(currentData || []), response.data],
         false
@@ -88,6 +70,7 @@ export default function InventoryManage() {
       });
       console.log("Upload Success:", response);
       setFormData({
+        // item_id: 0,
         item_name: "",
         vendor_id: "",
         created_at: "",
@@ -125,7 +108,6 @@ export default function InventoryManage() {
         created_at: userData?.created_at,
         minimum_quantity: userData?.minimum_quantity,
       });
-      setPhoto(userData?.file);
     } catch (error) {
       console.error("Failed to fetch user data for edit:", error);
     }
@@ -135,7 +117,7 @@ export default function InventoryManage() {
 
   const handleUpdate = async () => {
     try {
-      const response = await update(formData);
+      const response = await update(formData as any);
       mutate("api/v1/inventory/item");
       messageApi.open({
         type: "success",
@@ -144,6 +126,7 @@ export default function InventoryManage() {
       console.log("Upload Success:", response);
 
       setFormData({
+        // item_id: 0,
         item_name: "",
         vendor_id: "",
         created_at: "",
@@ -204,7 +187,7 @@ export default function InventoryManage() {
                   className="w-full px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
                 >
                   <option value="">Select</option>
-                  {vendorList?.data?.map((data, index) => (
+                  {vendorList?.data?.map((data: any, index: number) => (
                     <div key={index}>
                       <option value={data?.id}>{data?.name}</option>
                     </div>
@@ -225,7 +208,6 @@ export default function InventoryManage() {
             </div>
 
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-             
               <div>
                 <Label>Minimum Quantity to maintain *</Label>
                 <Input
@@ -260,7 +242,10 @@ export default function InventoryManage() {
             </div>
           </div>
         </form>
-        <BasicTableInventory  inventoryList={inventoryList} onEdit={handleEdit} />
+        <BasicTableInventory
+          inventoryList={inventoryList}
+          onEdit={handleEdit}
+        />
       </ComponentCard>
     </div>
   );

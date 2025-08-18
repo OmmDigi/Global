@@ -10,28 +10,17 @@ import useSWR, { mutate } from "swr";
 import useSWRMutation from "swr/mutation";
 import { message } from "antd";
 
-const options = ["Option 1", "Option 2", "Option 3"];
-
 export default function Courses() {
   const [messageApi, contextHolder] = message.useMessage();
   const [id, setId] = useState<number>();
 
-  //   get session list
-  const {
-    data: sessionList,
-    loading: sessionLoading,
-    error: sessionError,
-  } = useSWR("api/v1/course/session?limit=-1&is_active=true", getFetcher);
-  if (sessionLoading) {
-    return <div>Loading ...</div>;
-  }
-
   const [formData, setFormData] = useState({
+    // id: 0,
     name: "",
     duration: "",
     fee_structure: [
-      { fee_head_id: "", amount: "", min_amount: "", required: "" },
-      { fee_head_id: "", amount: "", min_amount: "", required: "" },
+      { fee_head_id: "", amount: "", min_amount: "", required: false },
+      { fee_head_id: "", amount: "", min_amount: "", required: false },
     ],
     description: "",
   });
@@ -42,42 +31,35 @@ export default function Courses() {
   // const formData = { ...formData, ...fee_structure };
 
   // create course
-  const {
-    trigger: create,
-    data: dataCreate,
-    error: dataError,
-    isMutating: dataIsloading,
-  } = useSWRMutation("api/v1/course", (url, { arg }) => postFetcher(url, arg));
+  const { trigger: create } = useSWRMutation("api/v1/course", (url, { arg }) =>
+    postFetcher(url, arg)
+  );
 
   // get course list
-  const {
-    data: courseList,
-    loading: courseLoading,
-    error: courseError,
-  } = useSWR("api/v1/course", getFetcher);
-  if (courseLoading) {
-    return <div>Loading ...</div>;
-  }
+  const { data: courseList, isLoading: courseLoading } = useSWR(
+    "api/v1/course",
+    getFetcher
+  );
 
   //  get fees head
-  const {
-    data: feehead,
-    loading: feeheadLoading,
-    error: feeheadError,
-  } = useSWR("api/v1/course/fee-head", getFetcher);
-  if (feeheadLoading) {
-    return <div>Loading ...</div>;
-  }
-  console.log("feehead", feehead);
+  const { data: feehead, isLoading: feeheadLoading } = useSWR(
+    "api/v1/course/fee-head",
+    getFetcher
+  );
 
   // edit course
-  const {
-    trigger: update,
-    data,
-    error,
-    isMutating,
-  } = useSWRMutation("api/v1/course", (url, { arg }) => putFetcher(url, arg));
+  const { trigger: update } = useSWRMutation("api/v1/course", (url, { arg }) =>
+    putFetcher(url, arg)
+  );
+  if (courseLoading) {
+    return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
+  }
 
+  if (feeheadLoading) {
+    return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
+  }
+
+  console.log("feehead", feehead);
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -95,7 +77,7 @@ export default function Courses() {
     console.log("formcourse", formData);
 
     try {
-      const response = await create(formData);
+      const response = await create( formData as any);
 
       messageApi.open({
         type: "success",
@@ -103,12 +85,13 @@ export default function Courses() {
       });
 
       setFormData({
+        // id: 0,
         name: "",
         duration: "",
         description: "",
         fee_structure: [
-          { fee_head_id: "", amount: "", min_amount: "", requierd: false },
-          { fee_head_id: "", amount: "", min_amount: "", requierd: false },
+          { fee_head_id: "", amount: "", min_amount: "", required: false },
+          { fee_head_id: "", amount: "", min_amount: "", required: false },
         ],
       });
     } catch (error: any) {
@@ -134,27 +117,25 @@ export default function Courses() {
         duration: userData?.duration,
         description: userData?.description,
         fee_structure: Array.isArray(userData?.fee_structure)
-          ? userData.fee_structure.map((item) => ({
+          ? userData.fee_structure.map((item: any) => ({
               fee_head_id: item.fee_head_id || "",
               amount: item.amount || "",
               min_amount: item.min_amount || "",
-              required: item.required == true ,
+              required: item.required == true,
             }))
           : [
-              { fee_head_id: "", amount: "", min_amount: "", requierd: false },
-              { fee_head_id: "", amount: "", min_amount: "", requierd: false },
+              { fee_head_id: "", amount: "", min_amount: "", requierd: 0 },
+              { fee_head_id: "", amount: "", min_amount: "", requierd: 0 },
             ],
       });
-
-      console.log("Edit data loaded:", userData);
     } catch (error) {
-      console.error("Failed to fetch user data for edit:", error);
+      console.log("Failed to fetch user data for edit:", error);
     }
   };
 
   const handleUpdate = async () => {
     try {
-      const response = await update(formData);
+      const response = await update( formData as any);
       mutate("api/v1/course?limit=-1");
       messageApi.open({
         type: "success",
@@ -162,12 +143,13 @@ export default function Courses() {
       });
       setId(0);
       setFormData({
+        // id: 0,
         name: "",
         duration: "",
         description: "",
         fee_structure: [
-          { fee_head_id: "", amount: "", min_amount: "", requierd: false },
-          { fee_head_id: "", amount: "", min_amount: "", requierd: false },
+          { fee_head_id: "", amount: "", min_amount: "", required: false },
+          { fee_head_id: "", amount: "", min_amount: "", required: false },
         ],
       });
     } catch (error: any) {
@@ -183,12 +165,16 @@ export default function Courses() {
 
   const handleActive = async (isActive: boolean, id: number) => {
     console.log("isactiveaaaa ", id);
-
+ type UpdateFormPayload = {
+      id: string | number; // depends on your API, choose one
+      is_active: boolean;
+    };
+    const UpdateFormPayload: UpdateFormPayload = {
+      id: id,
+      is_active: isActive,
+    };
     try {
-      const response = await update({
-        id: id,
-        is_active: isActive,
-      });
+      const response = await update( UpdateFormPayload as any);
 
       mutate("api/v1/course");
       messageApi.open({
@@ -229,11 +215,7 @@ export default function Courses() {
     }));
   };
 
-  const handleChangeEntries = (
-    index: number,
-    field: keyof Entry,
-    value: string
-  ) => {
+  const handleChangeEntries = (index: number, field: string, value: string) => {
     setFormData((prev) => ({
       ...prev,
       fee_structure: prev.fee_structure.map((entry, i) =>
@@ -308,7 +290,7 @@ export default function Courses() {
                         className="w-auto px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
                       >
                         <option value="">Choose</option>
-                        {feehead?.data?.map((opt, i) => (
+                        {feehead?.data?.map((opt: any, i: number) => (
                           <option key={i} value={opt.id}>
                             {opt.name}
                           </option>
@@ -338,8 +320,8 @@ export default function Courses() {
                         className="flex-1 border px-3 py-1 rounded-md"
                       />
                       <select
-                        value={entry.required}
-                        onChange={(e) =>
+                        value={entry?.required as any}
+                        onChange={(e:any) =>
                           handleChangeEntries(index, "required", e.target.value)
                         }
                         className="w-auto px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
@@ -395,8 +377,8 @@ export default function Courses() {
               </form>
             </div>
             <BasicTableCourses
-              onEdit={handleEdit}
               courseList={courseList}
+              onEdit={handleEdit}
               onActive={handleActive}
             />
           </ComponentCard>

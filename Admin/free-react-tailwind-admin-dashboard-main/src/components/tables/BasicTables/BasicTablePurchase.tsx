@@ -9,7 +9,7 @@ import {
 
 
 interface IProps {
-  stufflist: any;
+  purchaseList: any;
   onEdit: (id: number) => void;
 }
 

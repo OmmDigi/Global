@@ -74,7 +74,7 @@ export default function DefaultInputs() {
             label={
               dropdownOpen ? dropdownOpen : "Select Stuff Catagory / Catagories"
             }
-            options={multiOptions}
+            options={multiOptions as any}
             defaultSelected={selectedValues}
             // defaultSelected={["1", "3"]}
             onChange={(values) => setSelectedValues(values)}

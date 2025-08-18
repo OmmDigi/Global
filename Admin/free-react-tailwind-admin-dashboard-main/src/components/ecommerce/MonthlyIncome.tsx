@@ -14,34 +14,38 @@ export default function MonthlyIncome() {
   // get course list
   console.log("dateRange", startDate);
 
-  const {
-    data: income,
-    loading: incomeLoading,
-    error: incomeError,
-  } = useSWR("api/v1/dashboard/income", getFetcher);
+  const { data: income, isLoading: incomeLoading } = useSWR(
+    "api/v1/dashboard/income",
+    getFetcher
+  );
 
   if (incomeLoading) {
-    return <div>Loading ...</div>;
+    return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }
 
   console.log("income", income);
 
   const data = [
     ["Task", "Hours per Day"],
-   ...(income?.data || []).map((item:any) => [item.mode, Number(item.income)])
+    ...(income?.data || []).map((item: any) => [
+      item.mode,
+      Number(item.income),
+    ]),
   ];
 
   const options = {
-     backgroundColor: "transparent",
-  pieHole: 0.4,
-  // is3D: true,
-  pieStartAngle: 100,
-  legend: { position: "bottom", alignment: "center", textStyle: {
+    backgroundColor: "transparent",
+    pieHole: 0.4,
+    pieStartAngle: 100,
+    legend: {
+      position: "bottom",
+      alignment: "center",
+      textStyle: {
         color: "#ffffff",
         fontSize: 14,
-      }, },
-  colors: ["#8AD1C2", "#9F8AD1", "#D18A99"],
- 
+      },
+    },
+    colors: ["#8AD1C2", "#9F8AD1", "#D18A99"],
   };
 
   return (

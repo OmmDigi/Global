@@ -46,7 +46,7 @@ export default function SelectInputs() {
         <div>
           <MultiSelect
             label="Multiple Select Options"
-            options={multiOptions}
+            options={multiOptions as any}
             defaultSelected={["1", "3"]}
             onChange={(values) => setSelectedValues(values)}
           />

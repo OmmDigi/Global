@@ -7,12 +7,7 @@ import {
 } from "../../ui/table";
 
 import Switch from "../../form/switch/Switch";
-import useSWRMutation from "swr/mutation";
-import { deleteFetcher } from "../../../api/fatcher";
-import { message } from "antd";
-import { mutate } from "swr";
-import type { PaginationProps } from "antd";
-import { Pagination } from "antd";
+
 
 interface IProps {
   sessionList: any;
