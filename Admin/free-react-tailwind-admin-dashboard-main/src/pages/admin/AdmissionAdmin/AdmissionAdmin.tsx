@@ -97,6 +97,7 @@ const initialFormData = {
   password: "",
 };
 
+
 export default function AdmissionAdmin() {
   const [messageApi, contextHolder] = message.useMessage();
   const { token } = theme.useToken();
@@ -106,6 +107,23 @@ export default function AdmissionAdmin() {
   const [id, setId] = useState<number>();
   const [editedFormId, setEditedFormId] = useState<number>(-1);
   const [formData, setFormData] = useState(initialFormData);
+
+
+  const steps = [
+    {
+      title: "First",
+      content: "First-content",
+    },
+    {
+      title: "Second",
+      content: "Second-content",
+    },
+    {
+      title: "Last",
+      content: "Last-content",
+    },
+  ]
+
 
   // get Course list
   const {
@@ -244,7 +262,7 @@ export default function AdmissionAdmin() {
 
     e.preventDefault();
     try {
-      const response = await create(null, admissionForm as any);
+      const response = await create(admissionForm as any);
       messageApi.open({
         type: "success",
         content: response.message,
@@ -299,7 +317,7 @@ export default function AdmissionAdmin() {
   };
   const handleUpdate = async () => {
     try {
-      const response = await update( admissionFormUpdate as any);
+      const response = await update(admissionFormUpdate as any);
       messageApi.open({
         type: "success",
         content: response.message,
@@ -366,12 +384,16 @@ export default function AdmissionAdmin() {
 
   const next = () => {
     jumpToTop();
+    console.log("Current", current);
+
     setCurrent(current + 1);
   };
   const prev = () => {
     jumpToTop();
     setCurrent(current - 1);
   };
+
+  const items = steps.map((item) => ({ key: item.title, title: item.title }));
 
   const contentStyle = {
     // textAlign: "center",
@@ -430,13 +452,13 @@ export default function AdmissionAdmin() {
             </div>
             {montessoriTeachers && (
               <div>
-                {/* <div className="p-7 pl-30 pr-30  flex items-center sticky top-20 bg-gray-100  dark:bg-gray-800 dark:text-gray-100   text-gray-800  z-20 justify-center">
-                  <Steps
+                <div className="p-7 pl-30 pr-30  flex items-center sticky top-20 bg-gray-100  dark:bg-gray-800 dark:text-gray-100   text-gray-800  z-20 justify-center">
+                  {/* <Steps
                     style={{ fontSize: "20px", width: "" }}
                     current={current}
                     items={items}
-                  />
-                </div> */}
+                  /> */}
+                </div>
 
                 {/* form body  */}
                 <div style={contentStyle}>
@@ -811,12 +833,12 @@ export default function AdmissionAdmin() {
                                           {level === "madhyamik"
                                             ? "Madhyamik"
                                             : level === "hsH2"
-                                            ? "H.S/H-2"
-                                            : level === "degree"
-                                            ? "Degree"
-                                            : level === "pg"
-                                            ? "PG"
-                                            : "Others (Specify)"}
+                                              ? "H.S/H-2"
+                                              : level === "degree"
+                                                ? "Degree"
+                                                : level === "pg"
+                                                  ? "PG"
+                                                  : "Others (Specify)"}
                                         </td>
                                         <td className="border border-gray-300 p-2">
                                           <input
@@ -982,33 +1004,33 @@ export default function AdmissionAdmin() {
                                   />
                                   {formData?.selfAttestedLastResult?.length >
                                     0 && (
-                                    <div className="mt-2 space-y-1">
-                                      {formData?.selfAttestedLastResult?.map(
-                                        (file: any, index: number) => (
-                                          <div
-                                            key={index}
-                                            className="flex items-center justify-between bg-gray-50 p-2 rounded text-sm"
-                                          >
-                                            <span className="truncate">
-                                              {file?.name}
-                                            </span>
-                                            <button
-                                              type="button"
-                                              onClick={() =>
-                                                removeFile2(
-                                                  "selfAttestedLastResult",
-                                                  index
-                                                )
-                                              }
-                                              className="text-red-500 hover:text-red-700 ml-2"
+                                      <div className="mt-2 space-y-1">
+                                        {formData?.selfAttestedLastResult?.map(
+                                          (file: any, index: number) => (
+                                            <div
+                                              key={index}
+                                              className="flex items-center justify-between bg-gray-50 p-2 rounded text-sm"
                                             >
-                                              ×
-                                            </button>
-                                          </div>
-                                        )
-                                      )}
-                                    </div>
-                                  )}
+                                              <span className="truncate">
+                                                {file?.name}
+                                              </span>
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  removeFile2(
+                                                    "selfAttestedLastResult",
+                                                    index
+                                                  )
+                                                }
+                                                className="text-red-500 hover:text-red-700 ml-2"
+                                              >
+                                                ×
+                                              </button>
+                                            </div>
+                                          )
+                                        )}
+                                      </div>
+                                    )}
                                 </div>
 
                                 <div>
@@ -1663,7 +1685,7 @@ export default function AdmissionAdmin() {
                             Previous
                           </Button>
                         )}
-                        {current === Steps.length - 1 && (
+                        {current === 2 ? (
                           <div>
                             {id ? (
                               <div
@@ -1681,12 +1703,16 @@ export default function AdmissionAdmin() {
                               </button>
                             )}
                           </div>
-                        )}
-                        {current < Steps.length - 1 && (
-                          <Button type="primary" onClick={() => next()}>
-                            Next
-                          </Button>
-                        )}
+                        ) : <Button type="primary" onClick={(e) => {
+                          // e.stopPropagation();
+                          // e.preventDefault();
+                          next()
+                        }}>
+                          Next
+                        </Button>}
+
+
+
                       </div>
                     </form>
                   </div>
