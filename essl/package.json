@@ -4,7 +4,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon index.js",
+    "dev": "concurrently \"node tcp-server.js\" \"node http-server.js\"",
     "start": "concurrently \"node tcp-server.js\" \"node http-server.js\""
   },
   "keywords": [],

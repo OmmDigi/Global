@@ -17,7 +17,7 @@ interface Option {
 const options: Option[] = [
   { name: "JAN" },
   { name: "FEB" },
-  { name: "MER" },
+  { name: "MAR" },
   { name: "APR" },
   { name: "MAY" },
   { name: "JUN" },
@@ -145,7 +145,7 @@ export default function Batch() {
     e.preventDefault();
     console.log("form", formData);
     try {
-      const response = await create(null, formData as any);
+      const response = await create( formData as any);
       //   mutate(
       //     (currentData: any) => [...(currentData || []), response.data],
       //     false
@@ -223,7 +223,7 @@ export default function Batch() {
                     </select>
                   </div>
                   <div>
-                    <Label htmlFor="inputOne">{"Select Batch Month"}</Label>
+                    {/* <Label htmlFor="inputOne">{"S/elect Batch Month"}</Label> */}
                     <MultiSelectName
                       options={options}
                       defaultSelected={formData.month_names}
