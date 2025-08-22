@@ -67,7 +67,7 @@ function createWindow() {
   });
 
   // Load the target URL in BrowserView
-  browserView.webContents.loadURL("http://localhost:3000/login");
+  browserView.webContents.loadURL("http://192.168.0.214:3000/login");
 
   // BrowserView event handlers
   browserView.webContents.on("did-start-loading", () => {

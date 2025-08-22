@@ -1,9 +1,11 @@
 import { pool } from "../config/db";
 import asyncErrorHandler from "../middlewares/asyncErrorHandler";
+import { manageTeacherClassStatus } from "../services/attendance.service";
 import { ApiResponse } from "../utils/ApiResponse";
 import { ErrorHandler } from "../utils/ErrorHandler";
 import {
   VAddAttendance,
+  VEditTeacherClassStatus,
   VSingleAttendance,
 } from "../validator/attendance.validator";
 
@@ -20,8 +22,7 @@ export const storeAttendance = asyncErrorHandler(async (req, res) => {
   const placeholder = punchData
     .map(
       (_, index) =>
-        `($${index * 4 + 1}, $${index * 4 + 2}, $${
-          index * 3 + 3
+        `($${index * 4 + 1}, $${index * 4 + 2}, $${index * 3 + 3
         }, CURRENT_DATE)`
     )
     .join(", ");
@@ -75,7 +76,7 @@ export const getAttendanceList = asyncErrorHandler(async (req, res) => {
 
 export const getSingleEmployeeAttendanceList = asyncErrorHandler(
   async (req, res) => {
-    const { error, value } = VSingleAttendance.validate({...req.params, ...req.query});
+    const { error, value } = VSingleAttendance.validate({ ...req.params, ...req.query });
     if (error) throw new ErrorHandler(400, error.message);
 
     let monthYear = value.month_year;
@@ -158,7 +159,7 @@ export const getSingleEmployeeAttendanceList = asyncErrorHandler(
         [value.id, monthStr]
       );
 
-      if(rowCount === 0) throw new ErrorHandler(400, "No Data Found Of This Month");
+      if (rowCount === 0) throw new ErrorHandler(400, "No Data Found Of This Month");
 
       const { rows: attendanceList } = await client.query(queryGetAttenList, [
         value.id,
@@ -181,3 +182,95 @@ export const getSingleEmployeeAttendanceList = asyncErrorHandler(
     }
   }
 );
+
+// Teacher Class Status
+export const getTeacherClassStatusList = asyncErrorHandler(async (req, res) => {
+  // const { rows } = await pool.query(
+  //   `
+  //     SELECT 
+  //       u.id,
+  //       u.name,
+  //       COALESCE(
+  //           JSON_AGG(ess) FILTER (WHERE ess.employee_id IS NOT NULL),
+  //           '[]'::json
+  //       ) AS for_courses
+  //       FROM users u
+
+  //       LEFT JOIN (
+  //         SELECT 
+  //             ess.employee_id,
+  //             c.name AS course_name, 
+  //             c.id,
+  //             EXISTS (SELECT 1 FROM teacher_classes WHERE teacher_id = ess.employee_id AND course_id = c.id AND class_type = 'regular') AS regular, 
+  //             EXISTS (SELECT 1 FROM teacher_classes WHERE teacher_id = ess.employee_id AND course_id = c.id AND class_type = 'workshop') AS workshop, 
+  //             COALESCE((SELECT units FROM teacher_classes WHERE teacher_id = ess.employee_id AND course_id = c.id AND class_type = 'extra'), 0) AS extra 
+  //           FROM employee_salary_structure ess 
+  //           LEFT JOIN course c ON c.id = ess.course_id 
+          
+  //           GROUP BY ess.employee_id, c.id
+  //       ) AS ess ON ess.employee_id = u.id
+
+  //       WHERE u.category = 'Teacher'
+
+  //       GROUP BY u.id
+
+  //       ORDER BY u.id DESC
+  //   `
+  // )
+
+  const { rows } = await pool.query(
+    `
+      SELECT 
+        u.id,
+        u.name,
+        COALESCE(
+            JSON_AGG(ess) FILTER (WHERE ess.employee_id IS NOT NULL),
+            '[]'::json
+        ) AS for_courses
+        FROM users u
+
+        LEFT JOIN (
+          SELECT 
+            ess.employee_id,
+            c.name AS course_name, 
+            c.id,
+            (COUNT(*) FILTER (WHERE tc.class_type = 'regular') > 0) AS regular,
+            (COUNT(*) FILTER (WHERE tc.class_type = 'workshop') > 0) AS workshop,
+            COALESCE(MAX(tc.units) FILTER (WHERE tc.class_type = 'extra'), 0) AS extra
+          FROM employee_salary_structure ess 
+
+          LEFT JOIN course c 
+          ON c.id = ess.course_id
+
+          LEFT JOIN teacher_classes tc 
+          ON tc.teacher_id = ess.employee_id AND ess.course_id = tc.course_id
+
+          GROUP BY ess.employee_id, c.id
+
+          ORDER BY c.id
+        ) AS ess ON ess.employee_id = u.id
+
+        WHERE u.category = 'Teacher'
+
+        GROUP BY u.id
+
+        ORDER BY u.id DESC
+    `
+  )
+
+  res.status(200).json(new ApiResponse(200, "Daily Teacher Class Status Info", rows))
+})
+
+export const editTeacherClassStatus = asyncErrorHandler(async (req, res) => {
+  const { error, value } = VEditTeacherClassStatus.validate(req.body ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
+
+  const userId = value.id;
+
+  await manageTeacherClassStatus({
+    employee_id: userId,
+    values: value.for_courses
+  })
+
+  res.status(200).json(new ApiResponse(200, "Class status updated"))
+})

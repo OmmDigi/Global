@@ -2,81 +2,94 @@ const ZKLib = require("zkteco-js");
 const { WebSocket } = require("ws");
 
 const config = {
-  cloud_api_url: "http://localhost:8081",
+  cloud_api_url: "http://localhost:8084",
   device_id: "ESSL-001",
   auth_token: "YOUR_SECRET_TOKEN",
 };
 
-// controllers
-async function sendUserToDevice(zk, user) {
-  try {
-    await zk.setUser(
-      user.uid,
-      user.userid,
-      user.name,
-      user.password,
-      user.role || 0,
-      user.cardno || 0
-    );
-    // console.log(`👤 User ${user.name} added to device`);
-  } catch (err) {
-    console.error("⚠️ Failed to add user:", err && err.stack ? err.stack : err);
-  }
-}
+/**
+ * Sync user to multiple devices with rollback support
+ * @param {"add"|"update"|"delete"} action - operation type
+ * @param {Array} zks - array of zk device connections
+ * @param {Object} user - user object { uid, userid, name, password, role, cardno }
+ */
+async function syncUserToDevices(action, zks, user) {
+  let promises;
 
-async function deleteUserFromDevice(zk, uid) {
-  try {
-    await zk.deleteUser(uid);
-    // console.log(`👤 User ${uid} removed from device`);
-  } catch (err) {
-    console.error(
-      "⚠️ Failed to delete user:",
-      err && err.stack ? err.stack : err
+  if (action === "add" || action === "update") {
+    // setUser works for both add & update in zkteco-js
+    promises = zks.map((zk) =>
+      zk.setUser(
+        user.uid,
+        user.userid,
+        user.name,
+        user.password,
+        user.role || 0,
+        user.cardno || 0
+      )
     );
+  } else if (action === "delete") {
+    promises = zks.map((zk) => zk.deleteUser(user.uid));
+  } else {
+    throw new Error(`❌ Unknown action: ${action}`);
   }
-}
 
-async function updateEmployeeToDevice(zk, user) {
-  try {
-    // await zk.deleteUser(user.uid);
-    await zk.setUser(
-      user.uid,
-      user.userid,
-      user.name,
-      user.password,
-      user.role || 0,
-      user.cardno || 0
-    );
-    // console.log(`👤 User ${user.name} updated to device`);
-  } catch (err) {
-    console.error(
-      "⚠️ Failed to update user:",
-      err && err.stack ? err.stack : err
+  // run in parallel
+  const results = await Promise.allSettled(promises);
+
+  const failed = results.filter((r) => r.status === "rejected");
+  const succeededIndexes = results
+    .map((r, i) => (r.status === "fulfilled" ? i : null))
+    .filter((i) => i !== null);
+
+  if (failed.length > 0) {
+    console.error(`⚠️ Some devices failed during ${action}, rolling back...`);
+
+    if (action === "add" || action === "update") {
+      // rollback by deleting from devices where add/update succeeded
+      await Promise.allSettled(
+        succeededIndexes.map((i) => zks[i].deleteUser(user.uid))
+      );
+    } else if (action === "delete") {
+      // rollback by re-adding user to devices where delete succeeded
+      await Promise.allSettled(
+        succeededIndexes.map((i) =>
+          zks[i].setUser(
+            user.uid,
+            user.userid,
+            user.name,
+            user.password,
+            user.role || 0,
+            user.cardno || 0
+          )
+        )
+      );
+    }
+
+    throw new Error(
+      `❌ User ${action} failed on one or more devices, rollback done`
     );
   }
+
+  console.log(`✅ User ${action} successful on all devices`);
 }
 
 async function connectDevice(deviceinfo) {
-  const zkInstance = new ZKLib(
-    deviceinfo.device_ip,
-    deviceinfo.device_port,
-    10000,
-    4000
-  );
+  if (!Array.isArray(deviceinfo))
+    throw new Error("device info should be an array");
+
+  const zkInstances = [];
 
   try {
-    await zkInstance.createSocket();
-    console.log("✅ Connected to ESSL device");
+    for (const info of deviceinfo) {
+      const zkIns = new ZKLib(info.device_ip, info.device_port, 10000, 4000);
+      await zkIns.createSocket();
+      zkInstances.push(zkIns);
+    }
 
-    // Pull users from device
-    // const users = await zkInstance.getUsers();
-    // console.log("📋 Users on device:", users.data);
+    console.log("✅ Connected to ESSL devices");
 
-    // Optional: send logs to cloud
-    // const logs = await zkInstance.getAttendances();
-    // await sendLogsToServer(logs.data);
-
-    return zkInstance;
+    return zkInstances;
   } catch (err) {
     console.error("❌ Failed to connect to device:", err);
     return null;
@@ -84,7 +97,7 @@ async function connectDevice(deviceinfo) {
 }
 
 function connectWebSocket() {
-  let zk = null;
+  let zks = null;
 
   const ws = new WebSocket(
     `${config.cloud_api_url.replace(/^http/, "ws")}/device`,
@@ -105,21 +118,28 @@ function connectWebSocket() {
       const data = JSON.parse(msg);
 
       if (data.action === "connect_device") {
-        zk = await connectDevice(data.deviceinfo);
+        // get the array of device info ips : [], ports : []
+        zks = await connectDevice(data.deviceinfo);
       }
 
-      if (!zk) {
+      if (!zks || zks.length === 0) {
         ws.send(JSON.stringify({ action: "connection_failed" }));
         console.error("❌ Could not start bridge. Check device connection.");
         return;
       }
 
-      if (data.action === "add_employee") {
-        sendUserToDevice(zk, data.user);
-      } else if (data.action === "delete_employee")
-        deleteUserFromDevice(zk, data.uid);
-      else if (data.action === "update_employee")
-        updateEmployeeToDevice(zk, data.user);
+      const syncAction =
+        data.action === "add_employee"
+          ? "add"
+          : data.action === "delete_employee"
+          ? "delete"
+          : data.action === "update_employee"
+          ? "update"
+          : null;
+
+      if (syncAction != null) {
+        syncUserToDevices(syncAction, zks, data.user);
+      }
     } catch (err) {
       console.error(
         "⚠️ Invalid message from WebSocket:",

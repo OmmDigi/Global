@@ -55,8 +55,9 @@ const tcpServer = net.createServer((socket) => {
   socket.on("error", console.error);
 });
 
-tcpServer.listen(8080, () => {
-  console.log("✅ ADMS TCP server running on port 8080");
+const PORT = process.env.TCP_NET_PORT || 8080;
+tcpServer.listen(PORT, () => {
+  console.log(`✅ ADMS TCP server running on port ${PORT}`);
 });
 
 // // =====================

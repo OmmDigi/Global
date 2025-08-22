@@ -9,6 +9,9 @@ type SetUser = {
 
 type DeleteUser = {
   uid: string;
+  userid: string;
+  name: string;
+  password: string;
 };
 
 export class Essl {
@@ -33,7 +36,7 @@ export class Essl {
     return await axios.delete(`${this.BASE_URL}/api/v1/employee`, {
       data: {
         device_id: "ESSL-001",
-        uid: info.uid,
+        user: info,
       },
     });
   }

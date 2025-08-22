@@ -29,3 +29,12 @@ export interface PaymentResponse {
   message: string;
   data: PaymentData;
 }
+
+export type TeacherFeeStruct = {
+  course_id: number;
+  amount: number;
+  workshop: number;
+  type: string;
+  extra: number;
+  class_per_month: number
+}
