@@ -12,12 +12,18 @@ import useSWRMutation from "swr/mutation";
 import { message } from "antd";
 import BasicTableHoliday from "../../../components/tables/BasicTables/BasicTableHoliday";
 
+type FormDataType = {
+  id?: number; // optional (if sometimes missing)
+  date: string;
+  holiday_name: string;
+};  
+
 export default function ManageHolidays() {
   const [messageApi, contextHolder] = message.useMessage();
 
 
   const [id, setId] = useState<number>();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormDataType>({
     // id: "",
     date: "",
     holiday_name: "",

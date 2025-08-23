@@ -2,7 +2,7 @@ const ZKLib = require("zkteco-js");
 const { WebSocket } = require("ws");
 
 const config = {
-  cloud_api_url: "http://localhost:8081",
+  cloud_api_url: "http://192.168.0.192:8084",
   device_id: "ESSL-001",
   auth_token: "YOUR_SECRET_TOKEN",
 };

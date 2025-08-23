@@ -40,6 +40,7 @@ import Batch from "./pages/admin/Batch/Batch";
 import FeeHead from "./pages/admin/FeeHead/FeeHead";
 import CourseDetailsAdmin from "./pages/admin/CourseDetailsAdmin/CourseDetailsAdmin";
 import StuffAttandancdDetails from "./pages/admin/StuffAttandance/StuffAttandancdDetails";
+import TeacherAssignedClass from './pages/admin/TacherAssingedClass/TacherAssingedClass'
 import CreateLeave from "./pages/admin/Leave/CreateLeave";
 import ManageLeave from "./pages/admin/ManageLeave/ManageLeave";
 import VendorManage from "./pages/admin/VendorManage/VendorManage";
@@ -82,7 +83,7 @@ export default function App() {
         <ScrollToTop />
         <Routes>
           {/* Dashboard Layout */}
-          {user === "Admin" || user === "Stuff" ? (
+          {user === "Admin" || user === "Stuff" || user === "Teacher" ? (
             <Route element={<AppLayout1 />}>
               <Route index path={`/home`} element={<Home />} />
               {/* Others Page */}
@@ -119,6 +120,10 @@ export default function App() {
               />
               {/* StuffAttandance */}
               <Route path="/stuff-attandance" element={<StuffAttandance />} />
+              <Route
+                path="/teacher-assigned-class"
+                element={<TeacherAssignedClass />}
+              />
               <Route
                 path="/stuffAttandancdDetails/:id"
                 element={<StuffAttandancdDetails />}

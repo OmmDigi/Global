@@ -49,10 +49,10 @@ export default function MaintenanceRecord() {
         title="React.js Form Elements Dashboard | TailAdmin - React.js Admin Dashboard Template"
         description="This is React.js Form Elements Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
-      <PageBreadcrumb pageTitle="Maintenance Record" />
+      <PageBreadcrumb pageTitle="AMC Record" />
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-1">
         <div className="space-y-6 ">
-          <ComponentCard title="Maintenance Record">
+          <ComponentCard title="AMC Record">
             <div className="space-y-6">
               <div>
                 <Label htmlFor="inputTwo">Item Name</Label>

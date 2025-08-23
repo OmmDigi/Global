@@ -18,13 +18,26 @@ import useSWRMutation from "swr/mutation";
 import useSWR, { mutate } from "swr";
 import { message } from "antd";
 
+type FormDataType = {
+  id?: number; // optional (if sometimes missing)
+  file: string;
+  name: string;
+  bill_no: string;
+  per_item_rate: string;
+  company_details: string;
+  purchase_date: string;
+  expaire_date: string;
+  previousBalance: string;
+  presentBalance: string;
+  quantityReceived: string;
+};
 export default function PurchaseRecord() {
   const [messageApi, contextHolder] = message.useMessage();
 
   const [photo, setPhoto] = useState<string | null>(null);
   const [id, setId] = useState<number>();
-  const [formData, setFormData] = useState({
-      // id: 0,
+  const [formData, setFormData] = useState<FormDataType>({
+    // id: 0,
     file: "",
     name: "",
     bill_no: "",
@@ -88,17 +101,16 @@ export default function PurchaseRecord() {
       console.log("Upload Success:", response);
       setPhoto(null);
       setFormData({
-     
-    file: "",
-    name: "",
-    bill_no: "",
-    per_item_rate: "",
-    company_details: "",
-    purchase_date: "",
-    expaire_date: "",
-    previousBalance: "",
-    presentBalance: "",
-    quantityReceived: "",
+        file: "",
+        name: "",
+        bill_no: "",
+        per_item_rate: "",
+        company_details: "",
+        purchase_date: "",
+        expaire_date: "",
+        previousBalance: "",
+        presentBalance: "",
+        quantityReceived: "",
       });
     } catch (error: any) {
       messageApi.open({
@@ -141,7 +153,7 @@ export default function PurchaseRecord() {
         url: `${uploadUrl}api/v1/upload/multiple`,
         files: [file],
         folder: "profile_image",
-       
+
         onUploaded(result) {
           setFormData((prev) => ({
             ...prev,
@@ -186,7 +198,7 @@ export default function PurchaseRecord() {
 
   const handleUpdate = async () => {
     try {
-      const response = await update( formData as any);
+      const response = await update(formData as any);
       mutate("api/v1/purchase");
       messageApi.open({
         type: "success",
@@ -195,17 +207,16 @@ export default function PurchaseRecord() {
       console.log("Upload Success:", response);
 
       setFormData({
-      
-    file: "",
-    name: "",
-    bill_no: "",
-    per_item_rate: "",
-    company_details: "",
-    purchase_date: "",
-    expaire_date: "",
-    previousBalance: "",
-    presentBalance: "",
-    quantityReceived: "",
+        file: "",
+        name: "",
+        bill_no: "",
+        per_item_rate: "",
+        company_details: "",
+        purchase_date: "",
+        expaire_date: "",
+        previousBalance: "",
+        presentBalance: "",
+        quantityReceived: "",
       });
     } catch (error: any) {
       messageApi.open({
@@ -338,7 +349,7 @@ export default function PurchaseRecord() {
                     />
                   </div>
                   <div>
-                    <Label>Quamtity Received</Label>
+                    <Label>Quantity Received</Label>
                     <Input
                       type="number"
                       id="inputTwo"

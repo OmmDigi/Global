@@ -4,7 +4,7 @@ import PageMeta from "../../../components/common/PageMeta";
 import ComponentCard from "../../../components/common/ComponentCard";
 import BasicTableAdmission from "../../../components/tables/BasicTables/BasicTableAdmission";
 
-import { Button, message, Steps, theme } from "antd";
+import { Button, message, theme } from "antd";
 import { Minus, Plus, Upload, X } from "lucide-react";
 import useSWR from "swr";
 import {
@@ -109,20 +109,20 @@ export default function AdmissionAdmin() {
   const [formData, setFormData] = useState(initialFormData);
 
 
-  const steps = [
-    {
-      title: "First",
-      content: "First-content",
-    },
-    {
-      title: "Second",
-      content: "Second-content",
-    },
-    {
-      title: "Last",
-      content: "Last-content",
-    },
-  ]
+  // const steps = [
+  //   {
+  //     title: "First",
+  //     content: "First-content",
+  //   },
+  //   {
+  //     title: "Second",
+  //     content: "Second-content",
+  //   },
+  //   {
+  //     title: "Last",
+  //     content: "Last-content",
+  //   },
+  // ]
 
 
   // get Course list
@@ -393,7 +393,6 @@ export default function AdmissionAdmin() {
     setCurrent(current - 1);
   };
 
-  const items = steps.map((item) => ({ key: item.title, title: item.title }));
 
   const contentStyle = {
     // textAlign: "center",
@@ -1703,9 +1702,8 @@ export default function AdmissionAdmin() {
                               </button>
                             )}
                           </div>
-                        ) : <Button type="primary" onClick={(e) => {
-                          // e.stopPropagation();
-                          // e.preventDefault();
+                        ) : <Button type="primary" onClick={() => {
+                       
                           next()
                         }}>
                           Next

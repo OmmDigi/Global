@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router";
 
 interface BreadcrumbProps {
@@ -6,13 +5,7 @@ interface BreadcrumbProps {
 }
 
 const PageBreadcrumb: React.FC<BreadcrumbProps> = ({ pageTitle }) => {
-  const [user, setUser] = useState<string | null>(null);
-
-  useEffect(() => {
-    const category = localStorage.getItem("category");
-    setUser(category);
-     
-    }, []);
+  
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
       <h2
@@ -26,7 +19,7 @@ const PageBreadcrumb: React.FC<BreadcrumbProps> = ({ pageTitle }) => {
           <li>
             <Link
               className="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400"
-              to={`/${user}`}
+              to={`/home`}
             >
               Home
               <svg

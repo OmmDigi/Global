@@ -40,6 +40,7 @@ const navItems: NavItem[] = [
     icon: <GridIcon />,
     path: "/home",
   },
+
   {
     name: "Courses",
     id: 5,
@@ -65,12 +66,18 @@ const navItems: NavItem[] = [
     path: "/create-employee",
   },
   {
-    name: "Stuff Attandance",
+    name: "Staff Attendance",
     id: 11,
     icon: <PiOfficeChairDuotone />,
     path: "/stuff-attandance",
   },
-  
+  {
+    name: "Teacher Class Status",
+    id: 12,
+    icon: <PiOfficeChairDuotone />,
+    path: "/teacher-assigned-class",
+  },
+
   {
     name: "Manage Holidays",
     id: 2,
@@ -89,7 +96,6 @@ const navItems: NavItem[] = [
     icon: <ListIcon />,
     path: "/manageLeave",
   },
-
   {
     name: "Inventory Manage",
     id: 8,
@@ -97,7 +103,7 @@ const navItems: NavItem[] = [
     path: "/inventory-manage",
     subItems: [
       {
-        name: "Inventory Manage",
+        name: "Inventory Stock",
         id: 5.1,
         path: "/inventory-manage",
         pro: false,
@@ -111,12 +117,12 @@ const navItems: NavItem[] = [
     icon: <BiPurchaseTagAlt />,
     path: "/purchase-record",
   },
-  // {
-  //   name: "Maintenance Record",
-  //   id: 10,
-  //   icon: <GrHostMaintenance />,
-  //   path: "/maintenance-record",
-  // },
+  {
+    name: "AMC Record",
+    id: 10,
+    icon: <BiPurchaseTagAlt />,
+    path: "/maintenance-record",
+  },
 ];
 
 const othersItems: NavItem[] = [
@@ -153,7 +159,6 @@ const AppSidebar: React.FC = () => {
   const filteredNavItems = navItems.filter((item) =>
     numbers?.includes(item.id)
   );
-  console.log("controlqq", filteredNavItems);
 
   useEffect(() => {
     let submenuMatched = false;

@@ -21,7 +21,6 @@ export default function StuffAttandance() {
   if (attandanceLoading) {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }
-  console.log("attendance",attendance);
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-1 md:gap-6">

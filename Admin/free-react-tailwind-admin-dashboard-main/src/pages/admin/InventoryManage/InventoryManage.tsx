@@ -10,12 +10,20 @@ import useSWRMutation from "swr/mutation";
 import { getFetcher, postFetcher, putFetcher } from "../../../api/fatcher";
 import { message } from "antd";
 import BasicTableInventory from "../../../components/tables/BasicTables/BasicTableInventory";
+  
 
+type FormDataType = {
+  item_id?: number; // optional (if sometimes missing)
+  item_name: string;
+  vendor_id: string;
+  created_at: string;
+  minimum_quantity: string;
+};
 export default function InventoryManage() {
   const [messageApi, contextHolder] = message.useMessage();
 
   const [id, setId] = useState<number>();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormDataType>({
     // item_id: 0,
     item_name: "",
     vendor_id: "",
@@ -155,8 +163,8 @@ export default function InventoryManage() {
         title="React.js Form Elements Dashboard | TailAdmin - React.js Admin Dashboard Template"
         description="This is React.js Form Elements Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
-      <PageBreadcrumb pageTitle="Inventory Manage" />
-      <ComponentCard title="Inventory Manage">
+      <PageBreadcrumb pageTitle="Inventory Stock" />
+      <ComponentCard title="Inventory Stock">
         <form
           onSubmit={handleSubmit}
           encType="multipart/form-data"

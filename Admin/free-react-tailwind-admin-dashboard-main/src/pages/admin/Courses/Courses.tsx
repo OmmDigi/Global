@@ -10,11 +10,24 @@ import useSWR, { mutate } from "swr";
 import useSWRMutation from "swr/mutation";
 import { message } from "antd";
 
+type FormDataType = {
+  id?: number; // optional (if sometimes missing)
+  name: string;
+  duration: string;
+  fee_structure: {
+    fee_head_id: string;
+    amount: string;
+    min_amount: string;
+    required: boolean;
+  }[];
+  description: string;
+};
+
 export default function Courses() {
   const [messageApi, contextHolder] = message.useMessage();
   const [id, setId] = useState<number>();
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormDataType>({
     // id: 0,
     name: "",
     duration: "",
@@ -99,7 +112,6 @@ export default function Courses() {
         type: "error",
         content: error.response?.data?.message,
       });
-      console.log("Upload Error:", error);
     }
   };
 
@@ -112,7 +124,7 @@ export default function Courses() {
       const userData = response.data;
 
       setFormData({
-        id: id,
+        id:id,
         name: userData?.name,
         duration: userData?.duration,
         description: userData?.description,
