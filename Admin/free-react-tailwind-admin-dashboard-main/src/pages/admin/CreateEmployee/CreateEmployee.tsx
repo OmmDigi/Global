@@ -83,7 +83,7 @@ export default function CreateEmployee() {
     fee_structure_teacher: {
       course_id: string;
       type: string;
-      class_per_month:string,
+      class_per_month: string;
       amount: string;
       workshop: string;
       extra: string;
@@ -91,6 +91,7 @@ export default function CreateEmployee() {
     fee_structure_stuff: {
       fee_head: string;
       amount: string;
+      amount_type: string;
     }[];
     permissions: []; // proper type
     description: string;
@@ -226,7 +227,7 @@ export default function CreateEmployee() {
     } catch (error: any) {
       messageApi.open({
         type: "error",
-        content: error.response?.data?.message,
+        content: error.response?.data?.message ? error.response?.data?.message : " Try Again",
       });
       console.log("Upload Error:", error);
     }
@@ -278,6 +279,8 @@ export default function CreateEmployee() {
       jumpToTop();
       const response = await getFetcher(`api/v1/users/${id}`);
       const userData = response.data;
+      console.log("userData", userData);
+
       setPhoto(userData?.image);
       setTeacher(userData?.category);
       setFormData({
@@ -295,7 +298,7 @@ export default function CreateEmployee() {
           ? userData.fee_structure_teacher.map((item: any) => ({
               course_id: item.course_id || "",
               type: item.type || "",
-              class_per_month: item.class_per_month || "" ,
+              class_per_month: item.class_per_month || "",
               amount: item.amount || "",
               workshop: item.workshop || "",
               extra: item.extra || "",
@@ -308,10 +311,11 @@ export default function CreateEmployee() {
           ? userData.fee_structure_stuff.map((item: any) => ({
               fee_head: item.fee_head || "",
               amount: item.amount || "",
+              amount_type:item.amount_type || "",
             }))
           : [
-              { fee_head: "", amount: "" },
-              { fee_head: "", amount: "" },
+              { fee_head: "", amount: "",amount_type:"" },
+              { fee_head: "", amount: "",amount_type:"" },
             ],
         description: userData?.description,
       });
@@ -389,7 +393,7 @@ export default function CreateEmployee() {
       ...prev,
       fee_structure_stuff: [
         ...prev.fee_structure_stuff,
-        { fee_head: "", amount: "" },
+        { fee_head: "", amount: "",amount_type:"" },
       ],
     }));
   };
@@ -639,8 +643,8 @@ export default function CreateEmployee() {
                               <option value="per_class">Per Class</option>
                             </select>
                           </div>
-                          
-                             <div>
+
+                          <div>
                             <Label>Class/month</Label>
                             <Input
                               type="number"
@@ -739,36 +743,60 @@ export default function CreateEmployee() {
                     <div className="grid grid-cols-1 gap-6 xl:grid-cols-1">
                       {formData?.fee_structure_stuff?.map((entry, index) => (
                         <div key={index} className="flex gap-4 items-center">
-                          <select
-                            value={entry.fee_head}
-                            onChange={(e) =>
-                              handleChangeEntriesStuff(
-                                index,
-                                "fee_head",
-                                e.target.value
-                              )
-                            }
-                            className="w-auto px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
-                          >
-                            <option value="">Choose</option>
-                            <option value="base_salary">Base Salary</option>
-                            <option value="HRA">HRA</option>
-                            <option value="MEDICAL">MEDICAL</option>
-                          </select>
-
-                          <Input
-                            type="number"
-                            placeholder="Fees"
-                            value={entry.amount}
-                            onChange={(e) =>
-                              handleChangeEntriesStuff(
-                                index,
-                                "amount",
-                                e.target.value
-                              )
-                            }
-                            className="flex-1 border px-3 py-1 rounded-md"
-                          />
+                          <div>
+                            <Label htmlFor="inputTwo">Salary Head</Label>
+                            <select
+                              value={entry.fee_head}
+                              onChange={(e) =>
+                                handleChangeEntriesStuff(
+                                  index,
+                                  "fee_head",
+                                  e.target.value
+                                )
+                              }
+                              className="w-auto px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                            >
+                              <option value="">Choose</option>
+                              <option value="base_salary">Base Salary</option>
+                              <option value="HRA">HRA</option>
+                              <option value="MEDICAL">MEDICAL</option>
+                              <option value="P_tax">P Tax</option>
+                            </select>
+                          </div>
+                          <div>
+                            <Label htmlFor="inputTwo">Amount</Label>
+                            <Input
+                              type="number"
+                              placeholder="Fees"
+                              value={entry.amount}
+                              onChange={(e) =>
+                                handleChangeEntriesStuff(
+                                  index,
+                                  "amount",
+                                  e.target.value
+                                )
+                              }
+                              className="flex-1 border px-3 py-1 rounded-md"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="inputTwo">Amount Type</Label>
+                            <select
+                              value={entry.amount_type}
+                              onChange={(e) =>
+                                handleChangeEntriesStuff(
+                                  index,
+                                  "amount_type",
+                                  e.target.value
+                                )
+                              }
+                              className="w-auto px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                            >
+                              <option value="">Choose</option>
+                              <option value="addition">Addition</option>
+                              <option value="deduction">Deduction</option>
+                            </select>
+                          </div>
 
                           {formData.fee_structure_stuff.length > 1 && (
                             <button
@@ -792,9 +820,7 @@ export default function CreateEmployee() {
                     label="permissions"
                     options={options as any}
                     onChange={(selected) => handleNameChange(selected)}
-                    defaultSelected={
-                      formData?.permissions?.map((item: any) => item.name) || []
-                    }
+                    defaultSelected={formData?.permissions}
                     // className="w-full h-auto px-3 py-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
                   />
                 </div>

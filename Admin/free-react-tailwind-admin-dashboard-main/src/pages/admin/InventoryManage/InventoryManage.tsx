@@ -10,7 +10,7 @@ import useSWRMutation from "swr/mutation";
 import { getFetcher, postFetcher, putFetcher } from "../../../api/fatcher";
 import { message } from "antd";
 import BasicTableInventory from "../../../components/tables/BasicTables/BasicTableInventory";
-  
+import { Minus, Plus } from "lucide-react";
 
 type FormDataType = {
   item_id?: number; // optional (if sometimes missing)
@@ -21,6 +21,7 @@ type FormDataType = {
 };
 export default function InventoryManage() {
   const [messageApi, contextHolder] = message.useMessage();
+  const [addInventoryItem, setAddInventoryItem] = useState(false);
 
   const [id, setId] = useState<number>();
   const [formData, setFormData] = useState<FormDataType>({
@@ -40,13 +41,13 @@ export default function InventoryManage() {
     "api/v1/inventory/item",
     getFetcher
   );
+  console.log("inventoryList", inventoryList);
 
   // create inventory
   const { trigger: create } = useSWRMutation(
     "api/v1/inventory/item/add",
     (url, { arg }) => postFetcher(url, arg)
   );
-  
 
   // Update purchaseList
 
@@ -116,6 +117,7 @@ export default function InventoryManage() {
         created_at: userData?.created_at,
         minimum_quantity: userData?.minimum_quantity,
       });
+      setAddInventoryItem(true);
     } catch (error) {
       console.error("Failed to fetch user data for edit:", error);
     }
@@ -132,6 +134,7 @@ export default function InventoryManage() {
         content: response.message,
       });
       console.log("Upload Success:", response);
+      setAddInventoryItem(false);
 
       setFormData({
         // item_id: 0,
@@ -147,6 +150,14 @@ export default function InventoryManage() {
       });
       console.log("Upload Error:", error);
     }
+  };
+
+  const handleTeacherShow = () => {
+    jumpToTop();
+    setAddInventoryItem(false);
+  };
+  const handleTeacherClose = () => {
+    setAddInventoryItem(true);
   };
 
   const jumpToTop = () => {
@@ -165,91 +176,109 @@ export default function InventoryManage() {
       />
       <PageBreadcrumb pageTitle="Inventory Stock" />
       <ComponentCard title="Inventory Stock">
-        <form
-          onSubmit={handleSubmit}
-          encType="multipart/form-data"
-          className="space-y-6"
+        <div
+          onClick={addInventoryItem ? handleTeacherShow : handleTeacherClose}
+          className="cursor-pointer text-gray-500 hover:text-gray-500 dark:text-gray-300  flex items-center justify-center"
         >
-          <div className="space-y-6">
-            <div>
-              <Label htmlFor="inputTwo">Item Name</Label>
-              <Input
-                type="text"
-                id="inputTwo"
-                name="item_name"
-                onChange={handleChange}
-                value={formData?.item_name}
-                placeholder="Item Name"
-              />
+          {addInventoryItem ? (
+            <div className="flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-gray-800 p-2">
+              <Minus className="text-red-500" size={50} />
+              <div className="text-2xl"> Add Inventory Item</div>
             </div>
-
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-              <div className="w-12/12  mb-4">
-                <label className="block text-sm text-start mt-1 dark:text-gray-400 text-gray-700 mb-1">
-                  Choose Vendor
-                </label>
-                <select
-                  name="vendor_id"
-                  value={formData.vendor_id}
+          ) : (
+            <div className="flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-gray-800 p-2">
+              <Plus size={50} />
+              <div className="text-2xl">Add Inventory Item</div>
+            </div>
+          )}
+        </div>
+        {addInventoryItem ? (
+          <form
+            onSubmit={handleSubmit}
+            encType="multipart/form-data"
+            className="space-y-6"
+          >
+            <div className="space-y-6">
+              <div>
+                <Label htmlFor="inputTwo">Item Name</Label>
+                <Input
+                  type="text"
+                  id="inputTwo"
+                  name="item_name"
                   onChange={handleChange}
-                  className="w-full px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
-                >
-                  <option value="">Select</option>
-                  {vendorList?.data?.map((data: any, index: number) => (
-                    <div key={index}>
-                      <option value={data?.id}>{data?.name}</option>
+                  value={formData?.item_name}
+                  placeholder="Item Name"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                <div className="w-12/12  mb-4">
+                  <label className="block text-sm text-start mt-1 dark:text-gray-400 text-gray-700 mb-1">
+                    Choose Vendor
+                  </label>
+                  <select
+                    name="vendor_id"
+                    value={formData.vendor_id}
+                    onChange={handleChange}
+                    className="w-full px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                  >
+                    <option value="">Select</option>
+                    {vendorList?.data?.map((data: any, index: number) => (
+                      <div key={index}>
+                        <option value={data?.id}>{data?.name}</option>
+                      </div>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <Label>Item Addition Date</Label>
+                  <Input
+                    type="date"
+                    id="inputTwo"
+                    name="created_at"
+                    onChange={handleChange}
+                    value={formData?.created_at}
+                    placeholder="Date of Purchase"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                <div>
+                  <Label>Minimum Quantity to maintain *</Label>
+                  <Input
+                    type="number"
+                    id="inputTwo"
+                    name="minimum_quantity"
+                    onChange={handleChange}
+                    value={formData?.minimum_quantity}
+                    placeholder="Minimum Quantity to maintain"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-wrap justify-center items-center gap-6">
+                <div className="flex items-center gap-5">
+                  {id ? (
+                    <div
+                      onClick={handleUpdate}
+                      className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                    >
+                      Update
                     </div>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <Label>Item Addition Date</Label>
-                <Input
-                  type="date"
-                  id="inputTwo"
-                  name="created_at"
-                  onChange={handleChange}
-                  value={formData?.created_at}
-                  placeholder="Date of Purchase"
-                />
+                  ) : (
+                    <button
+                      type="submit"
+                      className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                    >
+                      Submit
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
-
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-              <div>
-                <Label>Minimum Quantity to maintain *</Label>
-                <Input
-                  type="number"
-                  id="inputTwo"
-                  name="minimum_quantity"
-                  onChange={handleChange}
-                  value={formData?.minimum_quantity}
-                  placeholder="Minimum Quantity to maintain"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-wrap justify-center items-center gap-6">
-              <div className="flex items-center gap-5">
-                {id ? (
-                  <div
-                    onClick={handleUpdate}
-                    className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-                  >
-                    Update
-                  </div>
-                ) : (
-                  <button
-                    type="submit"
-                    className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-                  >
-                    Submit
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </form>
+          </form>
+        ) : null}
         <BasicTableInventory
           inventoryList={inventoryList}
           onEdit={handleEdit}

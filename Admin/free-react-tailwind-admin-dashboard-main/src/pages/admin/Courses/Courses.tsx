@@ -90,7 +90,7 @@ export default function Courses() {
     console.log("formcourse", formData);
 
     try {
-      const response = await create( formData as any);
+      const response = await create(formData as any);
 
       messageApi.open({
         type: "success",
@@ -124,7 +124,7 @@ export default function Courses() {
       const userData = response.data;
 
       setFormData({
-        id:id,
+        id: id,
         name: userData?.name,
         duration: userData?.duration,
         description: userData?.description,
@@ -147,7 +147,7 @@ export default function Courses() {
 
   const handleUpdate = async () => {
     try {
-      const response = await update( formData as any);
+      const response = await update(formData as any);
       mutate("api/v1/course?limit=-1");
       messageApi.open({
         type: "success",
@@ -177,7 +177,7 @@ export default function Courses() {
 
   const handleActive = async (isActive: boolean, id: number) => {
     console.log("isactiveaaaa ", id);
- type UpdateFormPayload = {
+    type UpdateFormPayload = {
       id: string | number; // depends on your API, choose one
       is_active: boolean;
     };
@@ -186,7 +186,7 @@ export default function Courses() {
       is_active: isActive,
     };
     try {
-      const response = await update( UpdateFormPayload as any);
+      const response = await update(UpdateFormPayload as any);
 
       mutate("api/v1/course");
       messageApi.open({
@@ -290,59 +290,74 @@ export default function Courses() {
                 <div className="grid grid-cols-1 gap-6 xl:grid-cols-1">
                   {formData?.fee_structure?.map((entry, index) => (
                     <div key={index} className="flex gap-4 items-center">
-                      <select
-                        value={entry.fee_head_id}
-                        onChange={(e) =>
-                          handleChangeEntries(
-                            index,
-                            "fee_head_id",
-                            e.target.value
-                          )
-                        }
-                        className="w-auto px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
-                      >
-                        <option value="">Choose</option>
-                        {feehead?.data?.map((opt: any, i: number) => (
-                          <option key={i} value={opt.id}>
-                            {opt.name}
-                          </option>
-                        ))}
-                      </select>
+                      <div>
+                        <Label htmlFor="inputTwo">Choose Fee</Label>
+                        <select
+                          value={entry.fee_head_id}
+                          onChange={(e) =>
+                            handleChangeEntries(
+                              index,
+                              "fee_head_id",
+                              e.target.value
+                            )
+                          }
+                          className="w-auto px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                        >
+                          <option value="">Choose</option>
+                          {feehead?.data?.map((opt: any, i: number) => (
+                            <option key={i} value={opt.id}>
+                              {opt.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <Label htmlFor="inputTwo">Amount</Label>
+                        <Input
+                          type="number"
+                          placeholder="Fees"
+                          value={entry.amount}
+                          onChange={(e) =>
+                            handleChangeEntries(index, "amount", e.target.value)
+                          }
+                          className="flex-1 border px-3 py-1 rounded-md"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="inputTwo">Min Amount to pay</Label>
+                        <Input
+                          type="number"
+                          placeholder="Minimum to Pay"
+                          value={entry.min_amount}
+                          onChange={(e) =>
+                            handleChangeEntries(
+                              index,
+                              "min_amount",
+                              e.target.value
+                            )
+                          }
+                          className="flex-1 border px-3 py-1 rounded-md"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="inputTwo">Required</Label>
+                        <select
+                          value={entry?.required as any}
+                          onChange={(e: any) =>
+                            handleChangeEntries(
+                              index,
+                              "required",
+                              e.target.value
+                            )
+                          }
+                          className="w-auto px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                        >
+                          <option value="">Choose</option>
 
-                      <Input
-                        type="number"
-                        placeholder="Fees"
-                        value={entry.amount}
-                        onChange={(e) =>
-                          handleChangeEntries(index, "amount", e.target.value)
-                        }
-                        className="flex-1 border px-3 py-1 rounded-md"
-                      />
-                      <Input
-                        type="number"
-                        placeholder="Minimum to Pay"
-                        value={entry.min_amount}
-                        onChange={(e) =>
-                          handleChangeEntries(
-                            index,
-                            "min_amount",
-                            e.target.value
-                          )
-                        }
-                        className="flex-1 border px-3 py-1 rounded-md"
-                      />
-                      <select
-                        value={entry?.required as any}
-                        onChange={(e:any) =>
-                          handleChangeEntries(index, "required", e.target.value)
-                        }
-                        className="w-auto px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
-                      >
-                        <option value="">Choose</option>
-
-                        <option value="true">yes</option>
-                        <option value="false">No</option>
-                      </select>
+                          <option value="true">yes</option>
+                          <option value="false">No</option>
+                        </select>
+                      </div>
 
                       {formData.fee_structure.length > 1 && (
                         <button

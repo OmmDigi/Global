@@ -1,0 +1,344 @@
+import { Button, message } from "antd";
+import React, { useState, ChangeEvent, useTransition } from "react";
+import DatePicker from "react-datepicker";
+import { getFetcher, postFetcher } from "../../../api/fatcher";
+import dayjs from "dayjs";
+import useSWR from "swr";
+import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
+import PageMeta from "../../../components/common/PageMeta";
+import ComponentCard from "../../../components/common/ComponentCard";
+import useSWRMutation from "swr/mutation";
+
+function Report() {
+  const [messageApi, contextHolder] = message.useMessage();
+
+  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
+    null,
+    null,
+  ]);
+  const [dateRangeStudent, setDateRangeStudent] = useState<[Date | null, Date | null]>([
+    null,
+    null,
+  ]);
+
+  const [startDate, endDate] = dateRange;
+  const [startDateStudent, endDateStudent] = dateRangeStudent;
+
+  const [editedFormId, setEditedFormId] = useState<number>(-1);
+  const [selectedCourseId, setSelectedCourseId] = useState(null);
+  const [course, setCourse] = useState<number>(0);
+  const [batch, setBatch] = useState<any>(0);
+  const [mode, setMode] = useState<any>(0);
+  const [isPending, startTransition] = useTransition();
+  const [isPendingStudent, startTransitionStudent] = useTransition();
+
+  const [excelFileUrl, setExcelFileUrl] = useState<string | null>(null);
+  const [excelFileUrlStudent, setExcelFileUrlStudent] = useState<string | null>(
+    null
+  );
+
+  const handleCourseChange = (e: any) => {
+    const { name, value } = e.target;
+    console.log("handleCourseChange", value);
+    setCourse(value);
+    setExcelFileUrl(null);
+    setExcelFileUrlStudent(null);
+
+    const courseId = parseInt(e.target.value);
+    setSelectedCourseId(courseId as any);
+  };
+  const handleInputChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setBatch(value);
+    setExcelFileUrl(null);
+    setExcelFileUrlStudent(null);
+  };
+
+  const handleModeChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setMode(value);
+    setExcelFileUrl(null);
+    setExcelFileUrlStudent(null);
+  };
+
+  //   get courst list
+  const {
+    data: courseList,
+    // isLoading: courseLoading,
+  } = useSWR(`api/v1/course/dropdown`, getFetcher);
+
+  // const  formdata = {
+  //     type  : "payment_report",
+  //     data
+  // }
+  //   create Batch
+  const { trigger: create } = useSWRMutation(
+    `api/v1/excel/url`,
+    (url, { arg }) => postFetcher(url, arg)
+  );
+
+  const formDataAccount = {
+    type: "payment_report",
+    query: `from_date=${dayjs(dateRange[0]).format(
+      "YYYY-MM-DD"
+    )}&to_date=${dayjs(dateRange[1]).format(
+      "YYYY-MM-DD"
+    )}&course=${course}&batch=${batch}&mode=${mode}`,
+  };
+  const handleSearchAccount = () => {
+    setExcelFileUrl(null);
+    startTransition(async () => {
+      if (dateRange[0] && dateRange[0] && course && batch) {
+        const response = await create(formDataAccount as any);
+
+        if (response?.data) {
+          setExcelFileUrl(response?.data);
+          //    window.open(response?.data,"__blank");
+        }
+      } else {
+        messageApi.open({
+          type: "error",
+          content: "Please Select all Input Fields",
+        });
+      }
+    });
+  };
+  const formDataStudent = {
+    type: "admission_report",
+    query: `from_date=${dayjs(dateRangeStudent[0]).format(
+      "YYYY-MM-DD"
+    )}&to_date=${dayjs(dateRangeStudent[1]).format(
+      "YYYY-MM-DD"
+    )}&course=${course}&batch=${batch}`,
+  };
+  const handleSearchStudent = () => {
+    setExcelFileUrlStudent(null);
+    startTransitionStudent(async () => {
+      if (dateRangeStudent[0] && dateRangeStudent[0] && course && batch) {
+        const response = await create(formDataStudent as any);
+
+        if (response?.data) {
+          setExcelFileUrlStudent(response?.data);
+          //    window.open(response?.data,"__blank");
+        }
+      } else {
+        messageApi.open({
+          type: "error",
+          content: "Please Select all Input Fields",
+        });
+      }
+    });
+  };
+  const selectedCourse = Array.isArray(courseList?.data)
+    ? courseList?.data?.find((course: any) => course.id == selectedCourseId)
+    : null;
+  return (
+    <div>
+      {contextHolder}
+      <PageMeta
+        title="React.js Form Elements Dashboard | TailAdmin - React.js Admin Dashboard Template"
+        description="This is React.js Form Elements Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+      />
+      <ComponentCard title="Report For Admission Payment (Online / Cash / Cheque)">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-4">
+          <div>
+            <label className="block text-sm font-bold text-gray-500 mb-1">
+              Select date range
+            </label>
+            <DatePicker
+              selectsRange={true}
+              startDate={startDate}
+              endDate={endDate}
+              onChange={(update) => {
+                setDateRange(update);
+              }}
+              isClearable={true}
+              dateFormat="dd/MM/yyyy"
+              placeholderText="dd/MM/yyyy - dd/MM/yyyy"
+              className="border rounded-md px-3 py-2 text-sm dark:bg-gray-800 dark:text-white"
+              calendarClassName="!bg-white dark:!bg-gray-200"
+            />
+          </div>
+          <div className="  mb-4">
+            <label className="block text-sm font-bold text-gray-500 mb-1">
+              Choose your Courses
+            </label>
+            <select
+              key={editedFormId + "courseName"}
+              name="courseName"
+              // disabled={id ? true : false}
+              // defaultValue={formData?.courseName}
+              // value={formData.courseName}
+              onChange={handleCourseChange}
+              className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 "
+            >
+              <option value="">Option-</option>
+              {courseList?.data?.map((data: any, index: number) => (
+                <option key={index} value={`${data?.id}`}>
+                  {data?.course_name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-gray-500 mb-1">
+              Choose your Batch
+            </label>
+            <select
+              key={editedFormId + "batchName"}
+              name="batchName"
+              // disabled={id ? true : false}
+              // defaultValue={formData.batchName}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Option-</option>
+              {selectedCourse?.batch?.map((batch: any, index: number) => (
+                <option key={index} value={`${batch?.batch_id}`}>
+                  {batch.month_name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-gray-500 mb-1">
+              Choose Payment Mode
+            </label>
+            <select
+              key={editedFormId + "mode"}
+              name="mode"
+              // disabled={id ? true : false}
+              // defaultValue={formData.batchName}
+              onChange={handleModeChange}
+              className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Option-</option>
+              <option value="Cash">Cash</option>
+              <option value="Online">Online</option>
+              <option value="Cheque">Cheque</option>
+            </select>
+          </div>
+        </div>
+        <div className="flex justify-end mt-5">
+          {isPending ? (
+            <Button type="primary" disabled>
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            </Button>
+          ) : excelFileUrl ? (
+            <a
+              target="__blank"
+              href={excelFileUrl}
+              download="report.xlsx"
+              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            >
+              Download Excel
+            </a>
+          ) : (
+            <Button
+              type="primary"
+              disabled={isPending}
+              onClick={handleSearchAccount}
+            >
+              Generate Report
+            </Button>
+          )}
+        </div>
+      </ComponentCard>
+      <ComponentCard className="mt-15" title="Report For Student Admission ">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+          <div>
+            <label className="block text-sm font-bold text-gray-500 mb-1">
+              Select date range
+            </label>
+            <DatePicker
+              selectsRange={true}
+              startDate={startDateStudent}
+              endDate={endDateStudent}
+              onChange={(update) => {
+                setDateRangeStudent(update);
+              }}
+              isClearable={true}
+              dateFormat="dd/MM/yyyy"
+              placeholderText="dd/MM/yyyy - dd/MM/yyyy"
+              className="border rounded-md px-3 py-2 text-sm dark:bg-gray-800 dark:text-white"
+              calendarClassName="!bg-white dark:!bg-gray-200"
+            />
+          </div>
+          <div className="  mb-4">
+            <label className="block text-sm font-bold text-gray-500 mb-1">
+              Choose your Courses
+            </label>
+            <select
+              key={editedFormId + "courseName"}
+              name="courseName"
+              // disabled={id ? true : false}
+              // defaultValue={formData?.courseName}
+              // value={formData.courseName}
+              onChange={handleCourseChange}
+              className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 "
+            >
+              <option value="">Option-</option>
+              {courseList?.data?.map((data: any, index: number) => (
+                <option key={index} value={`${data?.id}`}>
+                  {data?.course_name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-gray-500 mb-1">
+              Choose your Batch
+            </label>
+            <select
+              key={editedFormId + "batchName"}
+              name="batchName"
+              // disabled={id ? true : false}
+              // defaultValue={formData.batchName}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Option-</option>
+              {selectedCourse?.batch?.map((batch: any, index: number) => (
+                <option key={index} value={`${batch?.batch_id}`}>
+                  {batch.month_name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div className="flex justify-end mt-5">
+          {isPendingStudent ? (
+            <Button type="primary" disabled>
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            </Button>
+          ) : excelFileUrlStudent ? (
+            <a
+              target="__blank"
+              href={excelFileUrlStudent}
+              download="report.xlsx"
+              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            >
+              Download Excel
+            </a>
+          ) : (
+            <Button
+              type="primary"
+              disabled={isPendingStudent}
+              onClick={handleSearchStudent}
+            >
+              Generate Report
+            </Button>
+          )}
+        </div>
+      </ComponentCard>
+    </div>
+  );
+}
+
+export default Report;

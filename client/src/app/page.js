@@ -391,7 +391,7 @@ export default function Home() {
                     className="min-w-[300px]  bg-white shadow-md hover:shadow-xl cursor-pointer transition"
                   >
                     <img
-                      src="https://globaltechnicalinstitute.com/wp-content/uploads/2025/04/teach-tra.webp"
+                      src="/image/teach-tra.webp"
                       alt="Teacher Training"
                       className="   w-full h-48 object-cover p-5"
                     />
@@ -418,7 +418,7 @@ export default function Home() {
                     className="min-w-[300px]  gap-10 bg-white shadow-md hover:shadow-xl cursor-pointer transition"
                   >
                     <img
-                      src="https://globaltechnicalinstitute.com/wp-content/uploads/2025/04/nurse-tra02a.webp"
+                      src="/image/nurse-tra.webp"
                       alt="Nursing Training"
                       className="   w-full h-48 object-cover p-5"
                     />
@@ -445,7 +445,7 @@ export default function Home() {
                     className="min-w-[300px]  gap-10 bg-white shadow-md hover:shadow-xl cursor-pointer transition"
                   >
                     <img
-                      src="https://globaltechnicalinstitute.com/wp-content/uploads/2025/04/labtrain01.webp"
+                      src="/image/labtrain.webp"
                       alt="Lab Technician Training"
                       className="   w-full h-48 object-cover p-5"
                     />
@@ -472,7 +472,7 @@ export default function Home() {
                     className="min-w-[300px]  gap-10 bg-white shadow-md hover:shadow-xl cursor-pointer transition"
                   >
                     <img
-                      src="https://globaltechnicalinstitute.com/wp-content/uploads/2025/04/ecg-train.webp"
+                      src="/image/ecg-train.webp"
                       alt="ECG Technician Training"
                       className="   w-full h-48 object-cover p-5"
                     />
@@ -499,7 +499,7 @@ export default function Home() {
                     className="min-w-[300px]  gap-10 bg-white shadow-md hover:shadow-xl cursor-pointer transition"
                   >
                     <img
-                      src="https://globaltechnicalinstitute.com/wp-content/uploads/2025/04/physio01t.webp"
+                      src="/image/physio.webp"
                       alt="Physiotherapy Training"
                       className="   w-full h-48 object-cover p-5"
                     />

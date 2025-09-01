@@ -48,12 +48,12 @@ const BasicTableAttandanceDetails = ({ attandanceList_table }: any) => {
               >
                 Status
               </TableCell>
-              <TableCell
+              {/* <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
                 Action
-              </TableCell>
+              </TableCell> */}
             </TableRow>
           </TableHeader>
 
@@ -85,7 +85,7 @@ const BasicTableAttandanceDetails = ({ attandanceList_table }: any) => {
                   className={`px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400`}
                 >
                   {order.status &&
-                  <div className={`  ${order.status == "Present" ? "bg-green-300 text-gray-900 " :"bg-red-400 text-gray-900 " } p-1 rounded-2xl text-center font-semibold`}>{order.status}</div>
+                  <div className={`text-gray-900  ${order.status == "Present" ? "bg-green-300  " :"bg-red-400  " } p-1 rounded-2xl text-center font-semibold`}>{order.status}</div>
                   }
                 </TableCell>
 
@@ -101,7 +101,7 @@ const BasicTableAttandanceDetails = ({ attandanceList_table }: any) => {
                   </div>
                 </TableCell> */}
 
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                {/* <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   <div className="flex items-center gap-2">
                     <button
                       // onClick={() => handleDetailsClick(order.id)}
@@ -110,7 +110,7 @@ const BasicTableAttandanceDetails = ({ attandanceList_table }: any) => {
                       Edit
                     </button>
                   </div>
-                </TableCell>
+                </TableCell> */}
               </TableRow>
             ))}
           </TableBody>

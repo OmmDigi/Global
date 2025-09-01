@@ -8,35 +8,29 @@ import {
 
 import Switch from "../../form/switch/Switch";
 import { useNavigate } from "react-router";
+import { useEffect, useState } from "react";
+import Pagination from "../../form/Pagination";
 
 export default function BasicTableAdmission({
   admissionlist,
   onEdit,
   onActive,
+  onSendData,
+  
 }: any) {
   const navigate = useNavigate();
 
-  //  const onShowSizeChange: PaginationProps["onShowSizeChange"] = (
-  //   current,
-  //   pageSize
-  // ) => {
-  //   console.log(current, pageSize);
-  // };
-  //   const {
-  //   data: admissionlist,
-  //   loading: admissionLoading,
-  //   error: admissionError,
-  //   mutate,
-  // } = useSWR("api/v1/admission", getFetcher);
-  // if (admissionLoading) {
-  //   console.log("loading", admissionLoading);
-  // }
-
-  // console.log("admissionlist", admissionlist);
-
+ 
   const handleDetailsClick = (id: number) => {
     navigate(`/courseDetailsAdmin/${id}`);
   };
+  const [count, setCount] = useState(1);
+
+  useEffect(() => {
+    onSendData(count);
+  }, [count, onSendData]);
+
+
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
@@ -184,15 +178,10 @@ export default function BasicTableAdmission({
           </TableBody>
         </Table>
 
-        {/* <div>
-          <Pagination
-            showSizeChanger
-            onChange={onShowSizeChange}
-            defaultCurrent={1}
-            total={500}
-            // colorPrimaryHover={'#qwe23'}
-          />
-        </div> */}
+        <div className="p-8">
+          <Pagination count={count} onChange={setCount} length={admissionlist?.data?.length ? admissionlist?.data?.length : 1} />
+        </div>
+
       </div>
     </div>
   );

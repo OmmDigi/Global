@@ -16,10 +16,10 @@ export default function MonthlyIncome() {
   console.log("dateRange", dayjs(dateRange[0]).format("YYYY-MM-DD"));
 
   const { data: income, isLoading: incomeLoading } = useSWR(
-    "api/v1/dashboard/income",
-    getFetcher
-  );
-
+    `api/v1/dashboard/income${
+      dateRange[0]
+        ? `?from_date=${dayjs(dateRange[0]).format(
+            "YYYY-MM-DD")}&to_date=${dayjs(dateRange[1]).format("YYYY-MM-DD")}`: ""}`,getFetcher);  
   if (incomeLoading) {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }

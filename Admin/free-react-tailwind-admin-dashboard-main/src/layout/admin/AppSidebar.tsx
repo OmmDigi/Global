@@ -6,6 +6,8 @@ import { MdWorkOutline } from "react-icons/md";
 import { MdOutlineInventory } from "react-icons/md";
 import { BiPurchaseTagAlt } from "react-icons/bi";
 import { PiOfficeChairDuotone } from "react-icons/pi";
+import { GrHostMaintenance } from "react-icons/gr";
+import { TbReport } from "react-icons/tb";
 
 import {
   ChevronDownIcon,
@@ -66,10 +68,19 @@ const navItems: NavItem[] = [
     path: "/create-employee",
   },
   {
-    name: "Staff Attendance",
+    name: "Attendance & Payslip",
     id: 11,
     icon: <PiOfficeChairDuotone />,
-    path: "/stuff-attandance",
+    subItems: [
+      { name: "Attendance", id: 5.1, path: "/stuff-attandance", pro: false },
+      {
+        name: "Advance Loan/Payment",
+        id: 5.1,
+        path: "/advance-payment",
+        pro: false,
+      },
+      { name: "Payslip", id: 5.1, path: "/stuff-payslip", pro: false },
+    ],
   },
   {
     name: "Teacher Class Status",
@@ -120,8 +131,14 @@ const navItems: NavItem[] = [
   {
     name: "AMC Record",
     id: 10,
-    icon: <BiPurchaseTagAlt />,
-    path: "/maintenance-record",
+    icon: <GrHostMaintenance />,
+    path: "/amc-record",
+  },
+  {
+    name: "Report",
+    id: 13,
+    icon: <TbReport />,
+    path: "/report",
   },
 ];
 
