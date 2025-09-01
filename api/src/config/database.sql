@@ -198,6 +198,67 @@ CREATE TABLE IF NOT EXISTS leave (
     FOREIGN KEY (employee_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- before check leave apply check is leave avilable or not
+CREATE OR REPLACE FUNCTION can_apply_leave(
+    p_employee_id BIGINT,
+    p_from_date DATE,
+    p_to_date DATE
+)
+RETURNS TABLE (
+    available_leaves INTEGER,
+    requested_days_count INTEGER,
+    can_apply BOOLEAN
+) AS $$
+BEGIN
+    RETURN QUERY
+    WITH attendance_summary AS (
+        SELECT
+            DATE_TRUNC('month', a.date) AS month,
+            COUNT(*) FILTER (WHERE a.status = 'Present')::INT AS present_days,
+            COUNT(*) FILTER (WHERE a.status = 'Leave')::INT AS leave_days
+        FROM attendance a
+        WHERE a.employee_id = p_employee_id
+          AND a.date >= (SELECT joining_date + INTERVAL '1 year'
+                         FROM users WHERE id = p_employee_id)
+        GROUP BY DATE_TRUNC('month', a.date)
+    ),
+    holidays_per_month AS (
+        SELECT DATE_TRUNC('month', h.date) AS month, COUNT(*)::INT AS holiday_count
+        FROM holiday h
+        GROUP BY DATE_TRUNC('month', h.date)
+    ),
+    valid_months AS (
+        SELECT
+            s.month,
+            s.leave_days,
+            (26 - COALESCE(h.holiday_count, 0))::INT AS required_present,
+            s.present_days
+        FROM attendance_summary s
+        LEFT JOIN holidays_per_month h ON h.month = s.month
+        WHERE s.present_days >= (26 - COALESCE(h.holiday_count, 0))
+    ),
+    leave_balance AS (
+        SELECT
+            (COUNT(*) - COALESCE(SUM(leave_days), 0))::INT AS available_leaves
+        FROM valid_months
+    ),
+    requested AS (
+        SELECT (p_to_date - p_from_date + 1)::INT AS requested_days
+    )
+    SELECT
+        COALESCE(lb.available_leaves, 0)::INT AS available_leaves,
+        COALESCE(r.requested_days, 0)::INT AS requested_days_count,
+        (
+            COALESCE(lb.available_leaves, 0) >= COALESCE(r.requested_days, 0)
+            AND p_from_date >= CURRENT_DATE
+            AND p_to_date  >= CURRENT_DATE
+        ) AS can_apply
+    FROM leave_balance lb, requested r;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
 CREATE TABLE IF NOT EXISTS vendor (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255),
@@ -304,14 +365,54 @@ CREATE TABLE employee_salary_structure (
 );
 
 ALTER TABLE employee_salary_structure ADD COLUMN class_per_month INT; 
+ALTER TABLE employee_salary_structure ADD COLUMN amount_type TEXT CHECK (amount_type IN ('addition', 'deduction')) DEFAULT 'addition';
 
 CREATE TABLE teacher_classes (
     id SERIAL PRIMARY KEY,
     teacher_id BIGINT REFERENCES users(id),
     course_id BIGINT REFERENCES course(id),
     class_date DATE DEFAULT CURRENT_DATE,
-    class_type TEXT CHECK (class_type IN ('regular', 'workshop', 'extra')),
+    -- class_type TEXT CHECK (class_type IN ('regular', 'workshop', 'extra')),
+    class_type TEXT CHECK (class_type IN ('fixed', 'per_class', 'workshop', 'extra')),
     units INT DEFAULT 1 -- ex : how much regular/workshop/extra classes done
 );
 
 ALTER TABLE teacher_classes ADD COLUMN daily_earning DECIMAL(10, 2) DEFAULT 0.00;
+
+CREATE TABLE payslip (
+    id SERIAL PRIMARY KEY,
+    user_id BIGINT REFERENCES users(id),
+    payslip_data TEXT,
+    month DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE (user_id, month)
+)
+
+CREATE TABLE employee_loan_or_advance_payment (
+    id SERIAL PRIMARY KEY,
+    user_id BIGINT REFERENCES users(id),
+    total_amount DECIMAL(10, 2) DEFAULT 0.00,
+    monthly_return_amount DECIMAL(10, 2) DEFAULT 0.00,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE amc_list (
+    id SERIAL PRIMARY KEY,
+    product_name TEXT,
+    company_name TEXT,
+    time_duration VARCHAR(255),
+
+    contract_from DATE,
+    contract_to DATE,
+
+    renewal_date DATE,
+    
+    expiry_date DATE,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE amc_list ADD COLUMN file TEXT;

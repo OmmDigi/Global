@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Salary Slip - <%= employee.name %>
+  </title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.4;
+      color: #333;
+      background-color: #f5f5f5;
+      padding: 10px;
+    }
+
+    .payslip-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .header {
+      /* background: linear-gradient(135deg, #2c3e50, #3498db); */
+      background: #e6e6e6;
+      color: white;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .header img {
+      width: 150px;
+    }
+
+    .company-name {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .company-address {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .payslip-title {
+      background: #34495e;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .employee-info {
+      display: grid;
+      /* grid-template-columns: repeat(auto-fit, minmax(50px, 1fr)); */
+      /* grid-column: 2; */
+      /* grid-template-columns: 2; */
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-bottom: 2px solid #e9ecef;
+    }
+
+    .info-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .info-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    .info-label {
+      font-weight: 600;
+      color: #495057;
+      min-width: 120px;
+    }
+
+    .info-value {
+      font-weight: 500;
+      color: #212529;
+    }
+
+    .salary-details {
+      padding: 10px 20px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #3498db;
+    }
+
+    .salary-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      background: white;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .salary-table th {
+      /* background: #3498db; */
+      background: #34495e;
+      color: white;
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .salary-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e9ecef;
+    }
+
+    .salary-table tr:nth-child(even) {
+      background-color: #f8f9fa;
+    }
+
+    .salary-table tr:hover {
+      background-color: #e3f2fd;
+    }
+
+    .amount {
+      text-align: right;
+      font-weight: 600;
+      font-family: 'Courier New', monospace;
+    }
+
+    .total-row {
+      background: #2c3e50 !important;
+      color: white;
+      font-weight: bold;
+    }
+
+    .total-row td {
+      border: none;
+      padding: 15px 12px;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .summary-card {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 6px;
+      border-left: 4px solid #3498db;
+      text-align: center;
+    }
+
+    .summary-card.total {
+      border-left-color: #27ae60;
+      background: #e8f5e8;
+    }
+
+    .summary-label {
+      font-size: 12px;
+      color: #6c757d;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .summary-amount {
+      font-size: 18px;
+      font-weight: bold;
+      color: #2c3e50;
+      font-family: 'Courier New', monospace;
+    }
+
+    .footer {
+      background: #f8f9fa;
+      padding: 20px;
+      text-align: center;
+      color: #6c757d;
+      font-size: 12px;
+      border-top: 1px solid #e9ecef;
+    }
+
+    .signature-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      margin-top: 30px;
+      padding: 20px;
+    }
+
+    .signature-box {
+      text-align: center;
+      padding-top: 40px;
+      border-top: 1px solid #333;
+    }
+
+    .class-details {
+      margin-bottom: 20px;
+    }
+
+    .class-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #e9ecef;
+    }
+
+    .class-name {
+      flex-grow: 1;
+    }
+
+    .class-count {
+      min-width: 80px;
+      text-align: center;
+    }
+
+    .class-rate {
+      min-width: 100px;
+      text-align: right;
+    }
+
+    .class-amount {
+      min-width: 100px;
+      text-align: right;
+      font-weight: 600;
+    }
+
+    .workshop-type {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+      color: white;
+    }
+
+    .workshop-type.workshop {
+      background: #e74c3c;
+    }
+
+    .workshop-type.extra-class {
+      /* background: #f39c12; */
+      background: #9b59b6;
+    }
+
+    .workshop-type.training {
+      background: #9b59b6;
+    }
+
+    .workshop-type.seminar {
+      background: #1abc9c;
+    }
+
+    @media (max-width: 550px) {
+      body {
+        padding: 5px;
+      }
+
+      .payslip-container {
+        border-radius: 0;
+      }
+
+      .employee-info {
+        grid-template-columns: 1fr;
+        padding: 15px;
+      }
+
+      .company-name {
+        font-size: 20px;
+      }
+
+      .salary-details {
+        padding: 15px;
+      }
+
+      .salary-table th,
+      .salary-table td {
+        padding: 8px;
+        font-size: 14px;
+      }
+
+      .summary {
+        grid-template-columns: 1fr;
+      }
+
+      .signature-section {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .salary-table {
+        font-size: 12px;
+      }
+
+      .salary-table th,
+      .salary-table td {
+        padding: 6px;
+      }
+
+      .class-details {
+        font-size: 12px;
+      }
+    }
+
+    .print-button {
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 10px auto;
+      display: block;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .print-button:hover {
+      background: #2980b9;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .print-button:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+      }
+
+      .payslip-container {
+        box-shadow: none;
+        border-radius: 0;
+      }
+
+      .print-button {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="payslip-container">
+    <!-- Header -->
+    <div class="header">
+      <!-- <div class="company-name">
+        <%= company.name %>
+      </div>
+      <div class="company-address">
+        <%= company.address %>
+      </div> -->
+
+      <img src="/global-logo.png" />
+    </div>
+
+    <!-- Payslip Title -->
+    <div class="payslip-title">
+      SALARY SLIP - <%= payPeriod %>
+    </div>
+
+    <!-- Employee Information -->
+    <div class="employee-info">
+      <div class="info-group">
+        <div class="info-item">
+          <span class="info-label">Employee Name:</span>
+          <span class="info-value">
+            <%= employee.name %>
+          </span>
+        </div>
+        <!-- <div class="info-item">
+                    <span class="info-label">Employee ID:</span>
+                    <span class="info-value"><%= employee.id %></span>
+                </div> -->
+        <div class="info-item">
+          <span class="info-label">Designation:</span>
+          <span class="info-value">
+            <%= employee.designation %>
+          </span>
+        </div>
+      </div>
+
+      <div class="info-group">
+        <!-- <div class="info-item">
+                    <span class="info-label">Department:</span>
+                    <span class="info-value"><%= employee.department %></span>
+                </div> -->
+        <div class="info-item">
+          <span class="info-label">Join Date:</span>
+          <span class="info-value">
+            <%= employee.joinDate %>
+          </span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Pay Period:</span>
+          <span class="info-value">
+            <%= payPeriod %>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Salary Details -->
+    <div class="salary-details">
+      <% if (employee.type==='teacher' || employee.type==='mixed' ) { %>
+
+        <!-- Fixed Course Amount -->
+        <% if (employee.fixedCourses && employee.fixedCourses.length> 0) { %>
+          <div class="section-title">Fixed Salary</div>
+          <table class="salary-table">
+            <thead>
+              <tr>
+                <th>Course Name</th>
+                <th>Fixed Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% employee.fixedCourses.forEach(function(course) { %>
+                <tr>
+                  <td>
+                    <%= course.name %>
+                  </td>
+                  <td class="amount">₹<%= course.amount.toFixed(2) %>
+                  </td>
+                </tr>
+                <% }); %>
+            </tbody>
+          </table>
+          <% } %>
+
+
+            <!-- Teacher Class-based Earnings -->
+            <% if (employee.classes && employee.classes.length> 0) { %>
+              <div class="section-title">Class Wise Salary</div>
+              <table class="salary-table">
+                <thead>
+                  <tr>
+                    <th>Course/Subject</th>
+                    <th>Classes Taken</th>
+                    <th>Rate per Class</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% employee.classes.forEach(function(cls) { %>
+                    <tr>
+                      <td>
+                        <%= cls.name %>
+                      </td>
+                      <td class="amount">
+                        <%= cls.count %>
+                      </td>
+                      <td class="amount">₹<%= cls.rate.toFixed(2) %>
+                      </td>
+                      <td class="amount">₹<%= (cls.count * cls.rate).toFixed(2) %>
+                      </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+              </table>
+              <% } %>
+
+                <!-- Workshops and Extra Classes -->
+                <% if (employee.workshops && employee.workshops.length> 0) { %>
+                  <div class="section-title">Workshops & Extra Classes</div>
+                  <table class="salary-table">
+                    <thead>
+                      <tr>
+                        <th>Workshop/Extra Class</th>
+                        <th>Type</th>
+                        <th>Sessions/Hours</th>
+                        <th>Rate</th>
+                        <th>Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% employee.workshops.forEach(function(workshop) { %>
+                        <tr>
+                          <td>
+                            <%= workshop.name %>
+                          </td>
+                          <td>
+                            <span class="workshop-type <%= workshop.type.toLowerCase().replaceAll(' ', '-') %>">
+                              <%= workshop.type %>
+                            </span>
+                          </td>
+                          <td class="amount">
+                            <%= workshop.sessions %>
+                          </td>
+                          <td class="amount">₹<%= workshop.rate.toFixed(2) %>
+                          </td>
+                          <td class="amount">₹<%= (workshop.sessions * workshop.rate).toFixed(2) %>
+                          </td>
+                        </tr>
+                        <% }); %>
+                    </tbody>
+                  </table>
+                  <% } %>
+                    <% } %>
+
+                      <% if (employee.type==='staff' || employee.type==='mixed' ) { %>
+                        <!-- Staff Salary Components -->
+                        <div class="section-title">Salary Components</div>
+                        <table class="salary-table">
+                          <thead>
+                            <tr>
+                              <th>Component</th>
+                              <th>Amount</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <% if (employee.basic) { %>
+                              <tr>
+                                <td>Basic Salary</td>
+                                <td class="amount">₹<%= employee.basic.toFixed(2) %>
+                                </td>
+                              </tr>
+                              <% } %>
+                                <% if (employee.hra) { %>
+                                  <tr>
+                                    <td>House Rent Allowance (HRA)</td>
+                                    <td class="amount">₹<%= employee.hra.toFixed(2) %>
+                                    </td>
+                                  </tr>
+                                  <% } %>
+                                    <% if (employee.medical) { %>
+                                      <tr>
+                                        <td>Medical Allowance</td>
+                                        <td class="amount">₹<%= employee.medical.toFixed(2) %>
+                                        </td>
+                                      </tr>
+                                      <% } %>
+                                        <% if (employee.otherAllowances && employee.otherAllowances.length> 0) { %>
+                                          <% employee.otherAllowances.forEach(function(allowance) { %>
+                                            <tr>
+                                              <td>
+                                                <%= allowance.name %>
+                                              </td>
+                                              <td class="amount">₹<%= allowance.amount.toFixed(2) %>
+                                              </td>
+                                            </tr>
+                                            <% }); %>
+                                              <% } %>
+                          </tbody>
+                        </table>
+                        <% } %>
+
+                          <!-- Deductions (if any) -->
+                          <% if (employee.deductions && employee.deductions.length> 0) { %>
+                            <div class="section-title">Deductions</div>
+                            <table class="salary-table">
+                              <thead>
+                                <tr>
+                                  <th>Deduction Type</th>
+                                  <th>Amount</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <% employee.deductions.forEach(function(deduction) { %>
+                                  <tr>
+                                    <td>
+                                      <%= deduction.name %>
+                                    </td>
+                                    <td class="amount">-₹<%= deduction.amount.toFixed(2) %>
+                                    </td>
+                                  </tr>
+                                  <% }); %>
+                                    <tr class="total-row">
+                                      <td>Total Deductions</td>
+                                      <td class="amount">-₹<%= employee.totalDeductions.toFixed(2) %>
+                                      </td>
+                                    </tr>
+                              </tbody>
+                            </table>
+                            <% } %>
+
+                              <!-- Summary -->
+                              <div class="summary">
+                                <!-- <div class="summary-card">
+                                  <div class="summary-label">Gross Amount</div>
+                                  <div class="summary-amount">₹<%= employee.grossAmount.toFixed(2) %>
+                                  </div>
+                                </div> -->
+                                <% if (employee.totalDeductions> 0) { %>
+                                  <div class="summary-card">
+                                    <div class="summary-label">Total Deductions</div>
+                                    <div class="summary-amount">₹<%= employee.totalDeductions.toFixed(2) %>
+                                    </div>
+                                  </div>
+                                  <% } %>
+                                    <div class="summary-card total">
+                                      <div class="summary-label">Net Amount</div>
+                                      <div class="summary-amount">₹<%= employee.netAmount.toFixed(2) %>
+                                      </div>
+                                    </div>
+                              </div>
+
+                              <!-- Amount in Words -->
+                              <div
+                                style="margin-top: 5px; padding: 5px; text-align: center; background: #f8f9fa; border-radius: 6px;">
+                                <strong>Net Amount in Words:</strong>
+                                <%= amountInWords %>
+                              </div>
+    </div>
+
+    <!-- Signature Section -->
+    <!-- <div class="signature-section">
+      <div class="signature-box">
+        <strong>Employee Signature</strong>
+      </div>
+      <div class="signature-box">
+        <strong>Authorized Signatory</strong>
+      </div>
+    </div> -->
+
+    <!-- Print Button -->
+    <button class="print-button" onclick="window.print()">
+      🖨️ Print Payslip
+    </button>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>This is a system-generated payslip and does not require a signature.</p>
+      <!-- <p>Generated on: <%= new Date().toLocaleDateString('en-IN') %> -->
+        <p>Generated on: <%= generatedDate %></p>
+      </p>
+    </div>
+  </div>
+</body>
+
+</html>

@@ -23,6 +23,17 @@ export const VUpdateAdmission = Joi.object({
 });
 
 export const VUpdateAdmissionStatus = Joi.object({
-  form_id : Joi.number().required(),
+  form_id: Joi.number().required(),
   form_status: Joi.boolean().required()
 });
+
+export const VGetAdmissionList = Joi.object({
+  student_id: Joi.number().optional(),
+  from_date: Joi.string().optional(),
+  to_date: Joi.string().optional(),
+  course: Joi.number().optional(),
+  batch: Joi.number().optional(),
+  form_no: Joi.string().optional(),
+  page : Joi.number().optional(),
+  token : Joi.string().optional()
+})

@@ -9,8 +9,8 @@ let browserView;
 function createWindow() {
   // Create the browser window
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    width: 1400,
+    height: 900,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -44,30 +44,39 @@ function createWindow() {
 
   Menu.setApplicationMenu(null);
 
-  // Position the BrowserView (leave space for progress bar at top)
-  const bounds = mainWindow.getBounds();
-  browserView.setBounds({
-    x: 0,
-    y: 35, // Leave space for progress bar and any UI
-    width: bounds.width,
-    height: bounds.height - 35,
-  });
-
-  // Auto-resize BrowserView when window is resized
-  mainWindow.on("resize", () => {
-    const bounds = mainWindow.getBounds();
+  // Function to update BrowserView bounds
+  function updateBrowserViewBounds() {
+    const bounds = mainWindow.getContentBounds(); // Use getContentBounds instead of getBounds
     if (browserView) {
       browserView.setBounds({
         x: 0,
-        y: 35,
+        y: 35, // Leave space for progress bar
         width: bounds.width,
-        height: bounds.height - 35,
+        height: bounds.height - 35, // Subtract the header height
       });
     }
-  });
+  }
+
+  // Initial bounds setting
+  updateBrowserViewBounds();
+
+  // Auto-resize BrowserView when window is resized
+  mainWindow.on("resize", updateBrowserViewBounds);
+  mainWindow.on("maximize", updateBrowserViewBounds);
+  mainWindow.on("unmaximize", updateBrowserViewBounds);
 
   // Load the target URL in BrowserView
   browserView.webContents.loadURL("http://192.168.0.214:3000/login");
+  
+  // Remove or increase the zoom factor - this might be cutting off content
+  // browserView.webContents.setZoomFactor(0.9); // Try removing this line or setting to 1.0
+  browserView.webContents.setZoomFactor(1.0);
+
+  // Wait for the page to load before setting zoom
+  browserView.webContents.once('did-finish-load', () => {
+    // Optional: Set zoom after page loads
+    // browserView.webContents.setZoomFactor(1.0);
+  });
 
   // BrowserView event handlers
   browserView.webContents.on("did-start-loading", () => {
@@ -83,6 +92,9 @@ function createWindow() {
   browserView.webContents.on("did-finish-load", () => {
     // console.log('BrowserView finished loading');
     mainWindow.webContents.send("loading-finished");
+    
+    // Update bounds after page loads to ensure proper display
+    setTimeout(updateBrowserViewBounds, 100);
   });
 
   browserView.webContents.on(
@@ -121,6 +133,8 @@ function createWindow() {
   // Show window when ready
   mainWindow.once("ready-to-show", () => {
     mainWindow.show();
+    // Ensure bounds are set correctly when window is shown
+    setTimeout(updateBrowserViewBounds, 100);
   });
 
   // Handle window closed
@@ -183,4 +197,16 @@ ipcMain.handle("can-go-back", () => {
 
 ipcMain.handle("can-go-forward", () => {
   return browserView ? browserView.webContents.canGoForward() : false;
+});
+
+// Add IPC handler to adjust zoom
+ipcMain.on("set-zoom", (event, zoomFactor) => {
+  if (browserView) {
+    browserView.webContents.setZoomFactor(zoomFactor);
+  }
+});
+
+// Add IPC handler to get current zoom
+ipcMain.handle("get-zoom", () => {
+  return browserView ? browserView.webContents.getZoomFactor() : 1.0;
 });

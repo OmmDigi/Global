@@ -1,0 +1,1536 @@
+import QueryStream from "pg-query-stream";
+import asyncErrorHandler from "../middlewares/asyncErrorHandler";
+import { ErrorHandler } from "../utils/ErrorHandler";
+import { VGetAdmissionList } from "../validator/admission.validator";
+import { pool } from "../config/db";
+import ExcelJS from "exceljs";
+import { VGenerateUrl, VPaymentReport } from "../validator/excel.validator";
+import { ApiResponse } from "../utils/ApiResponse";
+import { createToken } from "../services/jwt";
+import { VCreateEmployeeSalarySheet, VGeneratePayslip, VGenerateStuffSalarySheet } from "../validator/users.validator";
+
+const urls = new Map<string, string>();
+const HOST_URL = process.env.API_HOST_URL;
+urls.set("payment_report", `${HOST_URL}/api/v1/excel/payment-report`);
+urls.set("admission_report", `${HOST_URL}/api/v1/excel/admission-report`);
+urls.set("salary_sheet", `${HOST_URL}/api/v1/excel/salary-sheet`)
+
+export const generateUrl = asyncErrorHandler(async (req, res) => {
+  const { error, value } = VGenerateUrl.validate(req.body ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
+
+  const url = urls.get(value.type);
+  if (!url) throw new ErrorHandler(404, "No route found");
+
+  const token = createToken({}, { expiresIn: "60s" });
+
+  const reportUrl = `${url}?${value.query}&token=${token}`;
+  res.status(201).json(new ApiResponse(201, "Signed Url Created", reportUrl));
+});
+
+//admission excel report
+export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
+  const { error, value } = VGetAdmissionList.validate(req.query);
+  if (error) throw new ErrorHandler(400, error.message);
+
+  // Set response headers for streaming
+  res.setHeader(
+    "Content-Disposition",
+    'attachment; filename="Admission_Report.xlsx"'
+  );
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
+
+  let filter = "";
+  const filterValues: string[] = [];
+  let placeholder = 1;
+
+  if (value.from_date && value.to_date) {
+    if (filter == "") {
+      filter = `WHERE ff.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
+    } else {
+      filter += ` AND ff.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
+    }
+    filterValues.push(value.from_date);
+    filterValues.push(value.to_date);
+  }
+
+  if (value.course) {
+    if (filter == "") {
+      filter = `WHERE c.id = $${placeholder++}`;
+    } else {
+      filter += ` AND c.id = $${placeholder++}`;
+    }
+    filterValues.push(value.course);
+  }
+
+  if (value.batch) {
+    if (filter == "") {
+      filter = `WHERE b.id = $${placeholder++}`;
+    } else {
+      filter += ` AND b.id = $${placeholder++}`;
+    }
+    filterValues.push(value.batch);
+  }
+
+  if (value.form_no) {
+    filter = `WHERE ff.form_name = $${placeholder++}`;
+    filterValues.push(value.form_no);
+  }
+
+  const workbook = new ExcelJS.stream.xlsx.WorkbookWriter({
+    stream: res,
+    useStyles: true,
+  });
+  const worksheet = workbook.addWorksheet("Admission Report");
+
+  worksheet.mergeCells("A1:H1");
+  worksheet.getCell("A1").value = `Admission Report`;
+  worksheet.getCell("A1").font = {
+    size: 20,
+    bold: true,
+    color: { argb: "000000" },
+  };
+  worksheet.getCell("A1").fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "FFFF00" },
+  };
+  worksheet.getRow(1).height = 30;
+  worksheet.getCell("A1").alignment = {
+    horizontal: "center",
+    vertical: "middle",
+  };
+
+  worksheet.addRow([
+    "Sr Number",
+    "Student Name",
+    "Course Name",
+    "Batch",
+    "Form No",
+    "Total Fee",
+    "Due Amount",
+    "Status",
+  ]);
+
+  // Row styling (header row)
+  worksheet.getRow(2).eachCell((cell) => {
+    cell.style = {
+      font: { bold: true, size: 14, color: { argb: "000000" } },
+      alignment: { horizontal: "center", vertical: "middle" },
+      fill: {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "F4A460" },
+      }, // Red background
+      border: {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        right: { style: "thin" },
+        bottom: { style: "thin" },
+      },
+    };
+  });
+
+  const client = await pool.connect();
+  const query = new QueryStream(
+    `
+      SELECT
+        row_number() OVER () AS sr_no,
+        u.name AS student_name,
+        c.name AS course_name,
+        b.month_name AS batch_name,
+        ff.form_name,
+        (SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id) AS course_fee,
+        COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id), 0.00) - COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND status = 2), 0.00) AS due_amount,
+        ff.status AS form_status
+      FROM fillup_forms ff
+  
+      LEFT JOIN users u
+      ON u.id = ff.student_id
+  
+      LEFT JOIN enrolled_courses ec
+      ON ec.form_id = ff.id
+  
+      LEFT JOIN batch b
+      ON b.id = ec.batch_id
+  
+      LEFT JOIN course c
+      ON c.id = ec.course_id
+
+     ${filter}
+  
+      GROUP BY ff.id, u.id, c.id, b.id
+      ORDER BY ff.id DESC
+      `,
+    filterValues,
+    {
+      batchSize: 10,
+    }
+  );
+
+  const pgStream = client.query(query);
+
+  // Process PostgreSQL stream data and append to Excel sheet
+  pgStream.on("data", (data) => {
+    const excelRow = worksheet.addRow(
+      Object.values({
+        ...data,
+        form_status:
+          data.form_status === 2
+            ? "Approved"
+            : data.form_status === 1
+              ? "Pending"
+              : "Canceled",
+      })
+    );
+    // Style the data rows
+    excelRow.eachCell((cell, cellNumber) => {
+      cell.style = {
+        font: {
+          size: 12,
+          bold: cellNumber === 8,
+          color: {
+            argb:
+              cellNumber === 8 && data.form_status == 3
+                ? "DC2626"
+                : cellNumber === 8 && data.form_status == 2
+                  ? "139429"
+                  : cellNumber === 8 && data.form_status == 1
+                    ? "e6e639"
+                    : "000000",
+          },
+        },
+
+        alignment: { horizontal: "center" },
+        border: {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          right: { style: "thin" },
+          bottom: { style: "thin" },
+        },
+      };
+    });
+  });
+
+  pgStream.on("end", () => {
+    workbook.commit();
+    client.release(); // Release the client when done
+  });
+
+  pgStream.on("error", (err) => {
+    client.release();
+    throw new ErrorHandler(500, err.message);
+  });
+});
+
+//money amount excel repor
+export const generatePaymentExcelReport = asyncErrorHandler(
+  async (req, res) => {
+    const { error, value } = VPaymentReport.validate(req.query ?? {});
+    if (error) throw new ErrorHandler(400, error.message);
+
+    // Set response headers for streaming
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="Payment_Report.xlsx"'
+    );
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+
+    let filter = "";
+    const filterValues: string[] = [];
+    let placeholder = 1;
+
+    if (value.from_date && value.to_date) {
+      if (filter == "") {
+        filter = `WHERE p.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
+      } else {
+        filter += ` AND p.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
+      }
+      filterValues.push(value.from_date);
+      filterValues.push(value.to_date);
+    }
+
+    if (value.course) {
+      if (filter == "") {
+        filter = `WHERE c.id = $${placeholder++}`;
+      } else {
+        filter += ` AND c.id = $${placeholder++}`;
+      }
+      filterValues.push(value.course);
+    }
+
+    if (value.batch) {
+      if (filter == "") {
+        filter = `WHERE b.id = $${placeholder++}`;
+      } else {
+        filter += ` AND b.id = $${placeholder++}`;
+      }
+      filterValues.push(value.batch);
+    }
+
+    if (value.mode) {
+      if (filter === "") {
+        filter = `WHERE p.mode = $${placeholder++}`;
+      } else {
+        filter += ` AND p.mode = $${placeholder++}`;
+      }
+      filterValues.push(value.mode);
+    }
+
+    const workbook = new ExcelJS.stream.xlsx.WorkbookWriter({
+      stream: res,
+      useStyles: true,
+    });
+    const worksheet = workbook.addWorksheet("Payment Report");
+
+    worksheet.mergeCells("A1:I1");
+    worksheet.getCell("A1").value = `Payment Report`;
+    worksheet.getCell("A1").font = {
+      size: 20,
+      bold: true,
+      color: { argb: "000000" },
+    };
+    worksheet.getCell("A1").fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FFFF00" },
+    };
+    worksheet.getRow(1).height = 30;
+    worksheet.getCell("A1").alignment = {
+      horizontal: "center",
+      vertical: "middle",
+    };
+
+    worksheet.addRow([
+      "Sr Number",
+      "Student Name",
+      "Course Name",
+      "Batch",
+      "Fee Head",
+      "Amount Paid",
+      "Mode",
+      "Transition Id",
+      "Date",
+    ]);
+
+    // Row styling (header row)
+    worksheet.getRow(2).eachCell((cell) => {
+      cell.style = {
+        font: { bold: true, size: 14, color: { argb: "000000" } },
+        alignment: { horizontal: "center", vertical: "middle" },
+        fill: {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "F4A460" },
+        }, // Red background
+        border: {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          right: { style: "thin" },
+          bottom: { style: "thin" },
+        },
+      };
+    });
+
+    const client = await pool.connect();
+    const query = new QueryStream(
+      `
+        SELECT 
+            row_number() OVER () AS sr_no,
+            u.name AS student_name,
+            c.name AS course_name,
+            b.month_name AS batch_name,
+            cfh.name AS fee_head_name,
+            p.amount,
+            p.mode,
+            p.transition_id,
+            TO_CHAR(p.created_at, 'FMDD FMMonth, YYYY HH12:MI AM') AS date_time
+        FROM payments p
+
+        LEFT JOIN users u
+        ON u.id = p.student_id
+
+        LEFT JOIN enrolled_courses ec
+        ON ec.form_id = p.form_id
+
+        LEFT JOIN course c
+        ON c.id = ec.course_id
+
+        LEFT JOIN batch b
+        ON b.id = ec.batch_id
+
+        LEFT JOIN course_fee_head cfh
+        ON cfh.id = p.fee_head_id
+
+        ${filter}
+
+        ORDER BY u.id DESC
+      `,
+      filterValues,
+      {
+        batchSize: 10,
+      }
+    );
+
+    const pgStream = client.query(query);
+
+    // Process PostgreSQL stream data and append to Excel sheet
+    pgStream.on("data", (data) => {
+      const excelRow = worksheet.addRow(Object.values(data));
+      // Style the data rows
+      excelRow.eachCell((cell) => {
+        cell.style = {
+          font: {
+            size: 12,
+          },
+          alignment: { horizontal: "center" },
+          border: {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            right: { style: "thin" },
+            bottom: { style: "thin" },
+          },
+        };
+      });
+    });
+
+    pgStream.on("end", () => {
+      workbook.commit();
+      client.release(); // Release the client when done
+    });
+
+    pgStream.on("error", (err) => {
+      client.release();
+      throw new ErrorHandler(500, err.message);
+    });
+  }
+);
+
+// export const exportTeacherPaymentReport = asyncErrorHandler(
+//   async (req, res) => {
+//     const { error, value } = VGenerateStuffSalarySheet.validate(req.query ?? {});
+//     if (error) throw new ErrorHandler(400, error.message);
+
+//     // Expect "YYYY-MM"
+//     if (!/^\d{4}-\d{2}$/.test(value.month)) {
+//       throw new ErrorHandler(
+//         400,
+//         "Invalid month format. Use 'YYYY-MM' (e.g., 2025-08)."
+//       );
+//     }
+//     const monthStart = `${value.month}-01`;
+//     const monthDate = new Date(monthStart);
+//     if (isNaN(monthDate.getTime())) {
+//       throw new ErrorHandler(400, "Invalid month value.");
+//     }
+
+//     const formatted = monthDate.toLocaleString("en-US", {
+//       month: "short",
+//       year: "numeric",
+//     });
+
+
+//     // 1. Set headers for Excel streaming
+//     res.setHeader(
+//       "Content-Disposition",
+//       'attachment; filename="Teacher_Salary_Sheet.xlsx"'
+//     );
+//     res.setHeader(
+//       "Content-Type",
+//       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+//     );
+
+//     // 2. Create workbook in streaming mode
+//     const workbook = new ExcelJS.stream.xlsx.WorkbookWriter({
+//       stream: res,
+//       useStyles: true,
+//     });
+//     const worksheet = workbook.addWorksheet("Teacher Payments");
+
+//     // // Add headers
+//     // const headerRow = worksheet.addRow([
+//     //   "Name",
+//     //   "Course Name",
+//     //   "Type",
+//     //   "Days Worked",
+//     //   "Rate Per Day / Fixed",
+//     //   "Daily Basic Pay",
+//     //   "Grand Total",
+//     //   "Sign",
+//     // ]);
+
+//     // // Style headers
+//     // headerRow.height = 25;
+//     // headerRow.eachCell((cell, colNumber) => {
+//     //   cell.fill = {
+//     //     type: "pattern",
+//     //     pattern: "solid",
+//     //     fgColor: { argb: "FFE0E0E0" },
+//     //   };
+//     //   cell.font = { bold: true };
+//     //   cell.border = {
+//     //     top: { style: "thin" },
+//     //     left: { style: "thin" },
+//     //     bottom: { style: "thin" },
+//     //     right: { style: "thin" },
+//     //   };
+//     //   cell.alignment = { vertical: "middle", horizontal: "center" };
+//     // });
+
+//     // // Set column widths
+//     // worksheet.columns = [
+//     //   { width: 15 }, // Name
+//     //   { width: 15 }, // Course Name
+//     //   { width: 12 }, // Type
+//     //   { width: 12 }, // Days Worked
+//     //   { width: 18 }, // Rate Per Day
+//     //   { width: 15 }, // Daily Basic Pay
+//     //   { width: 12 }, // Grand Total
+//     //   { width: 40 }, // Sign
+//     // ];
+
+//     worksheet.mergeCells("A1:I1");
+//     worksheet.getCell("A1").value = `Payment Sheet For The Month Of ${formatted}`;
+//     worksheet.getCell("A1").font = {
+//       size: 20,
+//       bold: true,
+//       color: { argb: "000000" },
+//     };
+//     worksheet.getCell("A1").fill = {
+//       type: "pattern",
+//       pattern: "solid",
+//       fgColor: { argb: "FFFF00" },
+//     };
+//     worksheet.getRow(1).height = 30;
+//     worksheet.getCell("A1").alignment = {
+//       horizontal: "center",
+//       vertical: "middle",
+//     };
+
+//     worksheet.addRow([
+//       "Name",
+//       "Course Name",
+//       "Type",
+//       "Days Worked",
+//       "Rate Per Day / Fixed",
+//       "Daily Basic Pay",
+//       "Grand Total",
+//       "Sign",
+//     ]);
+
+//     // Row styling (header row)
+//     worksheet.getRow(2).eachCell((cell) => {
+//       cell.style = {
+//         font: { bold: true, size: 14, color: { argb: "000000" } },
+//         alignment: { horizontal: "center", vertical: "middle" },
+//         fill: {
+//           type: "pattern",
+//           pattern: "solid",
+//           fgColor: { argb: "F4A460" },
+//         }, // Red background
+//         border: {
+//           top: { style: "thin" },
+//           left: { style: "thin" },
+//           right: { style: "thin" },
+//           bottom: { style: "thin" },
+//         },
+//       };
+//     });
+
+//     let rowIndex = 3;
+
+//     // 3. Run your SQL query (returns JSON nested structure)
+//     const query = `
+//     WITH teacher_stats AS (
+//       SELECT
+//         u.id AS teacher_id,
+//         u.name,
+//         c.name AS course_name,
+//         tc.class_type,
+//         COUNT(DISTINCT tc.class_date) AS number_worked_days,
+//         (
+//           SELECT amount
+//           FROM employee_salary_structure ess
+//           WHERE ess.employee_id = u.id
+//             AND ess.salary_type = tc.class_type
+//             AND ess.course_id = c.id
+//         ) AS rate_per_date,
+//         SUM(tc.daily_earning) AS earning,
+//         SUM(tc.units) AS total_classes_taken
+//       FROM users u
+//       JOIN teacher_classes tc ON tc.teacher_id = u.id
+//       LEFT JOIN course c ON c.id = tc.course_id
+//       WHERE u.category = 'Teacher'
+//       GROUP BY u.id, u.name, c.id, c.name, tc.class_type
+//     ),
+//     course_grouped AS (
+//       SELECT
+//         teacher_id,
+//         name,
+//         course_name,
+//         json_agg(
+//           json_build_object(
+//             'class_type', class_type,
+//             'number_worked_days', number_worked_days,
+//             'rate_per_date', rate_per_date,
+//             'earning', earning,
+//             'total_classes_taken', total_classes_taken
+//           ) ORDER BY class_type
+//         ) AS rows,
+//         SUM(earning) AS course_total
+//       FROM teacher_stats
+//       GROUP BY teacher_id, name, course_name
+//     )
+//     SELECT
+//       teacher_id,
+//       name AS "teacherName",
+//       json_agg(
+//         json_build_object(
+//           'courseName', course_name,
+//           'rows', rows,
+//           'courseTotal', course_total
+//         ) ORDER BY course_name
+//       ) AS courses,
+//       SUM(course_total) AS "teacherTotal"
+//     FROM course_grouped
+//     GROUP BY teacher_id, name;
+//   `;
+
+//     const client = await pool.connect();
+//     try {
+//       const pgStream = client.query(new QueryStream(query));
+
+//       pgStream.on("data", (teacher) => {
+//         // Add teacher name in the first column, spanning multiple rows
+//         const teacherStartRow = rowIndex;
+
+//         // Process each course for this teacher
+//         let teacherRowCount = 0;
+
+//         teacher.courses.forEach((course: any) => {
+//           // Add course name row
+//           const courseStartRow = rowIndex;
+
+//           course.rows.forEach((classData: any, index: number) => {
+//             const row = worksheet.addRow([
+//               index === 0 && teacherRowCount === 0 ? teacher.teacherName : "", // Teacher name only on first row
+//               index === 0 ? course.courseName : "", // Course name only on first row of course
+//               classData.class_type,
+//               classData.number_worked_days,
+//               classData.rate_per_date,
+//               classData.earning,
+//               teacher.teacherTotal && teacherRowCount === 0 && index === 0
+//                 ? teacher.teacherTotal
+//                 : "", // Teacher total only on very first row
+//               "", // Sign column - empty for now
+//             ]);
+
+//             // Apply styling
+//             row.height = 20;
+
+//             // Style the row
+//             row.eachCell((cell, colNumber) => {
+//               cell.border = {
+//                 top: { style: "thin" },
+//                 left: { style: "thin" },
+//                 bottom: { style: "thin" },
+//                 right: { style: "thin" },
+//               };
+//               cell.alignment = { vertical: "middle", horizontal: "center" };
+//             });
+
+//             rowIndex++;
+//             teacherRowCount++;
+//           });
+//         });
+
+//         // Merge teacher name cells if there are multiple rows for this teacher
+//         if (teacherRowCount > 1) {
+//           worksheet.mergeCells(`A${teacherStartRow}:A${rowIndex - 1}`);
+//         }
+
+//         // Merge course name cells and course total cells for each course
+//         let currentRow = teacherStartRow;
+//         teacher.courses.forEach((course: any) => {
+//           const courseRowCount = course.rows.length;
+//           if (courseRowCount > 1) {
+//             worksheet.mergeCells(
+//               `B${currentRow}:B${currentRow + courseRowCount - 1}`
+//             );
+//           }
+//           currentRow += courseRowCount;
+//         });
+
+//         // Merge teacher total cell (Grand Total column - column G AND H THE SING)
+//         if (teacherRowCount > 1) {
+//           worksheet.mergeCells(`G${teacherStartRow}:G${rowIndex - 1}`);
+//           worksheet.mergeCells(`H${teacherStartRow}:H${rowIndex - 1}`);
+//         }
+//       });
+
+//       pgStream.on("end", async () => {
+//         await workbook.commit();
+//         client.release();
+//       });
+
+//       pgStream.on("error", (err) => {
+//         client.release();
+//         console.error("Stream error:", err);
+//         res.status(500).send("Error generating report");
+//       });
+//     } catch (err: any) {
+//       client.release();
+//       res.status(500).send("Error: " + err.message);
+//     }
+//   }
+// );
+// // Alternative version with monthly parameter
+// // // Version with month/year parameters
+// // export const exportSalarySlipReportByMonth = asyncErrorHandler(
+// //   async (req, res) => {
+// //     const { year, month } = req.query;
+// //     // const targetYear = parseInt(year) || new Date().getFullYear();
+// //     // const targetMonth = parseInt(month) || new Date().getMonth() + 1;
+
+// //     const targetYear =  new Date().getFullYear();
+// //     const targetMonth =  new Date().getMonth() + 1;
+
+// //     res.setHeader(
+// //       "Content-Disposition",
+// //       `attachment; filename="SalarySlip_${targetYear}_${targetMonth.toString().padStart(2, '0')}.xlsx"`
+// //     );
+// //     res.setHeader(
+// //       "Content-Type",
+// //       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+// //     );
+
+// //     const workbook = new ExcelJS.stream.xlsx.WorkbookWriter({
+// //       stream: res,
+// //       useStyles: true,
+// //     });
+// //     const worksheet = workbook.addWorksheet(`Salary Slips ${targetYear}-${targetMonth}`);
+
+// //     let rowIndex = 1;
+
+// //     // Add headers (same as above)
+// //     const headerRow = worksheet.addRow([
+// //       "Name", "Payment Component", "Sunday", "Par Day Rate",
+// //       "Gross Amount", "Deduction", "Net Amount Payable", "Sign"
+// //     ]);
+
+// //     headerRow.height = 25;
+// //     headerRow.eachCell((cell, colNumber) => {
+// //       cell.fill = {
+// //         type: "pattern",
+// //         pattern: "solid",
+// //         fgColor: { argb: "FFE0E0E0" },
+// //       };
+// //       cell.font = { bold: true };
+// //       cell.border = {
+// //         top: { style: "thin" }, left: { style: "thin" },
+// //         bottom: { style: "thin" }, right: { style: "thin" },
+// //       };
+// //       cell.alignment = { vertical: "middle", horizontal: "center" };
+// //     });
+
+// //     worksheet.columns = [
+// //       { width: 15 }, { width: 20 }, { width: 10 }, { width: 12 },
+// //       { width: 15 }, { width: 12 }, { width: 18 }, { width: 40 }
+// //     ];
+
+// //     rowIndex++;
+
+// //     // Query with date parameters
+// //     const query = `
+// //       WITH employee_attendance AS (
+// //         SELECT
+// //           u.id AS employee_id,
+// //           u.name AS employee_name,
+// //           (
+// //             SELECT COUNT(*)
+// //             FROM attendance a
+// //             WHERE a.employee_id = u.id
+// //               AND a.status = 'Present'
+// //               AND EXTRACT(YEAR FROM a.date) = $1
+// //               AND EXTRACT(MONTH FROM a.date) = $2
+// //           ) AS days_worked,
+// //           (
+// //             SELECT COUNT(*)
+// //             FROM (
+// //               SELECT generate_series(
+// //                 ($1 || '-' || $2 || '-01')::date,
+// //                 (($1 || '-' || $2 || '-01')::date + INTERVAL '1 month' - INTERVAL '1 day')::date,
+// //                 '1 day'::interval
+// //               )::date as day_date
+// //             ) days
+// //             WHERE EXTRACT(DOW FROM day_date) = 0
+// //           ) AS sundays_count
+// //         FROM users u
+// //         WHERE EXISTS (SELECT 1 FROM employee_salary_structure ess WHERE ess.employee_id = u.id)
+// //       ),
+// //       employee_salary_components AS (
+// //         SELECT
+// //           ea.employee_id,
+// //           ea.employee_name,
+// //           ea.days_worked,
+// //           ea.sundays_count,
+// //           ess.salary_type,
+// //           ess.amount,
+// //           ess.amount_type,
+// //           CASE
+// //             WHEN ess.salary_type = 'BASIC' AND ess.amount_type = 'addition' THEN ess.amount
+// //             ELSE 0
+// //           END AS par_day_rate,
+// //           CASE
+// //             WHEN ess.amount_type = 'addition' THEN
+// //               CASE
+// //                 WHEN ess.salary_type = 'BASIC' THEN ess.amount * ea.days_worked
+// //                 ELSE ess.amount
+// //               END
+// //             ELSE 0
+// //           END AS gross_amount,
+// //           CASE
+// //             WHEN ess.amount_type = 'deduction' THEN ess.amount
+// //             ELSE 0
+// //           END AS deduction_amount
+// //         FROM employee_attendance ea
+// //         JOIN employee_salary_structure ess ON ess.employee_id = ea.employee_id
+// //       ),
+// //       employee_totals AS (
+// //         SELECT
+// //           employee_id,
+// //           employee_name,
+// //           days_worked,
+// //           sundays_count,
+// //           SUM(gross_amount) AS total_gross,
+// //           SUM(deduction_amount) AS total_deduction,
+// //           SUM(gross_amount) - SUM(deduction_amount) AS net_amount_payable
+// //         FROM employee_salary_components
+// //         GROUP BY employee_id, employee_name, days_worked, sundays_count
+// //       )
+// //       SELECT
+// //         esc.employee_id,
+// //         esc.employee_name,
+// //         esc.days_worked,
+// //         esc.sundays_count,
+// //         et.net_amount_payable,
+// //         json_agg(
+// //           json_build_object(
+// //             'salary_type', esc.salary_type,
+// //             'amount', esc.amount,
+// //             'amount_type', esc.amount_type,
+// //             'par_day_rate', esc.par_day_rate,
+// //             'gross_amount', esc.gross_amount,
+// //             'deduction_amount', esc.deduction_amount
+// //           ) ORDER BY
+// //             CASE
+// //               WHEN esc.salary_type = 'BASIC' THEN 1
+// //               WHEN esc.salary_type = 'HRA' THEN 2
+// //               WHEN esc.salary_type = 'MEDICAL' THEN 3
+// //               WHEN esc.salary_type = 'PTAX' THEN 4
+// //               ELSE 5
+// //             END
+// //         ) AS salary_components
+// //       FROM employee_salary_components esc
+// //       JOIN employee_totals et ON et.employee_id = esc.employee_id
+// //       GROUP BY esc.employee_id, esc.employee_name, esc.days_worked, esc.sundays_count, et.net_amount_payable
+// //       ORDER BY esc.employee_name;
+// //     `;
+
+// //     const client = await pool.connect();
+
+// //     try {
+// //       const pgStream = client.query(new QueryStream(query, [targetYear, targetMonth]));
+
+// //       pgStream.on("data", (employee) => {
+// //         const employeeStartRow = rowIndex;
+// //         let componentCount = employee.salary_components.length;
+
+// //         employee.salary_components.forEach((component : any, index : number) => {
+// //           const isFirstRow = index === 0;
+
+// //           const row = worksheet.addRow([
+// //             isFirstRow ? employee.employee_name : "",
+// //             component.salary_type,
+// //             isFirstRow ? employee.sundays_count : "",
+// //             component.par_day_rate > 0 ? component.par_day_rate : "",
+// //             component.gross_amount > 0 ? component.gross_amount : "",
+// //             component.deduction_amount > 0 ? component.deduction_amount : "",
+// //             isFirstRow ? employee.net_amount_payable : "",
+// //             "",
+// //           ]);
+
+// //           row.height = 20;
+// //           row.eachCell((cell, colNumber) => {
+// //             cell.border = {
+// //               top: { style: "thin" }, left: { style: "thin" },
+// //               bottom: { style: "thin" }, right: { style: "thin" },
+// //             };
+// //             cell.alignment = { vertical: "middle", horizontal: "center" };
+
+// //             if ([4, 5, 6, 7].includes(colNumber) && cell.value) {
+// //               cell.alignment = { vertical: "middle", horizontal: "right" };
+// //             }
+// //           });
+
+// //           rowIndex++;
+// //         });
+
+// //         if (componentCount > 1) {
+// //           const endRow = rowIndex - 1;
+// //           worksheet.mergeCells(`A${employeeStartRow}:A${endRow}`);
+// //           worksheet.mergeCells(`C${employeeStartRow}:C${endRow}`);
+// //           worksheet.mergeCells(`G${employeeStartRow}:G${endRow}`);
+// //           worksheet.mergeCells(`H${employeeStartRow}:H${endRow}`);
+// //         }
+// //       });
+
+// //       pgStream.on("end", async () => {
+// //         await workbook.commit();
+// //         client.release();
+// //       });
+
+// //       pgStream.on("error", (err) => {
+// //         client.release();
+// //         console.error("Stream error:", err);
+// //         res.status(500).send("Error generating salary slip report");
+// //       });
+
+// //     } catch (err : any) {
+// //       client.release();
+// //       res.status(500).send("Error: " + err.message);
+// //     }
+// //   }
+// // );
+
+// export const exportEmployeeSalaryReport = asyncErrorHandler(
+//   async (req, res) => {
+//     const { error, value } = VGenerateStuffSalarySheet.validate(req.query ?? {});
+//     if (error) throw new ErrorHandler(400, error.message);
+
+//     // Expect "YYYY-MM"
+//     if (!/^\d{4}-\d{2}$/.test(value.month)) {
+//       throw new ErrorHandler(
+//         400,
+//         "Invalid month format. Use 'YYYY-MM' (e.g., 2025-08)."
+//       );
+//     }
+//     const monthStart = `${value.month}-01`;
+//     const monthDate = new Date(monthStart);
+//     if (isNaN(monthDate.getTime())) {
+//       throw new ErrorHandler(400, "Invalid month value.");
+//     }
+
+//     const formatted = monthDate.toLocaleString("en-US", {
+//       month: "short",
+//       year: "numeric",
+//     });
+
+
+//     // 1. Set headers
+//     res.setHeader(
+//       "Content-Disposition",
+//       'attachment; filename="Employee_Payment_Sheet.xlsx"'
+//     );
+//     res.setHeader(
+//       "Content-Type",
+//       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+//     );
+
+//     // 2. Create streaming workbook
+//     const workbook = new ExcelJS.stream.xlsx.WorkbookWriter({
+//       stream: res,
+//       useStyles: true,
+//     });
+//     const worksheet = workbook.addWorksheet("Employee Salary");
+
+//     worksheet.mergeCells("A1:I1");
+//     worksheet.getCell("A1").value = `Payment Sheet For The Month Of ${formatted}`;
+//     worksheet.getCell("A1").font = {
+//       size: 20,
+//       bold: true,
+//       color: { argb: "000000" },
+//     };
+//     worksheet.getCell("A1").fill = {
+//       type: "pattern",
+//       pattern: "solid",
+//       fgColor: { argb: "FFFF00" },
+//     };
+//     worksheet.getRow(1).height = 30;
+//     worksheet.getCell("A1").alignment = {
+//       horizontal: "center",
+//       vertical: "middle",
+//     };
+
+//     worksheet.addRow([
+//       "Name",
+//       "Payment Components",
+//       null,
+//       "Sunday",
+//       "Per Day Rate",
+//       "Gross Amount",
+//       "Deduction",
+//       "Net Payable Amount",
+//       "Signature",
+//     ]);
+
+//     // Row styling (header row)
+//     worksheet.getRow(2).eachCell((cell) => {
+//       cell.style = {
+//         font: { bold: true, size: 14, color: { argb: "000000" } },
+//         alignment: { horizontal: "center", vertical: "middle" },
+//         fill: {
+//           type: "pattern",
+//           pattern: "solid",
+//           fgColor: { argb: "F4A460" },
+//         }, // Red background
+//         border: {
+//           top: { style: "thin" },
+//           left: { style: "thin" },
+//           right: { style: "thin" },
+//           bottom: { style: "thin" },
+//         },
+//       };
+//     });
+
+//     // 3. Add headers
+//     // const headerRow = worksheet.addRow([
+//     //   "Name",
+//     //   "Payment Component",
+//     //   null,
+//     //   "Sunday",
+//     //   "Par Day Rate",
+//     //   "Gross Amount",
+//     //   "Deduction",
+//     //   "Net Amount Payable",
+//     //   "Sign",
+//     // ]);
+//     // headerRow.height = 25;
+
+//     // Style header
+//     // headerRow.eachCell((cell) => {
+//     //   cell.fill = {
+//     //     type: "pattern",
+//     //     pattern: "solid",
+//     //     fgColor: { argb: "FFE0E0E0" },
+//     //   };
+//     //   cell.font = { bold: true };
+//     //   cell.border = {
+//     //     top: { style: "thin" },
+//     //     left: { style: "thin" },
+//     //     bottom: { style: "thin" },
+//     //     right: { style: "thin" },
+//     //   };
+//     //   cell.alignment = { vertical: "middle", horizontal: "center" };
+//     // });
+
+//     // Column widths
+//     // worksheet.columns = [
+//     //   { width: 20 }, // Name
+//     //   { width: 20 }, // Payment Component
+//     //   { width: 12 }, // Component Amount
+//     //   { width: 15 }, // Sunday
+//     //   { width: 15 }, // Per Day Rate
+//     //   { width: 15 }, // Gross Amount
+//     //   { width: 15 }, // Deduction
+//     //   { width: 20 }, // Net Amount Payable
+//     //   { width: 15 }, // Sign
+//     // ];
+
+//     // Merge header "Payment Component" across B1:C1
+//     worksheet.mergeCells("B2:C2");
+
+//     let rowIndex = 3;
+
+//     // 4. SQL query for salary + attendance
+//     const query = `
+//       WITH emp_salary AS (
+//         SELECT 
+//           e.id,
+//           e.name,
+//           json_agg(
+//             json_build_object(
+//               'salary_type', CASE WHEN ess.salary_type = 'base_salary' THEN 'BASIC PAY' WHEN ess.salary_type = 'P_tax' THEN 'P TAX' ELSE ess.salary_type END,
+//               'amount', ess.amount,
+//               'amount_type', ess.amount_type
+//             )
+//           ) AS salary_components
+//         FROM users e
+//         JOIN employee_salary_structure ess ON ess.employee_id = e.id
+//         GROUP BY e.id, e.name
+//       ),
+//       attendance_summary AS (
+//         SELECT 
+//           employee_id,
+//           COUNT(*) FILTER (WHERE status = 'Present') AS present_days,
+//           COUNT(DISTINCT date) FILTER (WHERE EXTRACT(DOW FROM date) = 0 AND status = 'Present') AS sunday_worked
+//         FROM attendance
+//         WHERE date_trunc('month', date) = date_trunc('month', $1::DATE) --CURRENT_DATE)
+//         GROUP BY employee_id
+//       )
+//       SELECT 
+//         es.id, 
+//         es.name,
+//         es.salary_components,
+//         COALESCE(a.present_days, 0) AS present_days,
+//         COALESCE(a.sunday_worked, 0) AS sunday_worked
+//       FROM emp_salary es
+//       JOIN attendance_summary a ON a.employee_id = es.id;
+//     `;
+
+//     const client = await pool.connect();
+//     try {
+//       const pgStream = client.query(new QueryStream(query, [monthStart], { batchSize: 10 }));
+
+//       pgStream.on("data", (emp) => {
+//         const salaryComponents = emp.salary_components;
+//         // const presentDays = emp.present_days || 0;
+//         const sundayWorked = emp.sunday_worked || 0;
+
+//         let gross = 0;
+//         let deduction = 0;
+
+//         salaryComponents.forEach((comp: any) => {
+//           if (comp.amount_type === "addition") gross += comp.amount;
+//           else if (comp.amount_type === "deduction") deduction += comp.amount;
+//         });
+
+//         const perDayRate = Math.floor(gross / 30); // adjust if 30 days
+
+//         gross += sundayWorked * perDayRate;
+//         const netPay = gross - deduction;
+//         const sundayPayTxt =
+//           sundayWorked == 0 ? 0 : `${sundayWorked} x ${perDayRate}`;
+
+//         const startRow = rowIndex;
+//         const endRow = rowIndex + salaryComponents.length - 1;
+
+//         // Add each component row
+//         salaryComponents.forEach((comp: any, i: number) => {
+//           const row = worksheet.addRow([
+//             i === 0 ? emp.name : null, // Name only once
+//             comp.salary_type,
+//             comp.amount,
+//             i === 0 ? sundayPayTxt : null,
+//             i === 0 ? perDayRate : null,
+//             i === 0 ? gross : null,
+//             i === 0 ? deduction : null,
+//             i === 0 ? netPay : null,
+//             null,
+//           ]);
+
+//           row.height = 20;
+//           row.eachCell((cell) => {
+//             cell.border = {
+//               top: { style: "thin" },
+//               left: { style: "thin" },
+//               bottom: { style: "thin" },
+//               right: { style: "thin" },
+//             };
+//             cell.alignment = { vertical: "middle", horizontal: "center" };
+//           });
+
+//           rowIndex++;
+//         });
+
+//         // Merge cells like in StuffSalary.xlsx
+//         if (salaryComponents.length > 1) {
+//           worksheet.mergeCells(`A${startRow}:A${endRow}`); // Name
+//           worksheet.mergeCells(`D${startRow}:D${endRow}`); // Sunday
+//           worksheet.mergeCells(`E${startRow}:E${endRow}`); // Per Day Rate
+//           worksheet.mergeCells(`F${startRow}:F${endRow}`); // Gross Amount
+//           worksheet.mergeCells(`G${startRow}:G${endRow}`); // Deduction
+//           worksheet.mergeCells(`H${startRow}:H${endRow}`); // Net Amount
+//           worksheet.mergeCells(`I${startRow}:I${endRow}`); // Sign
+//         }
+//       });
+
+//       pgStream.on("end", async () => {
+//         await workbook.commit();
+//         client.release();
+//       });
+
+//       pgStream.on("error", (err) => {
+//         client.release();
+//         console.error("Stream error:", err);
+//         res.status(500).send("Error generating report");
+//       });
+//     } catch (err: any) {
+//       client.release();
+//       res.status(500).send("Error: " + err.message);
+//     }
+//   }
+// );
+
+export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
+  const { error, value } = VCreateEmployeeSalarySheet.validate(req.query ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
+
+  const employeetype = value.role === "Teacher" ? "Teacher" : "Staff";
+
+  // Expect "YYYY-MM"
+  if (!/^\d{4}-\d{2}$/.test(value.month)) {
+    throw new ErrorHandler(
+      400,
+      "Invalid month format. Use 'YYYY-MM' (e.g., 2025-08)."
+    );
+  }
+  const monthStart = `${value.month}-01`;
+  const monthDate = new Date(monthStart);
+  if (isNaN(monthDate.getTime())) {
+    throw new ErrorHandler(400, "Invalid month value.");
+  }
+
+  const formatted = monthDate.toLocaleString("en-US", {
+    month: "short",
+    year: "numeric",
+  });
+
+  // 1. Set headers
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename="${employeetype}_Payment_Sheet.xlsx"`
+  );
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
+
+
+  // 2. Create streaming workbook
+  const workbook = new ExcelJS.stream.xlsx.WorkbookWriter({
+    stream: res,
+    useStyles: true,
+  });
+  const worksheet = workbook.addWorksheet("Employee Salary");
+
+  if(employeetype === "Staff") {
+    worksheet.mergeCells("A1:I1");
+  } else {
+    worksheet.mergeCells("A1:H1");
+  }
+  worksheet.getCell("A1").value = `Payment Sheet For The Month Of ${formatted}`;
+  worksheet.getCell("A1").font = {
+    size: 20,
+    bold: true,
+    color: { argb: "000000" },
+  };
+  worksheet.getCell("A1").fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "FFFF00" },
+  };
+  worksheet.getRow(1).height = 30;
+  worksheet.getCell("A1").alignment = {
+    horizontal: "center",
+    vertical: "middle",
+  };
+
+  if (employeetype === "Staff") {
+    worksheet.addRow([
+      "Name",
+      "Payment Components",
+      null,
+      "Sunday",
+      "Per Day Rate",
+      "Gross Amount",
+      "Deduction",
+      "Net Payable Amount",
+      "Signature",
+    ]);
+  } else {
+    worksheet.addRow([
+      "Name",
+      "Course Name",
+      "Type",
+      "Days Worked",
+      "Per Day Rate / Fixed",
+      "Daily Basic Pay",
+      "Grand Total",
+      "Signature",
+    ]);
+  }
+
+  // Row styling (header row)
+  worksheet.getRow(2).eachCell((cell) => {
+    cell.style = {
+      font: { bold: true, size: 14, color: { argb: "000000" } },
+      alignment: { horizontal: "center", vertical: "middle" },
+      fill: {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "F4A460" },
+      }, // Red background
+      border: {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        right: { style: "thin" },
+        bottom: { style: "thin" },
+      },
+    };
+  });
+
+  if (employeetype === "Staff") {
+    // Merge header "Payment Component" across B1:C1
+    worksheet.mergeCells("B2:C2");
+  }
+
+  let rowIndex = 3;
+
+
+  // 4. SQL query for salary + attendance
+  let query = ``;
+
+  if(employeetype === "Staff") {
+    query = `
+      WITH emp_salary AS (
+        SELECT 
+          e.id,
+          e.name,
+          json_agg(
+            json_build_object(
+              'salary_type', CASE WHEN ess.salary_type = 'base_salary' THEN 'BASIC PAY' WHEN ess.salary_type = 'P_tax' THEN 'P TAX' ELSE ess.salary_type END,
+              'amount', ess.amount,
+              'amount_type', ess.amount_type
+            )
+          ) AS salary_components
+        FROM users e
+        JOIN employee_salary_structure ess ON ess.employee_id = e.id
+        GROUP BY e.id, e.name
+      ),
+      attendance_summary AS (
+        SELECT 
+          employee_id,
+          COUNT(*) FILTER (WHERE status = 'Present') AS present_days,
+          COUNT(DISTINCT date) FILTER (WHERE EXTRACT(DOW FROM date) = 0 AND status = 'Present') AS sunday_worked
+        FROM attendance
+        WHERE date_trunc('month', date) = date_trunc('month', $1::DATE) --CURRENT_DATE)
+        GROUP BY employee_id
+      )
+      SELECT 
+        es.id, 
+        es.name,
+        es.salary_components,
+        COALESCE(a.present_days, 0) AS present_days,
+        COALESCE(a.sunday_worked, 0) AS sunday_worked
+      FROM emp_salary es
+      JOIN attendance_summary a ON a.employee_id = es.id;
+    `
+  } else if (employeetype === "Teacher") {
+    query = `
+      WITH teacher_stats AS (
+        SELECT
+          u.id AS teacher_id,
+          u.name,
+          c.name AS course_name,
+          tc.class_type,
+          COUNT(DISTINCT tc.class_date) AS number_worked_days,
+          (
+            SELECT amount
+            FROM employee_salary_structure ess
+            WHERE ess.employee_id = u.id
+              AND ess.salary_type = tc.class_type
+              AND ess.course_id = c.id
+          ) AS rate_per_date,
+          SUM(tc.daily_earning) AS earning,
+          SUM(tc.units) AS total_classes_taken
+        FROM users u
+        JOIN teacher_classes tc ON tc.teacher_id = u.id AND date_trunc('month', tc.class_date) = date_trunc('month', $1::DATE)
+        LEFT JOIN course c ON c.id = tc.course_id
+        WHERE u.category = 'Teacher'
+        GROUP BY u.id, u.name, c.id, c.name, tc.class_type
+      ),
+      course_grouped AS (
+        SELECT
+          teacher_id,
+          name,
+          course_name,
+          json_agg(
+            json_build_object(
+              'class_type', class_type,
+              'number_worked_days', number_worked_days,
+              'rate_per_date', rate_per_date,
+              'earning', earning,
+              'total_classes_taken', total_classes_taken
+            ) ORDER BY class_type
+          ) AS rows,
+          SUM(earning) AS course_total
+        FROM teacher_stats
+        GROUP BY teacher_id, name, course_name
+      )
+      SELECT
+        teacher_id,
+        name AS "teacherName",
+        json_agg(
+          json_build_object(
+            'courseName', course_name,
+            'rows', rows,
+            'courseTotal', course_total
+          ) ORDER BY course_name
+        ) AS courses,
+        SUM(course_total) AS "teacherTotal"
+      FROM course_grouped
+      GROUP BY teacher_id, name;
+  `
+  }
+
+  const client = await pool.connect();
+  try {
+    const pgStream = client.query(new QueryStream(query, [monthStart], { batchSize: 10 }));
+
+    pgStream.on("data", (data) => {
+      pgStream.pause();
+
+      if (employeetype === "Staff") {
+        const salaryComponents = data.salary_components;
+        const sundayWorked = data.sunday_worked || 0;
+
+        let gross = 0;
+        let deduction = 0;
+
+        salaryComponents.forEach((comp: any) => {
+          if (comp.amount_type === "addition") gross += comp.amount;
+          else if (comp.amount_type === "deduction") deduction += comp.amount;
+        });
+
+        const perDayRate = Math.floor(gross / 30); // adjust if 30 days
+
+        gross += sundayWorked * perDayRate;
+        const netPay = gross - deduction;
+        const sundayPayTxt =
+          sundayWorked == 0 ? 0 : `${sundayWorked} x ${perDayRate}`;
+
+        const startRow = rowIndex;
+        const endRow = rowIndex + salaryComponents.length - 1;
+
+        // Add each component row
+        salaryComponents.forEach((comp: any, i: number) => {
+          const row = worksheet.addRow([
+            i === 0 ? data.name : null, // Name only once
+            comp.salary_type,
+            comp.amount,
+            i === 0 ? sundayPayTxt : null,
+            i === 0 ? perDayRate : null,
+            i === 0 ? gross : null,
+            i === 0 ? deduction : null,
+            i === 0 ? netPay : null,
+            null,
+          ]);
+
+          row.height = 20;
+          row.eachCell((cell) => {
+            cell.border = {
+              top: { style: "thin" },
+              left: { style: "thin" },
+              bottom: { style: "thin" },
+              right: { style: "thin" },
+            };
+            cell.alignment = { vertical: "middle", horizontal: "center" };
+          });
+
+          rowIndex++;
+        });
+
+        // Merge cells like in StuffSalary.xlsx
+        if (salaryComponents.length > 1) {
+          worksheet.mergeCells(`A${startRow}:A${endRow}`); // Name
+          worksheet.mergeCells(`D${startRow}:D${endRow}`); // Sunday
+          worksheet.mergeCells(`E${startRow}:E${endRow}`); // Per Day Rate
+          worksheet.mergeCells(`F${startRow}:F${endRow}`); // Gross Amount
+          worksheet.mergeCells(`G${startRow}:G${endRow}`); // Deduction
+          worksheet.mergeCells(`H${startRow}:H${endRow}`); // Net Amount
+          worksheet.mergeCells(`I${startRow}:I${endRow}`); // Sign
+        }
+      } else if (employeetype === "Teacher") {
+        // Add teacher name in the first column, spanning multiple rows
+        const teacherStartRow = rowIndex;
+
+        // Process each course for this teacher
+        let teacherRowCount = 0;
+
+        data.courses.forEach((course: any) => {
+          // Add course name row
+          const courseStartRow = rowIndex;
+
+          course.rows.forEach((classData: any, index: number) => {
+            const row = worksheet.addRow([
+              index === 0 && teacherRowCount === 0 ? data.teacherName : "", // Teacher name only on first row
+              index === 0 ? course.courseName : "", // Course name only on first row of course
+              classData.class_type,
+              classData.number_worked_days,
+              classData.rate_per_date,
+              classData.earning,
+              data.teacherTotal && teacherRowCount === 0 && index === 0
+                ? data.teacherTotal
+                : "", // Teacher total only on very first row
+              "", // Sign column - empty for now
+            ]);
+
+            // Apply styling
+            row.height = 20;
+
+            // Style the row
+            row.eachCell((cell, colNumber) => {
+              cell.border = {
+                top: { style: "thin" },
+                left: { style: "thin" },
+                bottom: { style: "thin" },
+                right: { style: "thin" },
+              };
+              cell.alignment = { vertical: "middle", horizontal: "center" };
+            });
+
+            rowIndex++;
+            teacherRowCount++;
+          });
+        });
+
+        // Merge teacher name cells if there are multiple rows for this teacher
+        if (teacherRowCount > 1) {
+          worksheet.mergeCells(`A${teacherStartRow}:A${rowIndex - 1}`);
+        }
+
+        // Merge course name cells and course total cells for each course
+        let currentRow = teacherStartRow;
+        data.courses.forEach((course: any) => {
+          const courseRowCount = course.rows.length;
+          if (courseRowCount > 1) {
+            worksheet.mergeCells(
+              `B${currentRow}:B${currentRow + courseRowCount - 1}`
+            );
+          }
+          currentRow += courseRowCount;
+        });
+
+        // Merge teacher total cell (Grand Total column - column G AND H THE SING)
+        if (teacherRowCount > 1) {
+          worksheet.mergeCells(`G${teacherStartRow}:G${rowIndex - 1}`);
+          worksheet.mergeCells(`H${teacherStartRow}:H${rowIndex - 1}`);
+        }
+      }
+
+      pgStream.resume();
+    });
+
+    pgStream.on("end", async () => {
+      await workbook.commit();
+      client.release();
+    });
+
+    pgStream.on("error", (err) => {
+      client.release();
+      // console.error("Stream error:", err);
+      // res.status(500).send("Error generating report");
+      throw new ErrorHandler(400, err.message)
+    });
+  } catch (err: any) {
+    client.release();
+    throw new ErrorHandler(400, err.message)
+  }
+})

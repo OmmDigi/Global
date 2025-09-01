@@ -1,5 +1,4 @@
 import Joi from "joi";
-import { USER_CATEGORY_TYPES } from "../constant";
 
 export const VSingleUser = Joi.object({
   id: Joi.number().required(),
@@ -9,6 +8,7 @@ export const VGetUserList = Joi.object({
   fields: Joi.string().optional(),
   page: Joi.number().optional(),
   limit: Joi.number().optional(),
+  category: Joi.string().optional().valid("Teacher", "Stuff")
 });
 
 export const VLoginUser = Joi.object({
@@ -43,7 +43,8 @@ export const VCreateUser = Joi.object({
 
   fee_structure_stuff: Joi.array().items(Joi.object({
     fee_head: Joi.string().required(),
-    amount: Joi.number().required()
+    amount: Joi.number().required(),
+    amount_type: Joi.string().valid("addition", "deduction")
   }))
 });
 
@@ -74,14 +75,62 @@ export const VUpdateUser = Joi.object({
 
   fee_structure_stuff: Joi.array().items(Joi.object({
     fee_head: Joi.string().required(),
-    amount: Joi.number().required()
+    amount: Joi.number().required(),
+    amount_type: Joi.string().valid("addition", "deduction")
   }))
 });
 
 export const VUpdateTeacherClassStatus = Joi.array().items(Joi.object({
   course_name: Joi.any().optional(),
   id: Joi.number().required(),
+  employee_id: Joi.number().optional(),
   regular: Joi.boolean().required(),
   workshop: Joi.boolean().required(),
   extra: Joi.number().required(),
 }))
+
+
+export const VGeneratePayslip = Joi.object({
+  month: Joi.string().required(),
+  staff_id: Joi.array().items(Joi.number()).required().min(1),
+  role: Joi.string().required().valid("Stuff", "Teacher")
+})
+
+export const VGetPayslip = Joi.object({
+  id: Joi.number().required(),
+  month: Joi.string().required()
+})
+
+
+export const VGetPayslipList = Joi.object({
+  category: Joi.string().required(),
+  month: Joi.string().optional()
+})
+
+export const VAddLoanOrAdvancePayment = Joi.object({
+  user_id: Joi.number().required(),
+  total_amount: Joi.number().required(),
+  monthly_return_amount: Joi.number().required()
+})
+
+export const VSingleLoan = Joi.object({
+  id: Joi.number().required(),
+})
+
+export const VUpdateLoanOrAdvancePayment = Joi.object({
+  id: Joi.number().required(),
+  user_id: Joi.number().required(),
+  total_amount: Joi.number().required(),
+  monthly_return_amount: Joi.number().required()
+})
+
+export const VGenerateStuffSalarySheet = Joi.object({
+  month: Joi.string().required()
+})
+
+export const VCreateEmployeeSalarySheet = Joi.object({
+  month: Joi.string().required(),
+  // staff_id: Joi.array().items(Joi.number()).required().min(1),
+  role: Joi.string().required().valid("Stuff", "Teacher"),
+  token : Joi.string().optional()
+})

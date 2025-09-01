@@ -4,6 +4,7 @@ import { getLeaveList } from "../services/leave.service";
 import { CustomRequest } from "../types";
 import { ApiResponse } from "../utils/ApiResponse";
 import { ErrorHandler } from "../utils/ErrorHandler";
+import { getLeaveBalance } from "../utils/getLeaveBalance";
 import {
   VCreateLeave,
   VSingleLeave,
@@ -34,18 +35,23 @@ export const createLeaveRequest = asyncErrorHandler(
         const dates = holiday.map((item) => item.date).join(", ");
         throw new ErrorHandler(
           400,
-          `${dates} ${
-            holidayCount !== null && holidayCount > 1 ? "are" : "is"
+          `${dates} ${holidayCount !== null && holidayCount > 1 ? "are" : "is"
           } holiday you cannot take leave on holiday`
         );
+      }
+
+      // need to check how much leave the employee have
+      const { count_of_from_and_to, total_available_leave } = await getLeaveBalance(client, value.employee_id, value.from_date, value.to_date);
+      if(count_of_from_and_to > total_available_leave) {
+        throw new ErrorHandler(400, `Not enough leave balance. Available: ${total_available_leave}. You Want : ${count_of_from_and_to}`);
       }
 
       const { rowCount } = await client.query(
         `
         INSERT INTO leave (employee_id, from_date, to_date, reason)
         SELECT $1, $2::date, $3::date, $4
-        WHERE $2::date >= CURRENT_DATE
-          AND $3::date >= CURRENT_DATE`,
+        -- WHERE $2::date >= CURRENT_DATE
+        --  AND $3::date >= CURRENT_DATE`,
         [value.employee_id, value.from_date, value.to_date, value.reason]
       );
 
