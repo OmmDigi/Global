@@ -2,7 +2,6 @@ import { useState } from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import PageMeta from "../../../components/common/PageMeta";
 import ComponentCard from "../../../components/common/ComponentCard";
-import Label from "../../../components/form/Label";
 import BasicTableBatch from "../../../components/tables/BasicTables/BasicTableBatch";
 import useSWRMutation from "swr/mutation";
 import { getFetcher, postFetcher, putFetcher } from "../../../api/fatcher";

@@ -64,14 +64,14 @@ const options: Option[] = [
     id: 10,
   },
   {
-    name: "Stuff Attandance",
+    name: "Staff Attendance",
     id: 11,
   },
 ];
 
 export default function CreateEmployee() {
   interface FormData {
-    id: number;
+    id?: number;
     image: string;
     name: string;
     joining_date: string;
@@ -80,6 +80,19 @@ export default function CreateEmployee() {
     ph_no: string;
     password: string;
     category: string;
+    fee_structure_teacher: {
+      course_id: string;
+      type: string;
+      class_per_month: string;
+      amount: string;
+      workshop: string;
+      extra: string;
+    }[];
+    fee_structure_stuff: {
+      fee_head: string;
+      amount: string;
+      amount_type: string;
+    }[];
     permissions: []; // proper type
     description: string;
   }
@@ -87,6 +100,7 @@ export default function CreateEmployee() {
   const [photo, setPhoto] = useState<string | null>(null);
   const [id, setId] = useState<number>();
   const [showPassword, setShowPassword] = useState(false);
+  const [teacher, setTeacher] = useState<string>("");
 
   const togglePassword = () => {
     setShowPassword((prev) => !prev);
@@ -100,10 +114,12 @@ export default function CreateEmployee() {
     email: "",
     ph_no: "",
     password: "",
-    category: "Teacher",
+    category: "",
     permissions: [],
+    fee_structure_teacher: [],
+    fee_structure_stuff: [],
     description: "",
-  });
+  } as FormData);
 
   // create employee
   const { trigger: create } = useSWRMutation(
@@ -118,6 +134,15 @@ export default function CreateEmployee() {
   );
   console.log("dataUpdate", data);
 
+  // get course list
+  const { data: courseList, isLoading: courseLoading } = useSWR(
+    "api/v1/course",
+    getFetcher
+  );
+  if (courseLoading) {
+    console.log("loading", courseLoading);
+  }
+  // get stuff list
   const {
     data: stufflist,
     isLoading: stuffLoading,
@@ -138,7 +163,20 @@ export default function CreateEmployee() {
     >
   ) => {
     const { name, value } = e.target;
-
+    // console.log("handleChange", name, value);
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+  const handleChangeCatagort = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    // console.log("handleChange", name, value);
+    setTeacher(value);
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -173,7 +211,6 @@ export default function CreateEmployee() {
       console.log("Upload Success:", response);
       setPhoto(null);
       setFormData({
-        // id: 0,
         image: "",
         name: "",
         joining_date: "",
@@ -181,14 +218,16 @@ export default function CreateEmployee() {
         email: "",
         ph_no: "",
         password: "",
-        category: "Teacher",
+        category: "",
         permissions: [],
+        fee_structure_teacher: [],
+        fee_structure_stuff: [],
         description: "",
       });
     } catch (error: any) {
       messageApi.open({
         type: "error",
-        content: error.response?.data?.message,
+        content: error.response?.data?.message ? error.response?.data?.message : " Try Again",
       });
       console.log("Upload Error:", error);
     }
@@ -238,10 +277,12 @@ export default function CreateEmployee() {
     try {
       setId(id);
       jumpToTop();
-
       const response = await getFetcher(`api/v1/users/${id}`);
       const userData = response.data;
+      console.log("userData", userData);
+
       setPhoto(userData?.image);
+      setTeacher(userData?.category);
       setFormData({
         id: id,
         image: userData?.image,
@@ -253,9 +294,31 @@ export default function CreateEmployee() {
         password: userData?.password,
         category: userData?.category,
         permissions: userData?.permissions,
+        fee_structure_teacher: Array.isArray(userData?.fee_structure_teacher)
+          ? userData.fee_structure_teacher.map((item: any) => ({
+              course_id: item.course_id || "",
+              type: item.type || "",
+              class_per_month: item.class_per_month || "",
+              amount: item.amount || "",
+              workshop: item.workshop || "",
+              extra: item.extra || "",
+            }))
+          : [
+              { course_id: "", amount: "", workshop: "", extra: "" },
+              { course_id: "", amount: "", workshop: "", extra: "" },
+            ],
+        fee_structure_stuff: Array.isArray(userData?.fee_structure_stuff)
+          ? userData.fee_structure_stuff.map((item: any) => ({
+              fee_head: item.fee_head || "",
+              amount: item.amount || "",
+              amount_type:item.amount_type || "",
+            }))
+          : [
+              { fee_head: "", amount: "",amount_type:"" },
+              { fee_head: "", amount: "",amount_type:"" },
+            ],
         description: userData?.description,
       });
-
       console.log("Edit data loaded:", userData);
     } catch (error) {
       console.error("Failed to fetch user data for edit:", error);
@@ -274,7 +337,6 @@ export default function CreateEmployee() {
       console.log("Upload Success:", response);
       setPhoto(null);
       setFormData({
-        // id: 0,
         image: "",
         name: "",
         joining_date: "",
@@ -282,8 +344,10 @@ export default function CreateEmployee() {
         email: "",
         ph_no: "",
         password: "",
-        category: "Teacher",
+        category: "",
         permissions: [],
+        fee_structure_teacher: [],
+        fee_structure_stuff: [],
         description: "",
       });
     } catch (error: any) {
@@ -295,6 +359,66 @@ export default function CreateEmployee() {
     }
   };
 
+  const handleAdd = () => {
+    setFormData((prev: any) => ({
+      ...prev,
+      fee_structure_teacher: [
+        ...prev.fee_structure_teacher,
+        { course_id: "", amount: "" },
+      ],
+    }));
+  };
+
+  const handleRemove = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      fee_structure_teacher: prev.fee_structure_teacher.filter(
+        (_, i) => i !== index
+      ),
+    }));
+  };
+
+  const handleChangeEntries = (index: number, field: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      fee_structure_teacher: prev.fee_structure_teacher.map((entry, i) =>
+        i === index ? { ...entry, [field]: value } : entry
+      ),
+    }));
+  };
+
+  // stuff
+  const handleAddStuff = () => {
+    setFormData((prev: any) => ({
+      ...prev,
+      fee_structure_stuff: [
+        ...prev.fee_structure_stuff,
+        { fee_head: "", amount: "",amount_type:"" },
+      ],
+    }));
+  };
+
+  const handleRemoveStuff = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      fee_structure_stuff: prev.fee_structure_stuff.filter(
+        (_, i) => i !== index
+      ),
+    }));
+  };
+
+  const handleChangeEntriesStuff = (
+    index: number,
+    field: string,
+    value: string
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      fee_structure_stuff: prev.fee_structure_stuff.map((entry, i) =>
+        i === index ? { ...entry, [field]: value } : entry
+      ),
+    }));
+  };
   const jumpToTop = () => {
     window.scrollTo({
       top: 0,
@@ -451,24 +575,253 @@ export default function CreateEmployee() {
                     <select
                       id="inputTwo"
                       name="category"
-                      onChange={(e) => handleChange(e)}
+                      onChange={(e) => handleChangeCatagort(e)}
                       value={formData.category}
-                      className="w-full px-3 py-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700 "
+                      className="w-full px-3 py-3 border bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
                     >
+                      <option value="">Choose</option>
                       <option value="Teacher">Teacher</option>
-                      <option value="Stuff">Stuff</option>
+                      <option value="Stuff">Staff</option>
                     </select>
                   </div>
                 </div>
+
+                {teacher == "Teacher" ? (
+                  <div>
+                    <div className="flex justify-between ">
+                      <h2 className="w-auto px-3 py-3   text-3xl   dark:hover:border-gray-800        dark:text-gray-300 text-gray-700">
+                        Teacher Payment Structure
+                      </h2>
+                      <button
+                        type="button"
+                        onClick={handleAdd}
+                        className="bg-blue-500 text-white px-4 py-2 rounded-md"
+                      >
+                        + Add More
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-6 xl:grid-cols-1">
+                      {formData?.fee_structure_teacher?.map((entry, index) => (
+                        <div key={index} className="flex gap-4 items-center">
+                          <div>
+                            <Label>Choose Course</Label>
+                            <select
+                              value={entry.course_id}
+                              onChange={(e) =>
+                                handleChangeEntries(
+                                  index,
+                                  "course_id",
+                                  e.target.value
+                                )
+                              }
+                              className="w-auto px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                            >
+                              <option value="">Choose</option>
+                              {courseList?.data?.map((opt: any, i: number) => (
+                                <option key={i} value={opt.id}>
+                                  {opt.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <Label>choose Type</Label>
+                            <select
+                              value={entry?.type as any}
+                              onChange={(e: any) =>
+                                handleChangeEntries(
+                                  index,
+                                  "type",
+                                  e.target.value
+                                )
+                              }
+                              className="w-auto px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                            >
+                              <option value="">Choose</option>
+                              <option value="fixed">Fixed</option>
+                              <option value="per_class">Per Class</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <Label>Class/month</Label>
+                            <Input
+                              type="number"
+                              placeholder="Class/month"
+                              value={entry.class_per_month}
+                              onChange={(e) =>
+                                handleChangeEntries(
+                                  index,
+                                  "class_per_month",
+                                  e.target.value
+                                )
+                              }
+                              className="flex-1 border px-3 py-1 rounded-md"
+                            />
+                          </div>
+                          <div>
+                            <Label>Amount</Label>
+                            <Input
+                              type="number"
+                              placeholder="Fees"
+                              value={entry.amount}
+                              onChange={(e) =>
+                                handleChangeEntries(
+                                  index,
+                                  "amount",
+                                  e.target.value
+                                )
+                              }
+                              className="flex-1 border px-3 py-1 rounded-md"
+                            />
+                          </div>
+                          <div>
+                            <Label>Workshop Amount</Label>
+                            <Input
+                              type="number"
+                              placeholder="workshop"
+                              value={entry.workshop}
+                              onChange={(e) =>
+                                handleChangeEntries(
+                                  index,
+                                  "workshop",
+                                  e.target.value
+                                )
+                              }
+                              className="flex-1 border px-3 py-1 rounded-md"
+                            />
+                          </div>
+                          <div>
+                            <Label>Extra Amount</Label>
+                            <Input
+                              type="number"
+                              placeholder="Extra Amount"
+                              value={entry.extra}
+                              onChange={(e) =>
+                                handleChangeEntries(
+                                  index,
+                                  "extra",
+                                  e.target.value
+                                )
+                              }
+                              className="flex-1 border px-3 py-1 rounded-md"
+                            />
+                          </div>
+
+                          {formData.fee_structure_teacher.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemove(index)}
+                              className="text-red-600 font-bold text-xl"
+                            >
+                              ×
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  ""
+                )}
+                {teacher == "Stuff" ? (
+                  <div>
+                    <div className="flex justify-between ">
+                      <h2 className="w-auto px-3 py-3   text-3xl   dark:hover:border-gray-800        dark:text-gray-300 text-gray-700">
+                        Stuff Payment Structure
+                      </h2>
+                      <button
+                        type="button"
+                        onClick={handleAddStuff}
+                        className="bg-blue-500 text-white px-4 py-2 rounded-md"
+                      >
+                        + Add More
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-6 xl:grid-cols-1">
+                      {formData?.fee_structure_stuff?.map((entry, index) => (
+                        <div key={index} className="flex gap-4 items-center">
+                          <div>
+                            <Label htmlFor="inputTwo">Salary Head</Label>
+                            <select
+                              value={entry.fee_head}
+                              onChange={(e) =>
+                                handleChangeEntriesStuff(
+                                  index,
+                                  "fee_head",
+                                  e.target.value
+                                )
+                              }
+                              className="w-auto px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                            >
+                              <option value="">Choose</option>
+                              <option value="base_salary">Base Salary</option>
+                              <option value="HRA">HRA</option>
+                              <option value="MEDICAL">MEDICAL</option>
+                              <option value="P_tax">P Tax</option>
+                            </select>
+                          </div>
+                          <div>
+                            <Label htmlFor="inputTwo">Amount</Label>
+                            <Input
+                              type="number"
+                              placeholder="Fees"
+                              value={entry.amount}
+                              onChange={(e) =>
+                                handleChangeEntriesStuff(
+                                  index,
+                                  "amount",
+                                  e.target.value
+                                )
+                              }
+                              className="flex-1 border px-3 py-1 rounded-md"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="inputTwo">Amount Type</Label>
+                            <select
+                              value={entry.amount_type}
+                              onChange={(e) =>
+                                handleChangeEntriesStuff(
+                                  index,
+                                  "amount_type",
+                                  e.target.value
+                                )
+                              }
+                              className="w-auto px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                            >
+                              <option value="">Choose</option>
+                              <option value="addition">Addition</option>
+                              <option value="deduction">Deduction</option>
+                            </select>
+                          </div>
+
+                          {formData.fee_structure_stuff.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveStuff(index)}
+                              className="text-red-600 font-bold text-xl"
+                            >
+                              ×
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  ""
+                )}
+
                 <div>
                   <MultiSelect
                     label="permissions"
                     options={options as any}
                     onChange={(selected) => handleNameChange(selected)}
-                    value={options.filter((opt: any) =>
-                      formData?.permissions?.includes(opt.id )
-                    ) }
-                    className="w-full h-auto px-3 py-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                    defaultSelected={formData?.permissions}
+                    // className="w-full h-auto px-3 py-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
                   />
                 </div>
 

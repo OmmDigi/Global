@@ -4,6 +4,7 @@ import useSWR from "swr";
 import { getFetcher } from "../../api/fatcher";
 import { useState } from "react";
 import DatePicker from "react-datepicker";
+import dayjs from "dayjs";
 
 export default function MonthlyIncome() {
   const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
@@ -12,13 +13,13 @@ export default function MonthlyIncome() {
   ]);
   const [startDate, endDate] = dateRange;
   // get course list
-  console.log("dateRange", startDate);
+  console.log("dateRange", dayjs(dateRange[0]).format("YYYY-MM-DD"));
 
   const { data: income, isLoading: incomeLoading } = useSWR(
-    "api/v1/dashboard/income",
-    getFetcher
-  );
-
+    `api/v1/dashboard/income${
+      dateRange[0]
+        ? `?from_date=${dayjs(dateRange[0]).format(
+            "YYYY-MM-DD")}&to_date=${dayjs(dateRange[1]).format("YYYY-MM-DD")}`: ""}`,getFetcher);  
   if (incomeLoading) {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }
@@ -70,7 +71,7 @@ export default function MonthlyIncome() {
             isClearable={true}
             dateFormat="dd/MM/yyyy"
             placeholderText="Select date range"
-            className="border right-0 rounded-md px-3 py-1 text-sm dark:bg-gray-800 dark:text-white"
+            className="border rounded-md px-3 py-1 text-sm dark:bg-gray-800 dark:text-white"
             calendarClassName="!bg-white dark:!bg-gray-200"
           />
         </div>

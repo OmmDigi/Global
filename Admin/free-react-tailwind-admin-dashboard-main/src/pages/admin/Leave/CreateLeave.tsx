@@ -5,47 +5,42 @@ import ComponentCard from "../../../components/common/ComponentCard";
 import Label from "../../../components/form/Label";
 import useSWRMutation from "swr/mutation";
 import { getFetcher, postFetcher } from "../../../api/fatcher";
-import {  message } from "antd";
+import { message } from "antd";
 import useSWR, { mutate } from "swr";
-import { DatePicker, Space } from "antd";
-import { RangePickerProps } from "antd/es/date-picker";
 import BasicTablecreateLeave from "../../../components/tables/BasicTables/BasicTablecreateLeave";
-
-const { RangePicker } = DatePicker;
+import DatePicker from "react-datepicker";
+import dayjs from "dayjs";
 
 export default function CreateLeave() {
   const [messageApi, contextHolder] = message.useMessage();
-  const [date, setDate] = useState([]);
   const [formData, setFormData] = useState({
     date: [],
     description: "",
   });
+    const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
+    null,
+    null,
+  ]);
+  const [startDate, endDate] = dateRange;
 
+  const { data: leaveList, isLoading: leaveLoading } = useSWR(
+    "api/v1/users/leave",
+    getFetcher
+  );
   //   create Leave
-  const {
-    trigger: create,
-   
-  } = useSWRMutation("api/v1/leave", (url, { arg }) => postFetcher(url, arg));
-
-const {
-  data: leaveList,
-  isLoading: leaveLoading,
-} = useSWR("api/v1/users/leave", getFetcher);
+  const { trigger: create } = useSWRMutation("api/v1/leave", (url, { arg }) =>
+    postFetcher(url, arg)
+  );
 
 
+  if (leaveLoading) {
+    return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
+    console.log("leaveList", leaveList);
+  }
 
-if (leaveLoading) {
-  return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>
-console.log("leaveList", leaveList);;
-}
 
-
-  const onOk = (value: RangePickerProps["value"]) => {
-    setDate(value as any);
-    // console.log("onOk", value[0]);
-  };
-
-  
+  // get course list
+  console.log("dateRange", dayjs(dateRange[0]).format("YYYY-MM-DD"));
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -59,11 +54,9 @@ console.log("leaveList", leaveList);;
     }));
   };
 
-
-
   const newFormDate = {
-    from_date: date[0],
-    to_date: date[1],
+    from_date: dayjs(dateRange[0]).format("YYYY-MM-DD"),
+    to_date: dayjs(dateRange[1]).format("YYYY-MM-DD"),
     reason: formData?.description,
   };
 
@@ -93,7 +86,6 @@ console.log("leaveList", leaveList);;
       console.log("Upload Error:", error);
     }
   };
- 
 
   return (
     <div>
@@ -111,13 +103,19 @@ console.log("leaveList", leaveList);;
                 <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
                   <div>
                     <Label htmlFor="inputTwo">Date Range</Label>
-                    <Space direction="vertical" size={12}>
-                      <RangePicker
-                        onChange={( dateString) => onOk(dateString)}
-                        // onOk={onOk}
-                        format="YYYY-MM-DD"
-                      />
-                    </Space>
+                    <DatePicker
+                      selectsRange={true}
+                      startDate={startDate}
+                      endDate={endDate}
+                      onChange={(update) => {
+                        setDateRange(update);
+                      }}
+                      isClearable={true}
+                      dateFormat="dd/MM/yyyy"
+                      placeholderText="Select date range"
+                      className="border rounded-md px-3 py-1 text-sm dark:bg-gray-800 dark:text-white"
+                      calendarClassName="!bg-white dark:!bg-gray-200"
+                    />
                   </div>
                   <div>
                     <Label>Description</Label>
@@ -137,14 +135,12 @@ console.log("leaveList", leaveList);;
 
                 <div className="flex flex-wrap justify-center items-center gap-6">
                   <div className="flex items-center gap-5">
-                    
-                      <button
-                        type="submit"
-                        className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-                      >
-                        Submit
-                      </button>
-                  
+                    <button
+                      type="submit"
+                      className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                    >
+                      Submit
+                    </button>
                   </div>
                 </div>
               </form>

@@ -10,10 +10,15 @@ import { message } from "antd";
 import useSWR, { mutate } from "swr";
 import BasicTableFeesHead from "../../../components/tables/BasicTables/BasicTableFeesHead";
 
+type FormDataType = {
+  id?: number; // optional (if sometimes missing)
+  name: string;
+};
+
 export default function FeeHead() {
   const [messageApi, contextHolder] = message.useMessage();
   const [id, setId] = useState<number>(0);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormDataType>({
     name: "",
   });
 

@@ -1,12 +1,12 @@
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import PageMeta from "../../../components/common/PageMeta";
 import ComponentCard from "../../../components/common/ComponentCard";
 import BasicTableAdmission from "../../../components/tables/BasicTables/BasicTableAdmission";
 
-import { Button, message, Steps, theme } from "antd";
+import { Button, message, theme } from "antd";
 import { Minus, Plus, Upload, X } from "lucide-react";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import {
   getFetcher,
   patchFetcher,
@@ -16,6 +16,8 @@ import {
 } from "../../../api/fatcher";
 import useSWRMutation from "swr/mutation";
 import { uploadFiles } from "../../../utils/uploadFile";
+import dayjs from "dayjs";
+import DatePicker from "react-datepicker";
 
 const initialFormData = {
   courseName: "",
@@ -97,7 +99,6 @@ const initialFormData = {
   password: "",
 };
 
-
 export default function AdmissionAdmin() {
   const [messageApi, contextHolder] = message.useMessage();
   const { token } = theme.useToken();
@@ -107,45 +108,87 @@ export default function AdmissionAdmin() {
   const [id, setId] = useState<number>();
   const [editedFormId, setEditedFormId] = useState<number>(-1);
   const [formData, setFormData] = useState(initialFormData);
+  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
+    null,
+    null,
+  ]);
+  const [startDate, endDate] = dateRange;
+  const [course, setCourse] = useState<number>(0);
+  const [batch, setBatch] = useState<any>(0);
+  const [searchData, setSearchData] = useState<any>({});
+  const [formSearch,setFormSearch] = useState <string>("")
+    const [pageCount, setPageCount] = useState<number>(1);
 
-
-  const steps = [
-    {
-      title: "First",
-      content: "First-content",
-    },
-    {
-      title: "Second",
-      content: "Second-content",
-    },
-    {
-      title: "Last",
-      content: "Last-content",
-    },
-  ]
-
+  // get course list
+  console.log("dateRange", dayjs(dateRange[0]).format("YYYY-MM-DD"));
+  // const steps = [
+  //   {
+  //     title: "First",
+  //     content: "First-content",
+  //   },
+  //   {
+  //     title: "Second",
+  //     content: "Second-content",
+  //   },
+  //   {
+  //     title: "Last",
+  //     content: "Last-content",
+  //   },
+  // ]
 
   // get Course list
   const {
     data: courseList,
     // isLoading: courseLoading,
-  } = useSWR("api/v1/course/dropdown", getFetcher);
+  } = useSWR(`api/v1/course/dropdown`, getFetcher);
   // if (courseLoading) {
   //   return <div>Loading ...</div>;
   // }
-  console.log("courseList", courseList);
-
+const handleChildData = (data:any) => {
+    setPageCount(data);
+  };
   // get Admission list
   const {
     data: admissionlist,
     isLoading: admissionLoading,
     mutate,
-  } = useSWR("api/v1/admission", getFetcher);
-  if (admissionLoading) {
-    console.log("loading", admissionLoading);
-  }
+  } = useSWR(`api/v1/admission?page=${pageCount}`, getFetcher);
 
-  console.log("admissionlist", admissionlist);
+  const handleSearch = async () => {
+    if (dateRange[0] && dateRange[0] && course && batch) {
+      const response = await getFetcher(
+        `api/v1/admission?from_date=${dayjs(dateRange[0]).format(
+          "YYYY-MM-DD"
+        )}&to_date=${dayjs(dateRange[1]).format(
+          "YYYY-MM-DD"
+        )}&course=${course}&batch=${batch}`
+      );
+      if (response) {
+        setSearchData(response);
+      }
+    } else {
+      messageApi.open({
+        type: "error",
+        content: "Please Select all Input Fields",
+      });
+    }
+  };
+
+    const handleFormSearch = async () => {
+    if (formSearch) {
+      const response = await getFetcher(
+        `api/v1/admission?form_no=${formSearch}`
+      );
+      if (response) {
+        setSearchData(response);
+      }
+    } else {
+      messageApi.open({
+        type: "error",
+        content: "Please Select all Input Fields",
+      });
+    }
+  }
 
   const { trigger: create } = useSWRMutation(
     "api/v1/admission/create",
@@ -166,6 +209,7 @@ export default function AdmissionAdmin() {
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
+    setBatch(value);
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -393,8 +437,6 @@ export default function AdmissionAdmin() {
     setCurrent(current - 1);
   };
 
-  const items = steps.map((item) => ({ key: item.title, title: item.title }));
-
   const contentStyle = {
     // textAlign: "center",
     color: token.colorTextTertiary,
@@ -407,13 +449,21 @@ export default function AdmissionAdmin() {
 
   const handleCourseChange = (e: any) => {
     const { name, value } = e.target;
+    console.log("handleCourseChange", value);
+    setCourse(value);
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
     const courseId = parseInt(e.target.value);
     setSelectedCourseId(courseId as any);
-  };
+  }; 
+
+  const FormSearch = (e:any) => {
+     const { value } = e.target;
+setFormSearch(value)
+  }
+
 
   const selectedCourse = Array.isArray(courseList?.data)
     ? courseList?.data?.find((course: any) => course.id == selectedCourseId)
@@ -431,7 +481,7 @@ export default function AdmissionAdmin() {
         <div className="space-y-6 ">
           <ComponentCard title="Admission">
             {/* form body  */}
-
+    
             <div
               onClick={
                 montessoriTeachers ? handleTeacherShow : handleTeacherClose
@@ -833,12 +883,12 @@ export default function AdmissionAdmin() {
                                           {level === "madhyamik"
                                             ? "Madhyamik"
                                             : level === "hsH2"
-                                              ? "H.S/H-2"
-                                              : level === "degree"
-                                                ? "Degree"
-                                                : level === "pg"
-                                                  ? "PG"
-                                                  : "Others (Specify)"}
+                                            ? "H.S/H-2"
+                                            : level === "degree"
+                                            ? "Degree"
+                                            : level === "pg"
+                                            ? "PG"
+                                            : "Others (Specify)"}
                                         </td>
                                         <td className="border border-gray-300 p-2">
                                           <input
@@ -1004,33 +1054,33 @@ export default function AdmissionAdmin() {
                                   />
                                   {formData?.selfAttestedLastResult?.length >
                                     0 && (
-                                      <div className="mt-2 space-y-1">
-                                        {formData?.selfAttestedLastResult?.map(
-                                          (file: any, index: number) => (
-                                            <div
-                                              key={index}
-                                              className="flex items-center justify-between bg-gray-50 p-2 rounded text-sm"
+                                    <div className="mt-2 space-y-1">
+                                      {formData?.selfAttestedLastResult?.map(
+                                        (file: any, index: number) => (
+                                          <div
+                                            key={index}
+                                            className="flex items-center justify-between bg-gray-50 p-2 rounded text-sm"
+                                          >
+                                            <span className="truncate">
+                                              {file?.name}
+                                            </span>
+                                            <button
+                                              type="button"
+                                              onClick={() =>
+                                                removeFile2(
+                                                  "selfAttestedLastResult",
+                                                  index
+                                                )
+                                              }
+                                              className="text-red-500 hover:text-red-700 ml-2"
                                             >
-                                              <span className="truncate">
-                                                {file?.name}
-                                              </span>
-                                              <button
-                                                type="button"
-                                                onClick={() =>
-                                                  removeFile2(
-                                                    "selfAttestedLastResult",
-                                                    index
-                                                  )
-                                                }
-                                                className="text-red-500 hover:text-red-700 ml-2"
-                                              >
-                                                ×
-                                              </button>
-                                            </div>
-                                          )
-                                        )}
-                                      </div>
-                                    )}
+                                              ×
+                                            </button>
+                                          </div>
+                                        )
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
 
                                 <div>
@@ -1703,16 +1753,16 @@ export default function AdmissionAdmin() {
                               </button>
                             )}
                           </div>
-                        ) : <Button type="primary" onClick={(e) => {
-                          // e.stopPropagation();
-                          // e.preventDefault();
-                          next()
-                        }}>
-                          Next
-                        </Button>}
-
-
-
+                        ) : (
+                          <Button
+                            type="primary"
+                            onClick={() => {
+                              next();
+                            }}
+                          >
+                            Next
+                          </Button>
+                        )}
                       </div>
                     </form>
                   </div>
@@ -1725,10 +1775,98 @@ export default function AdmissionAdmin() {
               </h3>
             </div>
 
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-4">
+              <div>
+                <label className="block text-sm font-bold text-gray-500 mb-1">
+                  Select date range
+                </label>
+                <DatePicker
+                  selectsRange={true}
+                  startDate={startDate}
+                  endDate={endDate}
+                  onChange={(update) => {
+                    setDateRange(update);
+                  }}
+                  isClearable={true}
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="dd/MM/yyyy - dd/MM/yyyy"
+                  className="border rounded-md px-3 py-2 text-sm dark:bg-gray-800 dark:text-white"
+                  calendarClassName="!bg-white dark:!bg-gray-200"
+                />
+              </div>
+              <div className="  mb-4">
+                <label className="block text-sm font-bold text-gray-500 mb-1">
+                  Choose your Courses
+                </label>
+                <select
+                  key={editedFormId + "courseName"}
+                  name="courseName"
+                  disabled={id ? true : false}
+                  defaultValue={formData?.courseName}
+                  // value={formData.courseName}
+                  onChange={handleCourseChange}
+                  className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 "
+                >
+                  <option value="">Option</option>
+                  {courseList?.data?.map((data: any, index: number) => (
+                    <option key={index} value={`${data?.id}`}>
+                      {data?.course_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-500 mb-1">
+                  Choose your Batch
+                </label>
+                <select
+                  key={editedFormId + "batchName"}
+                  name="batchName"
+                  disabled={id ? true : false}
+                  defaultValue={formData.batchName}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Option</option>
+                  {selectedCourse?.batch?.map((batch: any, index: number) => (
+                    <option key={index} value={`${batch?.batch_id}`}>
+                      {batch.month_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex justify-end mt-5">
+                <Button type="primary" onClick={handleSearch}>
+                  Search
+                </Button>
+              </div>
+            </div>
+            <div>
+              <div>
+                <label className="block text-sm text-start text-gray-500 mb-1">
+                  Search by Form No
+                </label>
+                <input
+                  type="text"
+                  name="form_no"
+                  onChange={FormSearch}
+                  className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md"
+                />
+              </div>
+              <div className="flex justify-end mt-5">
+                <Button type="primary"
+                 onClick={handleFormSearch}
+                 >
+                  Search
+                </Button>
+              </div>
+            </div>
             <BasicTableAdmission
-              admissionlist={admissionlist}
+              admissionlist={searchData?.data ? searchData : admissionlist}
               onEdit={handleEdit}
               onActive={handleActive}
+            onSendData={handleChildData}
             />
           </ComponentCard>
         </div>

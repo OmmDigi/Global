@@ -40,8 +40,11 @@ function page() {
     if (e.target.value === "Teacher") {
       setColor("bg-green-100");
     }
+     if (e.target.value === "Stuff") {
+      setColor("bg-yellow-100");
+    }
     if (e.target.value === "Student") {
-      setColor("bg-blue-100");
+      setColor("bg-blue-200");
     }
     setFormData((prev) => ({
       ...prev,
@@ -201,7 +204,8 @@ function page() {
                   >
                     <option value="">Choose</option>
                     <option value="Student">Student</option>
-                    <option value="Stuff">Stuff</option>
+                    <option value="Teacher">Teacher</option>
+                    <option value="Stuff">Staff</option>
                     <option value="Admin">Admin</option>
                   </select>
                 </div>

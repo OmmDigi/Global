@@ -10,11 +10,18 @@ import { message } from "antd";
 import useSWR, { mutate } from "swr";
 import BasicTableVendor from "../../../components/tables/BasicTables/BasicTableVendor";
 
+type FormDataType = {
+  id?: number; // optional (if sometimes missing)
+  name: string;
+  service_type?: string;
+  address?: string;
+  contact_details?: string;
+};
 export default function VendorManage() {
   const [messageApi, contextHolder] = message.useMessage();
   const [id, setId] = useState<number>(0);
-  const [formData, setFormData] = useState({
-    // id: "",
+  const [formData, setFormData] = useState<FormDataType>({
+ 
     name: "",
     service_type: "",
     address: "",
@@ -90,7 +97,6 @@ export default function VendorManage() {
       console.log("Upload Success:", response);
 
       setFormData({
-       
         name: "",
         service_type: "",
         address: "",
@@ -173,10 +179,10 @@ export default function VendorManage() {
         title="React.js Form Elements Dashboard | TailAdmin - React.js Admin Dashboard Template"
         description="This is React.js Form Elements Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
-      <PageBreadcrumb pageTitle="Sessions" />
+      <PageBreadcrumb pageTitle="Vendors" />
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-1">
         <div className="space-y-6 ">
-          <ComponentCard title="Create New Sessions">
+          <ComponentCard title="Create New Vendors">
             <div className="space-y-6">
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">

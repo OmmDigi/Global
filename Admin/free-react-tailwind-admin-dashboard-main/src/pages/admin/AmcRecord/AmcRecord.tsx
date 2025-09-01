@@ -18,51 +18,61 @@ import {
 import useSWRMutation from "swr/mutation";
 import useSWR, { mutate } from "swr";
 import { message } from "antd";
+import BasicTableAmc from "../../../components/tables/BasicTables/BasicTableAmc";
 
 type FormDataType = {
   id?: number; // optional (if sometimes missing)
   file: string;
-  name: string;
-  bill_no: string;
-  per_item_rate: string;
-  company_details: string;
-  purchase_date: string;
-  expaire_date: string;
-  previousBalance: number;
-  presentBalance: number;
-  quantityReceived: number;
+  product_name: string;
+  contract_from: string;
+  contract_to: string;
+  time_duration: string;
+  company_name: string;
+  renewal_date: string;
+  expiry_date: string;
 };
-export default function PurchaseRecord() {
+export default function AmcRecord() {
   const [messageApi, contextHolder] = message.useMessage();
-  const [purchaseRecord, setPurchaseRecord] = useState(false);
+  const [amcRecord, setAmcRecord] = useState(false);
+
+  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
+    null,
+    null,
+  ]);
+  const [startDate, endDate] = dateRange;
 
   const [photo, setPhoto] = useState<string | null>(null);
   const [id, setId] = useState<number>();
   const [formData, setFormData] = useState<FormDataType>({
     // id: 0,
     file: "",
-    name: "",
-    bill_no: "",
-    per_item_rate: "",
-    company_details: "",
-    purchase_date: "",
-    expaire_date: "",
-    previousBalance: 0,
-    presentBalance: 0,
-    quantityReceived: 0,
+    product_name: "",
+    contract_from: "",
+    contract_to: "",
+    time_duration: "",
+    company_name: "",
+    renewal_date: "",
+    expiry_date: "",
   });
 
-  // get purchaseList
-  const { data: purchaseList } = useSWR("api/v1/purchase", getFetcher);
+  // all employee list
+
   // create Holiday
   const { trigger: create } = useSWRMutation(
-    "api/v1/purchase",
+    "api/v1/inventory/amc",
     (url, { arg }) => postFetcher(url, arg)
   );
 
+  // get purchaseList
+  const { data: amcList, isLoading: amcLoding } = useSWR(
+    "api/v1/inventory/amc",
+    getFetcher
+  );
+
   // Update purchaseList
+
   const { trigger: update } = useSWRMutation(
-    "api/v1/purchase",
+    "api/v1/inventory/amc",
     (url, { arg }) => putFetcher(url, arg)
   );
 
@@ -83,15 +93,13 @@ export default function PurchaseRecord() {
       setPhoto(null);
       setFormData({
         file: "",
-        name: "",
-        bill_no: "",
-        per_item_rate: "",
-        company_details: "",
-        purchase_date: "",
-        expaire_date: "",
-        previousBalance: 0,
-        presentBalance: 0,
-        quantityReceived: 0,
+        product_name: "",
+        contract_from: "",
+        contract_to: "",
+        time_duration: "",
+        company_name: "",
+        renewal_date: "",
+        expiry_date: "",
       });
     } catch (error: any) {
       messageApi.open({
@@ -154,22 +162,20 @@ export default function PurchaseRecord() {
   const handleEdit = async (id: number) => {
     try {
       setId(id);
-      const response = await getFetcher(`api/v1/purchase/${id}`);
+      const response = await getFetcher(`api/v1/inventory/amc/${id}`);
       const userData = response.data;
       setFormData({
         id: id,
-        name: userData?.name,
+        product_name: userData?.product_name,
         file: userData?.file,
-        bill_no: userData?.bill_no,
-        per_item_rate: userData?.per_item_rate,
-        company_details: userData?.company_details,
-        purchase_date: userData?.purchase_date,
-        expaire_date: userData?.expaire_date,
-        previousBalance: userData?.previousbalance,
-        presentBalance: userData?.presentbalance,
-        quantityReceived: userData?.quantityreceived,
+        contract_from: userData?.contract_from,
+        contract_to: userData?.contract_to,
+        time_duration: userData?.time_duration,
+        company_name: userData?.company_name,
+        renewal_date: userData?.renewal_date,
+        expiry_date: userData?.expiry_date,
       });
-      setPurchaseRecord(true);
+      setAmcRecord(true);
       setPhoto(userData?.file);
     } catch (error) {
       console.error("Failed to fetch user data for edit:", error);
@@ -187,38 +193,33 @@ export default function PurchaseRecord() {
         content: response.message,
       });
       console.log("Upload Success:", response);
-      setPhoto(null);
       setId(0);
-      setPurchaseRecord(false);
-
+      setPhoto(null);
       setFormData({
         file: "",
-        name: "",
-        bill_no: "",
-        per_item_rate: "",
-        company_details: "",
-        purchase_date: "",
-        expaire_date: "",
-        previousBalance: 0,
-        presentBalance: 0,
-        quantityReceived: 0,
+        product_name: "",
+        contract_from: "",
+        contract_to: "",
+        time_duration: "",
+        company_name: "",
+        renewal_date: "",
+        expiry_date: "",
       });
+      setAmcRecord(false);
     } catch (error: any) {
       messageApi.open({
         type: "error",
-        content: error.response?.data?.message
-          ? error.response?.data?.message
-          : "Try Again ",
+        content: error.response?.data?.message,
       });
       console.log("Upload Error:", error);
     }
   };
   const handleTeacherShow = () => {
     jumpToTop();
-    setPurchaseRecord(false);
+    setAmcRecord(false);
   };
   const handleTeacherClose = () => {
-    setPurchaseRecord(true);
+    setAmcRecord(true);
   };
   const jumpToTop = () => {
     window.scrollTo({
@@ -234,27 +235,27 @@ export default function PurchaseRecord() {
         title="React.js Form Elements Dashboard | TailAdmin - React.js Admin Dashboard Template"
         description="This is React.js Form Elements Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
-      <PageBreadcrumb pageTitle="Purchase Record" />
+      <PageBreadcrumb pageTitle="AMC Record" />
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-1">
         <div className="space-y-6 ">
-          <ComponentCard title="Purchase Record">
+          <ComponentCard title="AMC Record">
             <div
-              onClick={purchaseRecord ? handleTeacherShow : handleTeacherClose}
+              onClick={amcRecord ? handleTeacherShow : handleTeacherClose}
               className="cursor-pointer text-gray-500 hover:text-gray-500 dark:text-gray-300  flex items-center justify-center"
             >
-              {purchaseRecord ? (
+              {amcRecord ? (
                 <div className="flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-gray-800 p-2">
                   <Minus className="text-red-500" size={50} />
-                  <div className="text-2xl"> Add Purchase Record </div>
+                  <div className="text-2xl"> Add AMC Record </div>
                 </div>
               ) : (
                 <div className="flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-gray-800 p-2">
                   <Plus size={50} />
-                  <div className="text-2xl">Add Purchase Record </div>
+                  <div className="text-2xl">Add AMC Record </div>
                 </div>
               )}
             </div>
-            {purchaseRecord ? (
+            {amcRecord ? (
               <form
                 onSubmit={handleSubmit}
                 encType="multipart/form-data"
@@ -262,117 +263,94 @@ export default function PurchaseRecord() {
               >
                 <div className="space-y-6">
                   <div>
-                    <Label htmlFor="inputTwo">Item Name</Label>
+                    <Label htmlFor="inputTwo">Product name</Label>
                     <Input
                       type="text"
                       id="inputTwo"
-                      name="name"
+                      name="product_name"
                       onChange={handleChange}
-                      value={formData?.name}
+                      value={formData?.product_name}
                       placeholder="Item Name"
                     />
                   </div>
 
                   <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
                     <div>
-                      <Label htmlFor="inputTwo">Bill No</Label>
+                      <Label>Company Name </Label>
                       <Input
-                        type="number"
                         id="inputTwo"
-                        name="bill_no"
+                        type="text"
+                        name="company_name"
+                        value={formData?.company_name}
                         onChange={handleChange}
-                        value={formData?.bill_no}
-                        placeholder="Bill No"
-                      />
-                    </div>
-                    <div>
-                      <Label>Per Item Rate</Label>
-                      <Input
-                        type="number"
-                        id="inputTwo"
-                        name="per_item_rate"
-                        onChange={handleChange}
-                        value={formData?.per_item_rate}
-                        placeholder="Per Item Rate"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-                    <div>
-                      <Label>Company Name , Address , PH No</Label>
-                      <textarea
-                        id="inputTwo"
-                        name="company_details"
-                        value={formData?.company_details}
-                        onChange={handleChange}
-                        placeholder="Company Name , Address , PH No"
-                        rows={3}
+                        placeholder="Company Name"
                         className="w-full border rounded px-4 py-2 text-gray-700 dark:text-gray_400 dark:text-gray-400 "
                       />
                     </div>
                     <div>
-                      <Label>Date of Purchase</Label>
+                      <Label>Amc Time Duration</Label>
+                      <Input
+                        type="text"
+                        id="inputTwo"
+                        name="time_duration"
+                        onChange={handleChange}
+                        value={formData?.time_duration}
+                        placeholder="Amc Time Duration"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                    <div>
+                      <Label>Contract from</Label>
                       <Input
                         type="date"
                         id="inputTwo"
-                        name="purchase_date"
+                        name="contract_from"
                         onChange={handleChange}
-                        value={formData?.purchase_date}
+                        value={formData?.contract_from}
                         placeholder="Date of Purchase"
                       />
                     </div>
-                  </div>
-                  <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
                     <div>
-                      <Label>Expaire Date</Label>
+                      <Label>Contract to</Label>
                       <Input
                         type="date"
                         id="inputTwo"
-                        name="expaire_date"
+                        name="contract_to"
                         onChange={handleChange}
-                        value={formData?.expaire_date}
+                        value={formData?.contract_to}
                         placeholder="Expaire Date"
-                      />
-                    </div>
-                    <div>
-                      <Label>Previous Balance</Label>
-                      <Input
-                        type="number"
-                        id="inputTwo"
-                        name="previousBalance"
-                        onChange={handleChange}
-                        value={formData?.previousBalance}
-                        placeholder="Previous Balance"
                       />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
                     <div>
-                      <Label>Present Balance</Label>
+                      <Label>Renewal date</Label>
                       <Input
-                        type="number"
+                        type="date"
                         id="inputTwo"
-                        name="presentBalance"
+                        name="renewal_date"
                         onChange={handleChange}
-                        value={formData?.presentBalance}
-                        placeholder="Present Balance"
+                        value={formData?.renewal_date}
+                        placeholder="Date of Purchase"
                       />
                     </div>
                     <div>
-                      <Label>Quantity Received</Label>
+                      <Label>Warrenty expiry date</Label>
                       <Input
-                        type="number"
+                        type="date"
                         id="inputTwo"
-                        name="quantityReceived"
+                        name="expiry_date"
                         onChange={handleChange}
-                        value={formData?.quantityReceived}
-                        placeholder="Quantity Received"
+                        value={formData?.expiry_date}
+                        placeholder="Expaire Date"
                       />
                     </div>
                   </div>
+
                   {/* photo  */}
-                  <div className="flex justify-center">
-                    <div className="w-32 h-40 border-2 border-gray-400 flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-800">
+                  <div className="ml-4 flex  justify-center">
+                    <div className="w-32 h-40 border-2 border-gray-400 flex flex-col items-center justify-center bg-gray-50">
                       {photo ? (
                         <div className="relative w-full h-full">
                           <img
@@ -418,7 +396,7 @@ export default function PurchaseRecord() {
                       {id ? (
                         <div
                           onClick={handleUpdate}
-                          className="px-6 py-2 pointer bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                          className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
                         >
                           Update
                         </div>
@@ -435,10 +413,7 @@ export default function PurchaseRecord() {
                 </div>
               </form>
             ) : null}
-            <BasicTablePurchase
-              purchaseList={purchaseList}
-              onEdit={handleEdit}
-            />
+            <BasicTableAmc amcList={amcList} onEdit={handleEdit} />
           </ComponentCard>
         </div>
       </div>

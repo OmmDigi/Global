@@ -44,7 +44,7 @@ export const Gallery = () => {
 
       <LightGallery
         elementClassNames="flex  flex-wrap gap-4 md:gap-8 justify-center max-w-10xl mx-auto"
-        plugins={[lgZoom, lgHash ,lgShare]}
+        plugins={[lgZoom, lgHash ]}
         speed={500}
       >
         {galleryMap[activeGallery].map(({ src, thumb, html }, i) => (

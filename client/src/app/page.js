@@ -24,6 +24,8 @@ import { Gallery } from "@/components/Gallery";
 import Slider from "react-slick";
 import { useEffect, useState } from "react";
 import SocialMedia from "@/components/SocialMedia";
+import HomeCarousal from "@/components/HomeCarousal";
+import PhoneNumber from "@/components/PhoneNumber";
 
 const navigation1 = [
   { name: "HOME", href: "#" },
@@ -145,17 +147,12 @@ const slides = [
 ];
 export default function Home() {
   const [ref, inView] = useInView({ triggerOnce: true });
-  const [current, setCurrent] = useState(0);
   const [currentText, setCurrentText] = useState("");
   const [textIndex, setTextIndex] = useState(0);
   const careerTexts = ["Career", "Future", "Dream Job", "Path", "Opportunity"];
 
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     setCurrent((prev) => (prev + 1) % slides.length);
-  //   }, 3000);
-  //   return () => clearInterval(interval);
-  // }, []);
+
+
   
 
   // useEffect(() => {
@@ -286,8 +283,8 @@ export default function Home() {
                   </Marquee>
                 </div>
               </div>
-
-              <div className="relative w-full h-[200px] md:h-[400px]">
+           {/* carousal */}
+              {/* <div className="relative w-full h-[200px] md:h-[400px]">
                 <div className="absolute top-0  w-full h-full">
                   {slides.map((slide, index) => (
                     <div
@@ -311,13 +308,15 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-              </div>
+              </div> */}
+              <HomeCarousal/>
+
             </div>
           </div>
         </div>
 
         {/* Your Phone Number */}
-        <div className="flex relative justify-center w-full z-12">
+        {/* <div className="flex relative justify-center w-full z-12">
           <section className="bg-blue-500 py-1  w-12/12 md:w-[96%]   ">
             <div className="container mx-auto flex flex-col md:flex-row items-center ">
               <div className="w-full md:w-1/2 text-center  md:text-left">
@@ -362,7 +361,8 @@ export default function Home() {
               </div>
             </div>
           </section>
-        </div>
+        </div> */}
+        <PhoneNumber/>
 
         {/* carousal card section  */}
         <div className=" grid grid-cols-1 md:grid-cols-1  relative mt-[-140] bg-gray-200 overflow-hidden">
@@ -391,7 +391,7 @@ export default function Home() {
                     className="min-w-[300px]  bg-white shadow-md hover:shadow-xl cursor-pointer transition"
                   >
                     <img
-                      src="https://globaltechnicalinstitute.com/wp-content/uploads/2025/04/teach-tra.webp"
+                      src="/image/teach-tra.webp"
                       alt="Teacher Training"
                       className="   w-full h-48 object-cover p-5"
                     />
@@ -418,7 +418,7 @@ export default function Home() {
                     className="min-w-[300px]  gap-10 bg-white shadow-md hover:shadow-xl cursor-pointer transition"
                   >
                     <img
-                      src="https://globaltechnicalinstitute.com/wp-content/uploads/2025/04/nurse-tra02a.webp"
+                      src="/image/nurse-tra.webp"
                       alt="Nursing Training"
                       className="   w-full h-48 object-cover p-5"
                     />
@@ -445,7 +445,7 @@ export default function Home() {
                     className="min-w-[300px]  gap-10 bg-white shadow-md hover:shadow-xl cursor-pointer transition"
                   >
                     <img
-                      src="https://globaltechnicalinstitute.com/wp-content/uploads/2025/04/labtrain01.webp"
+                      src="/image/labtrain.webp"
                       alt="Lab Technician Training"
                       className="   w-full h-48 object-cover p-5"
                     />
@@ -472,7 +472,7 @@ export default function Home() {
                     className="min-w-[300px]  gap-10 bg-white shadow-md hover:shadow-xl cursor-pointer transition"
                   >
                     <img
-                      src="https://globaltechnicalinstitute.com/wp-content/uploads/2025/04/ecg-train.webp"
+                      src="/image/ecg-train.webp"
                       alt="ECG Technician Training"
                       className="   w-full h-48 object-cover p-5"
                     />
@@ -499,7 +499,7 @@ export default function Home() {
                     className="min-w-[300px]  gap-10 bg-white shadow-md hover:shadow-xl cursor-pointer transition"
                   >
                     <img
-                      src="https://globaltechnicalinstitute.com/wp-content/uploads/2025/04/physio01t.webp"
+                      src="/image/physio.webp"
                       alt="Physiotherapy Training"
                       className="   w-full h-48 object-cover p-5"
                     />

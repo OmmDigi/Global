@@ -6,6 +6,8 @@ import { MdWorkOutline } from "react-icons/md";
 import { MdOutlineInventory } from "react-icons/md";
 import { BiPurchaseTagAlt } from "react-icons/bi";
 import { PiOfficeChairDuotone } from "react-icons/pi";
+import { GrHostMaintenance } from "react-icons/gr";
+import { TbReport } from "react-icons/tb";
 
 import {
   ChevronDownIcon,
@@ -40,6 +42,7 @@ const navItems: NavItem[] = [
     icon: <GridIcon />,
     path: "/home",
   },
+
   {
     name: "Courses",
     id: 5,
@@ -65,12 +68,27 @@ const navItems: NavItem[] = [
     path: "/create-employee",
   },
   {
-    name: "Stuff Attandance",
+    name: "Attendance & Payslip",
     id: 11,
     icon: <PiOfficeChairDuotone />,
-    path: "/stuff-attandance",
+    subItems: [
+      { name: "Attendance", id: 5.1, path: "/stuff-attandance", pro: false },
+      {
+        name: "Advance Loan/Payment",
+        id: 5.1,
+        path: "/advance-payment",
+        pro: false,
+      },
+      { name: "Payslip", id: 5.1, path: "/stuff-payslip", pro: false },
+    ],
   },
-  
+  {
+    name: "Teacher Class Status",
+    id: 12,
+    icon: <PiOfficeChairDuotone />,
+    path: "/teacher-assigned-class",
+  },
+
   {
     name: "Manage Holidays",
     id: 2,
@@ -89,7 +107,6 @@ const navItems: NavItem[] = [
     icon: <ListIcon />,
     path: "/manageLeave",
   },
-
   {
     name: "Inventory Manage",
     id: 8,
@@ -97,7 +114,7 @@ const navItems: NavItem[] = [
     path: "/inventory-manage",
     subItems: [
       {
-        name: "Inventory Manage",
+        name: "Inventory Stock",
         id: 5.1,
         path: "/inventory-manage",
         pro: false,
@@ -111,12 +128,18 @@ const navItems: NavItem[] = [
     icon: <BiPurchaseTagAlt />,
     path: "/purchase-record",
   },
-  // {
-  //   name: "Maintenance Record",
-  //   id: 10,
-  //   icon: <GrHostMaintenance />,
-  //   path: "/maintenance-record",
-  // },
+  {
+    name: "AMC Record",
+    id: 10,
+    icon: <GrHostMaintenance />,
+    path: "/amc-record",
+  },
+  {
+    name: "Report",
+    id: 13,
+    icon: <TbReport />,
+    path: "/report",
+  },
 ];
 
 const othersItems: NavItem[] = [
@@ -153,7 +176,6 @@ const AppSidebar: React.FC = () => {
   const filteredNavItems = navItems.filter((item) =>
     numbers?.includes(item.id)
   );
-  console.log("controlqq", filteredNavItems);
 
   useEffect(() => {
     let submenuMatched = false;

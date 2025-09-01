@@ -25,7 +25,7 @@ import Courses from "./pages/admin/Courses/Courses";
 import CreateEmployee from "./pages/admin/CreateEmployee/CreateEmployee";
 import InventoryManage from "./pages/admin/InventoryManage/InventoryManage";
 import PurchaseRecord from "./pages/admin/PurchaseRecord/PurchaseRecord";
-import MaintenanceRecord from "./pages/admin/MaintenanceRecord/MaintenanceRecord";
+import MaintenanceRecord from "./pages/admin/AmcRecord/AmcRecord";
 import Admission from "./pages/admin/AdmissionAdmin/AdmissionAdmin";
 import StuffAttandance from "./pages/admin/StuffAttandance/StuffAttandance";
 // student
@@ -40,9 +40,14 @@ import Batch from "./pages/admin/Batch/Batch";
 import FeeHead from "./pages/admin/FeeHead/FeeHead";
 import CourseDetailsAdmin from "./pages/admin/CourseDetailsAdmin/CourseDetailsAdmin";
 import StuffAttandancdDetails from "./pages/admin/StuffAttandance/StuffAttandancdDetails";
+import TeacherAssignedClass from "./pages/admin/TacherAssingedClass/TacherAssingedClass";
 import CreateLeave from "./pages/admin/Leave/CreateLeave";
 import ManageLeave from "./pages/admin/ManageLeave/ManageLeave";
 import VendorManage from "./pages/admin/VendorManage/VendorManage";
+import StaffPayslip from "./pages/admin/StaffPayslip/StaffPayslip";
+import AdvancePayment from "./pages/admin/AdvancePayment/AdvancePayment";
+import Report from "./pages/admin/Report/Report";
+import AmcRecord from "./pages/admin/AmcRecord/AmcRecord";
 
 export default function App() {
   const [user, setUser] = useState<string | null>(null);
@@ -82,7 +87,7 @@ export default function App() {
         <ScrollToTop />
         <Routes>
           {/* Dashboard Layout */}
-          {user === "Admin" || user === "Stuff" ? (
+          {user === "Admin" || user === "Stuff" || user === "Teacher" ? (
             <Route element={<AppLayout1 />}>
               <Route index path={`/home`} element={<Home />} />
               {/* Others Page */}
@@ -100,6 +105,9 @@ export default function App() {
               <Route path="/admissionAdmin" element={<Admission />} />
               <Route path="/createLeave" element={<CreateLeave />} />
               <Route path="/manageLeave" element={<ManageLeave />} />
+              <Route path="/report" element={<Report />} />
+
+              Report
               <Route
                 path="/courseDetailsAdmin/:id"
                 element={<CourseDetailsAdmin />}
@@ -109,16 +117,23 @@ export default function App() {
               {/* InventoryManage */}
               <Route path="/inventory-manage" element={<InventoryManage />} />
               <Route path="/vendorManage" element={<VendorManage />} />
-
               {/* PurchaseRecord */}
               <Route path="/purchase-record" element={<PurchaseRecord />} />
               {/* MaintenanceRecord */}
               <Route
-                path="/maintenance-record"
-                element={<MaintenanceRecord />}
+                path="/amc-record"
+                element={<AmcRecord />}
               />
               {/* StuffAttandance */}
               <Route path="/stuff-attandance" element={<StuffAttandance />} />
+              <Route path="/stuff-payslip" element={<StaffPayslip />} />
+              <Route path="/advance-payment" element={<AdvancePayment />} />
+
+              AdvancePayment
+              <Route
+                path="/teacher-assigned-class"
+                element={<TeacherAssignedClass />}
+              />
               <Route
                 path="/stuffAttandancdDetails/:id"
                 element={<StuffAttandancdDetails />}
