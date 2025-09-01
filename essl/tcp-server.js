@@ -55,16 +55,7 @@ const tcpServer = net.createServer((socket) => {
   socket.on("error", console.error);
 });
 
-const PORT = process.env.TCP_NET_PORT || 8080;
-tcpServer.listen(PORT, () => {
-  console.log(`✅ ADMS TCP server running on port ${PORT}`);
+const PORT = parseInt(process.env.TCP_NET_PORT || "8080");
+tcpServer.listen(PORT, "127.0.0.1", () => {
+  console.log(`✅ ADMS TCP server running on port 127.0.0.1:${PORT}`);
 });
-
-// // =====================
-// // CRON JOB every 10 min
-// // =====================
-// cron.schedule("*/10 * * * *", async () => {
-//   console.log("⏳ Running queue processing...");
-//   await queue.processQueue();
-//   console.log("✅ Queue processed.");
-// });

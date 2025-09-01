@@ -1,7 +1,8 @@
 import app from "./app";
 
-const PORT = process.env.PORT || 8081;
+const PORT = parseInt(process.env.PORT || "8081");
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server is running at http://localhost:${PORT}`);
+// Start server
+app.listen(PORT, "127.0.0.1", () => {
+  console.log("Server running on http://127.0.0.1:" + PORT);
 });

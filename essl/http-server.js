@@ -88,7 +88,8 @@ app.put("/api/v1/employee", updateEmployee);
 app.use(globalErrorController);
 
 // Start the server
-const PORT = process.env.PORT || 8081;
-server.listen(PORT, () => {
-  console.log(`🌐 Server running on http://localhost:${PORT}`);
+const PORT = parseInt(process.env.PORT || "8081");
+// Start server
+app.listen(PORT, "127.0.0.1", () => {
+  console.log("Server running on http://127.0.0.1:" + PORT);
 });

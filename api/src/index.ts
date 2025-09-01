@@ -28,7 +28,7 @@ if (process.env.NODE_ENV === "development") {
   dotenv.config({ path: ".env", override: true });
 }
 
-const PORT = process.env.PORT || 8080;
+const PORT = parseInt(process.env.PORT || "8080");
 
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",")
@@ -147,6 +147,6 @@ app.get("/pay", async (req, res) => {
 app.use(globalErrorController);
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`Server is running on port http://localhost:${PORT}`);
+app.listen(PORT, "127.0.0.1", () => {
+  console.log("Server running on http://127.0.0.1:" + PORT);
 });
