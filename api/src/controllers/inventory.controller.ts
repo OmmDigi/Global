@@ -3,11 +3,14 @@ import asyncErrorHandler from "../middlewares/asyncErrorHandler";
 import { ApiResponse } from "../utils/ApiResponse";
 import { ErrorHandler } from "../utils/ErrorHandler";
 import { generatePlaceholders } from "../utils/generatePlaceholders";
-import { objectToSqlConverterUpdate } from "../utils/objectToSql";
+import { objectToSqlConverterUpdate, objectToSqlInsert } from "../utils/objectToSql";
 import { parsePagination } from "../utils/parsePagination";
 import {
+  VCreateAmcItem,
   VMultiInvertoryItemAdd,
   VMultiInvertoryStockAdd,
+  VSingleAmcItem,
+  VUpdateAmcItem,
   VUPdateSingleInventoryItemInfo,
 } from "../validator/inventory.validator";
 
@@ -15,7 +18,7 @@ export const addNewInventoryItem = asyncErrorHandler(async (req, res) => {
   const { error, value } = VMultiInvertoryItemAdd.validate(req.body ?? []);
   if (error) throw new ErrorHandler(400, error.message);
 
-  if(value.length === 0) throw new ErrorHandler(400, "Item info must be added")
+  if (value.length === 0) throw new ErrorHandler(400, "Item info must be added")
 
   await pool.query(
     `INSERT INTO inventory_items 
@@ -37,8 +40,7 @@ export const addNewInventoryItem = asyncErrorHandler(async (req, res) => {
     .json(
       new ApiResponse(
         201,
-        `Inventory ${
-          value.length === 1 ? "Item Has" : "Items Are"
+        `Inventory ${value.length === 1 ? "Item Has" : "Items Are"
         } Successfully Added`
       )
     );
@@ -48,7 +50,7 @@ export const addItemStock = asyncErrorHandler(async (req, res) => {
   const { error, value } = VMultiInvertoryStockAdd.validate(req.body ?? []);
   if (error) throw new ErrorHandler(400, error.message);
 
-  if(value.length === 0) throw new ErrorHandler(400, "Item Stock must be added")
+  if (value.length === 0) throw new ErrorHandler(400, "Item Stock must be added")
 
   await pool.query(
     `
@@ -74,8 +76,7 @@ export const addItemStock = asyncErrorHandler(async (req, res) => {
     .json(
       new ApiResponse(
         201,
-        `Item ${
-          value.length === 1 ? "Stock Has" : "Stocks Are"
+        `Item ${value.length === 1 ? "Stock Has" : "Stocks Are"
         } Successfully Added`
       )
     );
@@ -255,7 +256,7 @@ export const editItemInfo = asyncErrorHandler(async (req, res) => {
   const update_id = value.item_id;
   delete value.item_id;
   const { keys, values, paramsNum } = objectToSqlConverterUpdate(value);
-  if(values.length === 0) throw new ErrorHandler(400, "Nothing to update");
+  if (values.length === 0) throw new ErrorHandler(400, "Nothing to update");
   values.push(update_id);
 
   await pool.query(
@@ -285,3 +286,76 @@ export const deleteInventoryItem = asyncErrorHandler(async (req, res) => {
   ]);
   res.status(200).json(new ApiResponse(200, "Item Has Successfully Removed"));
 });
+
+// AMC LIST
+export const createAmcItem = asyncErrorHandler(async (req, res) => {
+  const { error, value } = VCreateAmcItem.validate(req.body ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
+
+  const { columns, params, values } = objectToSqlInsert(value);
+
+  await pool.query(`INSERT INTO amc_list ${columns} VALUES ${params}`, values);
+
+  res.status(201).json(new ApiResponse(201, "New Amc Product Has Created"))
+});
+
+export const updateAmcItem = asyncErrorHandler(async (req, res) => {
+  const { error, value } = VUpdateAmcItem.validate(req.body ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
+
+  const idToUpdate = value.id;
+  delete value.id;
+  const { keys, paramsNum, values } = objectToSqlConverterUpdate(value);
+  values.push(idToUpdate)
+
+  await pool.query(`UPDATE amc_list SET ${keys} WHERE id = $${paramsNum}`, values);
+
+  res.status(200).json(new ApiResponse(200, "Amc Product Updated"))
+});
+
+export const deleteSingleAmcItem = asyncErrorHandler(async (req, res) => {
+  const { error, value } = VSingleAmcItem.validate(req.params ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
+
+  await pool.query("DELETE FROM amc_list WHERE id = $1", [value.id]);
+
+  res.status(200).json(new ApiResponse(200, "Amc item removed"))
+})
+
+export const getSingleAmcItem = asyncErrorHandler(async (req, res) => {
+  const { error, value } = VSingleAmcItem.validate(req.params ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
+
+  const { rows, rowCount } = await pool.query(
+    `SELECT 
+      id,
+      product_name,
+      company_name,
+      time_duration,
+      TO_CHAR(contract_from, 'YYYY-MM-DD') AS contract_from,
+      TO_CHAR(contract_to, 'YYYY-MM-DD') AS contract_to,
+      TO_CHAR(renewal_date, 'YYYY-MM-DD') AS renewal_date,
+      TO_CHAR(expiry_date, 'YYYY-MM-DD') AS expiry_date,
+      file
+     FROM amc_list WHERE id = $1`, [value.id]);
+  if(rowCount === 0) throw new ErrorHandler(404, "No amc item found");
+
+  res.status(200).json(new ApiResponse(200, "Single Amc Item", rows[0]))
+})
+
+export const getAmcListItems = asyncErrorHandler(async (req, res) => {
+  const { TO_STRING } = parsePagination(req);
+
+  const { rows } = await pool.query(
+    `SELECT 
+      id,
+      product_name,
+      company_name,
+      time_duration,
+      TO_CHAR(contract_from, 'FMDD FMMonth, YYYY') AS contract_from,
+      TO_CHAR(contract_to, 'FMDD FMMonth, YYYY') AS contract_to,
+      TO_CHAR(renewal_date, 'FMDD FMMonth, YYYY') AS renewal_date,
+      TO_CHAR(expiry_date, 'FMDD FMMonth, YYYY') AS expiry_date
+     FROM amc_list ${TO_STRING}`);
+  res.status(200).json(new ApiResponse(200, "Amc List", rows))
+})

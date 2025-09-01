@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Course Booking Confirmed - Payment Successful</title>
+    <!--[if mso]>
+    <noscript>
+        <xml>
+            <o:OfficeDocumentSettings>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+            </o:OfficeDocumentSettings>
+        </xml>
+    </noscript>
+    <![endif]-->
+    <style>
+        /* Reset styles for email clients */
+        body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+        table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+        img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
+        
+        /* Global styles */
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background-color: #f4f4f4;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, Arial, sans-serif;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .success-icon {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: table;
+            line-height: 60px;
+            text-align: center;
+        }
+        
+        .checkmark {
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .header h1 {
+            color: #ffffff;
+            font-size: 28px;
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+            margin: 10px 0 0 0;
+        }
+        
+        .content {
+            padding: 40px 30px;
+        }
+        
+        .greeting {
+            font-size: 18px;
+            color: #333333;
+            margin-bottom: 20px;
+        }
+        
+        .message {
+            color: #666666;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        
+        .course-details {
+            background-color: #f8f9ff;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .course-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333333;
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .details-table td {
+            padding: 10px 0;
+            border-bottom: 1px solid #e1e5e9;
+            vertical-align: top;
+        }
+        
+        .details-table td:last-child {
+            border-bottom: none;
+        }
+        
+        .label {
+            font-weight: 600;
+            color: #666666;
+            width: 40%;
+        }
+        
+        .value {
+            color: #333333;
+            font-weight: 500;
+            text-align: right;
+        }
+        
+        .amount {
+            color: #4CAF50;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        
+        .next-steps {
+            background-color: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .next-steps h3 {
+            color: #e65100;
+            margin: 0 0 15px 0;
+            font-size: 18px;
+        }
+        
+        .next-steps ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #bf360c;
+        }
+        
+        .next-steps li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        .cta-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: #ffffff;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 0 10px 10px 0;
+        }
+        
+        .cta-button:hover {
+            background-color: #45a049;
+        }
+        
+        .cta-button-secondary {
+            background-color: transparent;
+            color: #4CAF50;
+            border: 2px solid #4CAF50;
+        }
+        
+        .cta-button-secondary:hover {
+            background-color: #4CAF50;
+            color: #ffffff;
+        }
+        
+        .support-section {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 6px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .support-section h3 {
+            margin: 0 0 10px 0;
+            color: #333333;
+            font-size: 16px;
+        }
+        
+        .support-section p {
+            margin: 0;
+            color: #666666;
+            font-size: 14px;
+        }
+        
+        .footer {
+            background-color: #333333;
+            padding: 30px;
+            text-align: center;
+            color: #ffffff;
+        }
+        
+        .footer p {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .social-links {
+            margin-top: 20px;
+        }
+        
+        .social-links a {
+            color: #ffffff;
+            text-decoration: none;
+            margin: 0 10px;
+            font-size: 14px;
+        }
+        
+        .unsubscribe {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #999999;
+        }
+        
+        .unsubscribe a {
+            color: #cccccc;
+        }
+        
+        /* Mobile responsive */
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                width: 100% !important;
+            }
+            
+            .header, .content {
+                padding: 20px !important;
+            }
+            
+            .header h1 {
+                font-size: 24px !important;
+            }
+            
+            .course-details {
+                padding: 20px !important;
+            }
+            
+            .cta-button {
+                display: block !important;
+                margin: 0 0 15px 0 !important;
+                width: 100% !important;
+                box-sizing: border-box;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="success-icon">
+                <span class="checkmark">✓</span>
+            </div>
+            <h1>Payment Successful!</h1>
+            <p>Your course booking has been confirmed</p>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="content">
+            <div class="greeting">
+                Hello <%= studentName || 'Student' %>! 👋
+            </div>
+            
+            <div class="message">
+                Congratulations! Your payment has been processed successfully and your course booking is now confirmed. 
+                We're excited to have you join us on this learning journey!
+            </div>
+            
+            <!-- Course Details -->
+            <div class="course-details">
+                <div class="course-title">
+                    <%= courseTitle || 'Course Enrollment' %>
+                </div>
+                
+                <table class="details-table">
+                    <tr>
+                        <td class="label">Order ID:</td>
+                        <td class="value"><%= orderId %></td>
+                    </tr>
+                    <tr>
+                        <td class="label">Transaction ID:</td>
+                        <td class="value"><%= transactionId %></td>
+                    </tr>
+                    <tr>
+                        <td class="label">Amount Paid:</td>
+                        <td class="value amount">₹<%= amount %></td>
+                    </tr>
+                    <tr>
+                        <td class="label">Payment Date:</td>
+                        <td class="value"><%= paymentDate %></td>
+                    </tr>
+                    <% if (courseStartDate) { %>
+                    <tr>
+                        <td class="label">Course Start Date:</td>
+                        <td class="value"><%= courseStartDate %></td>
+                    </tr>
+                    <% } %>
+                    <% if (courseDuration) { %>
+                    <tr>
+                        <td class="label">Duration:</td>
+                        <td class="value"><%= courseDuration %></td>
+                    </tr>
+                    <% } %>
+                </table>
+            </div>
+            
+            <!-- Next Steps -->
+            <div class="next-steps">
+                <h3>What's Next? 🚀</h3>
+                <ul>
+                    <li><strong>Check your dashboard</strong> - Access course materials and resources</li>
+                    <li><strong>Join our community</strong> - Connect with fellow students and instructors</li>
+                    <li><strong>Download materials</strong> - Get started with pre-course preparation</li>
+                    <li><strong>Mark your calendar</strong> - Don't miss the course start date</li>
+               
+                </ul>
+            </div>
+            
+            <!-- Call to Action -->
+            <div class="cta-section">
+                <% if (dashboardUrl) { %>
+                <a href="<%= dashboardUrl %>" class="cta-button">Access My Dashboard</a>
+                <% } else { %>
+                <a href="https://yourwebsite.com/dashboard" class="cta-button">Access My Dashboard</a>
+                <% } %>
+                
+                <% if (courseUrl) { %>
+                <a href="<%= courseUrl %>" class="cta-button cta-button-secondary">View Course Details</a>
+                <% } %>
+            </div>
+            
+            <!-- Support Section -->
+            <div class="support-section">
+                <h3>Need Help? We're Here! 💬</h3>
+                <p>
+                    If you have any questions or need assistance, our support team is ready to help.<br>
+                    <strong>Email:</strong> <%= supportEmail || 'support@yourwebsite.com' %> | 
+                    <strong>Phone:</strong> <%= supportPhone || '+91-XXXXXXXXXX' %>
+                </p>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong><%= companyName || 'Your Learning Platform' %></strong></p>
+            <p>Empowering students to achieve their dreams through quality education.</p>
+            
+            <% if (socialLinks) { %>
+            <div class="social-links">
+                <% if (socialLinks.website) { %>
+                <a href="<%= socialLinks.website %>">Website</a>
+                <% } %>
+                <% if (socialLinks.facebook) { %>
+                <a href="<%= socialLinks.facebook %>">Facebook</a>
+                <% } %>
+                <% if (socialLinks.instagram) { %>
+                <a href="<%= socialLinks.instagram %>">Instagram</a>
+                <% } %>
+                <% if (socialLinks.linkedin) { %>
+                <a href="<%= socialLinks.linkedin %>">LinkedIn</a>
+                <% } %>
+            </div>
+            <% } %>
+            
+            <div class="unsubscribe">
+                <p>
+                    © <%= new Date().getFullYear() %> <%= companyName || 'Your Learning Platform' %>. All rights reserved.<br>
+                    You're receiving this email because you enrolled in our course.<br>
+                    <a href="#">Update preferences</a> | <a href="#">Unsubscribe</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

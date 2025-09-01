@@ -3,6 +3,7 @@ import { pool } from "../config/db";
 import { ErrorHandler } from "../utils/ErrorHandler";
 import { parsePagination } from "../utils/parsePagination";
 import { Request } from "express";
+import { VGetAdmissionList } from "../validator/admission.validator";
 
 type IFillUpForm = {
   student_id: number;
@@ -52,8 +53,7 @@ export const doAdmission = async (data: IFillUpForm) => {
   const placeholder = data.fee_structure
     .map(
       (_, index) =>
-        `($${index * 5 + 1}, $${index * 5 + 2}, $${index * 5 + 3}, $${
-          index * 5 + 4
+        `($${index * 5 + 1}, $${index * 5 + 2}, $${index * 5 + 3}, $${index * 5 + 4
         }, $${index * 5 + 5})`
     )
     .join(", ");
@@ -85,6 +85,52 @@ export const doAdmission = async (data: IFillUpForm) => {
 
 export const getAdmissions = async (req: Request, student_id?: number) => {
   const { TO_STRING } = parsePagination(req);
+
+  const { error, value } = VGetAdmissionList.validate(req.query);
+  if (error) throw new ErrorHandler(400, error.message);
+
+  let filter = "";
+  const filterValues: string[] = [];
+  let placeholder = 1;
+
+  if (value.student_id || student_id) {
+    filter = `WHERE ff.student_id = $${placeholder++}`;
+    filterValues.push(value.student_id || student_id);
+  }
+
+  if (value.from_date && value.to_date) {
+    if (filter == "") {
+      filter = `WHERE ff.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
+    } else {
+      filter += ` AND ff.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
+    }
+    filterValues.push(value.from_date)
+    filterValues.push(value.to_date)
+  }
+
+  if (value.course) {
+    if (filter == "") {
+      filter = `WHERE c.id = $${placeholder++}`;
+    } else {
+      filter += ` AND c.id = $${placeholder++}`;
+    }
+    filterValues.push(value.course)
+  }
+
+  if (value.batch) {
+    if (filter == "") {
+      filter = `WHERE b.id = $${placeholder++}`;
+    } else {
+      filter += ` AND b.id = $${placeholder++}`;
+    }
+    filterValues.push(value.batch)
+  }
+
+  if (value.form_no) {
+    filter = `WHERE ff.form_name = $${placeholder++}`;
+    filterValues.push(value.form_no)
+  }
+
   return await pool.query(
     `
       SELECT
@@ -112,13 +158,13 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
       LEFT JOIN course c
       ON c.id = ec.course_id
 
-      ${student_id !== undefined ? "WHERE ff.student_id = $1" : ""}
+     ${filter}
   
       GROUP BY ff.id, u.id, c.id, b.id
       ORDER BY ff.id DESC
       ${TO_STRING}
       `,
-    student_id !== undefined ? [student_id] : []
+    filterValues
   );
 };
 

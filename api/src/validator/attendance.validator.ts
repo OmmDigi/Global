@@ -21,5 +21,11 @@ export const VSingleAttendance = Joi.object({
 
 export const VEditTeacherClassStatus = Joi.object({
   id : Joi.number().required(),
+  name : Joi.string().optional(),
+  date:Joi.string().optional(),
   for_courses : VUpdateTeacherClassStatus
+})
+
+export const VGetTeacherClassList = Joi.object({
+  date : Joi.string().optional()
 })

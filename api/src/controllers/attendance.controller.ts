@@ -6,6 +6,7 @@ import { ErrorHandler } from "../utils/ErrorHandler";
 import {
   VAddAttendance,
   VEditTeacherClassStatus,
+  VGetTeacherClassList,
   VSingleAttendance,
 } from "../validator/attendance.validator";
 
@@ -128,26 +129,73 @@ export const getSingleEmployeeAttendanceList = asyncErrorHandler(
     `;
 
     const queryEmployeeAttendanceInfo = `
+      WITH monthly_holidays AS (
+          -- Pre-calculate holidays per month for better performance
+          SELECT 
+              DATE_TRUNC('month', h.date) AS month,
+              COUNT(*) AS holiday_count
+          FROM holiday h
+          GROUP BY DATE_TRUNC('month', h.date)
+      ),
+      employee_info AS (
+          -- Get basic employee info once to avoid repeated joins
+          SELECT 
+              u.id,
+              u.name,
+              u.image,
+              u.joining_date,
+              u.designation,
+              u.joining_date + INTERVAL '1 year' AS eligible_start_date
+          FROM users u
+          WHERE u.id = $1
+      ),
+      valid_months AS (
+          -- Count eligible months with optimized logic
+          SELECT COUNT(*) AS eligible_months
+          FROM (
+              SELECT DATE_TRUNC('month', a.date) AS month
+              FROM attendance a
+              JOIN employee_info ei ON ei.id = a.employee_id
+              LEFT JOIN monthly_holidays mh ON mh.month = DATE_TRUNC('month', a.date)
+              WHERE a.date >= ei.eligible_start_date
+                AND a.date < DATE_TRUNC('month', CURRENT_DATE)
+              GROUP BY DATE_TRUNC('month', a.date), COALESCE(mh.holiday_count, 0)
+              HAVING COUNT(*) FILTER (WHERE a.status IN ('Present', 'Leave')) >= 
+                    (26 - COALESCE(mh.holiday_count, 0))
+          ) vm
+      ),
+      monthly_attendance AS (
+          -- Calculate monthly attendance for the specified month
+          SELECT
+              COUNT(*) FILTER (WHERE a.status = 'Present') AS present_count,
+              COUNT(*) FILTER (WHERE a.status IN ('Absent', 'Leave')) AS absent_count
+          FROM employee_info ei
+          LEFT JOIN attendance a ON a.employee_id = ei.id 
+              AND a.date >= DATE_TRUNC('month', TO_DATE($2, 'MM-YYYY'))
+              AND a.date < DATE_TRUNC('month', TO_DATE($2, 'MM-YYYY')) + INTERVAL '1 month'
+      ),
+      total_leave_info AS (
+          -- Calculate total approved leaves since eligibility
+          SELECT COALESCE(SUM(l.to_date - l.from_date + 1), 0) AS total_taken_leave
+          FROM employee_info ei
+          LEFT JOIN leave l ON l.employee_id = ei.id
+              AND l.status = 2 -- Approved leaves only
+              AND l.from_date >= ei.eligible_start_date
+      )
       SELECT
-        u.name,
-        u.image,
-        TO_CHAR(u.joining_date, 'DD FMMonth YYYY') AS joining_date,
-        u.designation,
-        COUNT(*) FILTER (WHERE a.status = 'Present') AS present_count,
-        COUNT(*) FILTER (WHERE a.status = 'Absent') AS absent_count,
-        COUNT(*) FILTER (WHERE a.status = 'Leave') AS total_taken_leave,
-        10 - (COUNT(*) FILTER (WHERE a.status = 'Leave')) AS total_pending_leave
-      FROM users u
-
-      LEFT JOIN attendance a
-      ON a.employee_id = u.id 
-        AND a.date >= date_trunc('month', to_date($2, 'MM-YYYY')) 
-        AND a.date < date_trunc('month', to_date($2, 'MM-YYYY')) + interval '1 month'
-
-      WHERE u.id = $1
-
-      GROUP BY u.id
-    `;
+          ei.name,
+          ei.image,
+          TO_CHAR(ei.joining_date, 'DD FMMonth YYYY') AS joining_date,
+          ei.designation,
+          ma.present_count,
+          ma.absent_count,
+          tli.total_taken_leave,
+          GREATEST(0, vm.eligible_months - tli.total_taken_leave) AS total_pending_leave
+      FROM employee_info ei
+      CROSS JOIN valid_months vm
+      CROSS JOIN monthly_attendance ma
+      CROSS JOIN total_leave_info tli;
+`;
 
     const client = await pool.connect();
 
@@ -185,38 +233,20 @@ export const getSingleEmployeeAttendanceList = asyncErrorHandler(
 
 // Teacher Class Status
 export const getTeacherClassStatusList = asyncErrorHandler(async (req, res) => {
-  // const { rows } = await pool.query(
-  //   `
-  //     SELECT 
-  //       u.id,
-  //       u.name,
-  //       COALESCE(
-  //           JSON_AGG(ess) FILTER (WHERE ess.employee_id IS NOT NULL),
-  //           '[]'::json
-  //       ) AS for_courses
-  //       FROM users u
+  const { error, value } = VGetTeacherClassList.validate(req.query ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
 
-  //       LEFT JOIN (
-  //         SELECT 
-  //             ess.employee_id,
-  //             c.name AS course_name, 
-  //             c.id,
-  //             EXISTS (SELECT 1 FROM teacher_classes WHERE teacher_id = ess.employee_id AND course_id = c.id AND class_type = 'regular') AS regular, 
-  //             EXISTS (SELECT 1 FROM teacher_classes WHERE teacher_id = ess.employee_id AND course_id = c.id AND class_type = 'workshop') AS workshop, 
-  //             COALESCE((SELECT units FROM teacher_classes WHERE teacher_id = ess.employee_id AND course_id = c.id AND class_type = 'extra'), 0) AS extra 
-  //           FROM employee_salary_structure ess 
-  //           LEFT JOIN course c ON c.id = ess.course_id 
-          
-  //           GROUP BY ess.employee_id, c.id
-  //       ) AS ess ON ess.employee_id = u.id
+  let placeholder = 1;
+  let tcFilter = "tc.class_date = CURRENT_DATE";
+  let attendanceFilter = "attendance.date = CURRENT_DATE"
+  const filterValues: string[] = [];
 
-  //       WHERE u.category = 'Teacher'
-
-  //       GROUP BY u.id
-
-  //       ORDER BY u.id DESC
-  //   `
-  // )
+  if (value.date) {
+    tcFilter = `tc.class_date = $${placeholder}::date`;
+    attendanceFilter = `attendance.date = $${placeholder}::date`;
+    filterValues.push(value.date);
+    placeholder++;
+  }
 
   const { rows } = await pool.query(
     `
@@ -234,7 +264,7 @@ export const getTeacherClassStatusList = asyncErrorHandler(async (req, res) => {
             ess.employee_id,
             c.name AS course_name, 
             c.id,
-            (COUNT(*) FILTER (WHERE tc.class_type = 'regular') > 0) AS regular,
+            (COUNT(*) FILTER (WHERE tc.class_type = 'fixed' OR tc.class_type = 'per_class') > 0) AS regular,
             (COUNT(*) FILTER (WHERE tc.class_type = 'workshop') > 0) AS workshop,
             COALESCE(MAX(tc.units) FILTER (WHERE tc.class_type = 'extra'), 0) AS extra
           FROM employee_salary_structure ess 
@@ -243,33 +273,35 @@ export const getTeacherClassStatusList = asyncErrorHandler(async (req, res) => {
           ON c.id = ess.course_id
 
           LEFT JOIN teacher_classes tc 
-          ON tc.teacher_id = ess.employee_id AND ess.course_id = tc.course_id
+          ON tc.teacher_id = ess.employee_id AND ess.course_id = tc.course_id AND ${tcFilter}
 
           GROUP BY ess.employee_id, c.id
 
           ORDER BY c.id
         ) AS ess ON ess.employee_id = u.id
 
-        WHERE u.category = 'Teacher'
+        WHERE u.category = 'Teacher' AND NOT EXISTS (SELECT 1 FROM attendance WHERE employee_id = u.id AND ${attendanceFilter})
 
         GROUP BY u.id
 
         ORDER BY u.id DESC
-    `
+    `,
+    filterValues
   )
 
   res.status(200).json(new ApiResponse(200, "Daily Teacher Class Status Info", rows))
 })
 
 export const editTeacherClassStatus = asyncErrorHandler(async (req, res) => {
-  const { error, value } = VEditTeacherClassStatus.validate(req.body ?? {});
+  const { error, value } = VEditTeacherClassStatus.validate({ ...req.body, ...req.query });
   if (error) throw new ErrorHandler(400, error.message);
 
   const userId = value.id;
 
   await manageTeacherClassStatus({
     employee_id: userId,
-    values: value.for_courses
+    values: value.for_courses,
+    date: value.date
   })
 
   res.status(200).json(new ApiResponse(200, "Class status updated"))

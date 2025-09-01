@@ -38,3 +38,13 @@ export type TeacherFeeStruct = {
   extra: number;
   class_per_month: number
 }
+
+export type TEmailData = {
+  recipientName: string;
+  items: {
+    companyName: string;
+    name: string;
+    renewalDate: string;
+    daysRemaining: number;
+  }[];
+};

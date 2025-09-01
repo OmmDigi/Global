@@ -40,6 +40,8 @@ export const updatePurchaseRecord = asyncErrorHandler(async (req, res) => {
     `UPDATE purchase_record SET ${keys} WHERE id = $${paramsNum}`,
     values
   );
+
+  res.status(200).json(new ApiResponse(200, "Purchase record updated"))
 });
 
 export const getSinglePurchaseRecord = asyncErrorHandler(async (req, res) => {

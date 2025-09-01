@@ -49,3 +49,32 @@ export const VMultiInvertoryStockAdd = Joi.array().items(
     remark: Joi.string().optional().allow(""),
   })
 );
+
+
+// amc list validator
+export const VCreateAmcItem = Joi.object({
+  product_name: Joi.string().required(),
+  company_name: Joi.string().required(),
+  time_duration: Joi.string().required(),
+  contract_from: Joi.string().required(),
+  contract_to: Joi.string().required(),
+  renewal_date: Joi.string().optional(),
+  expiry_date: Joi.string().required(),
+  file: Joi.string().optional().allow("")
+})
+
+export const VUpdateAmcItem = Joi.object({
+  id: Joi.number().required(),
+  product_name: Joi.string().required(),
+  company_name: Joi.string().required(),
+  time_duration: Joi.string().required(),
+  contract_from: Joi.string().required(),
+  contract_to: Joi.string().required(),
+  renewal_date: Joi.string().optional(),
+  expiry_date: Joi.string().required(),
+  file: Joi.string().optional().allow("")
+})
+
+export const VSingleAmcItem = Joi.object({
+  id: Joi.number().required()
+})

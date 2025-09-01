@@ -4,23 +4,38 @@ import { ErrorHandler } from "../utils/ErrorHandler";
 
 interface IProps {
   employee_id: number;
-  values: any[]
+  values: any[];
+  date?: string;
 }
 
 export const manageTeacherClassStatus = async (option: IProps) => {
   const client = await pool.connect();
 
+  let placeholder = 1;
+  let deleteFilter = "WHERE teacher_id = $1 AND class_date = CURRENT_DATE";
+  const filterValues: string[] = [option.employee_id.toString()];
+
+  if (option.date) {
+    deleteFilter = `WHERE teacher_id = $${placeholder++} AND class_date = $${placeholder++}::DATE`;
+    filterValues.push(option.date);
+  }
+
   try {
     await client.query("BEGIN");
 
     //delete current date current teacher record to perfome replace activity
-    await client.query("DELETE FROM teacher_classes WHERE teacher_id = $1 AND class_date = CURRENT_DATE", [option.employee_id]);
+    await client.query(
+      `DELETE FROM 
+        teacher_classes 
+       ${deleteFilter}`,
+      filterValues);
 
     const { rows } = await client.query(
       `
         SELECT
             course_id,
-            CASE WHEN salary_type = 'per_class' OR salary_type = 'fixed' THEN 'regular' ELSE salary_type END AS salary_type,
+            -- CASE WHEN salary_type = 'per_class' OR salary_type = 'fixed' THEN 'regular' ELSE salary_type END AS salary_type,
+            salary_type,
             ROUND(
                 CASE 
                     WHEN salary_type = 'fixed' 
@@ -39,12 +54,14 @@ export const manageTeacherClassStatus = async (option: IProps) => {
     // modify the value accoding my database setup
     option.values.forEach(item => {
       if (item.regular == true) {
-        const income = rows.find(incomeItem => incomeItem.course_id == item.id && incomeItem.salary_type == 'regular')?.earn_per_course ?? 0;
+        const incomeInfo = rows.find(incomeItem => incomeItem.course_id == item.id && (incomeItem.salary_type == 'per_class' || incomeItem.salary_type === "fixed"));
+        // const income = rows.find(incomeItem => incomeItem.course_id == item.id && incomeItem.salary_type == 'regular')?.earn_per_course ?? 0;
         valueToStore.push({
           course_id: item.id,
-          class_type: 'regular',
+          // class_type: 'regular',
+          class_type : incomeInfo.salary_type,
           units: 1,
-          daily_earning: income
+          daily_earning: incomeInfo.earn_per_course ?? 0
         });
       }
       if (item.workshop == true) {
@@ -71,10 +88,10 @@ export const manageTeacherClassStatus = async (option: IProps) => {
     if (valueToStore.length !== 0) {
       await client.query(
         `
-        INSERT INTO teacher_classes (teacher_id, course_id, class_type, units, daily_earning)
-        VALUES ${generatePlaceholders(valueToStore.length, 5)}
+        INSERT INTO teacher_classes (teacher_id, course_id, class_type, units, daily_earning, class_date)
+        VALUES ${generatePlaceholders(valueToStore.length, 6)}
         `,
-        valueToStore.flatMap(item => [option.employee_id, item.course_id, item.class_type, item.units, item.daily_earning])
+        valueToStore.flatMap(item => [option.employee_id, item.course_id, item.class_type, item.units, item.daily_earning, option.date ?? null])
       )
     }
 

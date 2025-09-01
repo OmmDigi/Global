@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Sheet - <%= instituteName %></title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            font-size: 12px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .institute-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .address {
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .sheet-title {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .month-year {
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .payroll-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 2px solid #000;
+        }
+        
+        .payroll-table th,
+        .payroll-table td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        
+        .payroll-table th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+            font-size: 10px;
+        }
+        
+        .payroll-table td {
+            height: 30px;
+            font-size: 11px;
+        }
+        
+        .sl-no {
+            width: 3%;
+        }
+        
+        .name {
+            width: 12%;
+        }
+        
+        .days-worked {
+            width: 5%;
+        }
+        
+        .attendance-cols {
+            width: 4%;
+        }
+        
+        .rate {
+            width: 6%;
+        }
+        
+        .amount-cols {
+            width: 7%;
+        }
+        
+        .signature {
+            width: 8%;
+        }
+        
+        .signatures-section {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        
+        .signature-box {
+            text-align: center;
+            width: 200px;
+        }
+        
+        .signature-line {
+            border-top: 1px solid #000;
+            margin-bottom: 5px;
+        }
+        
+        .signature-title {
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        @media print {
+            body {
+                margin: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="institute-name"><%= instituteName %></div>
+        <div class="address"><%= address %></div>
+        <div class="sheet-title">Temporary Daily Basis Payment Sheet For The Month Of _____ <%= year %></div>
+    </div>
+
+    <table class="payroll-table">
+        <thead>
+            <tr>
+                <th rowspan="2" class="sl-no">SL NO.</th>
+                <th rowspan="2" class="name">NAME OF FACULTY / PERSON</th>
+                <th rowspan="2" class="days-worked">NO OF DAYS WORK ED</th>
+                <th rowspan="2" class="attendance-cols">SUN</th>
+                <th rowspan="2" class="attendance-cols">ABT.</th>
+                <th rowspan="2" class="rate">RATE PER HOUR/DAY</th>
+                <th rowspan="2" class="amount-cols">DAILY BASIS PAY</th>
+                <th rowspan="2" class="amount-cols">DEDUC.</th>
+                <th rowspan="2" class="amount-cols">EXTRA PYT. IF ANY</th>
+                <th rowspan="2" class="amount-cols">GRAND TOTAL</th>
+                <th rowspan="2" class="amount-cols">ADV.</th>
+                <th rowspan="2" class="amount-cols">LESS ADV.</th>
+                <th rowspan="2" class="amount-cols">BALANCE OF ADV.</th>
+                <th rowspan="2" class="amount-cols">NET AMT PAYABLE</th>
+                <th rowspan="2" class="signature">SIGNATURE</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (employees && employees.length > 0) { %>
+                <% employees.forEach((employee, index) => { %>
+                    <tr>
+                        <td><%= index + 1 %></td>
+                        <td style="text-align: left;"><%= employee.name || '' %></td>
+                        <td><%= employee.daysWorked || '' %></td>
+                        <td><%= employee.sundays || '' %></td>
+                        <td><%= employee.absent || '' %></td>
+                        <td><%= employee.ratePerDay || '' %></td>
+                        <td><%= employee.dailyBasisPay || '' %></td>
+                        <td><%= employee.deductions || '' %></td>
+                        <td><%= employee.extraPayment || '' %></td>
+                        <td><%= employee.grandTotal || '' %></td>
+                        <td><%= employee.advance || '' %></td>
+                        <td><%= employee.lessAdvance || '' %></td>
+                        <td><%= employee.balanceAdvance || '' %></td>
+                        <td><%= employee.netAmountPayable || '' %></td>
+                        <td></td>
+                    </tr>
+                <% }) %>
+            <% } %>
+            
+            <!-- Add empty rows to match the original design -->
+            <% const emptyRows = Math.max(0, 15 - (employees ? employees.length : 0)) %>
+            <% for (let i = 0; i < emptyRows; i++) { %>
+                <tr>
+                    <td><%= (employees ? employees.length : 0) + i + 1 %></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+
+    <div class="signatures-section">
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <div class="signature-title">CASHIER</div>
+        </div>
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <div class="signature-title">ACCOUNTANT</div>
+        </div>
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <div class="signature-title">HEAD OF THE DEPARTMENT</div>
+        </div>
+    </div>
+</body>
+</html>
