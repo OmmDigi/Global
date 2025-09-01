@@ -4,7 +4,7 @@ const path = require("path");
 const fs = require("fs");
 
 // const config = {
-//   cloud_api_url: "http://localhost:8081",
+//   cloud_api_url: "http://localhost:8084",
 //   device_id: "ESSL-001",
 //   auth_token: "YOUR_SECRET_TOKEN",
 // };

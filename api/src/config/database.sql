@@ -260,3 +260,58 @@ CREATE INDEX idx_transactions_item_type_date ON inventory_transactions (item_id,
 CREATE INDEX idx_items_created_at ON inventory_items (created_at);
 -- 54. Speed up vendor lookup
 CREATE INDEX idx_vendor_id ON vendor (id);
+
+
+-- CREATE TABLE stuff_salary_structure (
+
+-- )
+
+-- CREATE TABLE employee_fee_structure (
+--     id SERIAL PRIMARY KEY,
+    
+--     employee_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+-- 	course_id BIGINT REFERENCES course(id) ON DELETE CASCADE,
+
+--     fee_head_name TEXT NOT NULL,
+--     amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+
+--     UNIQUE(employee_id, course_id, fee_head_name)
+-- );
+
+-- ALTER TABLE employee_fee_structure ADD COLUMN extra DECIMAL(10, 2) DEFAULT 0.00; 
+
+
+-- CREATE TABLE teacher_class_attendance (
+--     id SERIAL PRIMARY KEY,
+
+--     employee_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+
+--     course_id BIGINT NOT NULL REFERENCES course(id) ON DELETE CASCADE,
+
+--     class_attend_count INT DEFAULT 0,
+
+--     date DATE DEFAULT CURRENT_DATE
+-- );
+
+CREATE TABLE employee_salary_structure (
+    id SERIAL PRIMARY KEY,
+    employee_id BIGINT REFERENCES users(id),
+    course_id BIGINT REFERENCES course(id),
+    salary_type VARCHAR(255) NOT NULL,  -- NOT NULL CHECK (salary_type IN ('per_class', 'fixed', 'workshop', 'extra')),
+    amount DECIMAL(12,2) DEFAULT 0.00,       -- if per_class / workshop / extra
+    -- fixed_amount DECIMAL(12,2), -- if fixed monthly
+    UNIQUE(employee_id, course_id, salary_type)
+);
+
+ALTER TABLE employee_salary_structure ADD COLUMN class_per_month INT; 
+
+CREATE TABLE teacher_classes (
+    id SERIAL PRIMARY KEY,
+    teacher_id BIGINT REFERENCES users(id),
+    course_id BIGINT REFERENCES course(id),
+    class_date DATE DEFAULT CURRENT_DATE,
+    class_type TEXT CHECK (class_type IN ('regular', 'workshop', 'extra')),
+    units INT DEFAULT 1 -- ex : how much regular/workshop/extra classes done
+);
+
+ALTER TABLE teacher_classes ADD COLUMN daily_earning DECIMAL(10, 2) DEFAULT 0.00;

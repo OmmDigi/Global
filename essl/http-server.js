@@ -43,17 +43,24 @@ wss.on("connection", (ws, req) => {
     );
   }
   // we are sending device connection info to the essl localserver so essl local server will connect with the device
+  const ips = process.env.ESSL_DEVICE_IP.split(",");
+  const ports = process.env.ESSL_DEVICE_PORT.split(",");
+  if (ips.length != ports.length)
+    throw new Error("Ports And Ips Length Must Be Same");
+  const deviceinfo = ips.map((ip, index) => ({
+    device_ip: ip,
+    device_port: ports[index],
+  }));
+
   ws.send(
     JSON.stringify({
       action: "connect_device",
-      deviceinfo: {
-        device_ip: process.env.ESSL_DEVICE_IP,
-        device_port: process.env.ESSL_DEVICE_PORT,
-      },
+      deviceinfo,
     })
   );
 
   ws.on("message", (msg) => {
+    // console.log(msg.toString())
     const data = JSON.parse(msg);
     if (data) {
       if (data.action === "connection_failed") {

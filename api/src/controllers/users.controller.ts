@@ -1,4 +1,3 @@
-import { AxiosError } from "axios";
 import { pool } from "../config/db";
 import asyncErrorHandler from "../middlewares/asyncErrorHandler";
 import { decrypt, encrypt } from "../services/crypto";
@@ -12,17 +11,18 @@ import {
   VGetUserList,
   VLoginUser,
   VSingleUser,
+  VUpdateTeacherClassStatus,
   VUpdateUser,
 } from "../validator/users.validator";
-import { essl } from "../config/essl";
-import { IError } from "../config/types";
-import { CustomRequest } from "../types";
+import { CustomRequest, TeacherFeeStruct } from "../types";
 import {
   getAdmissions,
   getSingleAdmissionData,
 } from "../services/admission.service";
 import { VGetSingleAdmission } from "../validator/admission.validator";
 import { getLeaveList } from "../services/leave.service";
+import { generatePlaceholders } from "../utils/generatePlaceholders";
+import { manageTeacherClassStatus } from "../services/attendance.service";
 
 export const loginUser = asyncErrorHandler(async (req, res) => {
   const { error, value } = VLoginUser.validate(req.body ?? {});
@@ -111,24 +111,78 @@ export const createUser = asyncErrorHandler(async (req, res) => {
     if (rowCount === 0)
       throw new ErrorHandler(400, "User email already exists", ["email"]);
 
-    const userID = rows[0].id as number;
+    const userID = rows[0].id.toString();
+    const userCategory = value.category as "Teacher" | "Stuff";
 
-    // store data to the essl device
-    try {
-      await essl.setUser({
-        name: value.name,
-        password: value.password,
-        uid: userID.toString(),
-        userid: userID.toString(),
+    // customize the fee structure as needed
+    if (userCategory === "Teacher") {
+      const valueToStore: {
+        course_id: number;
+        amount: number;
+        salary_type: string;
+        class_per_month: number | null;
+      }[] = [];
+
+      value.fee_structure_teacher.forEach((item: TeacherFeeStruct) => {
+        valueToStore.push({
+          course_id: item.course_id,
+          salary_type: item.type,
+          amount: item.amount,
+          class_per_month: item.class_per_month
+        });
+        valueToStore.push({
+          course_id: item.course_id,
+          salary_type: "workshop",
+          amount: item.workshop ?? 0.0,
+          class_per_month: null,
+        });
+        valueToStore.push({
+          course_id: item.course_id,
+          salary_type: "extra",
+          amount: item.extra ?? 0.0,
+          class_per_month: null,
+        });
       });
-    } catch (e) {
-      const error = e as AxiosError<IError>;
-      throw new ErrorHandler(
-        400,
-        error.response?.data.message ??
-          "Something went wrong while adding employee info to essl device"
+
+      await client.query(
+        `
+        INSERT INTO employee_salary_structure 
+          (employee_id, course_id, salary_type, amount, class_per_month)
+        VALUES
+          ${generatePlaceholders(valueToStore.length, 5)}
+      `,
+        valueToStore.flatMap((item) => [
+          userID,
+          item.course_id,
+          item.salary_type,
+          item.amount,
+          item.class_per_month
+        ])
+      );
+    } else if (userCategory === "Stuff") {
+      await client.query(
+        `
+        INSERT INTO employee_salary_structure 
+          (employee_id, course_id, salary_type, amount)
+        VALUES
+          ${generatePlaceholders(value.fee_structure_stuff.length, 4)}
+      `,
+        value.fee_structure_stuff.flatMap((item: any) => [
+          userID,
+          null,
+          item.fee_head,
+          item.amount,
+        ])
       );
     }
+
+    // store data to the essl device
+    // await essl.setUser({
+    //   name: value.name,
+    //   password: value.password,
+    //   uid: userID,
+    //   userid: userID,
+    // });
 
     res
       .status(201)
@@ -159,6 +213,47 @@ export const getOneUser = asyncErrorHandler(async (req, res) => {
     `,
     [user_id]
   );
+  if (rowCount === 0) throw new ErrorHandler(404, "No user found");
+
+  const userCategory = rows[0].category as "Teacher" | "Stuff";
+
+  if (userCategory === "Teacher") {
+    const { rows: feeStructrueTeacher } = await pool.query(
+      `
+        SELECT 
+          course_id,
+          MAX(CASE WHEN salary_type IN ('fixed', 'per_class') THEN salary_type END) AS type,
+          MAX(CASE WHEN salary_type IN ('fixed', 'per_class') THEN amount END) AS amount,
+          MAX(amount) FILTER (WHERE salary_type = 'workshop') AS workshop,
+          MAX(amount) FILTER (WHERE salary_type = 'extra') AS extra,
+          MAX(class_per_month) AS class_per_month
+        FROM employee_salary_structure
+        WHERE employee_id = $1
+        GROUP BY course_id
+        ORDER BY course_id;
+    `,
+      [user_id]
+    );
+
+    rows[0].fee_structure_teacher = feeStructrueTeacher;
+    rows[0].fee_structure_stuff = [];
+  } else {
+    const { rows: feeStructrueStaff } = await pool.query(
+      `
+      SELECT 
+        salary_type AS fee_head,
+        amount
+      FROM employee_salary_structure
+      WHERE employee_id = $1   -- change employee id here
+        AND course_id IS NULL
+      ORDER BY salary_type;
+    `,
+      [user_id]
+    );
+
+    rows[0].fee_structure_teacher = [];
+    rows[0].fee_structure_stuff = feeStructrueStaff;
+  }
 
   if (rowCount === 0) throw new ErrorHandler(404, "User Not Found");
 
@@ -249,23 +344,83 @@ export const updateUser = asyncErrorHandler(async (req, res) => {
       ]
     );
 
-    // update to the essl device
+    const userId = value.id.toString();
+    const userCategory = value.category;
 
-    try {
-      await essl.updateUser({
-        name: value.name,
-        password: value.password,
-        uid: value.id.toString(),
-        userid: value.id.toString(),
+    // delete old fee structure of that employee and replace with new one
+    await client.query(
+      "DELETE FROM employee_salary_structure WHERE employee_id = $1",
+      [userId]
+    );
+
+    if (userCategory === "Teacher") {
+      const valueToStore: {
+        course_id: number;
+        amount: number;
+        salary_type: string;
+        class_per_month: number | null
+      }[] = [];
+
+      value.fee_structure_teacher.forEach((item: TeacherFeeStruct) => {
+        valueToStore.push({
+          course_id: item.course_id,
+          salary_type: item.type,
+          amount: item.amount,
+          class_per_month: item.class_per_month
+        });
+        valueToStore.push({
+          course_id: item.course_id,
+          salary_type: "workshop",
+          amount: item.workshop ?? 0.0,
+          class_per_month: null
+        });
+        valueToStore.push({
+          course_id: item.course_id,
+          salary_type: "extra",
+          amount: item.extra ?? 0.0,
+          class_per_month: null
+        });
       });
-    } catch (e) {
-      const error = e as AxiosError<IError>;
-      throw new ErrorHandler(
-        400,
-        error.response?.data.message ??
-          "Something went wrong while adding employee info to essl device"
+
+      await client.query(
+        `
+        INSERT INTO employee_salary_structure 
+          (employee_id, course_id, salary_type, amount, class_per_month)
+        VALUES
+          ${generatePlaceholders(valueToStore.length, 5)}
+      `,
+        valueToStore.flatMap((item) => [
+          userId,
+          item.course_id,
+          item.salary_type,
+          item.amount,
+          item.class_per_month
+        ])
+      );
+    } else if (userCategory === "Stuff") {
+      await client.query(
+        `
+        INSERT INTO employee_salary_structure 
+          (employee_id, course_id, salary_type, amount)
+        VALUES
+          ${generatePlaceholders(value.fee_structure_stuff.length, 4)}
+      `,
+        value.fee_structure_stuff.flatMap((item: any) => [
+          userId,
+          null,
+          item.fee_head,
+          item.amount,
+        ])
       );
     }
+
+    // update to the essl device
+    // await essl.updateUser({
+    //   name: value.name,
+    //   password: value.password,
+    //   uid: userId,
+    //   userid: userId,
+    // });
 
     res
       .status(201)
@@ -289,22 +444,28 @@ export const deleteUser = asyncErrorHandler(async (req, res) => {
   try {
     await client.query("BEGIN");
 
-    await client.query("DELETE FROM users WHERE id = $1", [value.id]);
+    // get the user which i want to delete
 
-    // update to the essl device
+    const { rows, rowCount } = await client.query(
+      "DELETE FROM users WHERE id = $1 RETURNING name, password",
+      [value.id]
+    );
 
-    try {
-      await essl.deleteUser({
-        uid: value.id.toString(),
-      });
-    } catch (e) {
-      const error = e as AxiosError<IError>;
-      throw new ErrorHandler(
-        400,
-        error.response?.data.message ??
-          "Something went wrong while adding employee info to essl device"
-      );
-    }
+    if (rowCount == 0)
+      throw new ErrorHandler(400, "No user found with this id");
+
+    const { isError, decrypted } = decrypt(rows[0].password);
+    if (isError || !decrypted)
+      throw new ErrorHandler(400, "User password is invalid");
+
+    // const userId = value.id.toString();
+    // // update to the essl device
+    // await essl.deleteUser({
+    //   uid: userId,
+    //   userid: userId,
+    //   name: rows[0].name,
+    //   password: decrypted
+    // });
 
     res.status(200).json(new ApiResponse(200, "User Deleted"));
 
@@ -346,3 +507,149 @@ export const getUserLeaveRequest = asyncErrorHandler(
     res.status(200).json(new ApiResponse(200, "User Leave list", rows));
   }
 );
+
+export const getSingleTeacherDailyClassStatus = asyncErrorHandler(async (req: CustomRequest, res) => {
+  const { error, value } = VSingleUser.validate({
+    id: req.user_info?.id
+  })
+
+  if (error) throw new ErrorHandler(400, error.message);
+
+
+  // const { rows } = await pool.query(
+  //   `
+  //   SELECT 
+  //     c.name AS course_name, 
+  //     c.id,
+  //     EXISTS (SELECT 1 FROM teacher_classes WHERE teacher_id = ess.employee_id AND course_id = c.id AND class_type = 'regular') AS regular, 
+  //     EXISTS (SELECT 1 FROM teacher_classes WHERE teacher_id = ess.employee_id AND course_id = c.id AND class_type = 'workshop') AS workshop, 
+  //     COALESCE((SELECT units FROM teacher_classes WHERE teacher_id = ess.employee_id AND course_id = c.id AND class_type = 'extra'), 0) AS extra 
+  //   FROM employee_salary_structure ess 
+  //   LEFT JOIN course c ON c.id = ess.course_id 
+
+  //   WHERE ess.employee_id = $1 
+
+  //   GROUP BY ess.employee_id, c.id
+  //   `,
+  //   [value.id]
+  // )
+
+  const { rows } = await pool.query(
+    `
+    SELECT 
+      c.name AS course_name, 
+      c.id,
+      (COUNT(*) FILTER (WHERE tc.class_type = 'regular') > 0) AS regular,
+      (COUNT(*) FILTER (WHERE tc.class_type = 'workshop') > 0) AS workshop,
+      COALESCE(MAX(tc.units) FILTER (WHERE tc.class_type = 'extra'), 0) AS extra
+    FROM employee_salary_structure ess 
+
+    LEFT JOIN course c 
+    ON c.id = ess.course_id
+
+    LEFT JOIN teacher_classes tc 
+    ON tc.teacher_id = ess.employee_id AND ess.course_id = tc.course_id
+
+    WHERE ess.employee_id = $1
+
+    GROUP BY ess.employee_id, c.id
+    ORDER BY c.id
+    `,
+    [value.id]
+  )
+
+  res.status(200).json(new ApiResponse(200, "One teacher daily class list", rows))
+})
+
+export const manageTeacherDailyClassStatus = asyncErrorHandler(async (req: CustomRequest, res) => {
+  const { error, value } = VUpdateTeacherClassStatus.validate(req.body ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
+
+  if (value.length === 0) throw new ErrorHandler(400, "Nothing to save")
+
+  const userId = req.user_info?.id;
+  if (!userId) throw new ErrorHandler(401, "Unauthorize")
+
+  await manageTeacherClassStatus({
+    employee_id: userId,
+    values: value
+  })
+
+  res.status(200).json(new ApiResponse(200, "Class status updated"))
+
+  // try {
+  //   await client.query("BEGIN");
+
+  //   //delete current date current teacher record to perfome replace activity
+  //   await client.query("DELETE FROM teacher_classes WHERE teacher_id = $1 AND class_date = CURRENT_DATE", [userId]);
+
+  //   const { rows } = await client.query(
+  //     `
+  //     SELECT
+  //         course_id,
+  //         CASE WHEN salary_type = 'per_class' OR salary_type = 'fixed' THEN 'regular' ELSE salary_type END AS salary_type,
+  //         ROUND(
+  //             CASE 
+  //                 WHEN salary_type = 'fixed' 
+  //                 THEN (amount / COALESCE(class_per_month, 1)) 
+  //                 ELSE amount 
+  //             END, 
+  //             2
+  //         ) AS earn_per_course
+  //     FROM employee_salary_structure ess
+  //     WHERE ess.employee_id = $1;
+  //     `,
+  //     [userId]
+  //   )
+
+  //   const valueToStore: { course_id: number; class_type: string; units: number, daily_earning : number }[] = []
+  //   // modify the value accoding my database setup
+  //   value.forEach(item => {
+  //     if (item.regular == true) {
+  //       const income = rows.find(incomeItem => incomeItem.course_id == item.id && incomeItem.salary_type == 'regular')?.earn_per_course ?? 0;
+  //       valueToStore.push({
+  //         course_id: item.id,
+  //         class_type: 'regular',
+  //         units: 1,
+  //         daily_earning : income
+  //       });
+  //     }
+  //     if (item.workshop == true) {
+  //       const income = rows.find(incomeItem => incomeItem.course_id == item.id && incomeItem.salary_type == 'workshop')?.earn_per_course ?? 0;
+  //       valueToStore.push({
+  //         course_id: item.id,
+  //         class_type: 'workshop',
+  //         units: 1,
+  //         daily_earning : income
+  //       });
+  //     }
+  //     if (item.extra > 0) {
+  //       const income = rows.find(incomeItem => incomeItem.course_id == item.id && incomeItem.salary_type == 'extra')?.earn_per_course ?? 0;
+  //       valueToStore.push({
+  //         course_id: item.id,
+  //         class_type: 'extra',
+  //         units: item.extra,
+  //         daily_earning : income * parseInt(item.extra)
+  //       });
+  //     }
+  //   })
+
+  //   // now add new data to the teacher class table
+  //   await client.query(
+  //     `
+  //     INSERT INTO teacher_classes (teacher_id, course_id, class_type, units, daily_earning)
+  //     VALUES ${generatePlaceholders(valueToStore.length, 5)}
+  //     `,
+  //     valueToStore.flatMap(item => [userId, item.course_id, item.class_type, item.units, item.daily_earning])
+  //   )
+  //   await client.query("COMMIT");
+
+  //   res.status(200).json(new ApiResponse(200, "Class status updated"))
+  // } catch (error: any) {
+  //   await client.query("ROLLBACK");
+  //   throw new ErrorHandler(400, error.message)
+  // } finally {
+  //   client.release()
+  // }
+
+})

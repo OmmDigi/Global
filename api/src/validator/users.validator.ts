@@ -31,6 +31,20 @@ export const VCreateUser = Joi.object({
   image: Joi.string().optional().allow(""),
   password: Joi.string().required(),
   permissions: Joi.array().items(Joi.number()).required(),
+
+  fee_structure_teacher: Joi.array().items(Joi.object({
+    course_id: Joi.number().required(),
+    amount: Joi.number().required(),
+    workshop: Joi.number().optional(),
+    extra: Joi.number().required(),
+    type: Joi.string().required(),
+    class_per_month: Joi.number().required()
+  })),
+
+  fee_structure_stuff: Joi.array().items(Joi.object({
+    fee_head: Joi.string().required(),
+    amount: Joi.number().required()
+  }))
 });
 
 export const VUpdateUser = Joi.object({
@@ -48,4 +62,26 @@ export const VUpdateUser = Joi.object({
   image: Joi.string().optional().allow(""),
   password: Joi.string().required(),
   permissions: Joi.array().items(Joi.number()).required(),
+
+  fee_structure_teacher: Joi.array().items(Joi.object({
+    course_id: Joi.number().required(),
+    amount: Joi.number().required(),
+    workshop: Joi.number().optional(),
+    extra: Joi.number().required(),
+    type: Joi.string().required(),
+    class_per_month: Joi.number().required()
+  })),
+
+  fee_structure_stuff: Joi.array().items(Joi.object({
+    fee_head: Joi.string().required(),
+    amount: Joi.number().required()
+  }))
 });
+
+export const VUpdateTeacherClassStatus = Joi.array().items(Joi.object({
+  course_name: Joi.any().optional(),
+  id: Joi.number().required(),
+  regular: Joi.boolean().required(),
+  workshop: Joi.boolean().required(),
+  extra: Joi.number().required(),
+}))

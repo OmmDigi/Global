@@ -1,4 +1,5 @@
-import Joi from "joi";
+import Joi, { number } from "joi";
+import { VUpdateTeacherClassStatus } from "./users.validator";
 
 export const VAddAttendance = Joi.object({
   password: Joi.string().required(),
@@ -15,5 +16,10 @@ export const VAddAttendance = Joi.object({
 
 export const VSingleAttendance = Joi.object({
   id: Joi.number().required(),
-  month_year : Joi.string().optional()
+  month_year: Joi.string().optional()
 });
+
+export const VEditTeacherClassStatus = Joi.object({
+  id : Joi.number().required(),
+  for_courses : VUpdateTeacherClassStatus
+})
