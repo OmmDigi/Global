@@ -8,10 +8,11 @@ const API = axios.create({
   headers: {
     "Content-Type": "application/json",
     Authorization:
-       localStorage.getItem("token") ? localStorage.getItem("token") : "",
+      (typeof window !== "undefined") & localStorage.getItem("token")
+        ? localStorage.getItem("token")
+        : "",
   },
 });
-
 
 // API.interceptors.request.use((config) => {
 //   const token = localStorage.getItem("token");
@@ -47,7 +48,3 @@ export const deleteFetcher = async (url) => {
   const response = await API.delete(url);
   return response.data;
 };
-
-
-
-

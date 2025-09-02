@@ -385,7 +385,7 @@ function page() {
             <div className="flex justify-center items-center">
               <p className="text-2xl text-white p-2 bg-red-500">Note*</p>
               <p className="text-2xl text-white p-2 bg-red-400">
-                Don't Close or Refreash this page
+                Don&apos;t Close or Refreash this page
               </p>{" "}
             </div>
 

@@ -153,7 +153,6 @@ function page() {
   } = useSWR("api/v1/course/dropdown", getFetcher);
   if (courseLoading) {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
-    console.log("leaveList", leaveList);
   }
   console.log("courseList", courseList);
 
@@ -483,7 +482,7 @@ function page() {
             <div className="flex justify-center items-center">
               <p className="text-2xl text-white p-2 bg-red-500">Note*</p>
               <p className="text-2xl text-white p-2 bg-red-400">
-                Don't Close or Refreash this page
+                Don&apos;t Close or Refreash this page
               </p>{" "}
             </div>
 
@@ -693,7 +692,7 @@ function page() {
 
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-1">
-                          Candidate's Name
+                          Candidate&apos;s Name
                         </label>
                         <input
                           type="text"
@@ -706,7 +705,7 @@ function page() {
 
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-1">
-                          Father's Name
+                          Father&apos;s Name
                         </label>
                         <input
                           type="text"
@@ -719,7 +718,7 @@ function page() {
 
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-1">
-                          Mother's Name
+                          Mother&apos;s Name
                         </label>
                         <input
                           type="text"
@@ -732,7 +731,7 @@ function page() {
 
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-1">
-                          Guardian's Name
+                          Guardian&apos;s Name
                         </label>
                         <input
                           type="text"
@@ -1484,7 +1483,7 @@ function page() {
 
                         <div>
                           <label className="block text-sm font-medium text-start text-gray-700 mb-2">
-                            Father's/Husband's Name
+                            Father&apos;s/Husband&apos;s Name
                           </label>
                           <input
                             type="text"
@@ -1513,7 +1512,7 @@ function page() {
                           <span className="test-lg font-bold">
                             Five Thousand
                           </span>
-                          ) only towards Admission Fee for Montessori Teachers'
+                          ) only towards Admission Fee for Montessori Teachers&apos;
                           Training course (6 Months) of
                         </p>
 
@@ -1585,7 +1584,7 @@ function page() {
 
                         <div>
                           <label className="block text-sm font-medium text-start text-gray-700 mb-2">
-                            Father's/Husband's Name
+                            Father&apos;s/Husband&apos;s Name
                           </label>
                           <input
                             type="text"
@@ -1616,7 +1615,7 @@ function page() {
                           </span>
                           ) only towards BSS Registration Fee within 3 (Three)
                           months after 6 (Six) months of getting Admission for
-                          Montessori Teachers' Training Course.
+                          Montessori Teachers&apos; Training Course.
                         </p>
                       </div>
                     </div>
