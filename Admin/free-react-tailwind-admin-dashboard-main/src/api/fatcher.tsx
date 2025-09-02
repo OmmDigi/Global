@@ -54,4 +54,3 @@ export const deleteFetcher = async (url: string) => {
 };
 
 //  const permission = localStorage.getItem("permissions", permissions)
-// console.log("sadasdasdsadasd",permission);

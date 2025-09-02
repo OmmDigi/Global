@@ -120,7 +120,6 @@ export default function AdmissionAdmin() {
     const [pageCount, setPageCount] = useState<number>(1);
 
   // get course list
-  console.log("dateRange", dayjs(dateRange[0]).format("YYYY-MM-DD"));
   // const steps = [
   //   {
   //     title: "First",
@@ -219,7 +218,6 @@ const handleChildData = (data:any) => {
   const handleFileChange = (e: any, name: string) => {
     const files = e.target.files;
 
-    console.log("handleFileChange", files);
 
     uploadFiles({
       url: `${uploadUrl}api/v1/upload/multiple`,
@@ -254,7 +252,6 @@ const handleChildData = (data:any) => {
 
   const handleFileUpload = (e: any, type: string) => {
     const file = e.target.files[0];
-    console.log("file", file);
 
     if (file) {
       const reader = new FileReader();
@@ -265,7 +262,6 @@ const handleChildData = (data:any) => {
         }
       };
       reader.readAsDataURL(file);
-      console.log("uploadUrl", uploadUrl);
 
       uploadFiles({
         url: `${uploadUrl}api/v1/upload/multiple`,
@@ -302,7 +298,6 @@ const handleChildData = (data:any) => {
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    console.log("formDataaa", formData);
 
     e.preventDefault();
     try {
@@ -323,7 +318,6 @@ const handleChildData = (data:any) => {
           ? error.response?.data?.message
           : "Try Again",
       });
-      console.log("Upload Error:", error);
       // alert("Form submitted successfully!");
     }
   };
@@ -335,7 +329,6 @@ const handleChildData = (data:any) => {
       setMontessoriTeachers(true);
       const response = await getFetcher(`api/v1/admission/form/${id}`);
       const userData = JSON.parse(response?.data?.admission_details ?? "{}");
-      console.log("userDataform", userData);
       const tempObj: any = {};
 
       Object.entries(userData).forEach(([key, value]) => {
@@ -349,7 +342,6 @@ const handleChildData = (data:any) => {
       // alert(typeof userData?.courseName);
       // alert(userData?.courseName);
 
-      console.log("Edit data loaded:", userData);
     } catch (error) {
       console.error("Failed to fetch user data for edit:", error);
     }
@@ -379,12 +371,10 @@ const handleChildData = (data:any) => {
           ? error.response?.data?.message
           : "Try Again",
       });
-      console.log("Upload Error:", error);
     }
   };
 
   const handleActive = async (isActive: boolean, id: number) => {
-    console.log("isactiveaaaa ", id);
     type UpdateFormPayload = {
       form_id: number; // depends on your API, choose one
       form_status: boolean;
@@ -401,13 +391,11 @@ const handleChildData = (data:any) => {
         type: "success",
         content: response.message,
       });
-      console.log("Upload Success:", response);
     } catch (error: any) {
       messageApi.open({
         type: "error",
         content: error.response?.data?.message,
       });
-      console.log("Upload Error:", error);
     }
   };
 
@@ -428,7 +416,6 @@ const handleChildData = (data:any) => {
 
   const next = () => {
     jumpToTop();
-    console.log("Current", current);
 
     setCurrent(current + 1);
   };
@@ -449,7 +436,6 @@ const handleChildData = (data:any) => {
 
   const handleCourseChange = (e: any) => {
     const { name, value } = e.target;
-    console.log("handleCourseChange", value);
     setCourse(value);
     setFormData((prev) => ({
       ...prev,

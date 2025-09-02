@@ -13,7 +13,6 @@ export default function MonthlyIncome() {
   ]);
   const [startDate, endDate] = dateRange;
   // get course list
-  console.log("dateRange", dayjs(dateRange[0]).format("YYYY-MM-DD"));
 
   const { data: income, isLoading: incomeLoading } = useSWR(
     `api/v1/dashboard/income${
@@ -24,7 +23,6 @@ export default function MonthlyIncome() {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }
 
-  console.log("income", income);
 
   const data = [
     ["Task", "Hours per Day"],

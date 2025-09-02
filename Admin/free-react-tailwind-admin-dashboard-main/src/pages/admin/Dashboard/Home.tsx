@@ -134,7 +134,6 @@ export default function Home() {
   //   return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   // }
 
-  // console.log("teacherList", teacherList);
 
   // Individual checkbox toggle
 
@@ -199,7 +198,6 @@ export default function Home() {
 
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
-    console.log("token", query);
     const token = query.get("token");
     const category = query.get("category");
     const permissions = query.get("permissions");
@@ -234,7 +232,6 @@ export default function Home() {
   }
 
   const handleSave = async () => {
-    console.log("teacherList", data);
 
     try {
       const response = await update(data as any);
@@ -243,7 +240,6 @@ export default function Home() {
         type: "success",
         content: response.message,
       });
-      console.log("Upload Success:", response);
       setSubmit(true);
       // setData([]);
     } catch (error: any) {

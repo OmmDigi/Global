@@ -58,12 +58,12 @@ const BasicTablePayslip = ({ role }: any) => {
   );
 
   if (attandanceLoading) {
-    console.log("loading", attandanceLoading);
+   return <div>Loading ...</div> 
   }
   if (attandanceError) {
-    console.log("stuffError", attandanceError);
+    return <div>Error ...</div> 
+   
   }
-  console.log("attandancelist", attandancelist);
   const { trigger: update } = useSWRMutation(
     "api/v1/excel/url",
     (url, { arg }) => postFetcher(url, arg)
@@ -88,16 +88,13 @@ const BasicTablePayslip = ({ role }: any) => {
           window.open(response?.data,"__blank");
           //    window.open(response?.data,"__blank");
         }
-      console.log("Upload Success:", response);
     } catch (error: any) {
       messageApi.open({
         type: "error",
         content: error.response?.data?.message,
       });
-      console.log("Upload Error:", error);
     }
 
-    console.log("Generating payslip for:", data);
     // API call here
   };
   // const navigate = useNavigate();

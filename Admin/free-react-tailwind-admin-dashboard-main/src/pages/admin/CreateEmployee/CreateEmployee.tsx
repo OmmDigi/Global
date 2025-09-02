@@ -17,12 +17,9 @@ import {
 import { uploadFiles } from "../../../utils/uploadFile";
 import useSWR, { mutate } from "swr";
 import MultiSelect from "../../../components/form/MultiSelect";
+import { MultiSelectOption } from "../../../types";
 
-interface Option {
-  name: string;
-  id: number;
-}
-const options: Option[] = [
+const options: MultiSelectOption[] = [
   {
     name: "Dashboard",
     id: 1,
@@ -93,7 +90,7 @@ export default function CreateEmployee() {
       amount: string;
       amount_type: string;
     }[];
-    permissions: []; // proper type
+    permissions: string[]; // proper type
     description: string;
   }
   const [messageApi, contextHolder] = message.useMessage();
@@ -128,34 +125,31 @@ export default function CreateEmployee() {
   );
 
   // edit employee
-  const { trigger: update, data } = useSWRMutation(
-    "api/v1/users",
-    (url, { arg }) => putFetcher(url, arg)
+  const { trigger: update } = useSWRMutation("api/v1/users", (url, { arg }) =>
+    putFetcher(url, arg)
   );
-  console.log("dataUpdate", data);
 
   // get course list
   const { data: courseList, isLoading: courseLoading } = useSWR(
     "api/v1/course",
     getFetcher
   );
-  if (courseLoading) {
-    console.log("loading", courseLoading);
-  }
+
   // get stuff list
   const {
     data: stufflist,
     isLoading: stuffLoading,
     error: stuffError,
   } = useSWR("api/v1/users", getFetcher);
-
+  if (courseLoading) {
+    return <div>Loading ...</div>;
+  }
   if (stuffLoading) {
-    console.log("loading", stuffLoading);
+    return <div>Loading...</div>;
   }
   if (stuffError) {
-    console.log("stuffError", stuffError);
+    return <div>Error...</div>;
   }
-  console.log("stufflist", stufflist);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -163,7 +157,6 @@ export default function CreateEmployee() {
     >
   ) => {
     const { name, value } = e.target;
-    // console.log("handleChange", name, value);
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -175,28 +168,21 @@ export default function CreateEmployee() {
     >
   ) => {
     const { name, value } = e.target;
-    // console.log("handleChange", name, value);
     setTeacher(value);
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
-  const handleNameChange = (selected: string[]) => {
-    console.log("handleNameChange wewqe", selected);
-
+  const handleNameChange = (selected: any[]) => {
     setFormData((prev: any) => ({
       ...prev,
       permissions: selected,
     }));
   };
 
-  console.log("staates", formData);
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    console.log("formData hh", formData);
 
     try {
       const response = await create(formData as any);
@@ -208,7 +194,6 @@ export default function CreateEmployee() {
         type: "success",
         content: response.message,
       });
-      console.log("Upload Success:", response);
       setPhoto(null);
       setFormData({
         image: "",
@@ -227,9 +212,10 @@ export default function CreateEmployee() {
     } catch (error: any) {
       messageApi.open({
         type: "error",
-        content: error.response?.data?.message ? error.response?.data?.message : " Try Again",
+        content: error.response?.data?.message
+          ? error.response?.data?.message
+          : " Try Again",
       });
-      console.log("Upload Error:", error);
     }
   };
 
@@ -247,7 +233,6 @@ export default function CreateEmployee() {
         }
       };
 
-      console.log("formData2", file);
       reader.readAsDataURL(file);
 
       uploadFiles({
@@ -271,15 +256,12 @@ export default function CreateEmployee() {
     }
   };
 
-  // console.log("userData", editData);
-
   const handleEdit = async (id: number) => {
     try {
       setId(id);
       jumpToTop();
       const response = await getFetcher(`api/v1/users/${id}`);
       const userData = response.data;
-      console.log("userData", userData);
 
       setPhoto(userData?.image);
       setTeacher(userData?.category);
@@ -311,15 +293,14 @@ export default function CreateEmployee() {
           ? userData.fee_structure_stuff.map((item: any) => ({
               fee_head: item.fee_head || "",
               amount: item.amount || "",
-              amount_type:item.amount_type || "",
+              amount_type: item.amount_type || "",
             }))
           : [
-              { fee_head: "", amount: "",amount_type:"" },
-              { fee_head: "", amount: "",amount_type:"" },
+              { fee_head: "", amount: "", amount_type: "" },
+              { fee_head: "", amount: "", amount_type: "" },
             ],
         description: userData?.description,
       });
-      console.log("Edit data loaded:", userData);
     } catch (error) {
       console.error("Failed to fetch user data for edit:", error);
     }
@@ -334,7 +315,6 @@ export default function CreateEmployee() {
         content: response.message,
       });
       setId(0);
-      console.log("Upload Success:", response);
       setPhoto(null);
       setFormData({
         image: "",
@@ -355,7 +335,6 @@ export default function CreateEmployee() {
         type: "error",
         content: error.response?.data?.message,
       });
-      console.log("Upload Error:", error);
     }
   };
 
@@ -393,7 +372,7 @@ export default function CreateEmployee() {
       ...prev,
       fee_structure_stuff: [
         ...prev.fee_structure_stuff,
-        { fee_head: "", amount: "",amount_type:"" },
+        { fee_head: "", amount: "", amount_type: "" },
       ],
     }));
   };
@@ -425,6 +404,8 @@ export default function CreateEmployee() {
       behavior: "smooth",
     });
   };
+
+  console.log(formData?.permissions);
 
   return (
     <div>
@@ -818,8 +799,9 @@ export default function CreateEmployee() {
                 <div>
                   <MultiSelect
                     label="permissions"
-                    options={options as any}
+                    options={options}
                     onChange={(selected) => handleNameChange(selected)}
+                    // defaultSelected={}
                     defaultSelected={formData?.permissions}
                     // className="w-full h-auto px-3 py-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
                   />

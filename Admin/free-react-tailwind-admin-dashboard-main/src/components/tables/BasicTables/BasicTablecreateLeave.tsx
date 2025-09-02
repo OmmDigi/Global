@@ -27,7 +27,6 @@ export default function BasicTablecreateLeave({
   //   current,
   //   pageSize
   // ) => {
-  //   console.log(current, pageSize);
   // };
 
   const { trigger: deleteUser } = useSWRMutation(

@@ -6,14 +6,12 @@ import {
   TableRow,
 } from "../../ui/table";
 
-import { message, Pagination, PaginationProps } from "antd";
+import { message, Pagination } from "antd";
 import { useState } from "react";
 import { BiSolidShow } from "react-icons/bi";
 import { deleteFetcher } from "../../../api/fatcher";
 import useSWRMutation from "swr/mutation";
 import { mutate } from "swr";
-
-
 
 // Define the table data using the interface
 
@@ -21,11 +19,11 @@ interface Message {
   id: number;
   title: string;
   description: string;
-  created_at: string; 
+  created_at: string;
   send_to: string[];
 }
 export default function BasicTableNotice({ noticeList }: any) {
-const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -39,15 +37,13 @@ const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
     setSelectedMessage(null);
   };
 
-  const onShowSizeChange: PaginationProps["onShowSizeChange"] = (
-    current,
-    pageSize
-  ) => {
-    console.log(current, pageSize);
-  };
+  // const onShowSizeChange: PaginationProps["onShowSizeChange"] = (
+  //   current,
+  //   pageSize
+  // ) => {
+  // };
 
-
-   // for delete
+  // for delete
   const { trigger: deleteUser } = useSWRMutation(
     "api/v1/notice",
     (url, { arg }: { arg: number }) => deleteFetcher(`${url}/${arg}`) // arg contains the id
@@ -65,7 +61,7 @@ const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
-     {contextHolder}
+      {contextHolder}
       <div className="max-w-full overflow-x-auto">
         <Table>
           {/* Table Header */}
@@ -100,12 +96,12 @@ const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
 
           {/* Table Body */}
           <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-            {noticeList?.data?.map((order:any, index:number) => (
+            {noticeList?.data?.map((order: any, index: number) => (
               <TableRow key={order.id}>
                 <TableCell className="px-5 py-4 sm:px-6 text-start">
                   <div className="flex items-center gap-3">
                     <div className="block font-medium text-gray-500 text-theme-xs dark:text-gray-400]">
-                      {index +1}
+                      {index + 1}
                     </div>
                     <div>
                       <div className="flex gap-2">
@@ -130,17 +126,19 @@ const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   {order.title}
                 </TableCell>
-                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   {order.created_at}
                 </TableCell>
-               
 
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   <div className="flex items-center gap-2">
                     {/* <button className="text-blue-500 hover:underline">
                       Edit
                     </button> */}
-                    <button onClick={() => handleDelete(order.id)} className="text-red-500 hover:underline">
+                    <button
+                      onClick={() => handleDelete(order.id)}
+                      className="text-red-500 hover:underline"
+                    >
                       Delete
                     </button>
                   </div>
@@ -153,7 +151,7 @@ const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
         <div>
           <Pagination
             showSizeChanger
-            onChange={onShowSizeChange}
+            // onChange={onShowSizeChange}
             defaultCurrent={1}
             total={500}
             // colorPrimaryHover={'#qwe23'}
@@ -161,17 +159,19 @@ const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
         </div>
       </div>
 
-      {showModal &&  selectedMessage && (
+      {showModal && selectedMessage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-opacity-80">
           <div className="bg-white p-6 rounded-lg max-w-md w-full shadow-lg">
-            <h2 className="text-xl font-semibold mb-4 text-center">Notice Details</h2>
-            
+            <h2 className="text-xl font-semibold mb-4 text-center">
+              Notice Details
+            </h2>
+
             <p>
               <strong>Title:</strong> {selectedMessage?.title}
             </p>
             <p className="flex gap-2">
-              <strong>Sended to:</strong>  
-              {selectedMessage?.send_to?.map((send:any) =>(
+              <strong>Sended to:</strong>
+              {selectedMessage?.send_to?.map((send: any) => (
                 <p> {send} , </p>
               ))}
             </p>

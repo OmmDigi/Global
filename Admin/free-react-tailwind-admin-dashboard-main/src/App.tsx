@@ -78,7 +78,6 @@ export default function App() {
     }
   }, []);
 
-  console.log("asdad", user);
 
   return (
     <>

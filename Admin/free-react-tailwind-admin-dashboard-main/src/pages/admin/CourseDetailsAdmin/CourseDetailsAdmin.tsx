@@ -27,8 +27,6 @@ export default function CourseDetailsAdmin() {
     if (token) localStorage.setItem("token", token);
     if (category) localStorage.setItem("category", category);
 
-    console.log("Token:", window.location.search);
-    console.log("Category:", category);
   }, []);
 
   //   get Fees head
@@ -46,7 +44,6 @@ export default function CourseDetailsAdmin() {
   if (feesStructureLoading) {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }
-  console.log("feesStructure", feesStructure);
 
   const handleAmountChange = (e: any, item: any) => {
     const value = e.target.value;
@@ -80,7 +77,6 @@ export default function CourseDetailsAdmin() {
     };
 
     // setFormData2(finalFormData);
-    console.log("Submitted FormData:", finalFormData);
     try {
       const response = await create(finalFormData as any);
       messageApi.open({
@@ -95,7 +91,6 @@ export default function CourseDetailsAdmin() {
         type: "error",
         content: error.response?.data?.message,
       });
-      console.log("Upload Error:", error);
     }
 
     setEnteredAmounts({});

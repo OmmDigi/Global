@@ -29,7 +29,6 @@ IProps) {
   //   current,
   //   pageSize
   // ) => {
-  //   console.log(current, pageSize);
   // };
 
   const { trigger: deleteUser } = useSWRMutation(

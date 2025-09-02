@@ -26,7 +26,6 @@ export default function BasicTableFeesHead({
   //   current,
   //   pageSize
   // ) => {
-  //   console.log(current, pageSize);
   // };
 
 //   const { trigger: deleteUser, isMutating } = useSWRMutation(

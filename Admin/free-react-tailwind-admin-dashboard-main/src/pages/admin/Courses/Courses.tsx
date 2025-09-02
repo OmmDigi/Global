@@ -72,7 +72,6 @@ export default function Courses() {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }
 
-  console.log("feehead", feehead);
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -87,7 +86,6 @@ export default function Courses() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("formcourse", formData);
 
     try {
       const response = await create(formData as any);
@@ -141,7 +139,6 @@ export default function Courses() {
             ],
       });
     } catch (error) {
-      console.log("Failed to fetch user data for edit:", error);
     }
   };
 
@@ -171,12 +168,10 @@ export default function Courses() {
           ? error.response?.data?.message
           : "Try Again",
       });
-      console.log("Upload Error:", error);
     }
   };
 
   const handleActive = async (isActive: boolean, id: number) => {
-    console.log("isactiveaaaa ", id);
     type UpdateFormPayload = {
       id: string | number; // depends on your API, choose one
       is_active: boolean;
@@ -193,13 +188,11 @@ export default function Courses() {
         type: "success",
         content: response.message,
       });
-      console.log("Upload Success:", response);
     } catch (error: any) {
       messageApi.open({
         type: "error",
         content: error.response?.data?.message,
       });
-      console.log("Upload Error:", error);
     }
   };
 

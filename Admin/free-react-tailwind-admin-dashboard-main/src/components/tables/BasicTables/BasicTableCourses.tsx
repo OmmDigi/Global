@@ -26,7 +26,6 @@ const BasicTableCourses: React.FC<IProps> = ({ courseList, onEdit, onActive, }) 
   //   current,
   //   pageSize
   // ) => {
-  //   console.log(current, pageSize);
   // };
  
 

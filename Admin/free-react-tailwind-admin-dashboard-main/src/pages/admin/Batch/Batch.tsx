@@ -7,7 +7,7 @@ import useSWRMutation from "swr/mutation";
 import { getFetcher, postFetcher, putFetcher } from "../../../api/fatcher";
 import { message } from "antd";
 import useSWR, { mutate } from "swr";
-import MultiSelectName from "../../../components/form/MultiSelectName";
+import MultiSelect from "../../../components/form/MultiSelect";
 
 interface Option {
   name: string;
@@ -90,13 +90,12 @@ export default function Batch() {
 
   const handleUpdate = async () => {
     try {
-      const response = await update( formData as any);
+      const response = await update(formData as any);
       mutate("api/v1/course/batch");
       messageApi.open({
         type: "success",
         content: response.message,
       });
-      console.log("Upload Success:", response);
       setId(0);
       setFormData({
         course_id: "",
@@ -108,12 +107,10 @@ export default function Batch() {
         type: "error",
         content: error.response?.data?.message,
       });
-      console.log("Upload Error:", error);
     }
   };
 
   const handleActive = async (isActive: boolean, id: number) => {
-    console.log("isactiveaaaa ", isActive);
     type UpdateFormPayload = {
       id: string | number; // depends on your API, choose one
       is_active: boolean;
@@ -123,28 +120,25 @@ export default function Batch() {
       is_active: isActive,
     };
     try {
-      const response = await update( UpdateFormPayload as any);
+      const response = await update(UpdateFormPayload as any);
 
       mutate("api/v1/course/batch");
       messageApi.open({
         type: "success",
         content: response.message,
       });
-      console.log("Upload Success:", response);
     } catch (error: any) {
       messageApi.open({
         type: "error",
         content: error.response?.data?.message,
       });
-      console.log("Upload Error:", error);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("form", formData);
     try {
-      const response = await create( formData as any);
+      const response = await create(formData as any);
       //   mutate(
       //     (currentData: any) => [...(currentData || []), response.data],
       //     false
@@ -153,7 +147,6 @@ export default function Batch() {
         type: "success",
         content: response.message,
       });
-      console.log("Upload Success:", response);
 
       setFormData({
         course_id: "",
@@ -167,7 +160,6 @@ export default function Batch() {
           ? error.response?.data?.message
           : " try again ",
       });
-      console.log("Upload Error:", error);
     }
   };
 
@@ -223,8 +215,8 @@ export default function Batch() {
                   </div>
                   <div>
                     {/* <Label htmlFor="inputOne">{"S/elect Batch Month"}</Label> */}
-                    <MultiSelectName
-                      options={options}
+                    <MultiSelect
+                      options={options as any}
                       defaultSelected={formData.month_names}
                       label="Select Batch Month"
                       // selectedValues={formData.month_names}

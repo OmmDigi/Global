@@ -33,7 +33,6 @@ type NavItem = {
 
 // const numbers = [4,5,6];
 
-// console.log("permissions", numbers);
 
 const navItems: NavItem[] = [
   {
@@ -146,7 +145,6 @@ const othersItems: NavItem[] = [
   // },
 ];
 
-// console.log("filteredNavItems", filteredNavItems);
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
