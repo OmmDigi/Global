@@ -1,4 +1,4 @@
-CREATE DATABASE IF NOT EXISTS global;
+-- CREATE DATABASE IF NOT EXISTS global;
 -- TBL USERS
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
@@ -388,7 +388,7 @@ CREATE TABLE payslip (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     UNIQUE (user_id, month)
-)
+);
 
 CREATE TABLE employee_loan_or_advance_payment (
     id SERIAL PRIMARY KEY,
