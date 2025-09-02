@@ -55,7 +55,10 @@ const tcpServer = net.createServer((socket) => {
   socket.on("error", console.error);
 });
 
-const PORT = parseInt(process.env.TCP_NET_PORT || "8080");
-tcpServer.listen(PORT, "127.0.0.1", () => {
-  console.log(`✅ ADMS TCP server running on port 127.0.0.1:${PORT}`);
+const HOST = process.env.HOST ?? "127.0.0.1";
+const PORT = parseInt(process.env.TCP_NET_PORT || "8081");
+
+// Start server
+tcpServer.listen(PORT, HOST, () => {
+  console.log(`Server running http://${HOST}:${PORT}`);
 });
