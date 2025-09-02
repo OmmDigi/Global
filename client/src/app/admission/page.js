@@ -222,7 +222,7 @@ function page() {
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        if (type === "photo") {
+        if (type == "photo") {
           console.log("e.target.result", e.target.result);
           setPhoto(e.target.result);
         }
@@ -232,7 +232,7 @@ function page() {
 
     uploadFiles({
       url: `${uploadUrl}api/v1/upload/multiple`,
-      files: file,
+      files: [file],
       folder: "profile_image",
       onUploading(percent) {},
       onUploaded(result) {
@@ -392,7 +392,8 @@ function page() {
         content: response2.message,
       });
 
-      route.push(`${response2?.data?.payment_page_url}`);
+      // route.push(`${response2?.data?.payment_page_url}`);
+      window.open(`${response2?.data?.payment_page_url}`,"__blank")
     } catch (error) {
       messageApi.open({
         type: "error",

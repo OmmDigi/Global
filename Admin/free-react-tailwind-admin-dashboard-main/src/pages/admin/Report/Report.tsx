@@ -8,6 +8,7 @@ import useSWR from "swr";
 import PageMeta from "../../../components/common/PageMeta";
 import ComponentCard from "../../../components/common/ComponentCard";
 import useSWRMutation from "swr/mutation";
+import { log } from "console";
 
 function Report() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -36,9 +37,9 @@ function Report() {
   const [excelFileUrlStudent, setExcelFileUrlStudent] = useState<string | null>(
     null
   );
-
+  
   const handleCourseChange = (e: any) => {
-    const  value  = e.target;
+    const  value  = e.target.value;
     console.log("handleCourseChange", value);
     setCourse(value);
     setExcelFileUrl(null);
@@ -50,7 +51,7 @@ function Report() {
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    const  value  = e.target;
+    const  value  = e.target.value;
     setBatch(value);
     setExcelFileUrl(null);
     setExcelFileUrlStudent(null);
@@ -59,7 +60,7 @@ function Report() {
   const handleModeChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    const  value  = e.target;
+    const  value  = e.target.value;
     setMode(value);
     setExcelFileUrl(null);
     setExcelFileUrlStudent(null);
@@ -90,6 +91,7 @@ function Report() {
     )}&course=${course}&batch=${batch}&mode=${mode}`,
   };
   const handleSearchAccount = () => {
+      console.log("course",course,batch,mode);
     setExcelFileUrl(null);
     startTransition(async () => {
       if (dateRange[0] && dateRange[0] && course && batch) {
@@ -116,6 +118,7 @@ function Report() {
     )}&course=${course}&batch=${batch}`,
   };
   const handleSearchStudent = () => {
+
     setExcelFileUrlStudent(null);
     startTransitionStudent(async () => {
       if (dateRangeStudent[0] && dateRangeStudent[0] && course && batch) {
@@ -173,7 +176,7 @@ function Report() {
               // disabled={id ? true : false}
               // defaultValue={formData?.courseName}
               // value={formData.courseName}
-              onChange={handleCourseChange}
+              onChange={(e) => handleCourseChange(e)}
               className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 "
             >
               <option value="">Option-</option>
