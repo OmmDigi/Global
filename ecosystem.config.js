@@ -1,17 +1,17 @@
 module.exports = {
   apps: [
-    // {
-    //   name: "gti-frontend",
-    //   script: "server.js",
-    //   cwd: "/var/www/globaltechnicalinstitute/frontend",
-    //   env: { PORT: 3001, HOST: "127.0.0.1", NODE_ENV: "production" }
-    // },
-    // {
-    //   name: "gti-crm",
-    //   script: "server.js",
-    //   cwd: "/var/www/globaltechnicalinstitute/crm",
-    //   env: { PORT: 3002, HOST: "127.0.0.1", NODE_ENV: "production" }
-    // },
+    {
+      name: "gti-frontend",
+      script: "server.js",
+      cwd: "/var/www/globaltechnicalinstitute/frontend",
+      env: { PORT: 3001, HOST: "127.0.0.1", NODE_ENV: "production" },
+    },
+    {
+      name: "gti-crm",
+      script: "npm run preview",
+      cwd: "/var/www/globaltechnicalinstitute/Admin/free-react-tailwind-admin-dashboard-main",
+      env: { VITE_PORT: 3002, VITE_HOST: "127.0.0.1", NODE_ENV: "production" },
+    },
     {
       name: "gti-api",
       script: "dist/index.js",
