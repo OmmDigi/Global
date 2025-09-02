@@ -40,7 +40,6 @@ export default function ManageHolidays() {
 );
 
   if (holidayLoading) {
-    console.log("loading", holidayLoading);
   }
 
   // Update course
@@ -49,7 +48,6 @@ export default function ManageHolidays() {
   
   } = useSWRMutation("api/v1/holiday", (url, { arg }) => putFetcher(url, arg));
 
-  console.log("holidayList", holidayList);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -106,7 +104,6 @@ export default function ManageHolidays() {
         holiday_name: userData?.holiday_name,
       });
 
-      console.log("Edit data loaded:", userData);
     } catch (error) {
       console.error("Failed to fetch user data for edit:", error);
     }
@@ -133,12 +130,10 @@ export default function ManageHolidays() {
           ? error.response?.data?.message
           : "Try Again",
       });
-      console.log("Upload Error:", error);
     }
   };
 
   // const handleActive = async (isActive: boolean, id: number) => {
-  //   console.log("isactiveaaaa ", id);
   //   try {
   //     const response = await update({
   //       id: id,
@@ -155,7 +150,6 @@ export default function ManageHolidays() {
   //       type: "error",
   //       content: error.response?.data?.message,
   //     });
-  //     console.log("Upload Error:", error);
   //   }
   // };
 

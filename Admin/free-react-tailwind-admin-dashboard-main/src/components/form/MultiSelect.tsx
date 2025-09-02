@@ -165,12 +165,11 @@
 
 // export default MultiSelect;
 
-
-
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { MultiSelectOption } from "../../types";
 interface MultiSelectProps {
   label: string;
-  options: string[];
+  options: MultiSelectOption[];
   defaultSelected: string[];
   onChange?: (selected: string[]) => void;
   disabled?: boolean;
@@ -182,13 +181,15 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   onChange,
   disabled = false,
 }) => {
-  const [selectedOptions, setSelectedOptions] = useState<string[]>(defaultSelected);
+  const [selectedOptions, setSelectedOptions] = useState<string[]>(
+    () => defaultSelected
+  );
   const [isOpen, setIsOpen] = useState(false);
 
   // 🔑 Keep selectedOptions in sync with defaultSelected (e.g. after edit load)
-  useEffect(() => {
-    setSelectedOptions(defaultSelected);
-  }, [defaultSelected]);
+  // useEffect(() => {
+  //   setSelectedOptions(defaultSelected);
+  // }, [defaultSelected]);
 
   const toggleDropdown = () => {
     if (!disabled) setIsOpen((prev) => !prev);
@@ -200,7 +201,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
       : [...selectedOptions, optionValue];
 
     setSelectedOptions(newSelectedOptions);
-    onChange?.(newSelectedOptions);
+    // onChange?.(newSelectedOptions);
   };
 
   const removeOption = (id: string) => {
@@ -209,9 +210,17 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     onChange?.(newSelectedOptions);
   };
 
-  const selectedValuesText = selectedOptions.map(
-    (id) => options.find((option: any) => option.id === id) || ""
-  );
+  // const selectedValuesText = selectedOptions.map(
+  //   (id) =>
+  //     options.find(
+  //       (option: MultiSelectOption) => option.id.toString() === id
+  //     ) || []
+  // );
+
+  const selectedValuesText =
+    options.filter((option) =>
+      selectedOptions.includes(option.id.toString())
+    ) ?? ([] as MultiSelectOption[]);
 
   return (
     <div className="w-full">
@@ -219,18 +228,20 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
         {label}
       </label>
 
-       <div className="relative  inline-block w-full">
+      <div className="relative  inline-block w-full">
         <div className="relative flex flex-col items-center">
           <div onClick={toggleDropdown} className="w-full">
             <div className="mb-2 flex h-11 rounded-lg border border-gray-300 py-1.5 pl-3 pr-3 shadow-theme-xs outline-hidden transition focus:border-brand-300 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:focus:border-brand-300">
               <div className="flex flex-wrap flex-auto gap-2">
                 {selectedValuesText.length > 0 ? (
-                  selectedValuesText.map((text, index) => (
+                  selectedValuesText.map((item, index) => (
                     <div
-                      key={index}
+                      key={item.id}
                       className="group flex items-center justify-center rounded-full border-[0.7px] border-transparent bg-gray-100 py-1 pl-2.5 pr-2 text-sm text-gray-800 hover:border-gray-200 dark:bg-gray-800 dark:text-white/90 dark:hover:border-gray-800"
                     >
-                      <span className="flex-initial max-w-full">{text}</span>
+                      <span className="flex-initial max-w-full">
+                        {item.name}
+                      </span>
                       <div className="flex flex-row-reverse flex-auto">
                         <div
                           onClick={(e) => {
@@ -276,7 +287,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                     className={`stroke-current ${isOpen ? "rotate-180" : ""}`}
                     width="20"
                     height="20"
-                      onClick={toggleDropdown}
+                    onClick={toggleDropdown}
                     viewBox="0 0 20 20"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -300,11 +311,11 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex flex-col">
-                {options.map((option : any, index:number) => (
+                {options.map((option: any, index: number) => (
                   <div
                     key={index}
                     className={`hover:bg-primary/5 w-full cursor-pointer rounded-t border-b border-gray-200 dark:border-gray-800`}
-                    onClick={() => handleSelect(option.id)}
+                    onClick={() => handleSelect(option.id.toString())}
                   >
                     <div
                       className={`relative flex w-full items-center p-2 pl-2 ${
@@ -328,4 +339,3 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   );
 };
 export default MultiSelect;
-

@@ -101,7 +101,6 @@ const BasicTableInventory: React.FC<IProps> = ({
         type: "error",
         content: error.response?.data?.message,
       });
-      console.log("Upload Error:", error);
     }
 
     // Here you would POST to your API
@@ -125,7 +124,6 @@ const BasicTableInventory: React.FC<IProps> = ({
   //     message.error("Failed to delete user");
   //   }
   // };
-  console.log("closingStock", closingStock);
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">

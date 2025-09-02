@@ -7,7 +7,6 @@ import { getFetcher } from "../../api/fatcher";
 
 export default function MonthlySalesChart() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  console.log("selectedYear", selectedYear);
  // get course list
   const {
     data: admission,
@@ -22,7 +21,6 @@ export default function MonthlySalesChart() {
   const months = admission?.data?.map((item:any) => item.month);
   const admissions = admission?.data?.map((item:any) => Number(item.admission));
   
-  console.log("admission",months,admissions);
 
   const options: ApexOptions = {
     colors: ["#465fff"],

@@ -89,7 +89,6 @@ export default function AmcRecord() {
         type: "success",
         content: response.message,
       });
-      console.log("Upload Success:", response);
       setPhoto(null);
       setFormData({
         file: "",
@@ -106,7 +105,6 @@ export default function AmcRecord() {
         type: "error",
         content: error.response?.data?.message,
       });
-      console.log("Upload Error:", error);
     }
   };
   const handleChange = (
@@ -135,7 +133,6 @@ export default function AmcRecord() {
         }
       };
 
-      console.log("formData2", file);
       reader.readAsDataURL(file);
 
       uploadFiles({
@@ -192,7 +189,6 @@ export default function AmcRecord() {
         type: "success",
         content: response.message,
       });
-      console.log("Upload Success:", response);
       setId(0);
       setPhoto(null);
       setFormData({
@@ -211,7 +207,6 @@ export default function AmcRecord() {
         type: "error",
         content: error.response?.data?.message,
       });
-      console.log("Upload Error:", error);
     }
   };
   const handleTeacherShow = () => {

@@ -23,7 +23,6 @@ export default function AdvancePayment() {
   // Function to capture selected role
   const handleRoleChange = (value: "Stuff" | "Teacher") => {
     setRole(value);
-    console.log("Selected Role:", value);
   };
   const { data: attandancelist, isLoading: attandanceLoading } = useSWR(
     `/api/v1/users?category=${role}`,
@@ -40,7 +39,7 @@ export default function AdvancePayment() {
   );
 
   if (attandanceLoading) {
-    console.log("loading", attandanceLoading);
+    return <div>Loading ...</div>;
   }
 
   const handleChange = (
@@ -56,20 +55,18 @@ export default function AdvancePayment() {
   };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("form", formData);
     try {
       const response = await create(formData as any);
       messageApi.open({
         type: "success",
         content: response.message,
       });
-      console.log("Upload Success:", response);
       setFormData({
         user_id: "",
         total_amount: "",
         monthly_return_amount: "",
       });
-      setId(0)
+      setId(0);
     } catch (error: any) {
       messageApi.open({
         type: "error",
@@ -77,7 +74,6 @@ export default function AdvancePayment() {
           ? error.response?.data?.message
           : " try again ",
       });
-      console.log("Upload Error:", error);
     }
   };
 

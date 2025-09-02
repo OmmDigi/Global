@@ -24,7 +24,6 @@ const BasicTableCreateEmployee: React.FC<IProps> = ({ stufflist, onEdit }) => {
   //   current,
   //   pageSize
   // ) => {
-  //   console.log(current, pageSize);
   // };
 
   // for delete

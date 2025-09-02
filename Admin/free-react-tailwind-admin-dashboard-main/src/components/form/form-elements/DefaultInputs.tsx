@@ -16,7 +16,6 @@ export default function DefaultInputs() {
   const [dropdownOpen, setDropdownOpen] = useState("");
 
   const handleRadioChange = (value: string) => {
-    console.log("Selected Radio Value:", value);
 
     setSelectedValue(value);
     if (value === "option1") {
@@ -40,12 +39,7 @@ export default function DefaultInputs() {
     setMessage("");
     setSelectedValues([]);
     setDropdownOpen("");
-    console.log("Submitted Values:", {
-      selectedValues,
-      title,
-      message,
-      selectedValue,
-    });
+   
   };
 
   return (
