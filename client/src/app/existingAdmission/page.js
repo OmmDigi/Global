@@ -3,16 +3,12 @@ import React, { useState } from "react";
 import BackToTopButton from "@/components/BackToTopButton";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
-import { Button, message, Steps, theme } from "antd";
-import { Route, Upload, X } from "lucide-react";
-import { useScrollChecker } from "@/components/useScrollChecker";
+import { message, theme } from "antd";
 import { ToWords } from "to-words";
 import useSWR from "swr";
 
 import { getFetcher, postFetcher } from "@/lib/fetcher";
-import { uploadFiles } from "@/utils/uploadFile";
 import useSWRMutation from "swr/mutation";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
@@ -385,7 +381,7 @@ function page() {
             <div className="flex justify-center items-center">
               <p className="text-2xl text-white p-2 bg-red-500">Note*</p>
               <p className="text-2xl text-white p-2 bg-red-400">
-                Don't Close or Refreash this page
+                Don&apos;t Close or Refreash this page
               </p>{" "}
             </div>
 

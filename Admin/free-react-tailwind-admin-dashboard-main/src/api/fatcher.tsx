@@ -7,7 +7,9 @@ const API = axios.create({
   headers: {
     "Content-Type": "application/json",
     Authorization:
-    localStorage.getItem("token") ? localStorage.getItem("token") : ""
+      typeof window !== "undefined" && localStorage.getItem("token")
+        ? localStorage.getItem("token")
+        : "",
   },
 });
 
@@ -53,4 +55,3 @@ export const deleteFetcher = async (url: string) => {
 
 //  const permission = localStorage.getItem("permissions", permissions)
 // console.log("sadasdasdsadasd",permission);
-

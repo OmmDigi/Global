@@ -151,10 +151,6 @@ export default function Home() {
   const [textIndex, setTextIndex] = useState(0);
   const careerTexts = ["Career", "Future", "Dream Job", "Path", "Opportunity"];
 
-
-
-  
-
   // useEffect(() => {
   //   const typeText = () => {
   //     const fullText = careerTexts[textIndex];
@@ -206,12 +202,16 @@ export default function Home() {
                 </div>
                 <div className="mt-3 md:mt-15 flex justify-center  md:items-start flex-col items-center md:px-2">
                   <h5 className="font-bold text-[#1174f7]">
-                    Where education meets innovation. 
+                    Where education meets innovation.
                   </h5>
                   <h1 className="font-bold text-[#b50000] text-2xl  md:text-4xl mt-2  md:mt-5">
-                    Unlock Your Potential with <span className="hidden md:flex mt-2"> Global Technical Institute</span>
+                    Unlock Your Potential with{" "}
+                    <span className="hidden md:flex mt-2">
+                      {" "}
+                      Global Technical Institute
+                    </span>
                   </h1>
-                   <h1 className="font-bold text-[#b50000] text-3xl md:hidden  md:text-4xl  md:mt-5">
+                  <h1 className="font-bold text-[#b50000] text-3xl md:hidden  md:text-4xl  md:mt-5">
                     Global Technical Institute
                   </h1>
                   <div
@@ -283,7 +283,7 @@ export default function Home() {
                   </Marquee>
                 </div>
               </div>
-           {/* carousal */}
+              {/* carousal */}
               {/* <div className="relative w-full h-[200px] md:h-[400px]">
                 <div className="absolute top-0  w-full h-full">
                   {slides.map((slide, index) => (
@@ -309,8 +309,7 @@ export default function Home() {
                   ))}
                 </div>
               </div> */}
-              <HomeCarousal/>
-
+              <HomeCarousal />
             </div>
           </div>
         </div>
@@ -362,12 +361,12 @@ export default function Home() {
             </div>
           </section>
         </div> */}
-        <PhoneNumber/>
+        <PhoneNumber />
 
         {/* carousal card section  */}
-        <div className=" grid grid-cols-1 md:grid-cols-1  relative mt-[-140] bg-gray-200 overflow-hidden">
+        <div className=" grid grid-cols-1 md:grid-cols-1   bg-gray-200 overflow-hidden">
           <div className="w-full   items-start flex justify-evenly ">
-            <div className="w-full max-w-screen-xl mt-40  items-start ">
+            <div className="w-full max-w-screen-xl mt-20  items-start ">
               <Carousel
                 // swipeable={true}
                 // draggable={true}
@@ -741,6 +740,7 @@ export default function Home() {
             </div>
           </div>
         </section>
+
         {/* google reviews */}
         <div className="max-w-7xl mx-auto bg-white">
           <div className="text-center mb-10">
@@ -1001,7 +1001,7 @@ export default function Home() {
 
         {/* Back To Top Button */}
         <BackToTopButton />
-        <SocialMedia/>
+        <SocialMedia />
 
         {/* <Carousel
         responsive={responsive}

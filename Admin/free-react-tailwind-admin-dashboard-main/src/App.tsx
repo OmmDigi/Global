@@ -63,7 +63,7 @@ export default function App() {
     } else if (localStorage.getItem("category")) {
       setUser(localStorage.getItem("category"));
     } else {
-      window.location.href = "http://localhost:3000/login";
+      window.location.href = `${import.meta.env.VITE_HOMEPAGE_URL}login`;
       return;
     }
     if (token) {
