@@ -99,8 +99,7 @@ async function connectDevice(deviceinfo) {
 function connectWebSocket() {
   let zks = null;
 
-  const wsUrl = `${config.cloud_api_url.replace(/^https/, "ws")}/device`;
-  console.log(wsUrl)
+  const wsUrl = `${config.cloud_api_url.replace(/^https/, "wss")}/device`;
 
   const ws = new WebSocket(
     wsUrl,
