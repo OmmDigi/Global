@@ -106,7 +106,7 @@ export const getPerDayAttendance = asyncErrorHandler(async (req, res) => {
     WITH total AS (
         SELECT COUNT(*) AS total_employee
         FROM "users"
-        WHERE category != 'Student'
+        WHERE category != 'Student' AND category != 'Admin'
     ),
     present_count AS (
         SELECT COUNT(DISTINCT employee_id) AS present

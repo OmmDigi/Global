@@ -126,7 +126,6 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
     );
   } catch (error: any) {
     await client.query("ROLLBACK");
-    console.log(error);
     throw new ErrorHandler(400, error.message);
   } finally {
     client.release();

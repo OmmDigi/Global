@@ -66,7 +66,7 @@ export const getAttendanceList = asyncErrorHandler(async (req, res) => {
     LEFT JOIN holiday h
     ON h.date = CURRENT_DATE
 
-    WHERE u.category != 'Student'
+    WHERE u.category != 'Student' AND u.category != 'Admin'
 
     ORDER BY u.id DESC
     `

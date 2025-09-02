@@ -280,7 +280,7 @@ export const getUsersList = asyncErrorHandler(async (req, res) => {
   const { error, value } = VGetUserList.validate(req.query ?? {});
   if (error) throw new ErrorHandler(400, error.message);
 
-  let filter = "WHERE category != 'Admin'";
+  let filter = "WHERE category != 'Admin' AND category != 'Student'";
   const filterValues: string[] = [];
   let placeholdernum = 1;
 
