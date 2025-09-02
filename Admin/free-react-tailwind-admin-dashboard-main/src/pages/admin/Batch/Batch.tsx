@@ -7,7 +7,7 @@ import useSWRMutation from "swr/mutation";
 import { getFetcher, postFetcher, putFetcher } from "../../../api/fatcher";
 import { message } from "antd";
 import useSWR, { mutate } from "swr";
-import MultiSelect from "../../../components/form/MultiSelect";
+import MultiSelectName from "../../../components/form/MultiSelectName";
 
 interface Option {
   name: string;
@@ -215,7 +215,7 @@ export default function Batch() {
                   </div>
                   <div>
                     {/* <Label htmlFor="inputOne">{"S/elect Batch Month"}</Label> */}
-                    <MultiSelect
+                    <MultiSelectName
                       options={options as any}
                       defaultSelected={formData.month_names}
                       label="Select Batch Month"
