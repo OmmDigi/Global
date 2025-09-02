@@ -170,7 +170,7 @@
 import { useEffect, useState } from "react";
 interface MultiSelectProps {
   label: string;
-  options: Option[];
+  options: string[];
   defaultSelected: string[];
   onChange?: (selected: string[]) => void;
   disabled?: boolean;
@@ -210,7 +210,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   };
 
   const selectedValuesText = selectedOptions.map(
-    (id) => options.find((option) => option.id === id)?.name || ""
+    (id) => options.find((option: any) => option.id === id) || ""
   );
 
   return (
@@ -300,7 +300,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex flex-col">
-                {options.map((option, index) => (
+                {options.map((option : any, index:number) => (
                   <div
                     key={index}
                     className={`hover:bg-primary/5 w-full cursor-pointer rounded-t border-b border-gray-200 dark:border-gray-800`}

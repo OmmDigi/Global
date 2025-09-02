@@ -73,12 +73,7 @@ const navItems: NavItem[] = [
     icon: <PiOfficeChairDuotone />,
     subItems: [
       { name: "Attendance", id: 5.1, path: "/stuff-attandance", pro: false },
-      {
-        name: "Advance Loan/Payment",
-        id: 5.1,
-        path: "/advance-payment",
-        pro: false,
-      },
+      // {name: "Advance Loan/Payment",id: 5.1,path: "/advance-payment", pro: false,},
       { name: "Payslip", id: 5.1, path: "/stuff-payslip", pro: false },
     ],
   },

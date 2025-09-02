@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../ui/table";
-import { FaEye } from "react-icons/fa";
+// import { FaEye } from "react-icons/fa";
 import DatePicker from "react-datepicker";
 import dayjs from "dayjs";
 import useSWRMutation from "swr/mutation";
@@ -23,8 +23,8 @@ import useSWR from "swr";
 //   image: string;
 // };
 const BasicTablePayslip = ({ role }: any) => {
-  const [selected, setSelected] = useState<number[]>([]);
-  const [selectAll, setSelectAll] = useState(false);
+  // const [selected, setSelected] = useState<number[]>([]);
+  // const [selectAll, setSelectAll] = useState(false);
   const [month, setMonth] = useState<Date | null>(new Date());
   const [messageApi, contextHolder] = message.useMessage();
 

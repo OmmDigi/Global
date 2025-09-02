@@ -69,6 +69,7 @@ export default function AdvancePayment() {
         total_amount: "",
         monthly_return_amount: "",
       });
+      setId(0)
     } catch (error: any) {
       messageApi.open({
         type: "error",
