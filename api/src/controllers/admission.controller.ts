@@ -91,8 +91,6 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
       const password = admission_data?.password;
       const profileImage = admission_data?.image;
 
-      console.log(admission_data);
-
       if (!password)
         throw new ErrorHandler(400, "Account password is required", [
           "password",
