@@ -8,7 +8,7 @@ import {
 
 import { useEffect, useState } from "react";
 import PageMeta from "../../../components/common/PageMeta";
-import useSWR, { mutate } from "swr";
+import useSWR from "swr";
 import { getFetcher, postFetcher } from "../../../api/fatcher";
 import { message } from "antd";
 import useSWRMutation from "swr/mutation";

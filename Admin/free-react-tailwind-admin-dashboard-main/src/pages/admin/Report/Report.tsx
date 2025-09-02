@@ -1,10 +1,10 @@
 import { Button, message } from "antd";
-import React, { useState, ChangeEvent, useTransition } from "react";
+import  { useState, ChangeEvent, useTransition } from "react";
 import DatePicker from "react-datepicker";
 import { getFetcher, postFetcher } from "../../../api/fatcher";
 import dayjs from "dayjs";
 import useSWR from "swr";
-import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
+// import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import PageMeta from "../../../components/common/PageMeta";
 import ComponentCard from "../../../components/common/ComponentCard";
 import useSWRMutation from "swr/mutation";
@@ -24,7 +24,7 @@ function Report() {
   const [startDate, endDate] = dateRange;
   const [startDateStudent, endDateStudent] = dateRangeStudent;
 
-  const [editedFormId, setEditedFormId] = useState<number>(-1);
+  // const [ , setEditedFormId] = useState<number>(-1);
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   const [course, setCourse] = useState<number>(0);
   const [batch, setBatch] = useState<any>(0);
@@ -38,7 +38,7 @@ function Report() {
   );
 
   const handleCourseChange = (e: any) => {
-    const { name, value } = e.target;
+    const  value  = e.target;
     console.log("handleCourseChange", value);
     setCourse(value);
     setExcelFileUrl(null);
@@ -50,7 +50,7 @@ function Report() {
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    const { name, value } = e.target;
+    const  value  = e.target;
     setBatch(value);
     setExcelFileUrl(null);
     setExcelFileUrlStudent(null);
@@ -59,7 +59,7 @@ function Report() {
   const handleModeChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    const { name, value } = e.target;
+    const  value  = e.target;
     setMode(value);
     setExcelFileUrl(null);
     setExcelFileUrlStudent(null);
@@ -168,7 +168,7 @@ function Report() {
               Choose your Courses
             </label>
             <select
-              key={editedFormId + "courseName"}
+              key={  + "courseName"}
               name="courseName"
               // disabled={id ? true : false}
               // defaultValue={formData?.courseName}
@@ -190,7 +190,7 @@ function Report() {
               Choose your Batch
             </label>
             <select
-              key={editedFormId + "batchName"}
+              key={  + "batchName"}
               name="batchName"
               // disabled={id ? true : false}
               // defaultValue={formData.batchName}
@@ -210,7 +210,7 @@ function Report() {
               Choose Payment Mode
             </label>
             <select
-              key={editedFormId + "mode"}
+              key={  + "mode"}
               name="mode"
               // disabled={id ? true : false}
               // defaultValue={formData.batchName}
@@ -274,7 +274,7 @@ function Report() {
               Choose your Courses
             </label>
             <select
-              key={editedFormId + "courseName"}
+              key={  + "courseName"}
               name="courseName"
               // disabled={id ? true : false}
               // defaultValue={formData?.courseName}
@@ -296,7 +296,7 @@ function Report() {
               Choose your Batch
             </label>
             <select
-              key={editedFormId + "batchName"}
+              key={  + "batchName"}
               name="batchName"
               // disabled={id ? true : false}
               // defaultValue={formData.batchName}

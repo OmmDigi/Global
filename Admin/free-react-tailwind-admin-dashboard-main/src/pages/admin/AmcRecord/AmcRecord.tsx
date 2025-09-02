@@ -6,7 +6,7 @@ import Label from "../../../components/form/Label";
 import Input from "../../../components/form/input/InputField";
 import { Minus, Plus } from "lucide-react";
 
-import BasicTablePurchase from "../../../components/tables/BasicTables/BasicTablePurchase";
+// import BasicTablePurchase from "../../../components/tables/BasicTables/BasicTablePurchase";
 import { Upload, X } from "lucide-react";
 import { uploadFiles } from "../../../utils/uploadFile";
 import {
@@ -35,11 +35,11 @@ export default function AmcRecord() {
   const [messageApi, contextHolder] = message.useMessage();
   const [amcRecord, setAmcRecord] = useState(false);
 
-  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
-    null,
-    null,
-  ]);
-  const [startDate, endDate] = dateRange;
+  // const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
+  //   null,
+  //   null,
+  // ]);
+  // const [startDate, endDate] = dateRange;
 
   const [photo, setPhoto] = useState<string | null>(null);
   const [id, setId] = useState<number>();
@@ -64,7 +64,7 @@ export default function AmcRecord() {
   );
 
   // get purchaseList
-  const { data: amcList, isLoading: amcLoding } = useSWR(
+  const { data: amcList,  } = useSWR(
     "api/v1/inventory/amc",
     getFetcher
   );

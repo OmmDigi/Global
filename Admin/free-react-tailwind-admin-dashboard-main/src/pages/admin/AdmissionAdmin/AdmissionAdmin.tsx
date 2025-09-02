@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import PageMeta from "../../../components/common/PageMeta";
 import ComponentCard from "../../../components/common/ComponentCard";
@@ -6,7 +6,7 @@ import BasicTableAdmission from "../../../components/tables/BasicTables/BasicTab
 
 import { Button, message, theme } from "antd";
 import { Minus, Plus, Upload, X } from "lucide-react";
-import useSWR, { mutate } from "swr";
+import useSWR from "swr";
 import {
   getFetcher,
   patchFetcher,
@@ -150,7 +150,7 @@ const handleChildData = (data:any) => {
   // get Admission list
   const {
     data: admissionlist,
-    isLoading: admissionLoading,
+   
     mutate,
   } = useSWR(`api/v1/admission?page=${pageCount}`, getFetcher);
 

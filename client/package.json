@@ -3,12 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "start": "next start",
     "lint": "next lint",
     "postbuild": "netlify build",
-    "build": "next build ",
-    "export": "next export"
+    "export": "next export",
+    "dev": "next dev --hostname 127.0.0.1 --port 3001",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1 --port 3001"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.4",
@@ -37,8 +37,10 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "cross-env": "^10.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.3.4",
     "tailwindcss": "^4"
   }
 }
+

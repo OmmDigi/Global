@@ -25,7 +25,6 @@ import Courses from "./pages/admin/Courses/Courses";
 import CreateEmployee from "./pages/admin/CreateEmployee/CreateEmployee";
 import InventoryManage from "./pages/admin/InventoryManage/InventoryManage";
 import PurchaseRecord from "./pages/admin/PurchaseRecord/PurchaseRecord";
-import MaintenanceRecord from "./pages/admin/AmcRecord/AmcRecord";
 import Admission from "./pages/admin/AdmissionAdmin/AdmissionAdmin";
 import StuffAttandance from "./pages/admin/StuffAttandance/StuffAttandance";
 // student
