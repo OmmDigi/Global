@@ -57,18 +57,17 @@ const BasicTablePayslip = ({ role }: any) => {
     getFetcher
   );
 
-  if (attandanceLoading) {
-   return <div>Loading ...</div> 
-  }
-  if (attandanceError) {
-    return <div>Error ...</div> 
-   
-  }
   const { trigger: update } = useSWRMutation(
     "api/v1/excel/url",
     (url, { arg }) => postFetcher(url, arg)
   );
 
+  if (attandanceLoading) {
+    return <div>Loading ...</div>;
+  }
+  if (attandanceError) {
+    return <div>Error ...</div>;
+  }
   // Handle Generate Payslip
   const handleGeneratePayslip = async (month: any) => {
     const data = {
@@ -84,10 +83,10 @@ const BasicTablePayslip = ({ role }: any) => {
         type: "success",
         content: response.message,
       });
-       if (response?.data) {
-          window.open(response?.data,"__blank");
-          //    window.open(response?.data,"__blank");
-        }
+      if (response?.data) {
+        window.open(response?.data, "__blank");
+        //    window.open(response?.data,"__blank");
+      }
     } catch (error: any) {
       messageApi.open({
         type: "error",
