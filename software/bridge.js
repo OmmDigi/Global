@@ -2,7 +2,7 @@ const ZKLib = require("zkteco-js");
 const { WebSocket } = require("ws");
 
 const config = {
-  cloud_api_url: "http://192.168.0.192:8084",
+  cloud_api_url: "https://essl.globaltechnicalinstitute.com",
   device_id: "ESSL-001",
   auth_token: "YOUR_SECRET_TOKEN",
 };
@@ -99,8 +99,10 @@ async function connectDevice(deviceinfo) {
 function connectWebSocket() {
   let zks = null;
 
+  const wsUrl = `${config.cloud_api_url.replace(/^https/, "wss")}/device`;
+
   const ws = new WebSocket(
-    `${config.cloud_api_url.replace(/^http/, "ws")}/device`,
+    wsUrl,
     {
       headers: {
         Authorization: `Bearer ${config.auth_token}`,
