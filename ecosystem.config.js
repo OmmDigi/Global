@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: "gti-frontend",
-      script: "server.js",
+      script: "npm run start",
       cwd: "/var/www/globaltechnicalinstitute/client",
       env: { PORT: 3001, HOST: "127.0.0.1", NODE_ENV: "production" },
     },
