@@ -2,9 +2,14 @@ module.exports = {
   apps: [
     {
       name: "gti-frontend",
-      script: "npm run start",
+      script: "./node_modules/.bin/next",
+      args: ["start", "-p", "3001", "-H", "127.0.0.1"],
       cwd: "/var/www/globaltechnicalinstitute/client",
-      env: { PORT: 3001, HOST: "127.0.0.1", NODE_ENV: "production" },
+      env: {
+        NODE_ENV: "production",
+        PORT: "3001",
+        HOSTNAME: "127.0.0.1"
+      }
     },
     {
       name: "gti-api",
