@@ -1,7 +1,7 @@
 import cron from "node-cron";
-// import { sendEmail } from "../utils/sendEmail";
 import { pool } from "../config/db";
 import { TEmailData } from "../types";
+import { sendEmail } from "../utils/sendEmail";
 
 export const runAmcAlertChecking = () => {
   cron.schedule(
@@ -39,11 +39,11 @@ export const runAmcAlertChecking = () => {
           });
         });
 
-        // await sendEmail(
-        //   process.env.AMC_ALERT_EMAIL ?? "",
-        //   "AMC_ALERT",
-        //   emailData
-        // );
+        await sendEmail(
+          process.env.AMC_ALERT_EMAIL ?? "",
+          "AMC_ALERT",
+          emailData
+        );
 
       } catch {}
     },

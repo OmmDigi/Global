@@ -17,6 +17,7 @@ import { dashboardRoutes } from "./routes/dashboard.routes";
 import { purchaseRoute } from "./routes/purchase.routes";
 import { inventoryRoutes } from "./routes/inventory.routes";
 import { excelRoute } from "./routes/excel.routes";
+import { initCronJobs } from "./cron-jobs";
 // import { initCronJobs } from "./cron-jobs";
 
 const app: Application = express();
@@ -66,7 +67,7 @@ app.use("/api/v1/purchase", purchaseRoute);
 app.use("/api/v1/inventory", inventoryRoutes);
 app.use("/api/v1/excel", excelRoute);
 
-// initCronJobs();
+initCronJobs();
 
 // app.get("/pay", async (req, res) => {
 //   // res.render('payment-confirm', {
