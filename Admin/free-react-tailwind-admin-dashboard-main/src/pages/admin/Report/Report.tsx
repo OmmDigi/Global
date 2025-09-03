@@ -8,7 +8,6 @@ import useSWR from "swr";
 import PageMeta from "../../../components/common/PageMeta";
 import ComponentCard from "../../../components/common/ComponentCard";
 import useSWRMutation from "swr/mutation";
-import { log } from "console";
 
 function Report() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -372,7 +371,7 @@ function Report() {
           )}
         </div>
       </ComponentCard>
-      <ComponentCard className="mt-15" title="Report For Student Admission ">
+      <ComponentCard className="mt-15" title="Report For Inventory  ">
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
           <div>
             <label className="block text-sm font-bold text-gray-500 mb-1">
