@@ -14,9 +14,8 @@ export default function CourseDetails() {
   const [messageApi, contextHolder] = message.useMessage();
   const [isPending, startTransition] = useTransition();
 
-  const [enteredAmounts, setEnteredAmounts] = useState<Record<string, number>>(
-    {}
-  );
+  const [enteredAmounts, setEnteredAmounts] = useState<any>({});
+
 
   const formData2 = {
     form_id: "",
@@ -53,7 +52,7 @@ export default function CourseDetails() {
     const value = e.target.value;
     const id = item.fee_head_id;
 
-    setEnteredAmounts((prev) => ({
+    setEnteredAmounts((prev:any) => ({
       ...prev,
       [id]: value,
     }));
@@ -79,7 +78,7 @@ export default function CourseDetails() {
     console.log("Submitted FormData:", finalFormData);
     startTransition(async () => {
       try {
-        const response = await create2(null, finalFormData as any);
+        const response = await create2(finalFormData as any);
         messageApi.open({
           type: "success",
           content: response.message,
