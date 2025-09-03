@@ -6,11 +6,10 @@ import {
   TableRow,
 } from "../../ui/table";
 
-
-import  { mutate } from "swr";
+import { mutate } from "swr";
 import { deleteFetcher } from "../../../api/fatcher";
 import useSWRMutation from "swr/mutation";
-import { message,  } from "antd";
+import { message } from "antd";
 
 interface IProps {
   stufflist: any;
@@ -27,13 +26,14 @@ const BasicTableCreateEmployee: React.FC<IProps> = ({ stufflist, onEdit }) => {
   // };
 
   // for delete
-    const [messageApi, contextHolder] = message.useMessage();
+  const [messageApi, contextHolder] = message.useMessage();
 
   const { trigger: deleteUser } = useSWRMutation(
     "/api/v1/users",
     (url, { arg }: { arg: number }) => deleteFetcher(`${url}/${arg}`) // arg contains the id
   );
   const handleDelete = async (id: number) => {
+    if (!confirm("Are you sure want to remove")) return;
     try {
       await deleteUser(id);
       messageApi.success("User deleted successfully");
@@ -46,7 +46,7 @@ const BasicTableCreateEmployee: React.FC<IProps> = ({ stufflist, onEdit }) => {
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
-     {contextHolder}
+      {contextHolder}
       <div className="max-w-full overflow-x-auto">
         <Table>
           {/* Table Header */}
@@ -76,7 +76,7 @@ const BasicTableCreateEmployee: React.FC<IProps> = ({ stufflist, onEdit }) => {
               >
                 Phone No
               </TableCell>
-               <TableCell
+              <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
@@ -125,7 +125,7 @@ const BasicTableCreateEmployee: React.FC<IProps> = ({ stufflist, onEdit }) => {
                   {order.ph_no}
                 </TableCell>
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  {order.id} 
+                  {order.id}
                 </TableCell>
 
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
@@ -148,7 +148,6 @@ const BasicTableCreateEmployee: React.FC<IProps> = ({ stufflist, onEdit }) => {
             ))}
           </TableBody>
         </Table>
-      
       </div>
     </div>
   );

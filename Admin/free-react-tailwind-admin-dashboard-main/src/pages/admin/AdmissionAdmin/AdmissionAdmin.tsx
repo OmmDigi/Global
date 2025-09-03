@@ -3,6 +3,7 @@ import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import PageMeta from "../../../components/common/PageMeta";
 import ComponentCard from "../../../components/common/ComponentCard";
 import BasicTableAdmission from "../../../components/tables/BasicTables/BasicTableAdmission";
+import { FaEye } from "react-icons/fa";
 
 import { Button, message, theme } from "antd";
 import { Minus, Plus, Upload, X } from "lucide-react";
@@ -116,8 +117,8 @@ export default function AdmissionAdmin() {
   const [course, setCourse] = useState<number>(0);
   const [batch, setBatch] = useState<any>(0);
   const [searchData, setSearchData] = useState<any>({});
-  const [formSearch,setFormSearch] = useState <string>("")
-    const [pageCount, setPageCount] = useState<number>(1);
+  const [formSearch, setFormSearch] = useState<string>("");
+  const [pageCount, setPageCount] = useState<number>(1);
 
   // get course list
   // const steps = [
@@ -143,13 +144,13 @@ export default function AdmissionAdmin() {
   // if (courseLoading) {
   //   return <div>Loading ...</div>;
   // }
-const handleChildData = (data:any) => {
+  const handleChildData = (data: any) => {
     setPageCount(data);
   };
   // get Admission list
   const {
     data: admissionlist,
-   
+
     mutate,
   } = useSWR(`api/v1/admission?page=${pageCount}`, getFetcher);
 
@@ -173,7 +174,7 @@ const handleChildData = (data:any) => {
     }
   };
 
-    const handleFormSearch = async () => {
+  const handleFormSearch = async () => {
     if (formSearch) {
       const response = await getFetcher(
         `api/v1/admission?form_no=${formSearch}`
@@ -187,7 +188,7 @@ const handleChildData = (data:any) => {
         content: "Please Select all Input Fields",
       });
     }
-  }
+  };
 
   const { trigger: create } = useSWRMutation(
     "api/v1/admission/create",
@@ -218,17 +219,32 @@ const handleChildData = (data:any) => {
   const handleFileChange = (e: any, name: string) => {
     const files = e.target.files;
 
-
+    // Array.from(files).forEach((files) => {
+    //   const reader = new FileReader();
+    //   reader.onload = (event) => {
+    //     console.log("Preview:",files);
+    //   };
+    //   reader.readAsDataURL(files);
+    // });
+    // setFiles(Array.from(files).map(item => ({})));
     uploadFiles({
       url: `${uploadUrl}api/v1/upload/multiple`,
-      files: files,
+      files: Array.from(files),
       folder: "admission_doc",
 
-      onUploaded() {
+      onUploaded(result) {
+        const response = result?.map((item, index) => ({
+          name: files[index]?.name,
+          url: item.downloadUrl,
+        }));
         setFormData((prev) => ({
           ...prev,
-          [name]: Array.from(files),
+          [name]: response,
         }));
+        // setFiles(response as any);
+      },
+      onError(error) {
+        console.log("file error", error);
       },
     });
   };
@@ -284,6 +300,7 @@ const handleChildData = (data:any) => {
   };
 
   const removeFile2 = (fieldName: string, index: number) => {
+    if(!confirm("Are you sure want to remove")) return;
     setFormData((prev: any) => ({
       ...prev,
       [fieldName]: prev[fieldName]?.filter((_: any, i: number) => i !== index),
@@ -298,7 +315,6 @@ const handleChildData = (data:any) => {
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-
     e.preventDefault();
     try {
       const response = await create(admissionForm as any);
@@ -329,6 +345,8 @@ const handleChildData = (data:any) => {
       setMontessoriTeachers(true);
       const response = await getFetcher(`api/v1/admission/form/${id}`);
       const userData = JSON.parse(response?.data?.admission_details ?? "{}");
+      console.log("userData", userData);
+
       const tempObj: any = {};
 
       Object.entries(userData).forEach(([key, value]) => {
@@ -339,9 +357,9 @@ const handleChildData = (data:any) => {
       setFormData(tempObj);
       setEditedFormId(response?.data?.form_id);
       setSelectedCourseId(userData?.courseName);
+      setPhoto(userData?.image);
       // alert(typeof userData?.courseName);
       // alert(userData?.courseName);
-
     } catch (error) {
       console.error("Failed to fetch user data for edit:", error);
     }
@@ -443,13 +461,12 @@ const handleChildData = (data:any) => {
     }));
     const courseId = parseInt(e.target.value);
     setSelectedCourseId(courseId as any);
-  }; 
+  };
 
-  const FormSearch = (e:any) => {
-     const { value } = e.target;
-setFormSearch(value)
-  }
-
+  const FormSearch = (e: any) => {
+    const { value } = e.target;
+    setFormSearch(value);
+  };
 
   const selectedCourse = Array.isArray(courseList?.data)
     ? courseList?.data?.find((course: any) => course.id == selectedCourseId)
@@ -467,7 +484,7 @@ setFormSearch(value)
         <div className="space-y-6 ">
           <ComponentCard title="Admission">
             {/* form body  */}
-    
+
             <div
               onClick={
                 montessoriTeachers ? handleTeacherShow : handleTeacherClose
@@ -1050,18 +1067,29 @@ setFormSearch(value)
                                             <span className="truncate">
                                               {file?.name}
                                             </span>
-                                            <button
-                                              type="button"
-                                              onClick={() =>
-                                                removeFile2(
-                                                  "selfAttestedLastResult",
-                                                  index
-                                                )
-                                              }
-                                              className="text-red-500 hover:text-red-700 ml-2"
-                                            >
-                                              ×
-                                            </button>
+                                            <div className="flex justify-end">
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  window.open(file?.url)
+                                                }
+                                                className="text-blue-500 hover:text-blue-700 ml-2 "
+                                              >
+                                                <FaEye />
+                                              </button>
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  removeFile2(
+                                                    "selfAttestedLastResult",
+                                                    index
+                                                  )
+                                                }
+                                                className="text-red-500 hover:text-red-700 ml-2"
+                                              >
+                                                ×
+                                              </button>
+                                            </div>
                                           </div>
                                         )
                                       )}
@@ -1841,9 +1869,7 @@ setFormSearch(value)
                 />
               </div>
               <div className="flex justify-end mt-5">
-                <Button type="primary"
-                 onClick={handleFormSearch}
-                 >
+                <Button type="primary" onClick={handleFormSearch}>
                   Search
                 </Button>
               </div>
@@ -1852,7 +1878,7 @@ setFormSearch(value)
               admissionlist={searchData?.data ? searchData : admissionlist}
               onEdit={handleEdit}
               onActive={handleActive}
-            onSendData={handleChildData}
+              onSendData={handleChildData}
             />
           </ComponentCard>
         </div>
