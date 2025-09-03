@@ -17,4 +17,5 @@ export const VGenerateUrl = Joi.object({
 export const VInventoryReport = Joi.object({
   from_date: Joi.string().required().label("Start Date"),
   to_date: Joi.string().required().label("End Date"),
+  token : Joi.string().optional()
 });

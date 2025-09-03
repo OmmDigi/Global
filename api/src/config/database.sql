@@ -33,7 +33,7 @@ SELECT 'Admin',
     'Admin User',
     'global.technical8.institute@gmail.com',
     '96b0dbb494195764415927a06d1964e0:d5697f8e382d96d3080524247206e0e3590d14:cd15b7b2ffe993681092f6ac2dfc3f46',
-    '[1,2,3,4,5,6,7,8,9,10,11]'
+    '[1,2,3,4,5,6,7,8,9,10,11, 12, 13, 14, 15, 16, 17, 18, 19, 20]'
 WHERE NOT EXISTS (
         SELECT 1
         FROM users
