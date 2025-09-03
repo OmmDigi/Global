@@ -22,6 +22,7 @@ type FormDataType = {
 export default function InventoryManage() {
   const [messageApi, contextHolder] = message.useMessage();
   const [addInventoryItem, setAddInventoryItem] = useState(false);
+  const [pageCount, setPageCount] = useState<number>(1);
 
   const [id, setId] = useState<number>();
   const [formData, setFormData] = useState<FormDataType>({
@@ -38,7 +39,7 @@ export default function InventoryManage() {
   );
   // get inventory  List
   const { data: inventoryList, isLoading: inventoryLoding } = useSWR(
-    "api/v1/inventory/item",
+    `api/v1/inventory/item?page=${pageCount}`,
     getFetcher
   );
   console.log("inventoryList", inventoryList);
@@ -62,6 +63,9 @@ export default function InventoryManage() {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }
 
+    const handleChildData = (data: any) => {
+    setPageCount(data);
+  };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -282,6 +286,7 @@ export default function InventoryManage() {
         <BasicTableInventory
           inventoryList={inventoryList}
           onEdit={handleEdit}
+          onSendData={handleChildData}
         />
       </ComponentCard>
     </div>

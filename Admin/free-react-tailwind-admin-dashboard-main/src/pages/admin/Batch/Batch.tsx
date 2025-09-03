@@ -30,6 +30,8 @@ const options: Option[] = [
 export default function Batch() {
   const [messageApi, contextHolder] = message.useMessage();
   const [id, setId] = useState<number>(0);
+  const [pageCount, setPageCount] = useState<number>(1);
+
   const [formData, setFormData] = useState({
     course_id: "",
     session_id: "",
@@ -55,7 +57,10 @@ export default function Batch() {
   );
 
   //   get batch list
-  const { data: batchList } = useSWR("api/v1/course/batch", getFetcher);
+  const { data: batchList } = useSWR(
+    `api/v1/course/batch?page=${pageCount}`,
+    getFetcher
+  );
 
   //   get single data
   // const {
@@ -76,6 +81,9 @@ export default function Batch() {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }
 
+  const handleChildData = (data: any) => {
+    setPageCount(data);
+  };
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -255,6 +263,7 @@ export default function Batch() {
               batchList={batchList}
               // onEdit={handleEdit}
               onActive={handleActive}
+              onSendData={handleChildData}
             />
           </ComponentCard>
         </div>

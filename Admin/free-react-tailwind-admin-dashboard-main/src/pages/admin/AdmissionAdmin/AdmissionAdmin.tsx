@@ -150,7 +150,6 @@ export default function AdmissionAdmin() {
   // get Admission list
   const {
     data: admissionlist,
-
     mutate,
   } = useSWR(`api/v1/admission?page=${pageCount}`, getFetcher);
 

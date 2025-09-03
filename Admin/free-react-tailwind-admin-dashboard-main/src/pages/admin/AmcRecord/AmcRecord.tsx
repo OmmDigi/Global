@@ -34,6 +34,7 @@ type FormDataType = {
 export default function AmcRecord() {
   const [messageApi, contextHolder] = message.useMessage();
   const [amcRecord, setAmcRecord] = useState(false);
+  const [pageCount, setPageCount] = useState<number>(1);
 
   // const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
   //   null,
@@ -64,10 +65,7 @@ export default function AmcRecord() {
   );
 
   // get purchaseList
-  const { data: amcList,  } = useSWR(
-    "api/v1/inventory/amc",
-    getFetcher
-  );
+  const { data: amcList } = useSWR(`api/v1/inventory/amc?page=${pageCount}`, getFetcher);
 
   // Update purchaseList
 
@@ -76,6 +74,9 @@ export default function AmcRecord() {
     (url, { arg }) => putFetcher(url, arg)
   );
 
+  const handleChildData = (data: any) => {
+    setPageCount(data);
+  };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -408,7 +409,11 @@ export default function AmcRecord() {
                 </div>
               </form>
             ) : null}
-            <BasicTableAmc amcList={amcList} onEdit={handleEdit} />
+            <BasicTableAmc
+              amcList={amcList}
+              onEdit={handleEdit}
+              onSendData={handleChildData}
+            />
           </ComponentCard>
         </div>
       </div>

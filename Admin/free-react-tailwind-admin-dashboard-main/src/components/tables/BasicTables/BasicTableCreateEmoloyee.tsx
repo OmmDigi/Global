@@ -10,15 +10,22 @@ import { mutate } from "swr";
 import { deleteFetcher } from "../../../api/fatcher";
 import useSWRMutation from "swr/mutation";
 import { message } from "antd";
+import { useEffect, useState } from "react";
+import Pagination from "../../form/Pagination";
 
 interface IProps {
   stufflist: any;
   onEdit: (id: number) => void;
+  onSendData: any;
 }
 
 // Define the table data using the interface
 
-const BasicTableCreateEmployee: React.FC<IProps> = ({ stufflist, onEdit }) => {
+const BasicTableCreateEmployee: React.FC<IProps> = ({
+  stufflist,
+  onEdit,
+  onSendData,
+}) => {
   // const onShowSizeChange: PaginationProps["onShowSizeChange"] = (
   //   current,
   //   pageSize
@@ -43,6 +50,10 @@ const BasicTableCreateEmployee: React.FC<IProps> = ({ stufflist, onEdit }) => {
       messageApi.error("Failed to delete user");
     }
   };
+  const [count, setCount] = useState(1);
+  useEffect(() => {
+    onSendData(count);
+  }, [count, onSendData]);
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
@@ -148,6 +159,13 @@ const BasicTableCreateEmployee: React.FC<IProps> = ({ stufflist, onEdit }) => {
             ))}
           </TableBody>
         </Table>
+        <div className="p-8">
+          <Pagination
+            count={count}
+            onChange={setCount}
+            length={stufflist?.data?.length ? stufflist?.data?.length : 1}
+          />
+        </div>
       </div>
     </div>
   );
