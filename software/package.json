@@ -1,7 +1,7 @@
 {
   "name": "global-technical",
   "version": "1.0.0",
-  "description": "Electron app to load web application with progress bar",
+  "description": "Global Technical Institute Crm",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -13,7 +13,7 @@
     "web",
     "loader"
   ],
-  "author": "Your Name",
+  "author": "Omm Digital Soluction",
   "license": "MIT",
   "devDependencies": {
     "electron": "^37.3.0",
@@ -24,8 +24,8 @@
     "zkteco-js": "^1.7.1"
   },
   "build": {
-    "appId": "com.yourcompany.webapploader",
-    "productName": "Web App Loader",
+    "appId": "com.omm.globaltechnicalinstitute",
+    "productName": "GTI Crm Tool",
     "files": [
       "**/*"
     ],
