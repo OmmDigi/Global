@@ -24,8 +24,8 @@ export default function BasicTableAdmission({
   const handleDetailsClick = (id: number) => {
     navigate(`/courseDetailsAdmin/${id}`);
   };
+  
   const [count, setCount] = useState(1);
-
   useEffect(() => {
     onSendData(count);
   }, [count, onSendData]);

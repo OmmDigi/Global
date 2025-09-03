@@ -98,6 +98,7 @@ export default function CreateEmployee() {
   const [id, setId] = useState<number>();
   const [showPassword, setShowPassword] = useState(false);
   const [teacher, setTeacher] = useState<string>("");
+  const [pageCount, setPageCount] = useState<number>(1);
 
   const togglePassword = () => {
     setShowPassword((prev) => !prev);
@@ -140,7 +141,7 @@ export default function CreateEmployee() {
     data: stufflist,
     isLoading: stuffLoading,
     error: stuffError,
-  } = useSWR("api/v1/users", getFetcher);
+  } = useSWR(`api/v1/users?page=${pageCount}`, getFetcher);
   if (courseLoading) {
     return <div>Loading ...</div>;
   }
@@ -150,7 +151,9 @@ export default function CreateEmployee() {
   if (stuffError) {
     return <div>Error...</div>;
   }
-
+ const handleChildData = (data: any) => {
+    setPageCount(data);
+  };
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -218,6 +221,7 @@ export default function CreateEmployee() {
       });
     }
   };
+
 
   const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -842,6 +846,7 @@ export default function CreateEmployee() {
             <BasicTableCreateEmployee
               stufflist={stufflist}
               onEdit={handleEdit}
+              onSendData={handleChildData}
             />
           </ComponentCard>
         </div>

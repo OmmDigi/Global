@@ -26,6 +26,7 @@ type FormDataType = {
 export default function Courses() {
   const [messageApi, contextHolder] = message.useMessage();
   const [id, setId] = useState<number>();
+  const [pageCount, setPageCount] = useState<number>(1);
 
   const [formData, setFormData] = useState<FormDataType>({
     // id: 0,
@@ -50,7 +51,7 @@ export default function Courses() {
 
   // get course list
   const { data: courseList, isLoading: courseLoading } = useSWR(
-    "api/v1/course",
+    `api/v1/course?page=${pageCount}`,
     getFetcher
   );
 
@@ -83,7 +84,9 @@ export default function Courses() {
       [name]: value,
     }));
   };
-
+ const handleChildData = (data: any) => {
+    setPageCount(data);
+  };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -400,6 +403,7 @@ export default function Courses() {
               courseList={courseList}
               onEdit={handleEdit}
               onActive={handleActive}
+              onSendData={handleChildData}
             />
           </ComponentCard>
         </div>

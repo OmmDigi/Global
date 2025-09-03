@@ -1,5 +1,5 @@
 import { Button, message } from "antd";
-import  { useState, ChangeEvent, useTransition } from "react";
+import { useState, ChangeEvent, useTransition } from "react";
 import DatePicker from "react-datepicker";
 import { getFetcher, postFetcher } from "../../../api/fatcher";
 import dayjs from "dayjs";
@@ -8,7 +8,6 @@ import useSWR from "swr";
 import PageMeta from "../../../components/common/PageMeta";
 import ComponentCard from "../../../components/common/ComponentCard";
 import useSWRMutation from "swr/mutation";
-import { log } from "console";
 
 function Report() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -17,13 +16,17 @@ function Report() {
     null,
     null,
   ]);
-  const [dateRangeStudent, setDateRangeStudent] = useState<[Date | null, Date | null]>([
-    null,
-    null,
-  ]);
-
+  const [dateRangeStudent, setDateRangeStudent] = useState<
+    [Date | null, Date | null]
+  >([null, null]);
+  const [dateRangeInventory, setDateRangeInventory] = useState<
+    [Date | null, Date | null]
+  >([null, null]);
+  
   const [startDate, endDate] = dateRange;
   const [startDateStudent, endDateStudent] = dateRangeStudent;
+  const [startDateInventory, endDateInventory] = dateRangeInventory;
+
 
   // const [ , setEditedFormId] = useState<number>(-1);
   const [selectedCourseId, setSelectedCourseId] = useState(null);
@@ -32,14 +35,18 @@ function Report() {
   const [mode, setMode] = useState<any>(0);
   const [isPending, startTransition] = useTransition();
   const [isPendingStudent, startTransitionStudent] = useTransition();
+  const [isPendingInventory, startTransitionInventory] = useTransition();
 
   const [excelFileUrl, setExcelFileUrl] = useState<string | null>(null);
   const [excelFileUrlStudent, setExcelFileUrlStudent] = useState<string | null>(
     null
   );
-  
+  const [excelFileUrlInventory, setExcelFileUrlInventory] = useState<
+    string | null
+  >(null);
+
   const handleCourseChange = (e: any) => {
-    const  value  = e.target.value;
+    const value = e.target.value;
     console.log("handleCourseChange", value);
     setCourse(value);
     setExcelFileUrl(null);
@@ -51,7 +58,7 @@ function Report() {
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    const  value  = e.target.value;
+    const value = e.target.value;
     setBatch(value);
     setExcelFileUrl(null);
     setExcelFileUrlStudent(null);
@@ -60,7 +67,7 @@ function Report() {
   const handleModeChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    const  value  = e.target.value;
+    const value = e.target.value;
     setMode(value);
     setExcelFileUrl(null);
     setExcelFileUrlStudent(null);
@@ -91,7 +98,7 @@ function Report() {
     )}&course=${course}&batch=${batch}&mode=${mode}`,
   };
   const handleSearchAccount = () => {
-      console.log("course",course,batch,mode);
+    console.log("course", course, batch, mode);
     setExcelFileUrl(null);
     startTransition(async () => {
       if (dateRange[0] && dateRange[0] && course && batch) {
@@ -118,7 +125,6 @@ function Report() {
     )}&course=${course}&batch=${batch}`,
   };
   const handleSearchStudent = () => {
-
     setExcelFileUrlStudent(null);
     startTransitionStudent(async () => {
       if (dateRangeStudent[0] && dateRangeStudent[0] && course && batch) {
@@ -136,9 +142,34 @@ function Report() {
       }
     });
   };
+  const formDataInventory = {
+    type: "inventory_report",
+    query: `from_date=${dayjs(dateRangeInventory[0]).format(
+      "YYYY-MM-DD"
+    )}&to_date=${dayjs(dateRangeInventory[1]).format("YYYY-MM-DD")}`,
+  };
+  const handleSearchInventory = () => {
+    setExcelFileUrlInventory(null);
+    startTransitionInventory(async () => {
+      if (dateRangeInventory[0] && dateRangeInventory[0]) {
+        const response = await create(formDataInventory as any);
+        if (response?.data) {
+          setExcelFileUrlInventory(response?.data);
+          //    window.open(response?.data,"__blank");
+        }
+      } else {
+        messageApi.open({
+          type: "error",
+          content: "Please Select all Input Fields",
+        });
+      }
+    });
+  };
+
   const selectedCourse = Array.isArray(courseList?.data)
     ? courseList?.data?.find((course: any) => course.id == selectedCourseId)
     : null;
+
   return (
     <div>
       {contextHolder}
@@ -171,7 +202,7 @@ function Report() {
               Choose your Courses
             </label>
             <select
-              key={  + "courseName"}
+              key={+"courseName"}
               name="courseName"
               // disabled={id ? true : false}
               // defaultValue={formData?.courseName}
@@ -193,7 +224,7 @@ function Report() {
               Choose your Batch
             </label>
             <select
-              key={  + "batchName"}
+              key={+"batchName"}
               name="batchName"
               // disabled={id ? true : false}
               // defaultValue={formData.batchName}
@@ -213,7 +244,7 @@ function Report() {
               Choose Payment Mode
             </label>
             <select
-              key={  + "mode"}
+              key={+"mode"}
               name="mode"
               // disabled={id ? true : false}
               // defaultValue={formData.batchName}
@@ -277,7 +308,7 @@ function Report() {
               Choose your Courses
             </label>
             <select
-              key={  + "courseName"}
+              key={+"courseName"}
               name="courseName"
               // disabled={id ? true : false}
               // defaultValue={formData?.courseName}
@@ -299,7 +330,7 @@ function Report() {
               Choose your Batch
             </label>
             <select
-              key={  + "batchName"}
+              key={+"batchName"}
               name="batchName"
               // disabled={id ? true : false}
               // defaultValue={formData.batchName}
@@ -334,6 +365,53 @@ function Report() {
               type="primary"
               disabled={isPendingStudent}
               onClick={handleSearchStudent}
+            >
+              Generate Report
+            </Button>
+          )}
+        </div>
+      </ComponentCard>
+      <ComponentCard className="mt-15" title="Report For Inventory  ">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+          <div>
+            <label className="block text-sm font-bold text-gray-500 mb-1">
+              Select date range
+            </label>
+            <DatePicker
+              selectsRange={true}
+              startDate={startDateInventory}
+              endDate={endDateInventory}
+              onChange={(update) => {
+                setDateRangeInventory(update);
+              }}
+              isClearable={true}
+              dateFormat="dd/MM/yyyy"
+              placeholderText="dd/MM/yyyy - dd/MM/yyyy"
+              className="border rounded-md px-3 py-2 text-sm dark:bg-gray-800 dark:text-white"
+              calendarClassName="!bg-white dark:!bg-gray-200"
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end mt-5">
+          {isPendingInventory ? (
+            <Button type="primary" disabled>
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            </Button>
+          ) : excelFileUrlInventory ? (
+            <a
+              target="__blank"
+              href={excelFileUrlInventory}
+              download="report.xlsx"
+              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            >
+              Download Excel
+            </a>
+          ) : (
+            <Button
+              type="primary"
+              disabled={isPendingInventory}
+              onClick={handleSearchInventory}
             >
               Generate Report
             </Button>

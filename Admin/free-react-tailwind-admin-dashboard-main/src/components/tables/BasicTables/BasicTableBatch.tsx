@@ -11,12 +11,15 @@ import useSWRMutation from "swr/mutation";
 import { deleteFetcher } from "../../../api/fatcher";
 import { message } from "antd";
 import { mutate } from "swr";
+import { useEffect, useState } from "react";
+import Pagination from "../../form/Pagination";
 
 
 interface IProps {
   batchList: any;
 //   onEdit: (id: number) => void;
   onActive: (checked: boolean, id: number) => void;
+  onSendData:any;
 
 }
 
@@ -25,6 +28,7 @@ interface IProps {
 export default function BasicTableSession({
   batchList,
   onActive,
+  onSendData
 }: IProps) {
 
   // const onShowSizeChange: PaginationProps["onShowSizeChange"] = (
@@ -38,6 +42,8 @@ export default function BasicTableSession({
     (url, { arg }: { arg: number }) => deleteFetcher(`${url}/${arg}`) // arg contains the id
   );
   const handleDelete = async (id: number) => {
+        if(!confirm("Are you want to delete")) return;
+
     try {
       await deleteUser(id);
       message.success("User deleted successfully");
@@ -47,7 +53,10 @@ export default function BasicTableSession({
       message.error("Failed to delete user");
     }
   };
-
+const [count, setCount] = useState(1);
+  useEffect(() => {
+    onSendData(count);
+  }, [count, onSendData]);
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
       <div className="max-w-full overflow-x-auto">
@@ -163,16 +172,13 @@ export default function BasicTableSession({
             ))}
           </TableBody>
         </Table>
-        {/* Pagination  */}
-        {/* <div>
+        <div className="p-8">
           <Pagination
-            showSizeChanger
-            onChange={onShowSizeChange}
-            defaultCurrent={1}
-            total={500}
-            // colorPrimaryHover={'#qwe23'}
+            count={count}
+            onChange={setCount}
+            length={batchList?.data?.length ? batchList?.data?.length : 1}
           />
-        </div> */}
+        </div>
       </div>
     </div>
   );

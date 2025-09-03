@@ -11,13 +11,15 @@ import useSWRMutation from "swr/mutation";
 import {  postFetcher } from "../../../api/fatcher";
 import { message,  } from "antd";
 import { mutate } from "swr";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Input from "../../form/input/InputField";
 import Label from "../../form/Label";
+import Pagination from "../../form/Pagination";
 
 interface IProps {
   inventoryList: any;
   onEdit: (id: number) => void;
+  onSendData:any
 }
 
 // Define the table data using the interface
@@ -25,6 +27,7 @@ interface IProps {
 const BasicTableInventory: React.FC<IProps> = ({
   inventoryList,
   onEdit,
+  onSendData,
 }: any) => {
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -124,7 +127,10 @@ const BasicTableInventory: React.FC<IProps> = ({
   //     message.error("Failed to delete user");
   //   }
   // };
-
+const [count, setCount] = useState(1);
+  useEffect(() => {
+    onSendData(count);
+  }, [count, onSendData]);
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
       {contextHolder}
@@ -287,6 +293,13 @@ const BasicTableInventory: React.FC<IProps> = ({
             ))}
           </TableBody>
         </Table>
+          <div className="p-8">
+          <Pagination
+            count={count}
+            onChange={setCount}
+            length={inventoryList?.data?.length ? inventoryList?.data?.length : 1}
+          />
+        </div>
       </div>
 
       {formType && (

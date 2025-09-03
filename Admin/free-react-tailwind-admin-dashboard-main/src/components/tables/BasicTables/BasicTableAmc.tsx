@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import Pagination from "../../form/Pagination";
 import {
   Table,
   TableBody,
@@ -11,6 +13,7 @@ import {
 interface IProps {
   amcList: any;
   onEdit: (id: number) => void;
+  onSendData:any
 }
 
 // Define the table data using the interface
@@ -18,7 +21,7 @@ interface IProps {
 const BasicTableAmc: React.FC<IProps> = ({
   amcList,
   onEdit,
-  
+  onSendData
 }: any) => {
 
   // for delete
@@ -36,7 +39,10 @@ const BasicTableAmc: React.FC<IProps> = ({
   //     message.error("Failed to delete user");
   //   }
   // };
-
+const [count, setCount] = useState(1);
+  useEffect(() => {
+    onSendData(count);
+  }, [count, onSendData]);
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
       <div className="max-w-full overflow-x-auto">
@@ -144,6 +150,13 @@ const BasicTableAmc: React.FC<IProps> = ({
             ))}
           </TableBody>
         </Table>
+         <div className="p-8">
+          <Pagination
+            count={count}
+            onChange={setCount}
+            length={amcList?.data?.length ? amcList?.data?.length : 1}
+          />
+        </div>
       </div>
     </div>
   );

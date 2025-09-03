@@ -10,24 +10,31 @@ import Switch from "../../form/switch/Switch";
 import dayjs from "dayjs";
 import useSWRMutation from "swr/mutation";
 import { deleteFetcher } from "../../../api/fatcher";
-import { message, } from "antd";
+import { message } from "antd";
 import { mutate } from "swr";
+import { useEffect, useState } from "react";
+import Pagination from "../../form/Pagination";
 
 interface IProps {
   courseList: any;
   onEdit: (id: number) => void;
   onActive: (checked: boolean, id: number) => void;
+  onSendData: any;
 }
 
 // Define the table data using the interface
 
-const BasicTableCourses: React.FC<IProps> = ({ courseList, onEdit, onActive, }) => {
+const BasicTableCourses: React.FC<IProps> = ({
+  courseList,
+  onEdit,
+  onActive,
+  onSendData,
+}) => {
   // const onShowSizeChange: PaginationProps["onShowSizeChange"] = (
   //   current,
   //   pageSize
   // ) => {
   // };
- 
 
   // for delete
   const { trigger: deleteUser } = useSWRMutation(
@@ -35,6 +42,7 @@ const BasicTableCourses: React.FC<IProps> = ({ courseList, onEdit, onActive, }) 
     (url, { arg }: { arg: number }) => deleteFetcher(`${url}/${arg}`) // arg contains the id
   );
   const handleDelete = async (id: number) => {
+    if (!confirm("Are you want to delete")) return;
     try {
       await deleteUser(id);
       message.success("User deleted successfully");
@@ -44,7 +52,10 @@ const BasicTableCourses: React.FC<IProps> = ({ courseList, onEdit, onActive, }) 
       message.error("Failed to delete user");
     }
   };
-
+  const [count, setCount] = useState(1);
+  useEffect(() => {
+    onSendData(count);
+  }, [count, onSendData]);
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
       <div className="max-w-full overflow-x-auto">
@@ -138,7 +149,7 @@ const BasicTableCourses: React.FC<IProps> = ({ courseList, onEdit, onActive, }) 
                   <div className="pl-4">
                     <Switch
                       label=""
-                     defaultChecked={order.is_active}
+                      defaultChecked={order.is_active}
                       onChange={(defaultChecked) =>
                         onActive(defaultChecked, order.id)
                       }
@@ -166,12 +177,16 @@ const BasicTableCourses: React.FC<IProps> = ({ courseList, onEdit, onActive, }) 
             ))}
           </TableBody>
         </Table>
-
-       
+        <div className="p-8">
+          <Pagination
+            count={count}
+            onChange={setCount}
+            length={courseList?.data?.length ? courseList?.data?.length : 1}
+          />
+        </div>
       </div>
     </div>
   );
 };
 
 export default BasicTableCourses;
-
