@@ -90,6 +90,7 @@ export default function AmcRecord() {
         type: "success",
         content: response.message,
       });
+      
       setPhoto(null);
       setFormData({
         file: "",
