@@ -6,10 +6,10 @@ import {
   TableRow,
 } from "../../ui/table";
 
-import { mutate } from "swr";
-import { deleteFetcher } from "../../../api/fatcher";
-import useSWRMutation from "swr/mutation";
-import { message } from "antd";
+// import { mutate } from "swr";
+// import { deleteFetcher } from "../../../api/fatcher";
+// import useSWRMutation from "swr/mutation";
+// import { message } from "antd";
 import { useEffect, useState } from "react";
 import Pagination from "../../form/Pagination";
 
@@ -33,23 +33,23 @@ const BasicTableCreateEmployee: React.FC<IProps> = ({
   // };
 
   // for delete
-  const [messageApi, contextHolder] = message.useMessage();
+  // const [messageApi, contextHolder] = message.useMessage();
 
-  const { trigger: deleteUser } = useSWRMutation(
-    "/api/v1/users",
-    (url, { arg }: { arg: number }) => deleteFetcher(`${url}/${arg}`) // arg contains the id
-  );
-  const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure want to remove")) return;
-    try {
-      await deleteUser(id);
-      messageApi.success("User deleted successfully");
-      mutate("api/v1/users");
-    } catch (error) {
-      console.error("Delete failed:", error);
-      messageApi.error("Failed to delete user");
-    }
-  };
+  // const { trigger: deleteUser } = useSWRMutation(
+  //   "/api/v1/users",
+  //   (url, { arg }: { arg: number }) => deleteFetcher(`${url}/${arg}`) // arg contains the id
+  // );
+  // const handleDelete = async (id: number) => {
+  //   if (!confirm("Are you sure want to remove")) return;
+  //   try {
+  //     await deleteUser(id);
+  //     messageApi.success("User deleted successfully");
+  //     mutate("api/v1/users");
+  //   } catch (error) {
+  //     console.error("Delete failed:", error);
+  //     messageApi.error("Failed to delete user");
+  //   }
+  // };
   const [count, setCount] = useState(1);
   useEffect(() => {
     onSendData(count);
@@ -57,7 +57,7 @@ const BasicTableCreateEmployee: React.FC<IProps> = ({
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
-      {contextHolder}
+      {/* {contextHolder} */}
       <div className="max-w-full overflow-x-auto">
         <Table>
           {/* Table Header */}
@@ -147,12 +147,12 @@ const BasicTableCreateEmployee: React.FC<IProps> = ({
                     >
                       Edit
                     </button>
-                    <button
+                    {/* <button
                       onClick={() => handleDelete(order.id)}
                       className="text-red-500 hover:underline"
                     >
                       Delete
-                    </button>
+                    </button> */}
                   </div>
                 </TableCell>
               </TableRow>

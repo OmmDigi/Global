@@ -214,19 +214,19 @@ export default function CourseDetailsAdmin() {
                                       : false
                                   }
                                   type="number"
-                                  min={item?.min_amount}
+                                  min={1}
                                   max={item?.price}
                                   // value={formData2.fee_structure_info.fee_head_id}
                                   onChange={(e) => handleAmountChange(e, item)}
                                   className="w-32 px-2 py-1 border rounded"
                                 />
-                                {item?.min_amount > 0 &&
+                                {/* {item?.min_amount > 0 &&
                                 item?.due_amount > 0 ? (
                                   <p className="text-xs text-red-300">
                                     {" "}
                                     Minimum to pay {item?.min_amount}
                                   </p>
-                                ) : null}
+                                ) : null} */}
                               </div>
                             </div>
                           </div>

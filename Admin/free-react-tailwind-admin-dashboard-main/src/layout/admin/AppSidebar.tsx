@@ -33,7 +33,6 @@ type NavItem = {
 
 // const numbers = [4,5,6];
 
-
 const navItems: NavItem[] = [
   {
     name: "Dashboard",
@@ -102,13 +101,13 @@ const navItems: NavItem[] = [
     path: "/manageLeave",
   },
   {
-    name: "Inventory Manage",
+    name: "Stock Manage",
     id: 8,
     icon: <MdOutlineInventory />,
     path: "/inventory-manage",
     subItems: [
       {
-        name: "Inventory Stock",
+        name: "Stock Details",
         id: 5.1,
         path: "/inventory-manage",
         pro: false,
@@ -144,7 +143,6 @@ const othersItems: NavItem[] = [
   //   path: "/profile",
   // },
 ];
-
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();

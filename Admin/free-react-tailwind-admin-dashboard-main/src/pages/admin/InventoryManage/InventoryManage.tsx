@@ -38,7 +38,7 @@ export default function InventoryManage() {
     getFetcher
   );
   // get inventory  List
-  const { data: inventoryList, isLoading: inventoryLoding } = useSWR(
+  const { data: inventoryList, isLoading: inventoryLoding,mutate } = useSWR(
     `api/v1/inventory/item?page=${pageCount}`,
     getFetcher
   );
@@ -244,6 +244,7 @@ export default function InventoryManage() {
                     value={formData?.created_at}
                     placeholder="Date of Purchase"
                   />
+                 
                 </div>
               </div>
 
@@ -287,6 +288,7 @@ export default function InventoryManage() {
           inventoryList={inventoryList}
           onEdit={handleEdit}
           onSendData={handleChildData}
+          mutate={mutate}
         />
       </ComponentCard>
     </div>

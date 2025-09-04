@@ -40,7 +40,7 @@ function page() {
     if (e.target.value === "Teacher") {
       setColor("bg-green-100");
     }
-     if (e.target.value === "Stuff") {
+    if (e.target.value === "Stuff") {
       setColor("bg-yellow-100");
     }
     if (e.target.value === "Student") {
@@ -206,7 +206,6 @@ function page() {
                     <option value="Student">Student</option>
                     <option value="Teacher">Teacher</option>
                     <option value="Stuff">Staff</option>
-                    <option value="Admin">Admin</option>
                   </select>
                 </div>
 
