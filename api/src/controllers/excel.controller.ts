@@ -1213,7 +1213,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
   const worksheet = workbook.addWorksheet("Employee Salary");
 
   if (employeetype === "Staff") {
-    worksheet.mergeCells("A1:L1");
+    worksheet.mergeCells("A1:M1");
   } else {
     worksheet.mergeCells("A1:H1");
   }
@@ -1240,6 +1240,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
       "Present",
       "Absent",
       "Leave",
+      "Holiday",
       "Payment Components",
       null,
       "Sunday",
@@ -1284,7 +1285,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
 
   if (employeetype === "Staff") {
     // Merge header "Payment Component" across B1:C1
-    worksheet.mergeCells("E2:F2");
+    worksheet.mergeCells("F2:G2");
   }
 
   let rowIndex = 3;
@@ -1295,43 +1296,73 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
 
   if (employeetype === "Staff") {
     // query = `
-    //   WITH emp_salary AS (
-    //     SELECT 
-    //       e.id,
-    //       e.name,
-    //       json_agg(
-    //         json_build_object(
-    //           'salary_type', CASE WHEN ess.salary_type = 'base_salary' THEN 'BASIC PAY' WHEN ess.salary_type = 'P_tax' THEN 'P TAX' ELSE ess.salary_type END,
-    //           'amount', ess.amount,
-    //           'amount_type', ess.amount_type
-    //         )
-    //       ) AS salary_components
-    //     FROM users e
-    //     JOIN employee_salary_structure ess ON ess.employee_id = e.id
-
-    //     WHERE e.category = 'Stuff'
-
-    //     GROUP BY e.id, e.name
+    //   WITH month_days AS (
+    //       -- Generate all dates for the current month
+    //       SELECT generate_series(
+    //           date_trunc('month', $1::DATE), 
+    //           (date_trunc('month', $1::DATE) + interval '1 month - 1 day')::DATE, 
+    //           interval '1 day'
+    //       )::DATE AS dt
+    //   ),
+    //   working_days AS (
+    //       -- Remove Sundays and holidays
+    //       SELECT md.dt
+    //       FROM month_days md
+    //       LEFT JOIN holiday h ON h.date = md.dt
+    //       WHERE EXTRACT(DOW FROM md.dt) <> 0  -- Exclude Sundays
+    //         AND h.date IS NULL                -- Exclude holidays
+    //   ),
+    //   emp_salary AS (
+    //       SELECT 
+    //           e.id,
+    //           e.name,
+    //           json_agg(
+    //               json_build_object(
+    //                   'salary_type', CASE 
+    //                                     WHEN ess.salary_type = 'base_salary' THEN 'BASIC PAY' 
+    //                                     WHEN ess.salary_type = 'P_tax' THEN 'P TAX' 
+    //                                     ELSE ess.salary_type 
+    //                                 END,
+    //                   'amount', ess.amount,
+    //                   'amount_type', ess.amount_type
+    //               )
+    //           ) AS salary_components
+    //       FROM users e
+    //       JOIN employee_salary_structure ess ON ess.employee_id = e.id
+    //       WHERE e.category = 'Stuff'
+    //       GROUP BY e.id, e.name
     //   ),
     //   attendance_summary AS (
-    //     SELECT 
-    //       employee_id,
-    //       COUNT(*) FILTER (WHERE status = 'Present') AS present_days,
-    //       -- COUNT(*) FILTER (WHERE status = 'Absent') AS absent_days,
-    //       COUNT(DISTINCT date) FILTER (WHERE EXTRACT(DOW FROM date) = 0 AND status = 'Present') AS sunday_worked
-    //     FROM attendance
-    //     WHERE date_trunc('month', date) = date_trunc('month', $1::DATE)
-    //     GROUP BY employee_id
+    //       SELECT 
+    //           e.id AS employee_id,
+    //           COUNT(*) FILTER (WHERE a.status = 'Present') AS present_days,
+    //           COUNT(*) FILTER (WHERE a.status = 'Leave') AS leave_days,
+    //           COUNT(DISTINCT a.date) FILTER (
+    //               WHERE EXTRACT(DOW FROM a.date) = 0 AND a.status = 'Present'
+    //           ) AS sunday_worked,
+    //           COUNT(w.dt) AS total_working_days
+    //       FROM users e
+    //       JOIN working_days w ON TRUE
+    //       LEFT JOIN attendance a 
+    //             ON a.employee_id = e.id 
+    //             AND a.date = w.dt
+    //       WHERE e.category = 'Stuff'
+    //       GROUP BY e.id
     //   )
     //   SELECT 
-    //     es.id, 
-    //     es.name,
-    //     es.salary_components,
-    //     COALESCE(a.present_days, 0) AS present_days,
-    //     COALESCE(a.sunday_worked, 0) AS sunday_worked
+    //       es.id, 
+    //       es.name,
+    //       es.salary_components,
+    //       COALESCE(a.present_days, 0) AS present_days,
+    //       COALESCE(a.leave_days, 0) AS leave_days,
+    //       COALESCE(a.sunday_worked, 0) AS sunday_worked,
+    //       (a.total_working_days - (COALESCE(a.present_days,0) + COALESCE(a.leave_days,0))) AS absent_days
     //   FROM emp_salary es
-    //   JOIN attendance_summary a ON a.employee_id = es.id;
-    // `
+    //   JOIN attendance_summary a ON a.employee_id = es.id
+
+    //   --ORDER BY es.employee_id DESC
+    //   `
+
     query = `
       WITH month_days AS (
           -- Generate all dates for the current month
@@ -1340,6 +1371,13 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
               (date_trunc('month', $1::DATE) + interval '1 month - 1 day')::DATE, 
               interval '1 day'
           )::DATE AS dt
+      ),
+      holidays_in_month AS (
+          -- Pick holidays that fall in this month (excluding Sundays)
+          SELECT h.date
+          FROM holiday h
+          JOIN month_days md ON h.date = md.dt
+          WHERE EXTRACT(DOW FROM h.date) <> 0
       ),
       working_days AS (
           -- Remove Sundays and holidays
@@ -1377,7 +1415,8 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
               COUNT(DISTINCT a.date) FILTER (
                   WHERE EXTRACT(DOW FROM a.date) = 0 AND a.status = 'Present'
               ) AS sunday_worked,
-              COUNT(w.dt) AS total_working_days
+              COUNT(w.dt) AS total_working_days,
+              (SELECT COUNT(*) FROM holidays_in_month) AS holiday_count
           FROM users e
           JOIN working_days w ON TRUE
           LEFT JOIN attendance a 
@@ -1393,12 +1432,10 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
           COALESCE(a.present_days, 0) AS present_days,
           COALESCE(a.leave_days, 0) AS leave_days,
           COALESCE(a.sunday_worked, 0) AS sunday_worked,
+          a.holiday_count,
           (a.total_working_days - (COALESCE(a.present_days,0) + COALESCE(a.leave_days,0))) AS absent_days
       FROM emp_salary es
-      JOIN attendance_summary a ON a.employee_id = es.id
-
-      --ORDER BY es.employee_id DESC
-      `
+      JOIN attendance_summary a ON a.employee_id = es.id;`
   } else if (employeetype === "Teacher") {
     query = `
       WITH teacher_stats AS (
@@ -1500,6 +1537,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
             i === 0 ? data.present_days : null,
             i === 0 ? absentDays : null,
             i === 0 ? data.leave_days : null,
+            i === 0 ? data.holiday_count : null,
             comp.salary_type,
             comp.amount,
             i === 0 ? sundayPayTxt : null,
@@ -1530,6 +1568,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
           worksheet.mergeCells(`B${startRow}:B${endRow}`); // Present
           worksheet.mergeCells(`C${startRow}:C${endRow}`); // Absent
           worksheet.mergeCells(`D${startRow}:D${endRow}`); // Leave
+          worksheet.mergeCells(`E${startRow}:E${endRow}`); // Holiday
           worksheet.mergeCells(`G${startRow}:G${endRow}`); // Sunday
           worksheet.mergeCells(`H${startRow}:H${endRow}`); // Per Day Rate
           worksheet.mergeCells(`I${startRow}:I${endRow}`); // Gross Amount
