@@ -31,10 +31,10 @@ const steps = [
     title: "Second",
     content: "Second-content",
   },
-  {
-    title: "Last",
-    content: "Last-content",
-  },
+  // {
+  //   title: "Last",
+  //   content: "Last-content",
+  // },
   // {
   //   title: "Payment",
   //   content: "Payment",
@@ -95,7 +95,8 @@ function page() {
     applicantSignature: "",
     applicantDate: "",
     guardianSignature: "",
-    guardianDate: "",
+    guardianPhone:"",
+    // guardianDate: "",
 
     // Office use section
     admitRejectedReason: "",
@@ -393,7 +394,7 @@ function page() {
       });
 
       // route.push(`${response2?.data?.payment_page_url}`);
-      window.open(`${response2?.data?.payment_page_url}`,"__blank")
+      window.open(`${response2?.data?.payment_page_url}`, "__blank");
     } catch (error) {
       messageApi.open({
         type: "error",
@@ -760,7 +761,7 @@ function page() {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-1">
-                          Phone
+                          Whatsapp No
                         </label>
                         <input
                           type="tel"
@@ -1118,7 +1119,7 @@ function page() {
 
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-2">
-                          Self Attested copies of Age Proof
+                        Age Proof (Madhyamik certificate / PAN Card)
                         </label>
                         <input
                           type="file"
@@ -1155,7 +1156,7 @@ function page() {
 
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-2">
-                          Address Proof
+                          Address Proof (Aadhar Card )
                         </label>
                         <input
                           type="file"
@@ -1234,12 +1235,12 @@ function page() {
 
                   {/* Signature Section */}
                   <div className="bg-white p-6 rounded-lg shadow-sm">
-                    <h2 className="text-lg font-semibold mb-4">Signatures</h2>
+                    <h2 className="text-lg font-semibold mb-4">Details</h2>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-2">
-                          Signature of Applicant
+                          Name of Applicant
                         </label>
                         <input
                           type="text"
@@ -1253,7 +1254,7 @@ function page() {
 
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-2">
-                          Signature of Parent/Guardian
+                          Name of Parent/Guardian
                         </label>
                         <input
                           type="text"
@@ -1261,7 +1262,20 @@ function page() {
                           value={formData.guardianSignature}
                           onChange={handleInputChange}
                           className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="Parent/Guardian's signature"
+                          placeholder="Parent/Guardian's Name"
+                        />
+                      </div>
+                       <div>
+                        <label className="block text-sm text-start text-gray-700 mb-2">
+                          Phone No of Parent/Guardian
+                        </label>
+                        <input
+                          type="number"
+                          name="guardianPhone"
+                          value={formData.guardianPhone}
+                          onChange={handleInputChange}
+                          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Parent/Guardian's Phone No"
                         />
                       </div>
 
@@ -1278,7 +1292,7 @@ function page() {
                         />
                       </div>
 
-                      <div>
+                      {/* <div>
                         <label className="block text-sm text-start text-gray-700 mb-2">
                           Date
                         </label>
@@ -1289,7 +1303,7 @@ function page() {
                           onChange={handleInputChange}
                           className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
-                      </div>
+                      </div> */}
                     </div>
                   </div>
 
@@ -1411,21 +1425,51 @@ function page() {
                     </button>
                   </div> */}
                 </div>
+
+                <div className=" mt-20 grid grid-cols-1 md:grid-cols-2 gap-4 ">
+                  <div>
+                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
+                      Set User Name (Mobile No / Gmail)
+                    </label>
+                    <input
+                      type="text"
+                      name="username"
+                      value={formData.username}
+                      onChange={handleInputChange}
+                      placeholder=" Set User Name (Mobile No / Gmail)"
+                      className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
+                      Set password (Set Own password)
+                    </label>
+                    <input
+                      type="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder=" Set password (Set Own password)"
+                    />
+                  </div>
+                </div>
               </div>
             )}
 
             {current === 2 && (
               <div className="max-w-4xl mx-auto  bg-white min-h-screen">
-                <div className="space-y-8">
+                {/* <div className="space-y-8"> */}
                   {/* Header */}
-                  <div className="text-center">
+                  {/* <div className="text-center">
                     <h1 className="text-3xl font-bold text-gray-800 underline mb-8">
                       DECLARATION
                     </h1>
-                  </div>
+                  </div> */}
 
                   {/* First Declaration Section */}
-                  <div className="bg-gray-50 p-6 rounded-lg">
+                  {/* <div className="bg-gray-50 p-6 rounded-lg">
                     <h2 className="text-lg font-semibold mb-4 text-gray-800">
                       First Declaration - Admission Fee
                     </h2>
@@ -1513,8 +1557,8 @@ function page() {
                           <span className="test-lg font-bold">
                             Five Thousand
                           </span>
-                          ) only towards Admission Fee for Montessori Teachers&apos;
-                          Training course (6 Months) of
+                          ) only towards Admission Fee for Montessori
+                          Teachers&apos; Training course (6 Months) of
                         </p>
 
                         <p className="text-sm text-gray-700 mt-2">
@@ -1523,10 +1567,10 @@ function page() {
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* Second Declaration Section */}
-                  <div className="bg-gray-50 p-6 rounded-lg">
+                  {/* <div className="bg-gray-50 p-6 rounded-lg">
                     <h2 className="text-lg font-semibold mb-4 text-gray-800">
                       Second Declaration - BSS Registration Fee
                     </h2>
@@ -1620,10 +1664,10 @@ function page() {
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* Signature Section */}
-                  <div className="bg-white p-6 rounded-lg border-2 border-gray-200">
+                  {/* <div className="bg-white p-6 rounded-lg border-2 border-gray-200">
                     <h2 className="text-lg font-semibold mb-6 text-gray-800">
                       Signatures
                     </h2>
@@ -1687,21 +1731,12 @@ function page() {
                         </div>
                       </div>
                     </div>
-                  </div>
-
-                  {/* Submit Button */}
-                  {/* <div className="text-center">
-                    <button
-                      type="button"
-                      onClick={handleSubmit}
-                      className="bg-blue-600 hover:bg-blue-700 text-white font-medium text-start py-3 px-8 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                    >
-                      Submit Declaration
-                    </button>
                   </div> */}
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-10">
+                
+                {/* </div> */}
+
+                {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
                   <div>
                     <label className="block text-sm font-medium text-start text-gray-700 mb-2">
                       Set User Name
@@ -1729,10 +1764,10 @@ function page() {
                       placeholder="Set Your password"
                     />
                   </div>
-                </div>
+                </div> */}
               </div>
             )}
-            <div className="mt-[20px] mb-[20px] flex justify-center">
+            <div className=" flex justify-center">
               {current > 0 && (
                 <Button style={{ margin: "0 8px" }} onClick={() => prev()}>
                   Previous

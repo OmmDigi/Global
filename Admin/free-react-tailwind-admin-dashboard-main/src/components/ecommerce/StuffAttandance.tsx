@@ -38,8 +38,6 @@ export default function StuffAttandance() {
         </div>
          {/* Date Picker */}
           <DatePicker
-                    
-
             selected={selectedDate}
             onChange={(date) => setSelectedDate(date as any)}
             dateFormat="dd/MM/yyyy"

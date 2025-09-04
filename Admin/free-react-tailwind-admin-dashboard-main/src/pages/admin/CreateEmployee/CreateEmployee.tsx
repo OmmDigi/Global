@@ -742,7 +742,7 @@ export default function CreateEmployee() {
                               className="w-auto px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
                             >
                               <option value="">Choose</option>
-                              <option value="base_salary">Base Salary</option>
+                              <option value="base_salary">Basic Salary</option>
                               <option value="HRA">HRA</option>
                               <option value="MEDICAL">MEDICAL</option>
                               <option value="P_tax">P Tax</option>

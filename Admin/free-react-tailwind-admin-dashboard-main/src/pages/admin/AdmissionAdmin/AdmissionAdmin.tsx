@@ -62,8 +62,9 @@ const initialFormData = {
   // Signature section
   applicantSignature: "",
   applicantDate: "",
+  guardianPhone: "",
   guardianSignature: "",
-  guardianDate: "",
+  // guardianDate: "",
 
   // Office use section
   admitRejectedReason: "",
@@ -148,10 +149,10 @@ export default function AdmissionAdmin() {
     setPageCount(data);
   };
   // get Admission list
-  const {
-    data: admissionlist,
-    mutate,
-  } = useSWR(`api/v1/admission?page=${pageCount}`, getFetcher);
+  const { data: admissionlist, mutate } = useSWR(
+    `api/v1/admission?page=${pageCount}`,
+    getFetcher
+  );
 
   const handleSearch = async () => {
     if (dateRange[0] && dateRange[0] && course && batch) {
@@ -299,7 +300,7 @@ export default function AdmissionAdmin() {
   };
 
   const removeFile2 = (fieldName: string, index: number) => {
-    if(!confirm("Are you sure want to remove")) return;
+    if (!confirm("Are you sure want to remove")) return;
     setFormData((prev: any) => ({
       ...prev,
       [fieldName]: prev[fieldName]?.filter((_: any, i: number) => i !== index),
@@ -722,7 +723,7 @@ export default function AdmissionAdmin() {
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
                                   <label className="block text-sm text-start text-gray-700 mb-1">
-                                    Phone
+                                    Whatsapp No
                                   </label>
                                   <input
                                     type="tel"
@@ -1098,7 +1099,7 @@ export default function AdmissionAdmin() {
 
                                 <div>
                                   <label className="block text-sm text-start text-gray-700 mb-2">
-                                    Self Attested copies of Age Proof
+                                    Age Proof (Madhyamik certificate / PAN Card)
                                   </label>
                                   <input
                                     type="file"
@@ -1142,7 +1143,7 @@ export default function AdmissionAdmin() {
 
                                 <div>
                                   <label className="block text-sm text-start text-gray-700 mb-2">
-                                    Address Proof
+                                    Address Proof (Aadhar Card )
                                   </label>
                                   <input
                                     type="file"
@@ -1234,13 +1235,13 @@ export default function AdmissionAdmin() {
                             {/* Signature Section */}
                             <div className="bg-white p-6 rounded-lg shadow-sm">
                               <h2 className="text-lg font-semibold mb-4">
-                                Signatures
+                                Details
                               </h2>
 
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                   <label className="block text-sm text-start text-gray-700 mb-2">
-                                    Signature of Applicant
+                                    Name of Applicant
                                   </label>
                                   <input
                                     type="text"
@@ -1254,7 +1255,7 @@ export default function AdmissionAdmin() {
 
                                 <div>
                                   <label className="block text-sm text-start text-gray-700 mb-2">
-                                    Signature of Parent/Guardian
+                                    Name of Parent/Guardian
                                   </label>
                                   <input
                                     type="text"
@@ -1263,6 +1264,19 @@ export default function AdmissionAdmin() {
                                     onChange={handleInputChange}
                                     className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     placeholder="Parent/Guardian's signature"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-sm text-start text-gray-700 mb-2">
+                                    Phono No of Parent/Guardian
+                                  </label>
+                                  <input
+                                    type="text"
+                                    name="guardianPhone"
+                                    value={formData.guardianPhone}
+                                    onChange={handleInputChange}
+                                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    placeholder="Phono No of Parent/Guardian"
                                   />
                                 </div>
 
@@ -1279,7 +1293,7 @@ export default function AdmissionAdmin() {
                                   />
                                 </div>
 
-                                <div>
+                                {/* <div>
                                   <label className="block text-sm text-start text-gray-700 mb-2">
                                     Date
                                   </label>
@@ -1290,7 +1304,7 @@ export default function AdmissionAdmin() {
                                     onChange={handleInputChange}
                                     className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                   />
-                                </div>
+                                </div> */}
                               </div>
                             </div>
 

@@ -6,20 +6,21 @@ import {
   TableRow,
 } from "../../ui/table";
 
-
 import useSWRMutation from "swr/mutation";
-import {  postFetcher } from "../../../api/fatcher";
-import { message,  } from "antd";
-import { mutate } from "swr";
+import { postFetcher } from "../../../api/fatcher";
+import { message } from "antd";
+// import { mutate } from "swr";
 import { useEffect, useState } from "react";
 import Input from "../../form/input/InputField";
 import Label from "../../form/Label";
 import Pagination from "../../form/Pagination";
+import DatePicker from "react-datepicker";
 
 interface IProps {
   inventoryList: any;
   onEdit: (id: number) => void;
-  onSendData:any
+  onSendData: any;
+  mutate: any;
 }
 
 // Define the table data using the interface
@@ -28,6 +29,7 @@ const BasicTableInventory: React.FC<IProps> = ({
   inventoryList,
   onEdit,
   onSendData,
+  mutate,
 }: any) => {
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -41,19 +43,19 @@ const BasicTableInventory: React.FC<IProps> = ({
   const [itemName, setItemName] = useState("");
   const [id, setId] = useState("");
   const [closingStock, setClosingStock] = useState("");
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
   // create course
-  const {
-    trigger: create,
-   
-  } = useSWRMutation("api/v1/inventory/item/stock/add", (url, { arg }) =>
-    postFetcher(url, arg)
+  const { trigger: create } = useSWRMutation(
+    "api/v1/inventory/item/stock/add",
+    (url, { arg }) => postFetcher(url, arg)
   );
 
   const handleOpenForm = (
     type: "add" | "consume",
     name: string,
     id: string,
-    closing_stock: string 
+    closing_stock: string
   ) => {
     setFormType(type);
     setItemName(name);
@@ -72,7 +74,7 @@ const BasicTableInventory: React.FC<IProps> = ({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev : any) => ({ ...prev, [name]: value }));
+    setFormData((prev: any) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async () => {
@@ -85,13 +87,13 @@ const BasicTableInventory: React.FC<IProps> = ({
     ];
 
     try {
-      const response = await create( payload as any);
+      const response = await create(payload as any);
 
       messageApi.open({
         type: "success",
         content: response.message,
       });
-      mutate("api/v1/inventory/item");
+      mutate();
       setFormData({
         quantity: 0,
         transaction_date: "",
@@ -127,7 +129,7 @@ const BasicTableInventory: React.FC<IProps> = ({
   //     message.error("Failed to delete user");
   //   }
   // };
-const [count, setCount] = useState(1);
+  const [count, setCount] = useState(1);
   useEffect(() => {
     onSendData(count);
   }, [count, onSendData]);
@@ -161,12 +163,13 @@ const [count, setCount] = useState(1);
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-               Current Price / Unit
-              </TableCell><TableCell
+                Current Price / Unit
+              </TableCell>
+              <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-               Previous Price / Unit
+                Previous Price / Unit
               </TableCell>
               <TableCell
                 isHeader
@@ -189,11 +192,15 @@ const [count, setCount] = useState(1);
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >&nbsp;</TableCell>
+              >
+                &nbsp;
+              </TableCell>
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >&nbsp;</TableCell>
+              >
+                &nbsp;
+              </TableCell>
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
@@ -205,7 +212,7 @@ const [count, setCount] = useState(1);
 
           {/* Table Body */}
           <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-            {inventoryList?.data?.map((order: any, index:number) => (
+            {inventoryList?.data?.map((order: any, index: number) => (
               <TableRow key={order.id}>
                 <TableCell className="px-5 py-4 sm:px-6 text-start">
                   <div className="flex items-center gap-3">
@@ -293,11 +300,13 @@ const [count, setCount] = useState(1);
             ))}
           </TableBody>
         </Table>
-          <div className="p-8">
+        <div className="p-8">
           <Pagination
             count={count}
             onChange={setCount}
-            length={inventoryList?.data?.length ? inventoryList?.data?.length : 1}
+            length={
+              inventoryList?.data?.length ? inventoryList?.data?.length : 1
+            }
           />
         </div>
       </div>
@@ -314,7 +323,12 @@ const [count, setCount] = useState(1);
             </h2>
 
             {/* Quantity */}
-            <form onSubmit={handleSubmit}>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmit();
+              }}
+            >
               <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
                 <div>
                   <Label htmlFor="inputOne">
@@ -338,7 +352,7 @@ const [count, setCount] = useState(1);
                   </p>
                 </div>
                 {/* Date */}
-                <div >
+                {/* <div>
                   <Label htmlFor="inputOne">Date</Label>
                   <Input
                     type="date"
@@ -346,6 +360,24 @@ const [count, setCount] = useState(1);
                     value={formData.transaction_date}
                     onChange={handleChange}
                     className="w-full p-0 border rounded mb-3"
+                  />
+                </div> */}
+                <div>
+                  <Label htmlFor="date">Date</Label>
+                  <DatePicker
+                    selected={selectedDate}
+                    onChange={(date: Date | null) => {
+                      setSelectedDate(date);
+                      setFormData((prev) => ({
+                        ...prev,
+                        transaction_date: date
+                          ? date.toISOString().split("T")[0]
+                          : "",
+                      }));
+                    }}
+                    dateFormat="yyyy-MM-dd"
+                    className="w-full text-gray-500  border rounded px-3 py-2"
+                    placeholderText="Select a date"
                   />
                 </div>
               </div>

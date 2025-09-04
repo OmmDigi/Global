@@ -16,21 +16,17 @@ export default function BasicTableAdmission({
   onEdit,
   onActive,
   onSendData,
-  
 }: any) {
   const navigate = useNavigate();
 
- 
   const handleDetailsClick = (id: number) => {
     navigate(`/courseDetailsAdmin/${id}`);
   };
-  
+
   const [count, setCount] = useState(1);
   useEffect(() => {
     onSendData(count);
   }, [count, onSendData]);
-
-
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
@@ -103,6 +99,7 @@ export default function BasicTableAdmission({
               <TableRow key={index}>
                 <TableCell className="px-5 py-4 sm:px-6 text-start">
                   <div className="flex items-center gap-3">
+                    <div className="text-gray-500">{index + 1}</div>
                     <div className="block font-medium text-gray-500 text-theme-xs dark:text-gray-400]">
                       <img
                         src={order.student_image}
@@ -179,9 +176,14 @@ export default function BasicTableAdmission({
         </Table>
 
         <div className="p-8">
-          <Pagination count={count} onChange={setCount} length={admissionlist?.data?.length ? admissionlist?.data?.length : 1} />
+          <Pagination
+            count={count}
+            onChange={setCount}
+            length={
+              admissionlist?.data?.length ? admissionlist?.data?.length : 1
+            }
+          />
         </div>
-
       </div>
     </div>
   );
