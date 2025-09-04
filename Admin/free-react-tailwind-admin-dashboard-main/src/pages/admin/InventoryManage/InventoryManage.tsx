@@ -5,12 +5,13 @@ import ComponentCard from "../../../components/common/ComponentCard";
 import Label from "../../../components/form/Label";
 import Input from "../../../components/form/input/InputField";
 
-import useSWR, { mutate } from "swr";
+// import useSWR, { mutate } from "swr";
 import useSWRMutation from "swr/mutation";
 import { getFetcher, postFetcher, putFetcher } from "../../../api/fatcher";
 import { message } from "antd";
 import BasicTableInventory from "../../../components/tables/BasicTables/BasicTableInventory";
 import { Minus, Plus } from "lucide-react";
+import useSWR from "swr";
 
 type FormDataType = {
   item_id?: number; // optional (if sometimes missing)
