@@ -1213,7 +1213,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
   const worksheet = workbook.addWorksheet("Employee Salary");
 
   if (employeetype === "Staff") {
-    worksheet.mergeCells("A1:I1");
+    worksheet.mergeCells("A1:L1");
   } else {
     worksheet.mergeCells("A1:H1");
   }
@@ -1237,6 +1237,9 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
   if (employeetype === "Staff") {
     worksheet.addRow([
       "Name",
+      "Present",
+      "Absent",
+      "Leave",
       "Payment Components",
       null,
       "Sunday",
@@ -1281,7 +1284,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
 
   if (employeetype === "Staff") {
     // Merge header "Payment Component" across B1:C1
-    worksheet.mergeCells("B2:C2");
+    worksheet.mergeCells("E2:F2");
   }
 
   let rowIndex = 3;
@@ -1494,6 +1497,9 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
         salaryComponents.forEach((comp: any, i: number) => {
           const row = worksheet.addRow([
             i === 0 ? data.name : null, // Name only once
+            i === 0 ? data.present_days : null,
+            i === 0 ? absentDays : null,
+            i === 0 ? data.leave_days : null,
             comp.salary_type,
             comp.amount,
             i === 0 ? sundayPayTxt : null,
@@ -1521,12 +1527,15 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
         // Merge cells like in StuffSalary.xlsx
         if (salaryComponents.length > 1) {
           worksheet.mergeCells(`A${startRow}:A${endRow}`); // Name
-          worksheet.mergeCells(`D${startRow}:D${endRow}`); // Sunday
-          worksheet.mergeCells(`E${startRow}:E${endRow}`); // Per Day Rate
-          worksheet.mergeCells(`F${startRow}:F${endRow}`); // Gross Amount
-          worksheet.mergeCells(`G${startRow}:G${endRow}`); // Deduction
-          worksheet.mergeCells(`H${startRow}:H${endRow}`); // Net Amount
-          worksheet.mergeCells(`I${startRow}:I${endRow}`); // Sign
+          worksheet.mergeCells(`B${startRow}:B${endRow}`); // Present
+          worksheet.mergeCells(`C${startRow}:C${endRow}`); // Absent
+          worksheet.mergeCells(`D${startRow}:D${endRow}`); // Leave
+          worksheet.mergeCells(`G${startRow}:G${endRow}`); // Sunday
+          worksheet.mergeCells(`H${startRow}:H${endRow}`); // Per Day Rate
+          worksheet.mergeCells(`I${startRow}:I${endRow}`); // Gross Amount
+          worksheet.mergeCells(`J${startRow}:J${endRow}`); // Deduction
+          worksheet.mergeCells(`K${startRow}:K${endRow}`); // Net Amount
+          worksheet.mergeCells(`L${startRow}:L${endRow}`); // Sign
         }
       } else if (employeetype === "Teacher") {
         // Add teacher name in the first column, spanning multiple rows
