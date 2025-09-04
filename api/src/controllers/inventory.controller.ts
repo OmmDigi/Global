@@ -146,7 +146,7 @@ export const getCurrentDateReport = asyncErrorHandler(async (req, res) => {
           SELECT
             item_id,
             transaction_date,
-            SUM(cost_per_unit) AS total_cost_per_unit,
+            AVG(cost_per_unit) FILTER (WHERE transaction_type = 'add')::numeric(10,2) AS total_cost_per_unit,
             SUM(CASE WHEN transaction_type = 'add' THEN quantity ELSE 0 END) AS total_added,
             SUM(CASE WHEN transaction_type = 'consume' THEN quantity ELSE 0 END) AS total_consumed,
             SUM(total_value) AS total_value

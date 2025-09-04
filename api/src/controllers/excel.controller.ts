@@ -1249,11 +1249,12 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
   } else {
     worksheet.addRow([
       "Name",
+      // "Days Worked",
       "Course Name",
       "Type",
-      "Days Worked",
       "Per Day Rate / Fixed",
-      "Daily Basic Pay",
+      "Class Taken",
+      "Total",
       "Grand Total",
       "Signature",
     ]);
@@ -1290,40 +1291,111 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
   let query = ``;
 
   if (employeetype === "Staff") {
+    // query = `
+    //   WITH emp_salary AS (
+    //     SELECT 
+    //       e.id,
+    //       e.name,
+    //       json_agg(
+    //         json_build_object(
+    //           'salary_type', CASE WHEN ess.salary_type = 'base_salary' THEN 'BASIC PAY' WHEN ess.salary_type = 'P_tax' THEN 'P TAX' ELSE ess.salary_type END,
+    //           'amount', ess.amount,
+    //           'amount_type', ess.amount_type
+    //         )
+    //       ) AS salary_components
+    //     FROM users e
+    //     JOIN employee_salary_structure ess ON ess.employee_id = e.id
+
+    //     WHERE e.category = 'Stuff'
+
+    //     GROUP BY e.id, e.name
+    //   ),
+    //   attendance_summary AS (
+    //     SELECT 
+    //       employee_id,
+    //       COUNT(*) FILTER (WHERE status = 'Present') AS present_days,
+    //       -- COUNT(*) FILTER (WHERE status = 'Absent') AS absent_days,
+    //       COUNT(DISTINCT date) FILTER (WHERE EXTRACT(DOW FROM date) = 0 AND status = 'Present') AS sunday_worked
+    //     FROM attendance
+    //     WHERE date_trunc('month', date) = date_trunc('month', $1::DATE)
+    //     GROUP BY employee_id
+    //   )
+    //   SELECT 
+    //     es.id, 
+    //     es.name,
+    //     es.salary_components,
+    //     COALESCE(a.present_days, 0) AS present_days,
+    //     COALESCE(a.sunday_worked, 0) AS sunday_worked
+    //   FROM emp_salary es
+    //   JOIN attendance_summary a ON a.employee_id = es.id;
+    // `
     query = `
-      WITH emp_salary AS (
-        SELECT 
-          e.id,
-          e.name,
-          json_agg(
-            json_build_object(
-              'salary_type', CASE WHEN ess.salary_type = 'base_salary' THEN 'BASIC PAY' WHEN ess.salary_type = 'P_tax' THEN 'P TAX' ELSE ess.salary_type END,
-              'amount', ess.amount,
-              'amount_type', ess.amount_type
-            )
-          ) AS salary_components
-        FROM users e
-        JOIN employee_salary_structure ess ON ess.employee_id = e.id
-        GROUP BY e.id, e.name
+      WITH month_days AS (
+          -- Generate all dates for the current month
+          SELECT generate_series(
+              date_trunc('month', $1::DATE), 
+              (date_trunc('month', $1::DATE) + interval '1 month - 1 day')::DATE, 
+              interval '1 day'
+          )::DATE AS dt
+      ),
+      working_days AS (
+          -- Remove Sundays and holidays
+          SELECT md.dt
+          FROM month_days md
+          LEFT JOIN holiday h ON h.date = md.dt
+          WHERE EXTRACT(DOW FROM md.dt) <> 0  -- Exclude Sundays
+            AND h.date IS NULL                -- Exclude holidays
+      ),
+      emp_salary AS (
+          SELECT 
+              e.id,
+              e.name,
+              json_agg(
+                  json_build_object(
+                      'salary_type', CASE 
+                                        WHEN ess.salary_type = 'base_salary' THEN 'BASIC PAY' 
+                                        WHEN ess.salary_type = 'P_tax' THEN 'P TAX' 
+                                        ELSE ess.salary_type 
+                                    END,
+                      'amount', ess.amount,
+                      'amount_type', ess.amount_type
+                  )
+              ) AS salary_components
+          FROM users e
+          JOIN employee_salary_structure ess ON ess.employee_id = e.id
+          WHERE e.category = 'Stuff'
+          GROUP BY e.id, e.name
       ),
       attendance_summary AS (
-        SELECT 
-          employee_id,
-          COUNT(*) FILTER (WHERE status = 'Present') AS present_days,
-          COUNT(DISTINCT date) FILTER (WHERE EXTRACT(DOW FROM date) = 0 AND status = 'Present') AS sunday_worked
-        FROM attendance
-        WHERE date_trunc('month', date) = date_trunc('month', $1::DATE) --CURRENT_DATE)
-        GROUP BY employee_id
+          SELECT 
+              e.id AS employee_id,
+              COUNT(*) FILTER (WHERE a.status = 'Present') AS present_days,
+              COUNT(*) FILTER (WHERE a.status = 'Leave') AS leave_days,
+              COUNT(DISTINCT a.date) FILTER (
+                  WHERE EXTRACT(DOW FROM a.date) = 0 AND a.status = 'Present'
+              ) AS sunday_worked,
+              COUNT(w.dt) AS total_working_days
+          FROM users e
+          JOIN working_days w ON TRUE
+          LEFT JOIN attendance a 
+                ON a.employee_id = e.id 
+                AND a.date = w.dt
+          WHERE e.category = 'Stuff'
+          GROUP BY e.id
       )
       SELECT 
-        es.id, 
-        es.name,
-        es.salary_components,
-        COALESCE(a.present_days, 0) AS present_days,
-        COALESCE(a.sunday_worked, 0) AS sunday_worked
+          es.id, 
+          es.name,
+          es.salary_components,
+          COALESCE(a.present_days, 0) AS present_days,
+          COALESCE(a.leave_days, 0) AS leave_days,
+          COALESCE(a.sunday_worked, 0) AS sunday_worked,
+          (a.total_working_days - (COALESCE(a.present_days,0) + COALESCE(a.leave_days,0))) AS absent_days
       FROM emp_salary es
-      JOIN attendance_summary a ON a.employee_id = es.id;
-    `
+      JOIN attendance_summary a ON a.employee_id = es.id
+
+      --ORDER BY es.employee_id DESC
+      `
   } else if (employeetype === "Teacher") {
     query = `
       WITH teacher_stats AS (
@@ -1334,12 +1406,17 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
           tc.class_type,
           COUNT(DISTINCT tc.class_date) AS number_worked_days,
           (
-            SELECT amount
+            SELECT
+             CASE 
+              WHEN tc.class_type = 'fixed' AND ess.class_per_month IS NOT NULL
+                THEN ess.amount::INT || ' / ' || ess.class_per_month || ' = ' || (ess.amount / ess.class_per_month)::INT
+              ELSE ess.amount::INT::TEXT
+             END
             FROM employee_salary_structure ess
             WHERE ess.employee_id = u.id
               AND ess.salary_type = tc.class_type
               AND ess.course_id = c.id
-          ) AS rate_per_date,
+          ) AS rate_per_date_text,
           SUM(tc.daily_earning) AS earning,
           SUM(tc.units) AS total_classes_taken
         FROM users u
@@ -1357,7 +1434,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
             json_build_object(
               'class_type', class_type,
               'number_worked_days', number_worked_days,
-              'rate_per_date', rate_per_date,
+              'rate_per_date_text', rate_per_date_text,
               'earning', earning,
               'total_classes_taken', total_classes_taken
             ) ORDER BY class_type
@@ -1392,6 +1469,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
       if (employeetype === "Staff") {
         const salaryComponents = data.salary_components;
         const sundayWorked = data.sunday_worked || 0;
+        const absentDays = data.absent_days || 0;
 
         let gross = 0;
         let deduction = 0;
@@ -1401,10 +1479,11 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
           else if (comp.amount_type === "deduction") deduction += comp.amount;
         });
 
-        const perDayRate = Math.floor(gross / 30); // adjust if 30 days
+        // const perDayRate = Math.floor(gross / 30); // adjust if 30 days
+        const perDayRate = gross / 30;
 
-        gross += sundayWorked * perDayRate;
-        const netPay = gross - deduction;
+        // gross += sundayWorked * perDayRate;
+        const netPay = gross - (sundayWorked * perDayRate) - deduction;
         const sundayPayTxt =
           sundayWorked == 0 ? 0 : `${sundayWorked} x ${perDayRate}`;
 
@@ -1418,10 +1497,10 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
             comp.salary_type,
             comp.amount,
             i === 0 ? sundayPayTxt : null,
-            i === 0 ? perDayRate : null,
+            i === 0 ? perDayRate.toFixed(2) : null,
             i === 0 ? gross : null,
-            i === 0 ? deduction : null,
-            i === 0 ? netPay : null,
+            i === 0 ? (deduction + (absentDays * perDayRate)).toFixed(2) : null,
+            i === 0 ? (netPay - (absentDays * perDayRate)).toFixed(2) : null,
             null,
           ]);
 
@@ -1458,15 +1537,16 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
 
         data.courses.forEach((course: any) => {
           // Add course name row
-          const courseStartRow = rowIndex;
+          // const courseStartRow = rowIndex;
 
           course.rows.forEach((classData: any, index: number) => {
             const row = worksheet.addRow([
               index === 0 && teacherRowCount === 0 ? data.teacherName : "", // Teacher name only on first row
               index === 0 ? course.courseName : "", // Course name only on first row of course
               classData.class_type,
-              classData.number_worked_days,
-              classData.rate_per_date,
+              // classData.number_worked_days,
+              classData.rate_per_date_text,
+              classData.total_classes_taken,
               classData.earning,
               data.teacherTotal && teacherRowCount === 0 && index === 0
                 ? data.teacherTotal
@@ -1512,6 +1592,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
 
         // Merge teacher total cell (Grand Total column - column G AND H THE SING)
         if (teacherRowCount > 1) {
+          // worksheet.mergeCells(`D${teacherStartRow}:D${rowIndex - 1}`);
           worksheet.mergeCells(`G${teacherStartRow}:G${rowIndex - 1}`);
           worksheet.mergeCells(`H${teacherStartRow}:H${rowIndex - 1}`);
         }
@@ -1521,15 +1602,27 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
     });
 
     pgStream.on("end", async () => {
-      await workbook.commit();
-      client.release();
+      try {
+        await workbook.commit();
+      } finally {
+        client.release();
+      }
     });
 
     pgStream.on("error", (err) => {
+      console.error("Stream error:", err.message);
+
+      // Cleanup
       client.release();
-      // console.error("Stream error:", err);
-      // res.status(500).send("Error generating report");
-      throw new ErrorHandler(400, err.message)
+
+      // Destroy response so client knows download failed
+      if (!res.headersSent) {
+        // If no data was written yet, you could send a proper error response
+        res.status(500).json(new ApiResponse(500, err.message))
+      } else {
+        // If file already started streaming, just destroy the connection
+        res.destroy(err);
+      }
     });
   } catch (err: any) {
     client.release();
@@ -1539,87 +1632,87 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
 
 export const createInventoryReport = asyncErrorHandler(async (req, res) => {
   const { error, value } = VInventoryReport.validate(req.query ?? {});
-  if(error) throw new ErrorHandler(400, error.message);
+  if (error) throw new ErrorHandler(400, error.message);
 
-   // Set response headers for streaming
-    res.setHeader(
-      "Content-Disposition",
-      'attachment; filename="Inventory_Report.xlsx"'
-    );
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    );
+  // Set response headers for streaming
+  res.setHeader(
+    "Content-Disposition",
+    'attachment; filename="Inventory_Report.xlsx"'
+  );
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
 
-    const workbook = new ExcelJS.stream.xlsx.WorkbookWriter({
-      stream: res,
-      useStyles: true,
-    });
-    const worksheet = workbook.addWorksheet("Inventory Report");
+  const workbook = new ExcelJS.stream.xlsx.WorkbookWriter({
+    stream: res,
+    useStyles: true,
+  });
+  const worksheet = workbook.addWorksheet("Inventory Report");
 
-    worksheet.mergeCells("A1:N1");
-    worksheet.getCell(
-      "A1"
-    ).value = `Inventory Report (${value.from_date} - ${value.to_date})`;
-    worksheet.getCell("A1").font = {
-      size: 20,
-      bold: true,
-      color: { argb: "000000" },
+  worksheet.mergeCells("A1:N1");
+  worksheet.getCell(
+    "A1"
+  ).value = `Inventory Report (${value.from_date} - ${value.to_date})`;
+  worksheet.getCell("A1").font = {
+    size: 20,
+    bold: true,
+    color: { argb: "000000" },
+  };
+  worksheet.getCell("A1").fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "FFFF00" },
+  };
+  worksheet.getRow(1).height = 30;
+  worksheet.getCell("A1").alignment = {
+    horizontal: "center",
+    vertical: "middle",
+  };
+
+  worksheet.addRow([
+    "SR NUMBER",
+    "NAME OF ITEM",
+    "VENDOR",
+    "OPENING STOCK",
+    "MINIMUM QUANTITY TO MAINTAIN",
+    "ITEM CONSUMED",
+    "STOCK ADDED",
+    "CLOSING STOCK",
+    "LAST PURCHASED DATE",
+    "COST PER UNIT (CURRENT COST)",
+    "COST PER UNIT (PREVIOUS COST)",
+    "TOTAL VALUE",
+    "REMARKS",
+    "DATE",
+  ]);
+
+  // Row styling (header row)
+  worksheet.getRow(2).eachCell((cell) => {
+    cell.style = {
+      font: {
+        bold: true,
+        size: 12,
+        color: { argb: "000000" },
+      },
+      alignment: { horizontal: "center", vertical: "middle" },
+      fill: {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "F4A460" },
+      },
+      border: {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        right: { style: "thin" },
+        bottom: { style: "thin" },
+      },
     };
-    worksheet.getCell("A1").fill = {
-      type: "pattern",
-      pattern: "solid",
-      fgColor: { argb: "FFFF00" },
-    };
-    worksheet.getRow(1).height = 30;
-    worksheet.getCell("A1").alignment = {
-      horizontal: "center",
-      vertical: "middle",
-    };
+  });
 
-    worksheet.addRow([
-      "SR NUMBER",
-      "NAME OF ITEM",
-      "VENDOR",
-      "OPENING STOCK",
-      "MINIMUM QUANTITY TO MAINTAIN",
-      "ITEM CONSUMED",
-      "STOCK ADDED",
-      "CLOSING STOCK",
-      "LAST PURCHASED DATE",
-      "COST PER UNIT (CURRENT COST)",
-      "COST PER UNIT (PREVIOUS COST)",
-      "TOTAL VALUE",
-      "REMARKS",
-      "DATE",
-    ]);
-
-    // Row styling (header row)
-    worksheet.getRow(2).eachCell((cell) => {
-      cell.style = {
-        font: {
-          bold: true,
-          size: 12,
-          color: { argb: "000000" },
-        },
-        alignment: { horizontal: "center", vertical: "middle" },
-        fill: {
-          type: "pattern",
-          pattern: "solid",
-          fgColor: { argb: "F4A460" },
-        },
-        border: {
-          top: { style: "thin" },
-          left: { style: "thin" },
-          right: { style: "thin" },
-          bottom: { style: "thin" },
-        },
-      };
-    });
-
-    const client = await pool.connect();
-    const query = new QueryStream(
-      `
+  const client = await pool.connect();
+  const query = new QueryStream(
+    `
      WITH
       -- Step 1: Get the earliest transaction date (or default to $1)
       min_required_date AS (
@@ -1753,79 +1846,79 @@ export const createInventoryReport = asyncErrorHandler(async (req, res) => {
       WHERE report_date BETWEEN $1 AND $2
       ORDER BY item_id, report_date;
       `,
-      [value.from_date, value.to_date],
-      {
-        batchSize: 10,
-      }
-    );
+    [value.from_date, value.to_date],
+    {
+      batchSize: 10,
+    }
+  );
 
-    const pgStream = client.query(query);
+  const pgStream = client.query(query);
 
-    const dates = new Map();
+  const dates = new Map();
 
-    // Process PostgreSQL stream data and append to Excel sheet
-    pgStream.on("data", (data) => {
-      pgStream.pause();
-      const valueArr = Object.values(data);
+  // Process PostgreSQL stream data and append to Excel sheet
+  pgStream.on("data", (data) => {
+    pgStream.pause();
+    const valueArr = Object.values(data);
 
-      // const newRowOfDate
-      if (!dates.has(`${data.report_date}`)) {
-        const dateRow = worksheet.addRow([
-          "",
-          `DATE : ${data.report_date}`,
-        ]);
-        worksheet.mergeCells(`A${dateRow.number}:A${dateRow.number}`);
-        worksheet.mergeCells(`B${dateRow.number}:N${dateRow.number}`);
-        worksheet.getCell(`B${dateRow.number}`).alignment = {
-          vertical: "justify",
-          horizontal: "center",
-        };
-        dateRow.eachCell((cell) => {
-          cell.style = {
-            font: {
-              size: 12,
-              color: {
-                argb: "000000",
-              },
-              bold: true,
-            },
-            alignment: { horizontal: "left" },
-            fill: {
-              type: "pattern",
-              pattern: "solid",
-              fgColor: { argb: "72BF6A" },
-            },
-          };
-        });
-        dates.set(`${data.report_date}`, "true");
-      }
-
-      const excelRow = worksheet.addRow(valueArr);
-
-      // Style the data rows
-      excelRow.eachCell((cell) => {
+    // const newRowOfDate
+    if (!dates.has(`${data.report_date}`)) {
+      const dateRow = worksheet.addRow([
+        "",
+        `DATE : ${data.report_date}`,
+      ]);
+      worksheet.mergeCells(`A${dateRow.number}:A${dateRow.number}`);
+      worksheet.mergeCells(`B${dateRow.number}:N${dateRow.number}`);
+      worksheet.getCell(`B${dateRow.number}`).alignment = {
+        vertical: "justify",
+        horizontal: "center",
+      };
+      dateRow.eachCell((cell) => {
         cell.style = {
-          font: { size: 11 },
-          alignment: { horizontal: "center" },
-          border: {
-            top: { style: "thin" },
-            left: { style: "thin" },
-            right: { style: "thin" },
-            bottom: { style: "thin" },
+          font: {
+            size: 12,
+            color: {
+              argb: "000000",
+            },
+            bold: true,
+          },
+          alignment: { horizontal: "left" },
+          fill: {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "72BF6A" },
           },
         };
       });
+      dates.set(`${data.report_date}`, "true");
+    }
 
-      pgStream.resume();
+    const excelRow = worksheet.addRow(valueArr);
+
+    // Style the data rows
+    excelRow.eachCell((cell) => {
+      cell.style = {
+        font: { size: 11 },
+        alignment: { horizontal: "center" },
+        border: {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          right: { style: "thin" },
+          bottom: { style: "thin" },
+        },
+      };
     });
 
-    pgStream.on("end", () => {
-      workbook.commit();
-      client.release(); // Release the client when done
-    });
+    pgStream.resume();
+  });
 
-    pgStream.on("error", (err) => {
-      client.release();
-      console.log(err);
-    });
+  pgStream.on("end", () => {
+    workbook.commit();
+    client.release(); // Release the client when done
+  });
+
+  pgStream.on("error", (err) => {
+    client.release();
+    console.log(err);
+  });
 })

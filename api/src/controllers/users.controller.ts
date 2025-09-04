@@ -438,12 +438,12 @@ export const updateUser = asyncErrorHandler(async (req, res) => {
     }
 
     // update to the essl device
-    await essl.updateUser({
-      name: value.name,
-      password: value.password,
-      uid: userId,
-      userid: userId,
-    });
+    // await essl.updateUser({
+    //   name: value.name,
+    //   password: value.password,
+    //   uid: userId,
+    //   userid: userId,
+    // });
 
     res
       .status(201)

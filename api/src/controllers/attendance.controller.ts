@@ -280,7 +280,7 @@ export const getTeacherClassStatusList = asyncErrorHandler(async (req, res) => {
           ORDER BY c.id
         ) AS ess ON ess.employee_id = u.id
 
-        WHERE u.category = 'Teacher' AND NOT EXISTS (SELECT 1 FROM attendance WHERE employee_id = u.id AND ${attendanceFilter})
+        WHERE u.category = 'Teacher' AND EXISTS (SELECT 1 FROM attendance WHERE employee_id = u.id AND ${attendanceFilter})
 
         GROUP BY u.id
 
