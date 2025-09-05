@@ -34,35 +34,35 @@ export default function InventoryManage() {
     minimum_quantity: "",
   });
 
-  const { data: vendorList, isLoading: vendorLoading } = useSWR(
-    "api/v1/vendor",
-    getFetcher
-  );
+  // const { data: vendorList, isLoading: vendorLoading } = useSWR(
+  //   "api/v1/vendor",
+  //   getFetcher
+  // );
   // get inventory  List
   const { data: inventoryList, isLoading: inventoryLoding,mutate } = useSWR(
-    `api/v1/inventory/item?page=${pageCount}`,
+    `api/v2/inventory/item?page=${pageCount}`,
     getFetcher
   );
   console.log("inventoryList", inventoryList);
 
   // create inventory
   const { trigger: create } = useSWRMutation(
-    "api/v1/inventory/item/add",
+    "api/v2/inventory/item",
     (url, { arg }) => postFetcher(url, arg)
   );
 
   // Update purchaseList
 
   const { trigger: update } = useSWRMutation(
-    "api/v1/inventory/item/edit",
+    "api/v2/inventory/item",
     (url, { arg }) => putFetcher(url, arg)
   );
   if (inventoryLoding) {
     console.log("loading", inventoryLoding);
   }
-  if (vendorLoading) {
-    return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
-  }
+  // if (vendorLoading) {
+  //   return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
+  // }
 
     const handleChildData = (data: any) => {
     setPageCount(data);
@@ -104,6 +104,8 @@ export default function InventoryManage() {
     >
   ) => {
     const { name, value } = e.target;
+    console.log("vendor",value,name);
+    
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -113,7 +115,7 @@ export default function InventoryManage() {
   const handleEdit = async (id: number) => {
     try {
       setId(id);
-      const response = await getFetcher(`api/v1/inventory/item/${id}`);
+      const response = await getFetcher(`api/v2/inventory/item/${id}`);
       const userData = response.data;
       setFormData({
         item_id: id,
@@ -217,7 +219,7 @@ export default function InventoryManage() {
               </div>
 
               <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-                <div className="w-12/12  mb-4">
+                {/* <div className="w-12/12  mb-4">
                   <label className="block text-sm text-start mt-1 dark:text-gray-400 text-gray-700 mb-1">
                     Choose Vendor
                   </label>
@@ -234,7 +236,7 @@ export default function InventoryManage() {
                       </div>
                     ))}
                   </select>
-                </div>
+                </div> */}
                 <div>
                   <Label>Item Addition Date</Label>
                   <Input
@@ -247,10 +249,7 @@ export default function InventoryManage() {
                   />
                  
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-                <div>
+                  <div>
                   <Label>Minimum Quantity to maintain *</Label>
                   <Input
                     type="number"
@@ -262,6 +261,8 @@ export default function InventoryManage() {
                   />
                 </div>
               </div>
+
+              
 
               <div className="flex flex-wrap justify-center items-center gap-6">
                 <div className="flex items-center gap-5">

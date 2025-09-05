@@ -80,7 +80,7 @@ const initialFormData = {
   applicantName1: "",
   relationshipType1: "",
   relationName1: "",
-  admissionFeeAmount: "5000",
+  admissionFeeAmount: ``,
   admissionFeeWords: "Five thousand",
   courseDetails: "",
   batchNumber: "",
@@ -311,9 +311,11 @@ export default function AdmissionAdmin() {
     course_id: formData.courseName,
     batch_id: formData.batchName,
     session_id: formData.sessionName,
+    declaration_status:1,
     admission_data: JSON.stringify(formData),
   };
 
+  
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
@@ -460,6 +462,8 @@ export default function AdmissionAdmin() {
       [name]: value,
     }));
     const courseId = parseInt(e.target.value);
+    console.log("courseId",courseId);
+    
     setSelectedCourseId(courseId as any);
   };
 
@@ -471,6 +475,7 @@ export default function AdmissionAdmin() {
   const selectedCourse = Array.isArray(courseList?.data)
     ? courseList?.data?.find((course: any) => course.id == selectedCourseId)
     : null;
+console.log("selectedCourse",selectedCourse?.admission_fee);
 
   return (
     <div>
@@ -1415,16 +1420,7 @@ export default function AdmissionAdmin() {
                                   </div>
                                 </div> */}
 
-                            {/* Submit Button */}
-                            {/* <div className="text-center">
-                                  <button
-                                    type="button"
-                                    onClick={handleSubmit}
-                                    className="bg-blue-600 hover:bg-blue-700 text-white font-start py-3 px-8 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                                  >
-                                    Submit Application
-                                  </button>
-                                </div> */}
+                          
                           </div>
                         </div>
                       )}
@@ -1522,15 +1518,16 @@ export default function AdmissionAdmin() {
                                       type="number"
                                       readOnly
                                       name="admissionFeeAmount"
-                                      value={formData.admissionFeeAmount}
+                                      value={selectedCourse?.admission_fee}
                                       onChange={handleInputChange}
-                                      className="mx-2 w-20 p-1 border border-gray-300 rounded text-center"
+                                      className="mx-2 w-30 p-1 border border-gray-300 rounded text-center"
                                     />
-                                    /- (Rupees{" "}
+                                    {/* /- (Rupees{" "}
                                     <span className="test-lg font-bold">
                                       Five Thousand
                                     </span>
-                                    ) only towards Admission Fee for Montessori
+                                    ) */}
+                                     only towards Admission Fee for Montessori
                                     Teachers' Training course (6 Months) of
                                   </p>
 
@@ -1543,6 +1540,9 @@ export default function AdmissionAdmin() {
                             </div>
 
                             {/* Second Declaration Section */}
+                            {selectedCourse?.bss_fee 
+                            ? 
+
                             <div className="bg-gray-50 p-6 rounded-lg">
                               <h2 className="text-lg font-semibold mb-4 text-gray-800">
                                 Second Declaration - BSS Registration Fee
@@ -1626,15 +1626,16 @@ export default function AdmissionAdmin() {
                                       type="number"
                                       readOnly
                                       name="bssRegistrationFee"
-                                      value={formData.bssRegistrationFee}
+                                      value={selectedCourse?.bss_fee ? selectedCourse?.bss_fee : "0" }
                                       onChange={handleInputChange}
-                                      className="mx-2 w-20 p-1 border border-gray-300 rounded text-center"
+                                      className="mx-2 w-30 p-1 border border-gray-300 rounded text-center"
                                     />
-                                    /- (Rupees{" "}
+                                    {/* /- (Rupees{" "}
                                     <span className="test-lg font-bold">
                                       Five Thousand
                                     </span>
-                                    ) only towards BSS Registration Fee within 3
+                                    ) */}
+                                     only towards BSS Registration Fee within 3
                                     (Three) months after 6 (Six) months of
                                     getting Admission for Montessori Teachers'
                                     Training Course.
@@ -1642,6 +1643,8 @@ export default function AdmissionAdmin() {
                                 </div>
                               </div>
                             </div>
+                            : null
+                            }
 
                             {/* Signature Section */}
                             <div className="bg-white p-6 rounded-lg border-2 border-gray-200">
@@ -1710,16 +1713,7 @@ export default function AdmissionAdmin() {
                               </div>
                             </div>
 
-                            {/* Submit Button */}
-                            {/* <div className="text-center">
-                                  <button
-                                    type="button"
-                                    onClick={handleSubmit}
-                                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium text-start py-3 px-8 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                                  >
-                                    Submit Declaration
-                                  </button>
-                                </div> */}
+                           
                           </div>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-10">
