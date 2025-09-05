@@ -6,9 +6,10 @@ import Label from "../../../components/form/Label";
 import Input from "../../../components/form/input/InputField";
 import BasicTableCourses from "../../../components/tables/BasicTables/BasicTableCourses";
 import { getFetcher, postFetcher, putFetcher } from "../../../api/fatcher";
-import useSWR, { mutate } from "swr";
+import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 import { message } from "antd";
+
 
 type FormDataType = {
   id?: number; // optional (if sometimes missing)
@@ -50,7 +51,7 @@ export default function Courses() {
   );
 
   // get course list
-  const { data: courseList, isLoading: courseLoading } = useSWR(
+  const { data: courseList, isLoading: courseLoading,mutate } = useSWR(
     `api/v1/course?page=${pageCount}`,
     getFetcher
   );
@@ -97,7 +98,7 @@ export default function Courses() {
         type: "success",
         content: response.message,
       });
-
+mutate()
       setFormData({
         // id: 0,
         name: "",
@@ -148,7 +149,7 @@ export default function Courses() {
   const handleUpdate = async () => {
     try {
       const response = await update(formData as any);
-      mutate("api/v1/course?limit=-1");
+      mutate()
       messageApi.open({
         type: "success",
         content: response.message,
@@ -186,7 +187,7 @@ export default function Courses() {
     try {
       const response = await update(UpdateFormPayload as any);
 
-      mutate("api/v1/course");
+     mutate()
       messageApi.open({
         type: "success",
         content: response.message,

@@ -19,13 +19,13 @@ function Report() {
   const [dateRangeStudent, setDateRangeStudent] = useState<
     [Date | null, Date | null]
   >([null, null]);
-  // const [dateRangeInventory, setDateRangeInventory] = useState<
-  //   [Date | null, Date | null]
-  // >([null, null]);
+  const [dateRangeInventory, setDateRangeInventory] = useState<
+    [Date | null, Date | null]
+  >([null, null]);
   
   const [startDate, endDate] = dateRange;
   const [startDateStudent, endDateStudent] = dateRangeStudent;
-  // const [startDateInventory, endDateInventory] = dateRangeInventory;
+  const [startDateInventory, endDateInventory] = dateRangeInventory;
 
 
   // const [ , setEditedFormId] = useState<number>(-1);
@@ -35,15 +35,15 @@ function Report() {
   const [mode, setMode] = useState<any>(0);
   const [isPending, startTransition] = useTransition();
   const [isPendingStudent, startTransitionStudent] = useTransition();
-  // const [isPendingInventory, startTransitionInventory] = useTransition();
+  const [isPendingInventory, startTransitionInventory] = useTransition();
 
   const [excelFileUrl, setExcelFileUrl] = useState<string | null>(null);
   const [excelFileUrlStudent, setExcelFileUrlStudent] = useState<string | null>(
     null
   );
-  // const [excelFileUrlInventory, setExcelFileUrlInventory] = useState<
-  //   string | null
-  // >(null);
+  const [excelFileUrlInventory, setExcelFileUrlInventory] = useState<
+    string | null
+  >(null);
 
   const handleCourseChange = (e: any) => {
     const value = e.target.value;
@@ -142,29 +142,30 @@ function Report() {
       }
     });
   };
-  // const formDataInventory = {
-  //   type: "inventory_report",
-  //   query: `from_date=${dayjs(dateRangeInventory[0]).format(
-  //     "YYYY-MM-DD"
-  //   )}&to_date=${dayjs(dateRangeInventory[1]).format("YYYY-MM-DD")}`,
-  // };
-  // const handleSearchInventory = () => {
-  //   setExcelFileUrlInventory(null);
-  //   startTransitionInventory(async () => {
-  //     if (dateRangeInventory[0] && dateRangeInventory[0]) {
-  //       const response = await create(formDataInventory as any);
-  //       if (response?.data) {
-  //         setExcelFileUrlInventory(response?.data);
-  //         //    window.open(response?.data,"__blank");
-  //       }
-  //     } else {
-  //       messageApi.open({
-  //         type: "error",
-  //         content: "Please Select all Input Fields",
-  //       });
-  //     }
-  //   });
-  // };
+  
+  const formDataInventory = {
+    type: "inventory_report",
+    query: `from_date=${dayjs(dateRangeInventory[0]).format(
+      "YYYY-MM-DD"
+    )}&to_date=${dayjs(dateRangeInventory[1]).format("YYYY-MM-DD")}`,
+  };
+  const handleSearchInventory = () => {
+    setExcelFileUrlInventory(null);
+    startTransitionInventory(async () => {
+      if (dateRangeInventory[0] && dateRangeInventory[0]) {
+        const response = await create(formDataInventory as any);
+        if (response?.data) {
+          setExcelFileUrlInventory(response?.data);
+          //    window.open(response?.data,"__blank");
+        }
+      } else {
+        messageApi.open({
+          type: "error",
+          content: "Please Select all Input Fields",
+        });
+      }
+    });
+  };
 
   const selectedCourse = Array.isArray(courseList?.data)
     ? courseList?.data?.find((course: any) => course.id == selectedCourseId)
@@ -371,7 +372,7 @@ function Report() {
           )}
         </div>
       </ComponentCard>
-      {/* <ComponentCard className="mt-15" title="Report For Inventory  ">
+      <ComponentCard className="mt-15" title="Report For Inventory  ">
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
           <div>
             <label className="block text-sm font-bold text-gray-500 mb-1">
@@ -417,7 +418,7 @@ function Report() {
             </Button>
           )}
         </div>
-      </ComponentCard> */}
+      </ComponentCard>
     </div>
   );
 }
