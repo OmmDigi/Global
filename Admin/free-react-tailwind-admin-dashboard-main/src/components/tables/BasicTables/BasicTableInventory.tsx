@@ -7,14 +7,14 @@ import {
 } from "../../ui/table";
 
 import useSWRMutation from "swr/mutation";
-import { postFetcher } from "../../../api/fatcher";
+import { getFetcher, postFetcher } from "../../../api/fatcher";
 import { message } from "antd";
 // import { mutate } from "swr";
 import { useEffect, useState } from "react";
-import Input from "../../form/input/InputField";
-import Label from "../../form/Label";
+
 import Pagination from "../../form/Pagination";
 import DatePicker from "react-datepicker";
+import useSWR from "swr";
 
 interface IProps {
   inventoryList: any;
@@ -35,19 +35,27 @@ const BasicTableInventory: React.FC<IProps> = ({
 
   const [formType, setFormType] = useState<"add" | "consume" | null>(null);
   const [formData, setFormData] = useState({
-    quantity: 0,
+    quantity: "",
     transaction_date: "",
-    cost_per_unit: "",
+    vendors: [{ vendor: "", cost_per_unit: "" }],
     remark: "",
   });
   const [itemName, setItemName] = useState("");
+  const [vendor, setVendor] = useState("");
+  const [vendorId, setVendorId] = useState("");
   const [id, setId] = useState("");
   const [closingStock, setClosingStock] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
+  // vandorlist
+  const { data: vendorList,  } = useSWR(
+    "api/v1/vendor",
+    getFetcher
+  );
+  // const options = vendorList?.data;
   // create course
   const { trigger: create } = useSWRMutation(
-    "api/v1/inventory/item/stock/add",
+    "api/v2/inventory/item/stock",
     (url, { arg }) => postFetcher(url, arg)
   );
 
@@ -55,37 +63,80 @@ const BasicTableInventory: React.FC<IProps> = ({
     type: "add" | "consume",
     name: string,
     id: string,
-    closing_stock: string
+    avilable_quantity: string,
+    vendor: "",
+    vendorId: ""
   ) => {
     setFormType(type);
     setItemName(name);
     setId(id);
-    setClosingStock(closing_stock);
+    setClosingStock(avilable_quantity);
+    setVendor(vendor);
+    setVendorId(vendorId);
     setFormData({
-      quantity: 0,
+      quantity: "",
       transaction_date: "",
-      cost_per_unit: "",
-      // total_value: "",
+      vendors: [{ vendor: "", cost_per_unit: "" }],
       remark: "",
     });
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
-    setFormData((prev: any) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+  const handleVendorChange = (
+    index: number,
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => {
+      const updatedVendors = [...prev.vendors];
+      updatedVendors[index] = {
+        ...updatedVendors[index],
+        [name]: value,
+      };
+      return { ...prev, vendors: updatedVendors };
+    });
+  };
+
+  const handleAddMore = () => {
+    setFormData((prev) => ({
+      ...prev,
+      vendors: [...prev.vendors, { vendor: "", cost_per_unit: "" }],
+    }));
+  };
+
+  
+  const handleRemove = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      vendors: prev.vendors.filter((_, i) => i !== index),
+    }));
   };
 
   const handleSubmit = async () => {
-    const payload = [
-      {
-        item_id: id,
-        transaction_type: formType,
-        ...formData,
-      },
-    ];
+    let payload: any = {};
 
+    if (formType == "consume") {
+      const newFormData = { ...formData };
+      (newFormData.vendors[0].vendor = vendorId),
+        (payload = {
+          item_id: id,
+          transaction_type: formType,
+          ...newFormData,
+        });
+    } else {
+      payload = { item_id: id, transaction_type: formType, ...formData };
+    }
+    console.log("✅ Final Form Data:", payload);
     try {
       const response = await create(payload as any);
 
@@ -95,10 +146,10 @@ const BasicTableInventory: React.FC<IProps> = ({
       });
       mutate();
       setFormData({
-        quantity: 0,
+        quantity: "",
         transaction_date: "",
-        cost_per_unit: "",
-        // total_value: "",
+        vendors: [{ vendor: "", cost_per_unit: "" }],
+
         remark: "",
       });
     } catch (error: any) {
@@ -108,31 +159,14 @@ const BasicTableInventory: React.FC<IProps> = ({
       });
     }
 
-    // Here you would POST to your API
-    // fetch("/api/stock", { method: "POST", body: JSON.stringify(payload) });
-
     setFormType(null); // close form after submit
   };
 
-  // for delete
-  // const { trigger: deleteUser, isMutating } = useSWRMutation(
-  //   "api/v1/purchase",
-  //   (url, { arg }: { arg: number }) => deleteFetcher(`${url}/${arg}`) // arg contains the id
-  // );
-  // const handleDelete = async (id: number) => {
-  //   try {
-  //     await deleteUser(id);
-  //     message.success("User deleted successfully");
-  //     mutate("api/v1/purchase");
-  //   } catch (error) {
-  //     console.error("Delete failed:", error);
-  //     message.error("Failed to delete user");
-  //   }
-  // };
   const [count, setCount] = useState(1);
   useEffect(() => {
     onSendData(count);
   }, [count, onSendData]);
+
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
       {contextHolder}
@@ -159,35 +193,36 @@ const BasicTableInventory: React.FC<IProps> = ({
               >
                 Last Purchased Date
               </TableCell>
+
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Current Price / Unit
+                Stock In Total Rs.
               </TableCell>
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Previous Price / Unit
+                Stock Out Total Rs.
               </TableCell>
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Minimum Maintain
+                Minimum Maintain quantity
               </TableCell>
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Opeaning Stock
+                Avilable quantity
               </TableCell>
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Closing Stock
+                Consume quantity
               </TableCell>
               <TableCell
                 isHeader
@@ -234,19 +269,20 @@ const BasicTableInventory: React.FC<IProps> = ({
                   {order.last_transaction_date}
                 </TableCell>
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  ₹ {order.cost_per_unit_current}
+                  ₹ {order.total_expense}
                 </TableCell>
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  ₹ {order.cost_per_unit_prev}
+                  ₹ {order.total_income}
                 </TableCell>
+
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   {order.minimum_quantity}
                 </TableCell>
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  {order.opening_stock}
+                  {order.avilable_quantity}
                 </TableCell>
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  {order.closing_stock}
+                  {order.consume_quantity}
                 </TableCell>
 
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
@@ -255,8 +291,10 @@ const BasicTableInventory: React.FC<IProps> = ({
                       handleOpenForm(
                         "add",
                         order.item_name,
-                        order.item_id,
-                        order.closing_stock
+                        order.id,
+                        order.avilable_quantity,
+                        order.vendor_name,
+                        order.vendor_id
                       )
                     }
                     className="px-4 py-3 rounded-3xl text-xl bg-green-200 text-gray-900"
@@ -270,8 +308,10 @@ const BasicTableInventory: React.FC<IProps> = ({
                       handleOpenForm(
                         "consume",
                         order.item_name,
-                        order.item_id,
-                        order.closing_stock
+                        order.id,
+                        order.avilable_quantity,
+                        order.vendor_name,
+                        order.vendor_id
                       )
                     }
                     className="px-4 py-3 rounded-3xl text-xl bg-gray-400 text-gray-900"
@@ -283,7 +323,7 @@ const BasicTableInventory: React.FC<IProps> = ({
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => onEdit(order.item_id)}
+                      onClick={() => onEdit(order.id)}
                       className="text-blue-500 hover:underline"
                     >
                       Edit
@@ -313,7 +353,7 @@ const BasicTableInventory: React.FC<IProps> = ({
 
       {formType && (
         <div className="fixed inset-0 dark:bg-black bg-white  bg-opacity-50 flex justify-center items-center">
-          <div className="bg-gray-200 dark:bg-gray-800 p-6 rounded-xl w-96">
+          <div className="bg-gray-200 dark:bg-gray-800 p-6 rounded-xl w-[50%]">
             <h1 className="text-2xl font-bold mb-4 text-center  text-gray-700   dark:text-gray-200">
               {" "}
               {itemName}
@@ -329,12 +369,13 @@ const BasicTableInventory: React.FC<IProps> = ({
                 handleSubmit();
               }}
             >
+              {/* Quantity & Date */}
               <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-                <div>
-                  <Label htmlFor="inputOne">
+                <div className=" text-gray-500  dark:text-gray-400">
+                  <label htmlFor="quantity">
                     {formType === "add" ? "Added Quantity" : "Issued Quantity"}
-                  </Label>
-                  <Input
+                  </label>
+                  <input
                     type="number"
                     name="quantity"
                     max={formType === "add" ? "" : closingStock}
@@ -343,27 +384,17 @@ const BasicTableInventory: React.FC<IProps> = ({
                     }
                     value={formData.quantity}
                     onChange={handleChange}
-                    className="w-full p-0 border rounded "
+                    className="w-full p-2 border rounded"
                   />
-                  <p className=" text-xs text-red-300">
+                  <p className="text-xs text-red-400">
                     {formType === "add"
                       ? ""
                       : `You have Quantity ${closingStock}`}
                   </p>
                 </div>
-                {/* Date */}
-                {/* <div>
-                  <Label htmlFor="inputOne">Date</Label>
-                  <Input
-                    type="date"
-                    name="transaction_date"
-                    value={formData.transaction_date}
-                    onChange={handleChange}
-                    className="w-full p-0 border rounded mb-3"
-                  />
-                </div> */}
-                <div>
-                  <Label htmlFor="date">Date</Label>
+
+                <div className=" text-gray-500 flex flex-col dark:text-gray-400">
+                  <label htmlFor="date">Date</label>
                   <DatePicker
                     selected={selectedDate}
                     onChange={(date: Date | null) => {
@@ -376,48 +407,100 @@ const BasicTableInventory: React.FC<IProps> = ({
                       }));
                     }}
                     dateFormat="yyyy-MM-dd"
-                    className="w-full text-gray-500  border rounded px-3 py-2"
+                    className="w-full border rounded px-3 py-2"
                     placeholderText="Select a date"
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-1 gap-6 xl:grid-cols-1 mt-2">
-                <div>
-                  <Label htmlFor="inputOne">Cost Per Unit</Label>
-                  <Input
-                    type="number"
-                    name="cost_per_unit"
-                    placeholder="Cost Per Unit"
-                    value={formData.cost_per_unit}
-                    onChange={handleChange}
-                    className="w-full p-0 border rounded mb-3"
-                  />
+
+              {/* Vendors Section */}
+              <div className="space-y-5">
+                <div className="flex justify-end">
+                  <button
+                    disabled={formType === "add" ? false : true}
+                    type="button"
+                    onClick={handleAddMore}
+                    className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                  >
+                    + Add More
+                  </button>
                 </div>
-                {/* total_value */}
-                {/* <div>
-                <Label htmlFor="inputOne">Total Value</Label>
-                <Input
-                  type="number"
-                  name="total_value"
-                  placeholder="Total Value"
-                  value={formData.total_value}
-                  onChange={handleChange}
-                  className="w-full p-0 border rounded mb-3"
-                />
-              </div> */}
+
+                {formData.vendors.map((item, index) => (
+                  <div
+                    key={index}
+                    className="grid grid-cols-1 xl:grid-cols-2 gap-6 relative  "
+                  >
+                    {/* ❌ Remove Button */}
+                    {formData.vendors.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemove(index)}
+                        className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                      >
+                        ✕
+                      </button>
+                    )}
+
+                    {/* Vendor Select */}
+                    <div className=" text-gray-500 flex flex-col dark:text-gray-400">
+                      <label className="block text-sm mb-1">
+                        Choose Vendor
+                      </label>
+                      {formType === "add" ? (
+                        <select
+                          name="vendor"
+                          value={item.vendor}
+                          onChange={(e) => handleVendorChange(index, e)}
+                          className="w-full px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                        >
+                          <option value="">Select</option>
+                          {vendorList?.data?.map((data: any) => (
+                            <option key={data.id} value={data.id}>
+                              {data.name}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          name="vendor"
+                          placeholder="vendor"
+                          value={vendor}
+                          onChange={(e) => handleVendorChange(index, e)}
+                          className="w-full px-3 py-2 border rounded-md"
+                        />
+                      )}
+                    </div>
+
+                    {/* Cost Per Unit */}
+                    <div className=" text-gray-500 flex flex-col dark:text-gray-400">
+                      <label className="block text-sm mb-1">
+                        Cost Per Unit
+                      </label>
+                      <input
+                        type="number"
+                        name="cost_per_unit"
+                        placeholder="Cost Per Unit"
+                        value={item.cost_per_unit}
+                        onChange={(e) => handleVendorChange(index, e)}
+                        className="w-full px-3 py-2 border rounded-md"
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
 
-              {/* cost_per_unit */}
-
               {/* Remark */}
-              <div>
-                <Label htmlFor="inputOne">Remark</Label>
+
+              <div className=" text-gray-500 flex flex-col mt-4 dark:text-gray-400">
+                <label htmlFor="remark">Remark</label>
                 <textarea
                   name="remark"
                   placeholder="Remark"
                   value={formData.remark}
                   onChange={handleChange}
-                  className="w-full p-3 border rounded mb-3 text-gray-400 "
+                  className="w-full p-3 border rounded mb-3"
                 />
               </div>
 

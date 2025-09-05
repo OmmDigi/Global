@@ -606,7 +606,7 @@ export default function CreateEmployee() {
                               {courseList?.data?.map((opt: any, i: number) => (
                                 <option key={i} value={opt.id}>
                                   {opt.name}
-                                </option>
+                                </option> 
                               ))}
                             </select>
                           </div>
