@@ -1443,7 +1443,12 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
           u.id AS teacher_id,
           u.name,
           c.name AS course_name,
-          tc.class_type,
+          CASE 
+           WHEN tc.class_type = 'extra' THEN 'Extra Class'
+           WHEN tc.class_type = 'fixed' THEN 'Fixed'
+           WHEN tc.class_type = 'per_class' THEN 'Per Class'
+           ELSE 'Workshop'
+          END AS class_type,
           COUNT(DISTINCT tc.class_date) AS number_worked_days,
           (
             SELECT
@@ -1678,295 +1683,557 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
   }
 })
 
-export const createInventoryReport = asyncErrorHandler(async (req, res) => {
-  const { error, value } = VInventoryReport.validate(req.query ?? {});
-  if (error) throw new ErrorHandler(400, error.message);
+// export const createInventoryReport = asyncErrorHandler(async (req, res) => {
+//   const { error, value } = VInventoryReport.validate(req.query ?? {});
+//   if (error) throw new ErrorHandler(400, error.message);
 
-  // Set response headers for streaming
-  res.setHeader(
-    "Content-Disposition",
-    'attachment; filename="Inventory_Report.xlsx"'
-  );
-  res.setHeader(
-    "Content-Type",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-  );
+//   // Set response headers for streaming
+//   res.setHeader(
+//     "Content-Disposition",
+//     'attachment; filename="Inventory_Report.xlsx"'
+//   );
+//   res.setHeader(
+//     "Content-Type",
+//     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+//   );
 
-  const workbook = new ExcelJS.stream.xlsx.WorkbookWriter({
-    stream: res,
-    useStyles: true,
-  });
-  const worksheet = workbook.addWorksheet("Inventory Report");
+//   const workbook = new ExcelJS.stream.xlsx.WorkbookWriter({
+//     stream: res,
+//     useStyles: true,
+//   });
+//   const worksheet = workbook.addWorksheet("Inventory Report");
 
-  worksheet.mergeCells("A1:N1");
-  worksheet.getCell(
-    "A1"
-  ).value = `Inventory Report (${value.from_date} - ${value.to_date})`;
-  worksheet.getCell("A1").font = {
-    size: 20,
-    bold: true,
-    color: { argb: "000000" },
-  };
-  worksheet.getCell("A1").fill = {
-    type: "pattern",
-    pattern: "solid",
-    fgColor: { argb: "FFFF00" },
-  };
-  worksheet.getRow(1).height = 30;
-  worksheet.getCell("A1").alignment = {
-    horizontal: "center",
-    vertical: "middle",
-  };
+//   worksheet.mergeCells("A1:N1");
+//   worksheet.getCell(
+//     "A1"
+//   ).value = `Inventory Report (${value.from_date} - ${value.to_date})`;
+//   worksheet.getCell("A1").font = {
+//     size: 20,
+//     bold: true,
+//     color: { argb: "000000" },
+//   };
+//   worksheet.getCell("A1").fill = {
+//     type: "pattern",
+//     pattern: "solid",
+//     fgColor: { argb: "FFFF00" },
+//   };
+//   worksheet.getRow(1).height = 30;
+//   worksheet.getCell("A1").alignment = {
+//     horizontal: "center",
+//     vertical: "middle",
+//   };
 
-  worksheet.addRow([
-    "SR NUMBER",
-    "NAME OF ITEM",
-    "VENDOR",
-    "OPENING STOCK",
-    "MINIMUM QUANTITY TO MAINTAIN",
-    "ITEM CONSUMED",
-    "STOCK ADDED",
-    "CLOSING STOCK",
-    "LAST PURCHASED DATE",
-    "COST PER UNIT (CURRENT COST)",
-    "COST PER UNIT (PREVIOUS COST)",
-    "TOTAL VALUE",
-    "REMARKS",
-    "DATE",
-  ]);
+//   worksheet.addRow([
+//     "SR NUMBER",
+//     "NAME OF ITEM",
+//     "VENDOR",
+//     "OPENING STOCK",
+//     "MINIMUM QUANTITY TO MAINTAIN",
+//     "ITEM CONSUMED",
+//     "STOCK ADDED",
+//     "CLOSING STOCK",
+//     "LAST PURCHASED DATE",
+//     "COST PER UNIT (CURRENT COST)",
+//     "COST PER UNIT (PREVIOUS COST)",
+//     "TOTAL VALUE",
+//     "REMARKS",
+//     "DATE",
+//   ]);
 
-  // Row styling (header row)
-  worksheet.getRow(2).eachCell((cell) => {
-    cell.style = {
-      font: {
-        bold: true,
-        size: 12,
-        color: { argb: "000000" },
-      },
-      alignment: { horizontal: "center", vertical: "middle" },
-      fill: {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: "F4A460" },
-      },
-      border: {
-        top: { style: "thin" },
-        left: { style: "thin" },
-        right: { style: "thin" },
-        bottom: { style: "thin" },
-      },
-    };
-  });
+//   // Row styling (header row)
+//   worksheet.getRow(2).eachCell((cell) => {
+//     cell.style = {
+//       font: {
+//         bold: true,
+//         size: 12,
+//         color: { argb: "000000" },
+//       },
+//       alignment: { horizontal: "center", vertical: "middle" },
+//       fill: {
+//         type: "pattern",
+//         pattern: "solid",
+//         fgColor: { argb: "F4A460" },
+//       },
+//       border: {
+//         top: { style: "thin" },
+//         left: { style: "thin" },
+//         right: { style: "thin" },
+//         bottom: { style: "thin" },
+//       },
+//     };
+//   });
 
-  const client = await pool.connect();
-  const query = new QueryStream(
-    `
-     WITH
-      -- Step 1: Get the earliest transaction date (or default to $1)
-      min_required_date AS (
-        SELECT MIN(transaction_date) AS min_date
-        FROM inventory_transactions
-        WHERE transaction_date <= $2
-      ),
+//   const client = await pool.connect();
+//   const query = new QueryStream(
+//     `
+//      WITH
+//       -- Step 1: Get the earliest transaction date (or default to $1)
+//       min_required_date AS (
+//         SELECT MIN(transaction_date) AS min_date
+//         FROM inventory_transactions
+//         WHERE transaction_date <= $2
+//       ),
       
-      -- Step 2: Generate full date series from earliest available transaction date or $1
-      date_range AS (
-        SELECT generate_series(
-          LEAST(COALESCE((SELECT min_date FROM min_required_date), $1), $1),
-          $2,
-          INTERVAL '1 day'
-        )::DATE AS report_date
-      ),
+//       -- Step 2: Generate full date series from earliest available transaction date or $1
+//       date_range AS (
+//         SELECT generate_series(
+//           LEAST(COALESCE((SELECT min_date FROM min_required_date), $1), $1),
+//           $2,
+//           INTERVAL '1 day'
+//         )::DATE AS report_date
+//       ),
       
-      -- Step 3: Pair every item with every date
-      inventory_dates AS (
-        SELECT i.item_id, i.item_name, i.where_to_use, i.used_by, i.description, i.minimum_quantity, i.vendor_id, d.report_date
-        FROM inventory_items i
-        CROSS JOIN date_range d
+//       -- Step 3: Pair every item with every date
+//       inventory_dates AS (
+//         SELECT i.item_id, i.item_name, i.where_to_use, i.used_by, i.description, i.minimum_quantity, i.vendor_id, d.report_date
+//         FROM inventory_items i
+//         CROSS JOIN date_range d
         
-        WHERE d.report_date >= i.created_at::date
-      ),
+//         WHERE d.report_date >= i.created_at::date
+//       ),
       
-      -- Step 4: Sum of transactions per item per day
-      transactions_grouped AS (
-        SELECT
-          tg.item_id,
-          tg.transaction_date,
-          tg.total_cost_per_unit,
-          tg.total_added,
-          tg.total_consumed,
-          -- ls.quantity_status,
-          ls.remark,
-          tg.total_value
-        FROM (
-          SELECT
-            item_id,
-            transaction_date,
-            SUM(cost_per_unit) AS total_cost_per_unit,
-            SUM(CASE WHEN transaction_type = 'add' THEN quantity ELSE 0 END) AS total_added,
-            SUM(CASE WHEN transaction_type = 'consume' THEN quantity ELSE 0 END) AS total_consumed,
-            SUM(total_value) AS total_value
-          FROM inventory_transactions
-          GROUP BY item_id, transaction_date
-        ) tg
-        LEFT JOIN LATERAL (
-          SELECT quantity_status, remark
-          FROM inventory_transactions t
-          WHERE t.item_id = tg.item_id AND t.transaction_date = tg.transaction_date AND transaction_type = 'add'
-          ORDER BY t.inventory_transaction_id DESC  -- or created_at DESC if available
-          LIMIT 1
-        ) ls ON TRUE
-      ),
+//       -- Step 4: Sum of transactions per item per day
+//       transactions_grouped AS (
+//         SELECT
+//           tg.item_id,
+//           tg.transaction_date,
+//           tg.total_cost_per_unit,
+//           tg.total_added,
+//           tg.total_consumed,
+//           -- ls.quantity_status,
+//           ls.remark,
+//           tg.total_value
+//         FROM (
+//           SELECT
+//             item_id,
+//             transaction_date,
+//             SUM(cost_per_unit) AS total_cost_per_unit,
+//             SUM(CASE WHEN transaction_type = 'add' THEN quantity ELSE 0 END) AS total_added,
+//             SUM(CASE WHEN transaction_type = 'consume' THEN quantity ELSE 0 END) AS total_consumed,
+//             SUM(total_value) AS total_value
+//           FROM inventory_transactions
+//           GROUP BY item_id, transaction_date
+//         ) tg
+//         LEFT JOIN LATERAL (
+//           SELECT quantity_status, remark
+//           FROM inventory_transactions t
+//           WHERE t.item_id = tg.item_id AND t.transaction_date = tg.transaction_date AND transaction_type = 'add'
+//           ORDER BY t.inventory_transaction_id DESC  -- or created_at DESC if available
+//           LIMIT 1
+//         ) ls ON TRUE
+//       ),
       
-      -- Step 5: Merge items and their daily transactions
-      daily_stock_data AS (
-        SELECT
-          idr.item_id,
-          idr.item_name,
-          -- idr.where_to_use,
-          -- idr.used_by,
-          -- idr.description,
-          idr.minimum_quantity,
-          idr.vendor_id,
-          idr.report_date,
-          -- tg.quantity_status,
-          tg.remark,
-          COALESCE(tg.total_added, 0) AS added,
-          COALESCE(tg.total_consumed, 0) AS consumed,
-          COALESCE(tg.total_cost_per_unit, 0) AS cost_per_unit_current,
-          COALESCE(tg.total_value, 0) AS total_value,
-          ltd.last_transaction_date
-        FROM inventory_dates idr
+//       -- Step 5: Merge items and their daily transactions
+//       daily_stock_data AS (
+//         SELECT
+//           idr.item_id,
+//           idr.item_name,
+//           -- idr.where_to_use,
+//           -- idr.used_by,
+//           -- idr.description,
+//           idr.minimum_quantity,
+//           idr.vendor_id,
+//           idr.report_date,
+//           -- tg.quantity_status,
+//           tg.remark,
+//           COALESCE(tg.total_added, 0) AS added,
+//           COALESCE(tg.total_consumed, 0) AS consumed,
+//           COALESCE(tg.total_cost_per_unit, 0) AS cost_per_unit_current,
+//           COALESCE(tg.total_value, 0) AS total_value,
+//           ltd.last_transaction_date
+//         FROM inventory_dates idr
 
-        LEFT JOIN transactions_grouped tg
-          ON idr.item_id = tg.item_id AND idr.report_date = tg.transaction_date
+//         LEFT JOIN transactions_grouped tg
+//           ON idr.item_id = tg.item_id AND idr.report_date = tg.transaction_date
 
-        LEFT JOIN LATERAL (
-          SELECT transaction_date AS last_transaction_date
-          FROM inventory_transactions t
-          WHERE t.item_id = idr.item_id AND t.transaction_date <= idr.report_date AND t.transaction_type = 'add'
-          ORDER BY t.transaction_date DESC, t.inventory_transaction_id DESC
-          LIMIT 1
-        ) ltd ON TRUE
+//         LEFT JOIN LATERAL (
+//           SELECT transaction_date AS last_transaction_date
+//           FROM inventory_transactions t
+//           WHERE t.item_id = idr.item_id AND t.transaction_date <= idr.report_date AND t.transaction_type = 'add'
+//           ORDER BY t.transaction_date DESC, t.inventory_transaction_id DESC
+//           LIMIT 1
+//         ) ltd ON TRUE
 
-      ),
+//       ),
       
-      -- Step 6: Rolling stock calculation
-      cumulative_stock AS (
-        SELECT
-          dsd.*,
-          LAG(cost_per_unit_current, 1, 0) OVER (
-            PARTITION BY dsd.item_id
-            ORDER BY dsd.report_date
-          ) AS cost_per_unit_prev,
-          SUM(added - consumed) OVER (
-            PARTITION BY dsd.item_id
-            ORDER BY dsd.report_date
-            ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
-          ) AS opening_stock
-        FROM daily_stock_data AS dsd
-      )
+//       -- Step 6: Rolling stock calculation
+//       cumulative_stock AS (
+//         SELECT
+//           dsd.*,
+//           LAG(cost_per_unit_current, 1, 0) OVER (
+//             PARTITION BY dsd.item_id
+//             ORDER BY dsd.report_date
+//           ) AS cost_per_unit_prev,
+//           SUM(added - consumed) OVER (
+//             PARTITION BY dsd.item_id
+//             ORDER BY dsd.report_date
+//             ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
+//           ) AS opening_stock
+//         FROM daily_stock_data AS dsd
+//       )
       
-      -- Step 7: Show final report within user-selected date range
-      SELECT
-        row_number() OVER (
-          PARTITION BY report_date
-          ORDER BY item_id ASC
-        ) AS sr_no,
-        item_name,
-        v.name AS vendor_name,
-        COALESCE(opening_stock, 0) AS opening_stock,
-        minimum_quantity,
-        consumed,
-        added,
-        COALESCE(opening_stock, 0) + added - consumed AS closing_stock,
-        TO_CHAR(last_transaction_date, 'FMDD FMMonth, YYYY') AS last_transaction_date,
-        cost_per_unit_current,
-        COALESCE(cost_per_unit_prev, 0) AS cost_per_unit_prev,
-        total_value,
-        remark,
-        TO_CHAR(report_date, 'YYYY-MM-DD') AS report_date
-      FROM cumulative_stock
+//       -- Step 7: Show final report within user-selected date range
+//       SELECT
+//         row_number() OVER (
+//           PARTITION BY report_date
+//           ORDER BY item_id ASC
+//         ) AS sr_no,
+//         item_name,
+//         v.name AS vendor_name,
+//         COALESCE(opening_stock, 0) AS opening_stock,
+//         minimum_quantity,
+//         consumed,
+//         added,
+//         COALESCE(opening_stock, 0) + added - consumed AS closing_stock,
+//         TO_CHAR(last_transaction_date, 'FMDD FMMonth, YYYY') AS last_transaction_date,
+//         cost_per_unit_current,
+//         COALESCE(cost_per_unit_prev, 0) AS cost_per_unit_prev,
+//         total_value,
+//         remark,
+//         TO_CHAR(report_date, 'YYYY-MM-DD') AS report_date
+//       FROM cumulative_stock
 
-      LEFT JOIN vendor v
-      ON v.id = cumulative_stock.vendor_id
+//       LEFT JOIN vendor v
+//       ON v.id = cumulative_stock.vendor_id
 
-      WHERE report_date BETWEEN $1 AND $2
-      ORDER BY item_id, report_date;
-      `,
-    [value.from_date, value.to_date],
-    {
-      batchSize: 10,
-    }
-  );
+//       WHERE report_date BETWEEN $1 AND $2
+//       ORDER BY item_id, report_date;
+//       `,
+//     [value.from_date, value.to_date],
+//     {
+//       batchSize: 10,
+//     }
+//   );
 
-  const pgStream = client.query(query);
+//   const pgStream = client.query(query);
 
-  const dates = new Map();
+//   const dates = new Map();
 
-  // Process PostgreSQL stream data and append to Excel sheet
-  pgStream.on("data", (data) => {
-    pgStream.pause();
-    const valueArr = Object.values(data);
+//   // Process PostgreSQL stream data and append to Excel sheet
+//   pgStream.on("data", (data) => {
+//     pgStream.pause();
+//     const valueArr = Object.values(data);
 
-    // const newRowOfDate
-    if (!dates.has(`${data.report_date}`)) {
-      const dateRow = worksheet.addRow([
-        "",
-        `DATE : ${data.report_date}`,
-      ]);
-      worksheet.mergeCells(`A${dateRow.number}:A${dateRow.number}`);
-      worksheet.mergeCells(`B${dateRow.number}:N${dateRow.number}`);
-      worksheet.getCell(`B${dateRow.number}`).alignment = {
-        vertical: "justify",
-        horizontal: "center",
-      };
-      dateRow.eachCell((cell) => {
-        cell.style = {
-          font: {
-            size: 12,
-            color: {
-              argb: "000000",
-            },
-            bold: true,
-          },
-          alignment: { horizontal: "left" },
-          fill: {
-            type: "pattern",
-            pattern: "solid",
-            fgColor: { argb: "72BF6A" },
-          },
-        };
-      });
-      dates.set(`${data.report_date}`, "true");
-    }
+//     // const newRowOfDate
+//     if (!dates.has(`${data.report_date}`)) {
+//       const dateRow = worksheet.addRow([
+//         "",
+//         `DATE : ${data.report_date}`,
+//       ]);
+//       worksheet.mergeCells(`A${dateRow.number}:A${dateRow.number}`);
+//       worksheet.mergeCells(`B${dateRow.number}:N${dateRow.number}`);
+//       worksheet.getCell(`B${dateRow.number}`).alignment = {
+//         vertical: "justify",
+//         horizontal: "center",
+//       };
+//       dateRow.eachCell((cell) => {
+//         cell.style = {
+//           font: {
+//             size: 12,
+//             color: {
+//               argb: "000000",
+//             },
+//             bold: true,
+//           },
+//           alignment: { horizontal: "left" },
+//           fill: {
+//             type: "pattern",
+//             pattern: "solid",
+//             fgColor: { argb: "72BF6A" },
+//           },
+//         };
+//       });
+//       dates.set(`${data.report_date}`, "true");
+//     }
 
-    const excelRow = worksheet.addRow(valueArr);
+//     const excelRow = worksheet.addRow(valueArr);
 
-    // Style the data rows
-    excelRow.eachCell((cell) => {
-      cell.style = {
-        font: { size: 11 },
-        alignment: { horizontal: "center" },
-        border: {
-          top: { style: "thin" },
-          left: { style: "thin" },
-          right: { style: "thin" },
-          bottom: { style: "thin" },
-        },
-      };
-    });
+//     // Style the data rows
+//     excelRow.eachCell((cell) => {
+//       cell.style = {
+//         font: { size: 11 },
+//         alignment: { horizontal: "center" },
+//         border: {
+//           top: { style: "thin" },
+//           left: { style: "thin" },
+//           right: { style: "thin" },
+//           bottom: { style: "thin" },
+//         },
+//       };
+//     });
 
-    pgStream.resume();
-  });
+//     pgStream.resume();
+//   });
 
-  pgStream.on("end", () => {
-    workbook.commit();
-    client.release(); // Release the client when done
-  });
+//   pgStream.on("end", () => {
+//     workbook.commit();
+//     client.release(); // Release the client when done
+//   });
 
-  pgStream.on("error", (err) => {
-    client.release();
-    console.log(err);
-  });
-})
+//   pgStream.on("error", (err) => {
+//     client.release();
+//     console.log(err);
+//   });
+// })
+
+// export const createInventoryReport = asyncErrorHandler(async (req, res) => {
+
+//   // 1. Set headers
+//   res.setHeader(
+//     "Content-Disposition",
+//     `attachment; filename="Inventory_Report_Sheet.xlsx"`
+//   );
+//   res.setHeader(
+//     "Content-Type",
+//     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+//   );
+
+
+//   // 2. Create streaming workbook
+//   const workbook = new ExcelJS.stream.xlsx.WorkbookWriter({
+//     stream: res,
+//     useStyles: true,
+//   });
+//   const worksheet = workbook.addWorksheet("Employee Salary");
+
+//   worksheet.getCell("A1").value = `Payment Sheet For The Month Of ${formatted}`;
+//   worksheet.getCell("A1").font = {
+//     size: 20,
+//     bold: true,
+//     color: { argb: "000000" },
+//   };
+//   worksheet.getCell("A1").fill = {
+//     type: "pattern",
+//     pattern: "solid",
+//     fgColor: { argb: "FFFF00" },
+//   };
+//   worksheet.getRow(1).height = 30;
+//   worksheet.getCell("A1").alignment = {
+//     horizontal: "center",
+//     vertical: "middle",
+//   };
+
+//   worksheet.addRow([
+//       "Name",
+//       "Present",
+//       "Absent",
+//       "Leave",
+//       "Holiday",
+//       "Payment Components",
+//       null,
+//       "Sunday",
+//       "Per Day Rate",
+//       "Gross Amount",
+//       "Deduction",
+//       "Net Payable Amount",
+//       "Signature",
+//     ]);
+
+//   // Row styling (header row)
+//   worksheet.getRow(2).eachCell((cell) => {
+//     cell.style = {
+//       font: { bold: true, size: 14, color: { argb: "000000" } },
+//       alignment: { horizontal: "center", vertical: "middle" },
+//       fill: {
+//         type: "pattern",
+//         pattern: "solid",
+//         fgColor: { argb: "F4A460" },
+//       }, // Red background
+//       border: {
+//         top: { style: "thin" },
+//         left: { style: "thin" },
+//         right: { style: "thin" },
+//         bottom: { style: "thin" },
+//       },
+//     };
+//   });
+
+//   if (employeetype === "Staff") {
+//     // Merge header "Payment Component" across B1:C1
+//     worksheet.mergeCells("F2:G2");
+//   }
+
+//   let rowIndex = 3;
+
+//   // 4. SQL query for salary + attendance
+//   const query = ``;
+
+//   const client = await pool.connect();
+//   try {
+//     const pgStream = client.query(new QueryStream(query, [monthStart], { batchSize: 10 }));
+
+//     pgStream.on("data", (data) => {
+//       pgStream.pause();
+
+//       if (employeetype === "Staff") {
+//         const salaryComponents = data.salary_components;
+//         const sundayWorked = data.sunday_worked || 0;
+//         const absentDays = data.absent_days || 0;
+
+//         let gross = 0;
+//         let deduction = 0;
+
+//         salaryComponents.forEach((comp: any) => {
+//           if (comp.amount_type === "addition") gross += comp.amount;
+//           else if (comp.amount_type === "deduction") deduction += comp.amount;
+//         });
+
+//         // const perDayRate = Math.floor(gross / 30); // adjust if 30 days
+//         const perDayRate = gross / 30;
+
+//         // gross += sundayWorked * perDayRate;
+//         const netPay = gross - (sundayWorked * perDayRate) - deduction;
+//         const sundayPayTxt =
+//           sundayWorked == 0 ? 0 : `${sundayWorked} x ${perDayRate}`;
+
+//         const startRow = rowIndex;
+//         const endRow = rowIndex + salaryComponents.length - 1;
+
+//         // Add each component row
+//         salaryComponents.forEach((comp: any, i: number) => {
+//           const row = worksheet.addRow([
+//             i === 0 ? data.name : null, // Name only once
+//             i === 0 ? data.present_days : null,
+//             i === 0 ? absentDays : null,
+//             i === 0 ? data.leave_days : null,
+//             i === 0 ? data.holiday_count : null,
+//             comp.salary_type,
+//             comp.amount,
+//             i === 0 ? sundayPayTxt : null,
+//             i === 0 ? perDayRate.toFixed(2) : null,
+//             i === 0 ? gross : null,
+//             i === 0 ? (deduction + (absentDays * perDayRate)).toFixed(2) : null,
+//             i === 0 ? (netPay - (absentDays * perDayRate)).toFixed(2) : null,
+//             null,
+//           ]);
+
+//           row.height = 20;
+//           row.eachCell((cell) => {
+//             cell.border = {
+//               top: { style: "thin" },
+//               left: { style: "thin" },
+//               bottom: { style: "thin" },
+//               right: { style: "thin" },
+//             };
+//             cell.alignment = { vertical: "middle", horizontal: "center" };
+//           });
+
+//           rowIndex++;
+//         });
+
+//         // Merge cells like in StuffSalary.xlsx
+//         if (salaryComponents.length > 1) {
+//           worksheet.mergeCells(`A${startRow}:A${endRow}`); // Name
+//           worksheet.mergeCells(`B${startRow}:B${endRow}`); // Present
+//           worksheet.mergeCells(`C${startRow}:C${endRow}`); // Absent
+//           worksheet.mergeCells(`D${startRow}:D${endRow}`); // Leave
+//           worksheet.mergeCells(`E${startRow}:E${endRow}`); // Holiday
+//           worksheet.mergeCells(`G${startRow}:G${endRow}`); // Sunday
+//           worksheet.mergeCells(`H${startRow}:H${endRow}`); // Per Day Rate
+//           worksheet.mergeCells(`I${startRow}:I${endRow}`); // Gross Amount
+//           worksheet.mergeCells(`J${startRow}:J${endRow}`); // Deduction
+//           worksheet.mergeCells(`K${startRow}:K${endRow}`); // Net Amount
+//           worksheet.mergeCells(`L${startRow}:L${endRow}`); // Sign
+//         }
+//       } else if (employeetype === "Teacher") {
+//         // Add teacher name in the first column, spanning multiple rows
+//         const teacherStartRow = rowIndex;
+
+//         // Process each course for this teacher
+//         let teacherRowCount = 0;
+
+//         data.courses.forEach((course: any) => {
+//           // Add course name row
+//           // const courseStartRow = rowIndex;
+
+//           course.rows.forEach((classData: any, index: number) => {
+//             const row = worksheet.addRow([
+//               index === 0 && teacherRowCount === 0 ? data.teacherName : "", // Teacher name only on first row
+//               index === 0 ? course.courseName : "", // Course name only on first row of course
+//               classData.class_type,
+//               // classData.number_worked_days,
+//               classData.rate_per_date_text,
+//               classData.total_classes_taken,
+//               classData.earning,
+//               data.teacherTotal && teacherRowCount === 0 && index === 0
+//                 ? data.teacherTotal
+//                 : "", // Teacher total only on very first row
+//               "", // Sign column - empty for now
+//             ]);
+
+//             // Apply styling
+//             row.height = 20;
+
+//             // Style the row
+//             row.eachCell((cell, colNumber) => {
+//               cell.border = {
+//                 top: { style: "thin" },
+//                 left: { style: "thin" },
+//                 bottom: { style: "thin" },
+//                 right: { style: "thin" },
+//               };
+//               cell.alignment = { vertical: "middle", horizontal: "center" };
+//             });
+
+//             rowIndex++;
+//             teacherRowCount++;
+//           });
+//         });
+
+//         // Merge teacher name cells if there are multiple rows for this teacher
+//         if (teacherRowCount > 1) {
+//           worksheet.mergeCells(`A${teacherStartRow}:A${rowIndex - 1}`);
+//         }
+
+//         // Merge course name cells and course total cells for each course
+//         let currentRow = teacherStartRow;
+//         data.courses.forEach((course: any) => {
+//           const courseRowCount = course.rows.length;
+//           if (courseRowCount > 1) {
+//             worksheet.mergeCells(
+//               `B${currentRow}:B${currentRow + courseRowCount - 1}`
+//             );
+//           }
+//           currentRow += courseRowCount;
+//         });
+
+//         // Merge teacher total cell (Grand Total column - column G AND H THE SING)
+//         if (teacherRowCount > 1) {
+//           // worksheet.mergeCells(`D${teacherStartRow}:D${rowIndex - 1}`);
+//           worksheet.mergeCells(`G${teacherStartRow}:G${rowIndex - 1}`);
+//           worksheet.mergeCells(`H${teacherStartRow}:H${rowIndex - 1}`);
+//         }
+//       }
+
+//       pgStream.resume();
+//     });
+
+//     pgStream.on("end", async () => {
+//       try {
+//         await workbook.commit();
+//       } finally {
+//         client.release();
+//       }
+//     });
+
+//     pgStream.on("error", (err) => {
+//       console.error("Stream error:", err.message);
+
+//       // Cleanup
+//       client.release();
+
+//       // Destroy response so client knows download failed
+//       if (!res.headersSent) {
+//         // If no data was written yet, you could send a proper error response
+//         res.status(500).json(new ApiResponse(500, err.message))
+//       } else {
+//         // If file already started streaming, just destroy the connection
+//         res.destroy(err);
+//       }
+//     });
+//   } catch (err: any) {
+//     client.release();
+//     throw new ErrorHandler(400, err.message)
+//   }
+
+// })

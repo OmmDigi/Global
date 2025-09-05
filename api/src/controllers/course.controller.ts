@@ -481,7 +481,8 @@ export const getCourseWithBatchSession = asyncErrorHandler(async (req, res) => {
      SELECT 
       c.id,
       c.name AS course_name,
-
+      (SELECT MAX(amount) FROM course_fee_structure WHERE course_id = c.id AND fee_head_id = 3) AS admission_fee,
+	    (SELECT MAX(amount) FROM course_fee_structure WHERE course_id = c.id AND fee_head_id = 6) AS bss_fee,
       -- Deduplicated sessions
       COALESCE(
         (
@@ -510,7 +511,8 @@ export const getCourseWithBatchSession = asyncErrorHandler(async (req, res) => {
       ) AS batch
 
     FROM course c
-    WHERE c.is_active = true;
+    
+    WHERE c.is_active = true
     `
   );
 

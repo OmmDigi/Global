@@ -283,44 +283,44 @@ CREATE TABLE IF NOT EXISTS purchase_record (
     file TEXT
 );
 
-CREATE TABLE inventory_items (
-    item_id SERIAL PRIMARY KEY,
-    item_name VARCHAR(255),
-    -- category INTEGER,
-    -- sub_category INTEGER,
-    where_to_use VARCHAR(255),
-    used_by VARCHAR(255),
-    description TEXT,
-    minimum_quantity INTEGER,
-    -- institute VARCHAR(255),
-    vendor_id INTEGER,
-    FOREIGN KEY (vendor_id) REFERENCES vendor(id) ON DELETE SET NULL
-);
+-- CREATE TABLE inventory_items (
+--     item_id SERIAL PRIMARY KEY,
+--     item_name VARCHAR(255),
+--     -- category INTEGER,
+--     -- sub_category INTEGER,
+--     where_to_use VARCHAR(255),
+--     used_by VARCHAR(255),
+--     description TEXT,
+--     minimum_quantity INTEGER,
+--     -- institute VARCHAR(255),
+--     vendor_id INTEGER,
+--     FOREIGN KEY (vendor_id) REFERENCES vendor(id) ON DELETE SET NULL
+-- );
 
-CREATE TABLE inventory_transactions (
-    inventory_transaction_id SERIAL PRIMARY KEY,
-    item_id INTEGER,
-    FOREIGN KEY (item_id) REFERENCES inventory_items(item_id) ON DELETE CASCADE,
-    transaction_type TEXT CHECK (transaction_type IN ('add', 'consume')),
-    -- or use ENUM
-    quantity INTEGER NOT NULL,
-    quantity_status TEXT,
-    transaction_date DATE NOT NULL,
-    cost_per_unit DECIMAL(10, 2) NOT NULL,
-    total_value DECIMAL(10, 2) NOT NULL,
-    remark TEXT
-);
+-- CREATE TABLE inventory_transactions (
+--     inventory_transaction_id SERIAL PRIMARY KEY,
+--     item_id INTEGER,
+--     FOREIGN KEY (item_id) REFERENCES inventory_items(item_id) ON DELETE CASCADE,
+--     transaction_type TEXT CHECK (transaction_type IN ('add', 'consume')),
+--     -- or use ENUM
+--     quantity INTEGER NOT NULL,
+--     quantity_status TEXT,
+--     transaction_date DATE NOT NULL,
+--     cost_per_unit DECIMAL(10, 2) NOT NULL,
+--     total_value DECIMAL(10, 2) NOT NULL,
+--     remark TEXT
+-- );
 
-ALTER TABLE inventory_items
-ADD COLUMN created_at DATE DEFAULT CURRENT_DATE;
--- 1. Speed up joins and date filtering in transactions
-CREATE INDEX idx_transactions_item_date ON inventory_transactions (item_id, transaction_date);
--- 2. Improve filtering by transaction type, used in grouped sums and lateral joins
-CREATE INDEX idx_transactions_item_type_date ON inventory_transactions (item_id, transaction_type, transaction_date);
--- 3. Help with filtering based on created date of items
-CREATE INDEX idx_items_created_at ON inventory_items (created_at);
--- 54. Speed up vendor lookup
-CREATE INDEX idx_vendor_id ON vendor (id);
+-- ALTER TABLE inventory_items
+-- ADD COLUMN created_at DATE DEFAULT CURRENT_DATE;
+-- -- 1. Speed up joins and date filtering in transactions
+-- CREATE INDEX idx_transactions_item_date ON inventory_transactions (item_id, transaction_date);
+-- -- 2. Improve filtering by transaction type, used in grouped sums and lateral joins
+-- CREATE INDEX idx_transactions_item_type_date ON inventory_transactions (item_id, transaction_type, transaction_date);
+-- -- 3. Help with filtering based on created date of items
+-- CREATE INDEX idx_items_created_at ON inventory_items (created_at);
+-- -- 54. Speed up vendor lookup
+-- CREATE INDEX idx_vendor_id ON vendor (id);
 
 
 -- CREATE TABLE stuff_salary_structure (
@@ -416,3 +416,49 @@ CREATE TABLE amc_list (
 );
 
 ALTER TABLE amc_list ADD COLUMN file TEXT;
+
+
+CREATE TABLE inventory_items_v2 (
+    id SERIAL PRIMARY KEY,
+    item_name VARCHAR(255),
+    minimum_quantity INTEGER DEFAULT 0,
+    created_at DATE DEFAULT CURRENT_DATE
+);
+
+CREATE TABLE inventory_transactions_v2 (
+    id SERIAL PRIMARY KEY,
+
+    item_id BIGINT,
+    FOREIGN KEY (item_id) REFERENCES inventory_items_v2(id) ON DELETE CASCADE,
+
+    transaction_type TEXT CHECK (transaction_type IN ('add', 'consume')),
+
+    vendor_id BIGINT,
+    FOREIGN KEY (vendor_id) REFERENCES vendor(id) ON DELETE SET NULL,
+
+    quantity INT DEFAULT 0,
+
+    transaction_date DATE,
+
+    cost_per_unit DECIMAL(10, 2) DEFAULT 0.00,
+
+    remark TEXT
+);
+
+ALTER TABLE fillup_forms ADD COLUMN declaration_status INT DEFAULT 0;
+
+
+INSERT INTO course_fee_head
+    (id, name, is_active) 
+VALUES 
+    ('1', 'Admission form fee', 'TRUE'),
+    ('2', 'Dress and Icard fee', 'TRUE'),
+    ('3', 'Admission fee', 'TRUE'),
+    ('4', 'Monthly fees', 'TRUE'),
+    ('5', 'late fine', 'TRUE'),
+    ('6', 'BSS Registration fee', 'TRUE'),
+    ('7', 'Examination fee', 'TRUE'),
+    ('8', 'Excursion fee', 'TRUE'),
+    ('9', 'Saraswati Puja fee', 'TRUE'),
+    ('10', 'Summer camp fee for teachers training ', 'TRUE'),
+    ('11', 'Workshop fee', 'TRUE');

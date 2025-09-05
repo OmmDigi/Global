@@ -182,6 +182,7 @@ export const getSingleAdmissionData = async (
             ff.id AS form_id,
             ff.form_name,
             u.name AS student_name,
+            ff.declaration_status,
             u.image AS student_image,
             c.name AS course_name,
             b.month_name AS batch_name,
