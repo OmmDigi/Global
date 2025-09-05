@@ -4,7 +4,11 @@ import { ErrorHandler } from "../utils/ErrorHandler";
 import { VGetAdmissionList } from "../validator/admission.validator";
 import { pool } from "../config/db";
 import ExcelJS from "exceljs";
-import { VGenerateUrl, VInventoryReport, VPaymentReport } from "../validator/excel.validator";
+import {
+  VGenerateUrl,
+  VInventoryReport,
+  VPaymentReport,
+} from "../validator/excel.validator";
 import { ApiResponse } from "../utils/ApiResponse";
 import { createToken } from "../services/jwt";
 import { VCreateEmployeeSalarySheet } from "../validator/users.validator";
@@ -14,8 +18,7 @@ const HOST_URL = process.env.API_HOST_URL;
 urls.set("payment_report", `${HOST_URL}/api/v1/excel/payment-report`);
 urls.set("admission_report", `${HOST_URL}/api/v1/excel/admission-report`);
 urls.set("salary_sheet", `${HOST_URL}/api/v1/excel/salary-sheet`);
-urls.set("inventory_report", `${HOST_URL}/api/v1/excel/inventory-report`)
-
+urls.set("inventory_report", `${HOST_URL}/api/v1/excel/inventory-report`);
 
 export const generateUrl = asyncErrorHandler(async (req, res) => {
   const { error, value } = VGenerateUrl.validate(req.body ?? {});
@@ -184,8 +187,8 @@ export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
           data.form_status === 2
             ? "Approved"
             : data.form_status === 1
-              ? "Pending"
-              : "Canceled",
+            ? "Pending"
+            : "Canceled",
       })
     );
     // Style the data rows
@@ -199,10 +202,10 @@ export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
               cellNumber === 8 && data.form_status == 3
                 ? "DC2626"
                 : cellNumber === 8 && data.form_status == 2
-                  ? "139429"
-                  : cellNumber === 8 && data.form_status == 1
-                    ? "e6e639"
-                    : "000000",
+                ? "139429"
+                : cellNumber === 8 && data.form_status == 1
+                ? "e6e639"
+                : "000000",
           },
         },
 
@@ -436,7 +439,6 @@ export const generatePaymentExcelReport = asyncErrorHandler(
 //       month: "short",
 //       year: "numeric",
 //     });
-
 
 //     // 1. Set headers for Excel streaming
 //     res.setHeader(
@@ -934,7 +936,6 @@ export const generatePaymentExcelReport = asyncErrorHandler(
 //       year: "numeric",
 //     });
 
-
 //     // 1. Set headers
 //     res.setHeader(
 //       "Content-Disposition",
@@ -1053,7 +1054,7 @@ export const generatePaymentExcelReport = asyncErrorHandler(
 //     // 4. SQL query for salary + attendance
 //     const query = `
 //       WITH emp_salary AS (
-//         SELECT 
+//         SELECT
 //           e.id,
 //           e.name,
 //           json_agg(
@@ -1068,7 +1069,7 @@ export const generatePaymentExcelReport = asyncErrorHandler(
 //         GROUP BY e.id, e.name
 //       ),
 //       attendance_summary AS (
-//         SELECT 
+//         SELECT
 //           employee_id,
 //           COUNT(*) FILTER (WHERE status = 'Present') AS present_days,
 //           COUNT(DISTINCT date) FILTER (WHERE EXTRACT(DOW FROM date) = 0 AND status = 'Present') AS sunday_worked
@@ -1076,8 +1077,8 @@ export const generatePaymentExcelReport = asyncErrorHandler(
 //         WHERE date_trunc('month', date) = date_trunc('month', $1::DATE) --CURRENT_DATE)
 //         GROUP BY employee_id
 //       )
-//       SELECT 
-//         es.id, 
+//       SELECT
+//         es.id,
 //         es.name,
 //         es.salary_components,
 //         COALESCE(a.present_days, 0) AS present_days,
@@ -1204,7 +1205,6 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
   );
 
-
   // 2. Create streaming workbook
   const workbook = new ExcelJS.stream.xlsx.WorkbookWriter({
     stream: res,
@@ -1290,7 +1290,6 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
 
   let rowIndex = 3;
 
-
   // 4. SQL query for salary + attendance
   let query = ``;
 
@@ -1299,8 +1298,8 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
     //   WITH month_days AS (
     //       -- Generate all dates for the current month
     //       SELECT generate_series(
-    //           date_trunc('month', $1::DATE), 
-    //           (date_trunc('month', $1::DATE) + interval '1 month - 1 day')::DATE, 
+    //           date_trunc('month', $1::DATE),
+    //           (date_trunc('month', $1::DATE) + interval '1 month - 1 day')::DATE,
     //           interval '1 day'
     //       )::DATE AS dt
     //   ),
@@ -1313,15 +1312,15 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
     //         AND h.date IS NULL                -- Exclude holidays
     //   ),
     //   emp_salary AS (
-    //       SELECT 
+    //       SELECT
     //           e.id,
     //           e.name,
     //           json_agg(
     //               json_build_object(
-    //                   'salary_type', CASE 
-    //                                     WHEN ess.salary_type = 'base_salary' THEN 'BASIC PAY' 
-    //                                     WHEN ess.salary_type = 'P_tax' THEN 'P TAX' 
-    //                                     ELSE ess.salary_type 
+    //                   'salary_type', CASE
+    //                                     WHEN ess.salary_type = 'base_salary' THEN 'BASIC PAY'
+    //                                     WHEN ess.salary_type = 'P_tax' THEN 'P TAX'
+    //                                     ELSE ess.salary_type
     //                                 END,
     //                   'amount', ess.amount,
     //                   'amount_type', ess.amount_type
@@ -1333,7 +1332,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
     //       GROUP BY e.id, e.name
     //   ),
     //   attendance_summary AS (
-    //       SELECT 
+    //       SELECT
     //           e.id AS employee_id,
     //           COUNT(*) FILTER (WHERE a.status = 'Present') AS present_days,
     //           COUNT(*) FILTER (WHERE a.status = 'Leave') AS leave_days,
@@ -1343,14 +1342,14 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
     //           COUNT(w.dt) AS total_working_days
     //       FROM users e
     //       JOIN working_days w ON TRUE
-    //       LEFT JOIN attendance a 
-    //             ON a.employee_id = e.id 
+    //       LEFT JOIN attendance a
+    //             ON a.employee_id = e.id
     //             AND a.date = w.dt
     //       WHERE e.category = 'Stuff'
     //       GROUP BY e.id
     //   )
-    //   SELECT 
-    //       es.id, 
+    //   SELECT
+    //       es.id,
     //       es.name,
     //       es.salary_components,
     //       COALESCE(a.present_days, 0) AS present_days,
@@ -1435,7 +1434,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
           a.holiday_count,
           (a.total_working_days - (COALESCE(a.present_days,0) + COALESCE(a.leave_days,0))) AS absent_days
       FROM emp_salary es
-      JOIN attendance_summary a ON a.employee_id = es.id;`
+      JOIN attendance_summary a ON a.employee_id = es.id;`;
   } else if (employeetype === "Teacher") {
     query = `
       WITH teacher_stats AS (
@@ -1501,12 +1500,14 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
         SUM(course_total) AS "teacherTotal"
       FROM course_grouped
       GROUP BY teacher_id, name;
-  `
+  `;
   }
 
   const client = await pool.connect();
   try {
-    const pgStream = client.query(new QueryStream(query, [monthStart], { batchSize: 10 }));
+    const pgStream = client.query(
+      new QueryStream(query, [monthStart], { batchSize: 10 })
+    );
 
     pgStream.on("data", (data) => {
       pgStream.pause();
@@ -1528,7 +1529,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
         const perDayRate = gross / 30;
 
         // gross += sundayWorked * perDayRate;
-        const netPay = gross - (sundayWorked * perDayRate) - deduction;
+        const netPay = gross - sundayWorked * perDayRate - deduction;
         const sundayPayTxt =
           sundayWorked == 0 ? 0 : `${sundayWorked} x ${perDayRate}`;
 
@@ -1548,8 +1549,8 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
             i === 0 ? sundayPayTxt : null,
             i === 0 ? perDayRate.toFixed(2) : null,
             i === 0 ? gross : null,
-            i === 0 ? (deduction + (absentDays * perDayRate)).toFixed(2) : null,
-            i === 0 ? (netPay - (absentDays * perDayRate)).toFixed(2) : null,
+            i === 0 ? (deduction + absentDays * perDayRate).toFixed(2) : null,
+            i === 0 ? (netPay - absentDays * perDayRate).toFixed(2) : null,
             null,
           ]);
 
@@ -1671,7 +1672,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
       // Destroy response so client knows download failed
       if (!res.headersSent) {
         // If no data was written yet, you could send a proper error response
-        res.status(500).json(new ApiResponse(500, err.message))
+        res.status(500).json(new ApiResponse(500, err.message));
       } else {
         // If file already started streaming, just destroy the connection
         res.destroy(err);
@@ -1679,9 +1680,9 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
     });
   } catch (err: any) {
     client.release();
-    throw new ErrorHandler(400, err.message)
+    throw new ErrorHandler(400, err.message);
   }
-})
+});
 
 // export const createInventoryReport = asyncErrorHandler(async (req, res) => {
 //   const { error, value } = VInventoryReport.validate(req.query ?? {});
@@ -1773,7 +1774,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
 //         FROM inventory_transactions
 //         WHERE transaction_date <= $2
 //       ),
-      
+
 //       -- Step 2: Generate full date series from earliest available transaction date or $1
 //       date_range AS (
 //         SELECT generate_series(
@@ -1782,16 +1783,16 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
 //           INTERVAL '1 day'
 //         )::DATE AS report_date
 //       ),
-      
+
 //       -- Step 3: Pair every item with every date
 //       inventory_dates AS (
 //         SELECT i.item_id, i.item_name, i.where_to_use, i.used_by, i.description, i.minimum_quantity, i.vendor_id, d.report_date
 //         FROM inventory_items i
 //         CROSS JOIN date_range d
-        
+
 //         WHERE d.report_date >= i.created_at::date
 //       ),
-      
+
 //       -- Step 4: Sum of transactions per item per day
 //       transactions_grouped AS (
 //         SELECT
@@ -1822,7 +1823,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
 //           LIMIT 1
 //         ) ls ON TRUE
 //       ),
-      
+
 //       -- Step 5: Merge items and their daily transactions
 //       daily_stock_data AS (
 //         SELECT
@@ -1855,7 +1856,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
 //         ) ltd ON TRUE
 
 //       ),
-      
+
 //       -- Step 6: Rolling stock calculation
 //       cumulative_stock AS (
 //         SELECT
@@ -1871,7 +1872,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
 //           ) AS opening_stock
 //         FROM daily_stock_data AS dsd
 //       )
-      
+
 //       -- Step 7: Show final report within user-selected date range
 //       SELECT
 //         row_number() OVER (
@@ -1987,7 +1988,6 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
 //     "Content-Type",
 //     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 //   );
-
 
 //   // 2. Create streaming workbook
 //   const workbook = new ExcelJS.stream.xlsx.WorkbookWriter({
@@ -2237,3 +2237,147 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
 //   }
 
 // })
+
+export const createInventoryReport = asyncErrorHandler(async (req, res) => {
+  const { error, value } = VInventoryReport.validate(req.query ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
+
+  res.setHeader(
+    "Content-Disposition",
+    'attachment; filename="Inventory_Report.xlsx"'
+  );
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
+
+  const workbook = new ExcelJS.stream.xlsx.WorkbookWriter({
+    stream: res,
+    useStyles: true,
+  });
+  const worksheet = workbook.addWorksheet("Inventory Report");
+
+  worksheet.mergeCells("A1:I1");
+  worksheet.getCell(
+    "A1"
+  ).value = `Inventory Report (${value.from_date} - ${value.to_date})`;
+  worksheet.getCell("A1").font = {
+    size: 20,
+    bold: true,
+    color: { argb: "000000" },
+  };
+  worksheet.getCell("A1").fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "FFFF00" },
+  };
+  worksheet.getRow(1).height = 30;
+  worksheet.getCell("A1").alignment = {
+    horizontal: "center",
+    vertical: "middle",
+  };
+
+  worksheet.addRow([
+    "SR NUMBER",
+    "NAME OF ITEM",
+    "VENDOR",
+    "LAST PURCHASED DATE",
+    "STOCK IN TOTAL RS",
+    "STOCK OUT TOTAL RS",
+    "MINIMUM QUANTITY TO MAINTAIN",
+    "AVILABLE QUANTITY",
+    "CONSUME QUANTITY"
+  ]);
+
+  // Row styling (header row)
+  worksheet.getRow(2).eachCell((cell) => {
+    cell.style = {
+      font: {
+        bold: true,
+        size: 12,
+        color: { argb: "000000" },
+      },
+      alignment: { horizontal: "center", vertical: "middle" },
+      fill: {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "F4A460" },
+      },
+      border: {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        right: { style: "thin" },
+        bottom: { style: "thin" },
+      },
+    };
+  });
+
+  const client = await pool.connect();
+  const query = new QueryStream(
+    `
+      SELECT
+        row_number() OVER () AS sr_no,
+        ii.item_name,
+        v.name AS vendor_name,
+        TO_CHAR(MAX(it.transaction_date), 'FMDD FMMonth, YYYY') AS last_transaction_date,
+        COALESCE(SUM(it.cost_per_unit * it.quantity) FILTER (WHERE it.transaction_type = 'add'), 0.00) AS total_expense,
+        COALESCE(SUM(it.cost_per_unit * it.quantity) FILTER (WHERE it.transaction_type = 'consume'), 0.00) AS total_income,
+        ii.minimum_quantity,
+        COALESCE(SUM(it.quantity) FILTER (WHERE it.transaction_type = 'add'), 0) - COALESCE(SUM(it.quantity) FILTER (WHERE it.transaction_type = 'consume'), 0) AS avilable_quantity,
+        COALESCE(SUM(it.quantity) FILTER (WHERE it.transaction_type = 'consume'), 0) AS consume_quantity
+      FROM inventory_items_v2 ii
+
+      LEFT JOIN inventory_transactions_v2 it
+      ON it.item_id = ii.id
+
+      LEFT JOIN vendor v
+      ON v.id = it.vendor_id
+
+      WHERE it.transaction_date BETWEEN $1 AND $2
+
+      GROUP BY v.id, it.vendor_id, ii.id
+
+      ORDER BY v.id DESC
+      `,
+    [value.from_date, value.to_date],
+    {
+      batchSize: 10,
+    }
+  );
+
+  const pgStream = client.query(query);
+
+
+  // Process PostgreSQL stream data and append to Excel sheet
+  pgStream.on("data", (data) => {
+    pgStream.pause();
+
+    const excelRow = worksheet.addRow(Object.values(data));
+
+    // Style the data rows
+    excelRow.eachCell((cell) => {
+      cell.style = {
+        font: { size: 11 },
+        alignment: { horizontal: "center" },
+        border: {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          right: { style: "thin" },
+          bottom: { style: "thin" },
+        },
+      };
+    });
+
+    pgStream.resume();
+  });
+
+  pgStream.on("end", () => {
+    workbook.commit();
+    client.release(); // Release the client when done
+  });
+
+  pgStream.on("error", () => {
+    client.release();
+    res.destroy();
+  });
+});
