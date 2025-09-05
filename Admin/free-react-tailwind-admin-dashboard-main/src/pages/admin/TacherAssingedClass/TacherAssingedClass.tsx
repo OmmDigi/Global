@@ -236,7 +236,7 @@ export default function TacherAssingedClass() {
                     <div>
                       {order?.for_courses?.map((row: any) => (
                         <div className="flex justify-around gap-10 py-1">
-                          <div className="flex items-center gap-3">
+                          <div className="flex flex-col justify-center items-start w-40">
                             {/* <div className="block font-medium text-gray-500 text-theme-xs dark:text-gray-400">
                             {row.id}
                           </div> */}
@@ -248,8 +248,8 @@ export default function TacherAssingedClass() {
                           </div>
 
                           {/* ✅ Regular */}
-                          <div>
-                            <Label>regular</Label>
+                          <div className="flex flex-col justify-end">
+                            <Label>Regular Class</Label>
                             <input
                               type="checkbox"
                               defaultChecked={row.regular}
@@ -265,8 +265,8 @@ export default function TacherAssingedClass() {
                           </div>
 
                           {/* ✅ Workshop */}
-                          <div>
-                            <Label>workshop</Label>
+                          <div className="flex flex-col justify-end">
+                            <Label>Workshop</Label>
                             <input
                               type="checkbox"
                               defaultChecked={row.workshop}
@@ -282,8 +282,8 @@ export default function TacherAssingedClass() {
                           </div>
 
                           {/* ✅ Dropdown */}
-                          <div>
-                            <Label>Extra</Label>
+                          <div className="flex flex-col justify-end">
+                            <Label>Extra Class</Label>
                             <select
                               defaultValue={row.extra}
                               onChange={(e) =>
