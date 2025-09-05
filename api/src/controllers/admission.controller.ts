@@ -8,8 +8,9 @@ import {
 import { encrypt } from "../services/crypto";
 import { verifyToken } from "../services/jwt";
 import { createNewUser } from "../services/user.service";
-import { IUserToken } from "../types";
+import { CustomRequest, IUserToken } from "../types";
 import { ApiResponse } from "../utils/ApiResponse";
+import { DeclarationFormGenerator } from "../utils/DeclarationFormGenerator";
 import { ErrorHandler } from "../utils/ErrorHandler";
 import { getAuthToken } from "../utils/getAuthToken";
 import {
@@ -18,6 +19,7 @@ import {
   VGetSingleAdmissionForm,
   VUpdateAdmission,
   VUpdateAdmissionStatus,
+  VUpdateDeclarationStatus,
 } from "../validator/admission.validator";
 
 type IUserData = {
@@ -314,3 +316,29 @@ export const getSingleAdmissionFormData = asyncErrorHandler(
     res.status(200).json(new ApiResponse(200, "Admision Details", rows[0]));
   }
 );
+
+export const acceptDeclarationStatus = asyncErrorHandler(
+  async (req: CustomRequest, res) => {
+    const { error, value } = VUpdateDeclarationStatus.validate(req.body ?? {});
+    if (error) throw new ErrorHandler(400, error.message);
+
+    const userId = req.user_info?.id;
+
+    const { rowCount } = await pool.query(
+      "UPDATE fillup_forms SET declaration_status = 1 WHERE id = $1 AND student_id = $2 RETURNING student_id",
+      [value.form_id, userId]
+    );
+    if (rowCount === 0) {
+      throw new ErrorHandler(404, "Failed to accept declaration");
+    }
+
+    res.status(200).json(new ApiResponse(200, "Declaration status accepted"));
+  }
+);
+
+export const downloadDeclarationStatus = asyncErrorHandler(async (req, res) => {
+  // const buffer = new DeclarationFormGenerator();
+  // buffer.generateDeclarationForm({
+  //   address : "Something"
+  // })
+})

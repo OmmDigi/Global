@@ -34,6 +34,11 @@ export const VGetAdmissionList = Joi.object({
   course: Joi.number().optional(),
   batch: Joi.number().optional(),
   form_no: Joi.string().optional(),
-  page : Joi.number().optional(),
-  token : Joi.string().optional()
+  page: Joi.number().optional(),
+  token: Joi.string().optional()
+})
+
+export const VUpdateDeclarationStatus = Joi.object({
+  form_id: Joi.number().required(),
+  // declaration_status: Joi.number().valid(0, 1).required()
 })

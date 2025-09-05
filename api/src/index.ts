@@ -18,7 +18,7 @@ import { purchaseRoute } from "./routes/purchase.routes";
 import { inventoryRoutes } from "./routes/inventory.routes";
 import { excelRoute } from "./routes/excel.routes";
 import { initCronJobs } from "./cron-jobs";
-// import { initCronJobs } from "./cron-jobs";
+import { inventoryRouteV2 } from "./routes/v2/inventory.routes";
 
 const app: Application = express();
 
@@ -66,6 +66,7 @@ app.use("/api/v1/vendor", vendorRoute);
 app.use("/api/v1/purchase", purchaseRoute);
 app.use("/api/v1/inventory", inventoryRoutes);
 app.use("/api/v1/excel", excelRoute);
+app.use("/api/v2/inventory", inventoryRouteV2)
 
 initCronJobs();
 
