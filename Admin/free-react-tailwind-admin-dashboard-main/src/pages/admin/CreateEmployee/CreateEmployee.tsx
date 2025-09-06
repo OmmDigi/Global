@@ -151,7 +151,7 @@ export default function CreateEmployee() {
   if (stuffError) {
     return <div>Error...</div>;
   }
- const handleChildData = (data: any) => {
+  const handleChildData = (data: any) => {
     setPageCount(data);
   };
   const handleChange = (
@@ -221,7 +221,6 @@ export default function CreateEmployee() {
       });
     }
   };
-
 
   const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -606,9 +605,25 @@ export default function CreateEmployee() {
                               {courseList?.data?.map((opt: any, i: number) => (
                                 <option key={i} value={opt.id}>
                                   {opt.name}
-                                </option> 
+                                </option>
                               ))}
                             </select>
+                          </div>
+                          <div>
+                            <Label>Class/month</Label>
+                            <Input
+                              type="number"
+                              placeholder="Class/month"
+                              value={entry.class_per_month}
+                              onChange={(e) =>
+                                handleChangeEntries(
+                                  index,
+                                  "class_per_month",
+                                  e.target.value
+                                )
+                              }
+                              className="flex-1 border px-3 py-1 rounded-md"
+                            />
                           </div>
                           <div>
                             <Label>choose Type</Label>
@@ -629,22 +644,6 @@ export default function CreateEmployee() {
                             </select>
                           </div>
 
-                          <div>
-                            <Label>Class/month</Label>
-                            <Input
-                              type="number"
-                              placeholder="Class/month"
-                              value={entry.class_per_month}
-                              onChange={(e) =>
-                                handleChangeEntries(
-                                  index,
-                                  "class_per_month",
-                                  e.target.value
-                                )
-                              }
-                              className="flex-1 border px-3 py-1 rounded-md"
-                            />
-                          </div>
                           <div>
                             <Label>Amount</Label>
                             <Input
