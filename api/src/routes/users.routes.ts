@@ -21,10 +21,15 @@ import {
 } from "../controllers/users.controller";
 import { isAuthorized } from "../middlewares/isAuthorized";
 import { isAuthenticated } from "../middlewares/isAuthenticated";
+import asyncErrorHandler from "../middlewares/asyncErrorHandler";
+import { ApiResponse } from "../utils/ApiResponse";
 
 export const usersRoutes = Router();
 
 usersRoutes
+  .get("/is-login", isAuthenticated, asyncErrorHandler(async (_, res) => {
+    res.status(200).json(new ApiResponse(200, "Login successfull", true))
+  }))
   .post("/login", loginUser)
   .post("/create", isAuthorized(7), createUser)
   .get("/course", isAuthenticated, getUserEnrolledCourseList)

@@ -66,11 +66,12 @@ function createWindow() {
   mainWindow.on("unmaximize", updateBrowserViewBounds);
 
   // Load the target URL in BrowserView
-  browserView.webContents.loadURL("https://frontend.globaltechnicalinstitute.com/login");
-  
+  // browserView.webContents.loadURL("https://frontend.globaltechnicalinstitute.com/login");
+  browserView.webContents.loadURL("https://crm.globaltechnicalinstitute.com/signin");
+
   // Remove or increase the zoom factor - this might be cutting off content
   // browserView.webContents.setZoomFactor(0.9); // Try removing this line or setting to 1.0
-  browserView.webContents.setZoomFactor(1.0);
+  browserView.webContents.setZoomFactor(0.9);
 
   // Wait for the page to load before setting zoom
   browserView.webContents.once('did-finish-load', () => {

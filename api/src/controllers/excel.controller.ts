@@ -1575,12 +1575,13 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
           worksheet.mergeCells(`C${startRow}:C${endRow}`); // Absent
           worksheet.mergeCells(`D${startRow}:D${endRow}`); // Leave
           worksheet.mergeCells(`E${startRow}:E${endRow}`); // Holiday
-          worksheet.mergeCells(`G${startRow}:G${endRow}`); // Sunday
+          // worksheet.mergeCells(`G${startRow}:G${endRow}`); // Sunday
           worksheet.mergeCells(`H${startRow}:H${endRow}`); // Per Day Rate
           worksheet.mergeCells(`I${startRow}:I${endRow}`); // Gross Amount
           worksheet.mergeCells(`J${startRow}:J${endRow}`); // Deduction
           worksheet.mergeCells(`K${startRow}:K${endRow}`); // Net Amount
-          worksheet.mergeCells(`L${startRow}:L${endRow}`); // Sign
+          worksheet.mergeCells(`L${startRow}:L${endRow}`);
+          worksheet.mergeCells(`M${startRow}:M${endRow}`);
         }
       } else if (employeetype === "Teacher") {
         // Add teacher name in the first column, spanning multiple rows
