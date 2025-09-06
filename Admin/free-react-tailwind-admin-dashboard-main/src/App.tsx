@@ -63,9 +63,6 @@ export default function App() {
       setUser(category);
     } else if (localStorage.getItem("category")) {
       setUser(localStorage.getItem("category"));
-    } else {
-      window.location.href = `${import.meta.env.VITE_HOMEPAGE_URL}login`;
-      return;
     }
     if (token) {
       localStorage.setItem("token", token);
@@ -76,6 +73,11 @@ export default function App() {
     if (!localStorage.getItem("pageReloaded")) {
       localStorage.setItem("pageReloaded", "true");
       window.location.reload();
+    }
+     else {
+      
+      // window.location.href = `${import.meta.env.VITE_HOMEPAGE_URL}login`;
+      return;
     }
   }, []);
 

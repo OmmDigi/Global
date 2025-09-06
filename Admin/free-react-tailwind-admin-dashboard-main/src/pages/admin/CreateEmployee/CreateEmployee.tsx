@@ -725,10 +725,15 @@ export default function CreateEmployee() {
                     </div>
 
                     <div className="grid grid-cols-1 gap-6 xl:grid-cols-1">
+                      <div className="flex gap-30 text-gray-400 w-[50%]">
+                        <div>Salary Head</div>
+                         <div>Amount</div>
+                          <div>Amount Type</div>
+                      </div>
                       {formData?.fee_structure_stuff?.map((entry, index) => (
                         <div key={index} className="flex gap-4 items-center">
                           <div>
-                            <Label htmlFor="inputTwo">Salary Head</Label>
+                            {/* <Label htmlFor="inputTwo">Salary Head</Label> */}
                             <select
                               value={entry.fee_head}
                               onChange={(e) =>
@@ -748,7 +753,7 @@ export default function CreateEmployee() {
                             </select>
                           </div>
                           <div>
-                            <Label htmlFor="inputTwo">Amount</Label>
+                            {/* <Label htmlFor="inputTwo">Amount</Label> */}
                             <Input
                               type="number"
                               placeholder="Fees"
@@ -764,7 +769,7 @@ export default function CreateEmployee() {
                             />
                           </div>
                           <div>
-                            <Label htmlFor="inputTwo">Amount Type</Label>
+                            {/* <Label htmlFor="inputTwo">Amount Type</Label> */}
                             <select
                               value={entry.amount_type}
                               onChange={(e) =>
@@ -801,7 +806,7 @@ export default function CreateEmployee() {
 
                 <div>
                   <MultiSelect
-                    label="permissions"
+                    label="Permissions"
                     options={options}
                     onChange={(selected) => handleNameChange(selected)}
                     // defaultSelected={}
