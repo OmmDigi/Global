@@ -11,15 +11,18 @@ import useSWRMutation from "swr/mutation";
 import { deleteFetcher } from "../../../api/fatcher";
 import { message } from "antd";
 import { mutate } from "swr";
+import Pagination from "../../form/Pagination";
+import { useEffect, useState } from "react";
 
 interface IProps {
   holidayList: any;
   onEdit: (id: number) => void;
+   onSendData: any;
 }
 
 // Define the table data using the interface
 
-const BasicTableHoliday: React.FC<IProps> = ({ holidayList, onEdit, }) => {
+const BasicTableHoliday: React.FC<IProps> = ({ holidayList, onEdit,onSendData }) => {
  
  
 
@@ -38,6 +41,10 @@ const BasicTableHoliday: React.FC<IProps> = ({ holidayList, onEdit, }) => {
       message.error("Failed to delete user");
     }
   };
+  const [count, setCount] = useState(1);
+    useEffect(() => {
+      onSendData(count);
+    }, [count, onSendData]);
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
@@ -121,6 +128,13 @@ const BasicTableHoliday: React.FC<IProps> = ({ holidayList, onEdit, }) => {
             ))}
           </TableBody>
         </Table>
+           <div className="p-8">
+          <Pagination
+            count={count}
+            onChange={setCount}
+            length={holidayList?.data?.length ? holidayList?.data?.length : 1}
+          />
+        </div>
 
        
       </div>

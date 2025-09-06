@@ -311,11 +311,10 @@ export default function AdmissionAdmin() {
     course_id: formData.courseName,
     batch_id: formData.batchName,
     session_id: formData.sessionName,
-    declaration_status:1,
+    declaration_status: 1,
     admission_data: JSON.stringify(formData),
   };
 
-  
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
@@ -324,10 +323,10 @@ export default function AdmissionAdmin() {
         type: "success",
         content: response.message,
       });
-
       if (response.success === true) {
         setFormData(initialFormData);
       }
+      mutate();
       setCurrent(0);
     } catch (error: any) {
       messageApi.open({
@@ -378,7 +377,7 @@ export default function AdmissionAdmin() {
         type: "success",
         content: response.message,
       });
-      mutate(`api/v1/course/dropdown?limit-1`);
+      mutate();
       setId(0);
       setMontessoriTeachers(false);
       setCurrent(0);
@@ -462,8 +461,8 @@ export default function AdmissionAdmin() {
       [name]: value,
     }));
     const courseId = parseInt(e.target.value);
-    console.log("courseId",courseId);
-    
+    console.log("courseId", courseId);
+
     setSelectedCourseId(courseId as any);
   };
 
@@ -475,7 +474,7 @@ export default function AdmissionAdmin() {
   const selectedCourse = Array.isArray(courseList?.data)
     ? courseList?.data?.find((course: any) => course.id == selectedCourseId)
     : null;
-console.log("selectedCourse",selectedCourse?.admission_fee);
+  console.log("selectedCourse", selectedCourse?.admission_fee);
 
   return (
     <div>
@@ -1419,8 +1418,6 @@ console.log("selectedCourse",selectedCourse?.admission_fee);
                                     </div>
                                   </div>
                                 </div> */}
-
-                          
                           </div>
                         </div>
                       )}
@@ -1527,7 +1524,7 @@ console.log("selectedCourse",selectedCourse?.admission_fee);
                                       Five Thousand
                                     </span>
                                     ) */}
-                                     only towards Admission Fee for Montessori
+                                    only towards Admission Fee for Montessori
                                     Teachers' Training course (6 Months) of
                                   </p>
 
@@ -1540,111 +1537,116 @@ console.log("selectedCourse",selectedCourse?.admission_fee);
                             </div>
 
                             {/* Second Declaration Section */}
-                            {selectedCourse?.bss_fee 
-                            ? 
+                            {selectedCourse?.bss_fee ? (
+                              <div className="bg-gray-50 p-6 rounded-lg">
+                                <h2 className="text-lg font-semibold mb-4 text-gray-800">
+                                  Second Declaration - BSS Registration Fee
+                                </h2>
 
-                            <div className="bg-gray-50 p-6 rounded-lg">
-                              <h2 className="text-lg font-semibold mb-4 text-gray-800">
-                                Second Declaration - BSS Registration Fee
-                              </h2>
+                                <div className="space-y-4">
+                                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                    <div>
+                                      <label className="block text-sm font-medium text-start text-gray-700 mb-2">
+                                        Title
+                                      </label>
+                                      <select
+                                        name="applicantTitle2"
+                                        value={formData.applicantTitle2}
+                                        onChange={handleInputChange}
+                                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                      >
+                                        <option value="">Select</option>
+                                        <option value="Sri">Sri</option>
+                                        <option value="Smt">Smt</option>
+                                        <option value="Miss">Miss</option>
+                                      </select>
+                                    </div>
 
-                              <div className="space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                  <div>
-                                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
-                                      Title
-                                    </label>
-                                    <select
-                                      name="applicantTitle2"
-                                      value={formData.applicantTitle2}
-                                      onChange={handleInputChange}
-                                      className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    >
-                                      <option value="">Select</option>
-                                      <option value="Sri">Sri</option>
-                                      <option value="Smt">Smt</option>
-                                      <option value="Miss">Miss</option>
-                                    </select>
+                                    <div className="md:col-span-3">
+                                      <label className="block text-sm font-medium text-start text-gray-700 mb-2">
+                                        Full Name
+                                      </label>
+                                      <input
+                                        type="text"
+                                        name="applicantName2"
+                                        value={formData.applicantName2}
+                                        onChange={handleInputChange}
+                                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="Enter full name"
+                                      />
+                                    </div>
                                   </div>
 
-                                  <div className="md:col-span-3">
-                                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
-                                      Full Name
-                                    </label>
-                                    <input
-                                      type="text"
-                                      name="applicantName2"
-                                      value={formData.applicantName2}
-                                      onChange={handleInputChange}
-                                      className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                      placeholder="Enter full name"
-                                    />
-                                  </div>
-                                </div>
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                      <label className="block text-sm font-medium text-start text-gray-700 mb-2">
+                                        Relationship Type
+                                      </label>
+                                      <select
+                                        name="relationshipType2"
+                                        value={formData.relationshipType2}
+                                        onChange={handleInputChange}
+                                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                      >
+                                        <option value="">Select</option>
+                                        <option value="S/o">
+                                          S/o (Son of)
+                                        </option>
+                                        <option value="D/o">
+                                          D/o (Daughter of)
+                                        </option>
+                                        <option value="W/o">
+                                          W/o (Wife of)
+                                        </option>
+                                      </select>
+                                    </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                  <div>
-                                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
-                                      Relationship Type
-                                    </label>
-                                    <select
-                                      name="relationshipType2"
-                                      value={formData.relationshipType2}
-                                      onChange={handleInputChange}
-                                      className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    >
-                                      <option value="">Select</option>
-                                      <option value="S/o">S/o (Son of)</option>
-                                      <option value="D/o">
-                                        D/o (Daughter of)
-                                      </option>
-                                      <option value="W/o">W/o (Wife of)</option>
-                                    </select>
+                                    <div>
+                                      <label className="block text-sm font-medium text-start text-gray-700 mb-2">
+                                        Father's/Husband's Name
+                                      </label>
+                                      <input
+                                        type="text"
+                                        name="relationName2"
+                                        value={formData.relationName2}
+                                        onChange={handleInputChange}
+                                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="Enter name"
+                                      />
+                                    </div>
                                   </div>
 
-                                  <div>
-                                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
-                                      Father's/Husband's Name
-                                    </label>
-                                    <input
-                                      type="text"
-                                      name="relationName2"
-                                      value={formData.relationName2}
-                                      onChange={handleInputChange}
-                                      className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                      placeholder="Enter name"
-                                    />
-                                  </div>
-                                </div>
-
-                                <div className="bg-green-50 p-4 rounded-md">
-                                  <p className="text-sm text-gray-700">
-                                    <strong>Declaration:</strong> I hereby
-                                    declare that I will also have to pay a sum
-                                    of Rs.
-                                    <input
-                                      type="number"
-                                      readOnly
-                                      name="bssRegistrationFee"
-                                      value={selectedCourse?.bss_fee ? selectedCourse?.bss_fee : "0" }
-                                      onChange={handleInputChange}
-                                      className="mx-2 w-30 p-1 border border-gray-300 rounded text-center"
-                                    />
-                                    {/* /- (Rupees{" "}
+                                  <div className="bg-green-50 p-4 rounded-md">
+                                    <p className="text-sm text-gray-700">
+                                      <strong>Declaration:</strong> I hereby
+                                      declare that I will also have to pay a sum
+                                      of Rs.
+                                      <input
+                                        type="number"
+                                        readOnly
+                                        name="bssRegistrationFee"
+                                        value={
+                                          selectedCourse?.bss_fee
+                                            ? selectedCourse?.bss_fee
+                                            : "0"
+                                        }
+                                        onChange={handleInputChange}
+                                        className="mx-2 w-30 p-1 border border-gray-300 rounded text-center"
+                                      />
+                                      {/* /- (Rupees{" "}
                                     <span className="test-lg font-bold">
                                       Five Thousand
                                     </span>
                                     ) */}
-                                     only towards BSS Registration Fee within 3
-                                    (Three) months after 6 (Six) months of
-                                    getting Admission for Montessori Teachers'
-                                    Training Course.
-                                  </p>
+                                      only towards BSS Registration Fee within 3
+                                      (Three) months after 6 (Six) months of
+                                      getting Admission for Montessori Teachers'
+                                      Training Course.
+                                    </p>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                            : null
-                            }
+                            ) : null}
 
                             {/* Signature Section */}
                             <div className="bg-white p-6 rounded-lg border-2 border-gray-200">
@@ -1712,8 +1714,6 @@ console.log("selectedCourse",selectedCourse?.admission_fee);
                                 </div>
                               </div>
                             </div>
-
-                           
                           </div>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-10">

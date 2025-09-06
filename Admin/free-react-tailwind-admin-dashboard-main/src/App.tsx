@@ -47,6 +47,7 @@ import StaffPayslip from "./pages/admin/StaffPayslip/StaffPayslip";
 import AdvancePayment from "./pages/admin/AdvancePayment/AdvancePayment";
 import Report from "./pages/admin/Report/Report";
 import AmcRecord from "./pages/admin/AmcRecord/AmcRecord";
+import NotFound from "./pages/admin/OtherPage/NotFound";
 
 export default function App() {
   const [user, setUser] = useState<string | null>(null);
@@ -62,9 +63,6 @@ export default function App() {
       setUser(category);
     } else if (localStorage.getItem("category")) {
       setUser(localStorage.getItem("category"));
-    } else {
-      window.location.href = `${import.meta.env.VITE_HOMEPAGE_URL}login`;
-      return;
     }
     if (token) {
       localStorage.setItem("token", token);
@@ -75,6 +73,11 @@ export default function App() {
     if (!localStorage.getItem("pageReloaded")) {
       localStorage.setItem("pageReloaded", "true");
       window.location.reload();
+    }
+     else {
+      
+      // window.location.href = `${import.meta.env.VITE_HOMEPAGE_URL}login`;
+      return;
     }
   }, []);
 
@@ -174,7 +177,7 @@ export default function App() {
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
           {/* Fallback Route */}
-          {/* <Route path="*" element={<NotFound />} /> */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
     </>

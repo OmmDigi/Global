@@ -151,7 +151,7 @@ export default function CreateEmployee() {
   if (stuffError) {
     return <div>Error...</div>;
   }
- const handleChildData = (data: any) => {
+  const handleChildData = (data: any) => {
     setPageCount(data);
   };
   const handleChange = (
@@ -221,7 +221,6 @@ export default function CreateEmployee() {
       });
     }
   };
-
 
   const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -606,9 +605,25 @@ export default function CreateEmployee() {
                               {courseList?.data?.map((opt: any, i: number) => (
                                 <option key={i} value={opt.id}>
                                   {opt.name}
-                                </option> 
+                                </option>
                               ))}
                             </select>
+                          </div>
+                          <div>
+                            <Label>Class/month</Label>
+                            <Input
+                              type="number"
+                              placeholder="Class/month"
+                              value={entry.class_per_month}
+                              onChange={(e) =>
+                                handleChangeEntries(
+                                  index,
+                                  "class_per_month",
+                                  e.target.value
+                                )
+                              }
+                              className="flex-1 border px-3 py-1 rounded-md"
+                            />
                           </div>
                           <div>
                             <Label>choose Type</Label>
@@ -629,22 +644,6 @@ export default function CreateEmployee() {
                             </select>
                           </div>
 
-                          <div>
-                            <Label>Class/month</Label>
-                            <Input
-                              type="number"
-                              placeholder="Class/month"
-                              value={entry.class_per_month}
-                              onChange={(e) =>
-                                handleChangeEntries(
-                                  index,
-                                  "class_per_month",
-                                  e.target.value
-                                )
-                              }
-                              className="flex-1 border px-3 py-1 rounded-md"
-                            />
-                          </div>
                           <div>
                             <Label>Amount</Label>
                             <Input
@@ -726,10 +725,15 @@ export default function CreateEmployee() {
                     </div>
 
                     <div className="grid grid-cols-1 gap-6 xl:grid-cols-1">
+                      <div className="flex gap-30 text-gray-400 w-[50%]">
+                        <div>Salary Head</div>
+                         <div>Amount</div>
+                          <div>Amount Type</div>
+                      </div>
                       {formData?.fee_structure_stuff?.map((entry, index) => (
                         <div key={index} className="flex gap-4 items-center">
                           <div>
-                            <Label htmlFor="inputTwo">Salary Head</Label>
+                            {/* <Label htmlFor="inputTwo">Salary Head</Label> */}
                             <select
                               value={entry.fee_head}
                               onChange={(e) =>
@@ -749,7 +753,7 @@ export default function CreateEmployee() {
                             </select>
                           </div>
                           <div>
-                            <Label htmlFor="inputTwo">Amount</Label>
+                            {/* <Label htmlFor="inputTwo">Amount</Label> */}
                             <Input
                               type="number"
                               placeholder="Fees"
@@ -765,7 +769,7 @@ export default function CreateEmployee() {
                             />
                           </div>
                           <div>
-                            <Label htmlFor="inputTwo">Amount Type</Label>
+                            {/* <Label htmlFor="inputTwo">Amount Type</Label> */}
                             <select
                               value={entry.amount_type}
                               onChange={(e) =>
@@ -802,7 +806,7 @@ export default function CreateEmployee() {
 
                 <div>
                   <MultiSelect
-                    label="permissions"
+                    label="Permissions"
                     options={options}
                     onChange={(selected) => handleNameChange(selected)}
                     // defaultSelected={}
