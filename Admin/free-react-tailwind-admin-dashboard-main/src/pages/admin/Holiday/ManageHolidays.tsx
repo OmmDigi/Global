@@ -20,6 +20,7 @@ type FormDataType = {
 
 export default function ManageHolidays() {
   const [messageApi, contextHolder] = message.useMessage();
+  const [pageCount, setPageCount] = useState<number>(1);
 
 
   const [id, setId] = useState<number>();
@@ -33,7 +34,7 @@ export default function ManageHolidays() {
   const {
     data: holidayList,
     isLoading: holidayLoading,
-  } = useSWR("api/v1/holiday", getFetcher);
+  } = useSWR(`api/v1/holiday?page=${pageCount}`, getFetcher);
   // create Holiday
   const { trigger: create } = useSWRMutation("api/v1/holiday", (url, { arg }) =>
     postFetcher(url, arg)
@@ -132,7 +133,9 @@ export default function ManageHolidays() {
       });
     }
   };
-
+  const handleChildData = (data: any) => {
+    setPageCount(data);
+  };
   // const handleActive = async (isActive: boolean, id: number) => {
   //   try {
   //     const response = await update({
@@ -217,6 +220,7 @@ export default function ManageHolidays() {
             <BasicTableHoliday
               holidayList={holidayList}
               onEdit={handleEdit}
+              onSendData={handleChildData}
               // onActive={handleActive}
             />
           </ComponentCard>
