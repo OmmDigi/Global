@@ -133,6 +133,12 @@ const navItems: NavItem[] = [
     icon: <TbReport />,
     path: "/report",
   },
+   {
+    name: "Settings",
+    id: 14,
+    icon: <TbReport />,
+    path: "/settings",
+  },
 ];
 
 const othersItems: NavItem[] = [
