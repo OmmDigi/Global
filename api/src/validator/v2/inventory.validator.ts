@@ -25,7 +25,7 @@ export const VAddInventoryItemStockv2 = Joi.object({
 export const VUpdateInventoryItemv2 = Joi.object({
   id : Joi.number().required(),
   item_name: Joi.string().required(),
-  minimum_quantity: Joi.string().required(),
+  minimum_quantity: Joi.number().required(),
   created_at: Joi.string().required(),
 });
 
