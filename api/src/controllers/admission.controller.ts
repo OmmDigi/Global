@@ -166,6 +166,7 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
       batch_id: value.batch_id,
       fee_structure,
       session_id: value.session_id,
+      declaration_status : value?.declaration_status
     });
 
     await client.query("COMMIT");
