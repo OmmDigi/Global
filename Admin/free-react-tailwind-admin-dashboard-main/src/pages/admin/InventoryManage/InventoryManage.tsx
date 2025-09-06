@@ -14,9 +14,8 @@ import { Minus, Plus } from "lucide-react";
 import useSWR from "swr";
 
 type FormDataType = {
-  item_id?: number; // optional (if sometimes missing)
+  id?: number; // optional (if sometimes missing)
   item_name: string;
-  vendor_id: string;
   created_at: string;
   minimum_quantity: string;
 };
@@ -29,7 +28,6 @@ export default function InventoryManage() {
   const [formData, setFormData] = useState<FormDataType>({
     // item_id: 0,
     item_name: "",
-    vendor_id: "",
     created_at: "",
     minimum_quantity: "",
   });
@@ -39,10 +37,11 @@ export default function InventoryManage() {
   //   getFetcher
   // );
   // get inventory  List
-  const { data: inventoryList, isLoading: inventoryLoding,mutate } = useSWR(
-    `api/v2/inventory/item?page=${pageCount}`,
-    getFetcher
-  );
+  const {
+    data: inventoryList,
+    isLoading: inventoryLoding,
+    mutate,
+  } = useSWR(`api/v2/inventory/item?page=${pageCount}`, getFetcher);
   console.log("inventoryList", inventoryList);
 
   // create inventory
@@ -64,16 +63,16 @@ export default function InventoryManage() {
   //   return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   // }
 
-    const handleChildData = (data: any) => {
+  const handleChildData = (data: any) => {
     setPageCount(data);
   };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     console.log("formdataaa", formData);
-    const multiForm = [formData];
+
     try {
-      const response = await create(multiForm as any);
+      const response = await create(formData as any);
       mutate(
         (currentData: any) => [...(currentData || []), response.data],
         false
@@ -86,7 +85,6 @@ export default function InventoryManage() {
       setFormData({
         // item_id: 0,
         item_name: "",
-        vendor_id: "",
         created_at: "",
         minimum_quantity: "",
       });
@@ -104,8 +102,8 @@ export default function InventoryManage() {
     >
   ) => {
     const { name, value } = e.target;
-    console.log("vendor",value,name);
-    
+    console.log("vendor", value, name);
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -118,9 +116,8 @@ export default function InventoryManage() {
       const response = await getFetcher(`api/v2/inventory/item/${id}`);
       const userData = response.data;
       setFormData({
-        item_id: id,
+        id: id,
         item_name: userData?.item_name,
-        vendor_id: userData?.vendor_id,
         created_at: userData?.created_at,
         minimum_quantity: userData?.minimum_quantity,
       });
@@ -146,7 +143,6 @@ export default function InventoryManage() {
       setFormData({
         // item_id: 0,
         item_name: "",
-        vendor_id: "",
         created_at: "",
         minimum_quantity: "",
       });
@@ -247,9 +243,8 @@ export default function InventoryManage() {
                     value={formData?.created_at}
                     placeholder="Date of Purchase"
                   />
-                 
                 </div>
-                  <div>
+                <div>
                   <Label>Minimum Quantity to maintain *</Label>
                   <Input
                     type="number"
@@ -261,8 +256,6 @@ export default function InventoryManage() {
                   />
                 </div>
               </div>
-
-              
 
               <div className="flex flex-wrap justify-center items-center gap-6">
                 <div className="flex items-center gap-5">

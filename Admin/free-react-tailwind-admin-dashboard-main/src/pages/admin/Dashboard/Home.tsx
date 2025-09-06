@@ -134,7 +134,6 @@ export default function Home() {
   //   return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   // }
 
-
   // Individual checkbox toggle
 
   // increment count
@@ -232,7 +231,6 @@ export default function Home() {
   }
 
   const handleSave = async () => {
-
     try {
       const response = await update(data as any);
       mutate("api/v1/users/class");
@@ -260,7 +258,7 @@ export default function Home() {
       <div className="grid grid-cols-12 gap-4 md:gap-6">
         <div className="col-span-12 space-y-6 xl:col-span-7">
           {category == "Admin" ? <MonthlySalesChart /> : null}
-          <StuffAttandance />
+          {category == "Admin" ? <StuffAttandance /> : null}
         </div>
         <div className="col-span-12 xl:col-span-5">
           {category == "Admin" ? <MonthlyIncome /> : null}
