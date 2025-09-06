@@ -189,11 +189,6 @@ export default function Home() {
   //   setOpenDropdown(openDropdown === id ? null : id);
   // };
   // get list
-  const { data: teacherList, isLoading: courseLoading } = useSWR(
-    "api/v1/users/class",
-    getFetcher
-  );
-  // submit
 
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
@@ -209,6 +204,17 @@ export default function Home() {
   }, []);
   const category = localStorage.getItem("category");
 
+  const { data: teacherList, isLoading: courseLoading } = useSWR(
+    "api/v1/users/class",
+    getFetcher,
+    {
+      isPaused() {
+        return category == "Admin";
+      },
+    }
+  );
+
+  
   useEffect(() => {
     if (teacherList?.data) {
       setData(teacherList.data);

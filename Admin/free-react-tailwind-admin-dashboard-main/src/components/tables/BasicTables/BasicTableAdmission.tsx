@@ -99,7 +99,7 @@ export default function BasicTableAdmission({
               <TableRow key={index}>
                 <TableCell className="px-5 py-4 sm:px-6 text-start">
                   <div className="flex items-center gap-3">
-                    <div className="text-gray-500">{index + 1}</div>
+                    <div className="text-gray-500">{((count*10)-10 )+ index + 1}</div>
                     <div className="block font-medium text-gray-500 text-theme-xs dark:text-gray-400]">
                       <img
                         src={order.student_image}

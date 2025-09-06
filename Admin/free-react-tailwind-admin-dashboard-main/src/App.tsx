@@ -47,6 +47,7 @@ import StaffPayslip from "./pages/admin/StaffPayslip/StaffPayslip";
 import AdvancePayment from "./pages/admin/AdvancePayment/AdvancePayment";
 import Report from "./pages/admin/Report/Report";
 import AmcRecord from "./pages/admin/AmcRecord/AmcRecord";
+import NotFound from "./pages/admin/OtherPage/NotFound";
 
 export default function App() {
   const [user, setUser] = useState<string | null>(null);
@@ -174,7 +175,7 @@ export default function App() {
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
           {/* Fallback Route */}
-          {/* <Route path="*" element={<NotFound />} /> */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
     </>

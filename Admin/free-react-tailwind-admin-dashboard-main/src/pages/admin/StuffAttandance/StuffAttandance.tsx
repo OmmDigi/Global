@@ -12,7 +12,7 @@ export default function StuffAttandance() {
     data: attandancelist,
     isLoading: attandanceLoading,
     error: attandanceError,
-  } = useSWR("api/v1/attendance", getFetcher);
+  } = useSWR("api/v1/attendance?limit=-1", getFetcher);
 
   if (attandanceLoading) {
     console.log("loading", attandanceLoading);
