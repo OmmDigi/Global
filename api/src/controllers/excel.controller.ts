@@ -2337,7 +2337,7 @@ export const createInventoryReport = asyncErrorHandler(async (req, res) => {
 
       GROUP BY v.id, it.vendor_id, ii.id
 
-      ORDER BY v.id DESC
+      ORDER BY ii.id DESC
       `,
     [value.from_date, value.to_date],
     {

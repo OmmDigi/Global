@@ -18,6 +18,7 @@ type IFillUpForm = {
   }[];
   admission_data?: string;
   client?: PoolClient;
+  declaration_status?: number
 };
 
 export const doAdmission = async (data: IFillUpForm) => {
@@ -33,11 +34,11 @@ export const doAdmission = async (data: IFillUpForm) => {
 
   const { rows } = await pgClient.query(
     `
-     INSERT INTO fillup_forms (form_name, student_id)
-     VALUES ($1 || nextval('${fillup_form_seq_constant_key}')::TEXT, $2)
+     INSERT INTO fillup_forms (form_name, student_id, declaration_status)
+     VALUES ($1 || nextval('${fillup_form_seq_constant_key}')::TEXT, $2 ${data.declaration_status !== undefined ? ",$3" : ""})
      RETURNING form_name, id
     `,
-    [customFormIdPrefix, data.student_id]
+    data.declaration_status !== undefined ? [customFormIdPrefix, data.student_id, data.declaration_status] : [customFormIdPrefix, data.student_id]
   );
 
   const form_name = rows[0].form_name as string;

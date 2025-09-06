@@ -6,6 +6,7 @@ export const VCreateAdmission = Joi.object({
   course_id: Joi.number().required().label("Course"),
   batch_id: Joi.number().required().label("Batch"),
   session_id: Joi.number().required().label("Session"),
+  declaration_status : Joi.number().optional(),
   // payment_type : Joi.string().valid("Part Payment", "Full Payment").required()
 });
 

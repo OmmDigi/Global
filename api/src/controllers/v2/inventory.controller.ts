@@ -105,7 +105,7 @@ export const getInventoryItemInfo = asyncErrorHandler(async (req, res) => {
 
     GROUP BY v.id, it.vendor_id, ii.id
 
-    ORDER BY v.id DESC
+    ORDER BY ii.id DESC
 
     ${TO_STRING}
     `
