@@ -8,6 +8,7 @@ import { BiPurchaseTagAlt } from "react-icons/bi";
 import { PiOfficeChairDuotone } from "react-icons/pi";
 import { GrHostMaintenance } from "react-icons/gr";
 import { TbReport } from "react-icons/tb";
+import { IoSettingsOutline } from "react-icons/io5";
 
 import {
   ChevronDownIcon,
@@ -133,13 +134,15 @@ const navItems: NavItem[] = [
     icon: <TbReport />,
     path: "/report",
   },
-   {
+  {
     name: "Settings",
     id: 14,
-    icon: <TbReport />,
+    icon: <IoSettingsOutline />,
     path: "/settings",
   },
 ];
+
+
 
 const othersItems: NavItem[] = [
   // {

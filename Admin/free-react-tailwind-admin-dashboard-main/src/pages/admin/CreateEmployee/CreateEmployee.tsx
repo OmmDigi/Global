@@ -25,18 +25,6 @@ const options: MultiSelectOption[] = [
     id: 1,
   },
   {
-    name: "Manage Holidays",
-    id: 2,
-  },
-  {
-    name: "Leave Apply",
-    id: 3,
-  },
-  {
-    name: "Manage Leave",
-    id: 4,
-  },
-  {
     name: "Courses",
     id: 5,
   },
@@ -49,20 +37,48 @@ const options: MultiSelectOption[] = [
     id: 7,
   },
   {
-    name: "Inventory Manage",
+    name: "Attendance  & Payslip",
+    id: 11,
+  },
+  {
+    name: "Teacher Class Status",
+    id: 12,
+  },
+  {
+    name: "Manage Holidays",
+    id: 2,
+  },
+  {
+    name: "Leave Apply",
+    id: 3,
+  },
+  {
+    name: "Manage Leave",
+    id: 4,
+  },
+  {
+    name: "Stock Manage",
     id: 8,
   },
   {
     name: "Purchase Record",
     id: 9,
   },
+  // {
+  //   name: "Maintenance Record",
+  //   id: 10,
+  // },
   {
-    name: "Maintenance Record",
-    id: 10,
+    name: "AMC",
+    id: 13,
   },
   {
-    name: "Staff Attendance",
-    id: 11,
+    name: "Report",
+    id: 14,
+  },
+    {
+    name: "Settings",
+    id: 15,
   },
 ];
 
