@@ -48,6 +48,7 @@ import AdvancePayment from "./pages/admin/AdvancePayment/AdvancePayment";
 import Report from "./pages/admin/Report/Report";
 import AmcRecord from "./pages/admin/AmcRecord/AmcRecord";
 import NotFound from "./pages/admin/OtherPage/NotFound";
+import Settings from "./pages/admin/Settings/FeeHead";
 
 export default function App() {
   const [user, setUser] = useState<string | null>(null);
@@ -64,6 +65,11 @@ export default function App() {
     } else if (localStorage.getItem("category")) {
       setUser(localStorage.getItem("category"));
     }
+    else {
+      alert("login First")
+      // window.location.href = `${import.meta.env.VITE_HOMEPAGE_URL}login`;
+      return;
+    }
     if (token) {
       localStorage.setItem("token", token);
     }
@@ -73,14 +79,8 @@ export default function App() {
     if (!localStorage.getItem("pageReloaded")) {
       localStorage.setItem("pageReloaded", "true");
       window.location.reload();
-    }
-     else {
-      
-      // window.location.href = `${import.meta.env.VITE_HOMEPAGE_URL}login`;
-      return;
-    }
+    } 
   }, []);
-
 
   return (
     <>
@@ -107,7 +107,7 @@ export default function App() {
               <Route path="/createLeave" element={<CreateLeave />} />
               <Route path="/manageLeave" element={<ManageLeave />} />
               <Route path="/report" element={<Report />} />
-
+              <Route path="/settings" element={<Settings />} />
               Report
               <Route
                 path="/courseDetailsAdmin/:id"
@@ -121,15 +121,11 @@ export default function App() {
               {/* PurchaseRecord */}
               <Route path="/purchase-record" element={<PurchaseRecord />} />
               {/* MaintenanceRecord */}
-              <Route
-                path="/amc-record"
-                element={<AmcRecord />}
-              />
+              <Route path="/amc-record" element={<AmcRecord />} />
               {/* StuffAttandance */}
               <Route path="/stuff-attandance" element={<StuffAttandance />} />
               <Route path="/stuff-payslip" element={<StaffPayslip />} />
               <Route path="/advance-payment" element={<AdvancePayment />} />
-
               AdvancePayment
               <Route
                 path="/teacher-assigned-class"
