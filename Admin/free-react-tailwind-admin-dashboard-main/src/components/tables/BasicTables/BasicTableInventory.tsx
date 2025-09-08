@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import Pagination from "../../form/Pagination";
 import DatePicker from "react-datepicker";
 import useSWR from "swr";
+import dayjs from "dayjs";
 
 interface IProps {
   inventoryList: any;
@@ -40,18 +41,17 @@ const BasicTableInventory: React.FC<IProps> = ({
     vendors: [{ vendor: "", cost_per_unit: "" }],
     remark: "",
   });
+  const today = new Date();
   const [itemName, setItemName] = useState("");
   const [vendor, setVendor] = useState("");
   const [vendorId, setVendorId] = useState("");
   const [id, setId] = useState("");
   const [closingStock, setClosingStock] = useState("");
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(today);
+  console.log("selectedDate", selectedDate);
 
   // vandorlist
-  const { data: vendorList,  } = useSWR(
-    "api/v1/vendor",
-    getFetcher
-  );
+  const { data: vendorList } = useSWR("api/v1/vendor", getFetcher);
   // const options = vendorList?.data;
   // create course
   const { trigger: create } = useSWRMutation(
@@ -75,7 +75,7 @@ const BasicTableInventory: React.FC<IProps> = ({
     setVendorId(vendorId);
     setFormData({
       quantity: "",
-      transaction_date: "",
+      transaction_date: `${dayjs(new Date()).format("YYYY-MM-DD")}`,
       vendors: [{ vendor: "", cost_per_unit: "" }],
       remark: "",
     });
@@ -114,7 +114,6 @@ const BasicTableInventory: React.FC<IProps> = ({
     }));
   };
 
-  
   const handleRemove = (index: number) => {
     setFormData((prev) => ({
       ...prev,
@@ -398,12 +397,14 @@ const BasicTableInventory: React.FC<IProps> = ({
                   <DatePicker
                     selected={selectedDate}
                     onChange={(date: Date | null) => {
-                      setSelectedDate(date);
+                      const finalDate = date ?? new Date(); // fallback to today if null
+                      setSelectedDate(finalDate);
+
                       setFormData((prev) => ({
                         ...prev,
-                        transaction_date: date
-                          ? date.toISOString().split("T")[0]
-                          : "",
+                        transaction_date: dayjs(date ?? new Date()).format(
+                          "YYYY-MM-DD"
+                        ),
                       }));
                     }}
                     dateFormat="yyyy-MM-dd"
