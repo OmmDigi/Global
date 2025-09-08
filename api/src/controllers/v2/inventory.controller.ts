@@ -35,6 +35,20 @@ export const addInventoryItemStockV2 = asyncErrorHandler(async (req, res) => {
   if (vendorInfo.length === 0)
     throw new ErrorHandler(400, "Vendor info must be added");
 
+  const { rowCount, rows } = await pool.query(
+    "SELECT id FROM inventory_items_v2 WHERE id = $1 AND $2::DATE >= created_at",
+    [value.item_id, value.transaction_date]
+  );
+
+  console.log(rows)
+
+  const typeText = value.transaction_type === "add" ? "Add" : "Consume";
+  if (rowCount === 0)
+    throw new ErrorHandler(
+      400,
+      `You are not able to ${typeText} stock as ${typeText} Date is less than product addition date`
+    );
+
   await pool.query(
     `
     INSERT INTO inventory_transactions_v2 
@@ -52,7 +66,6 @@ export const addInventoryItemStockV2 = asyncErrorHandler(async (req, res) => {
       value.remark,
     ])
   );
-
   const SUCCESS_MESSAGE =
     value.transaction_type === "add"
       ? "Stock Successfully Added"
@@ -81,8 +94,8 @@ export const deleteInventoryItemV2 = asyncErrorHandler(async (req, res) => {
 });
 
 export const getInventoryItemInfo = asyncErrorHandler(async (req, res) => {
-  const  { TO_STRING } = parsePagination(req)
-   const { rows } = await pool.query(
+  const { TO_STRING } = parsePagination(req);
+  const { rows } = await pool.query(
     `
     SELECT
       ii.id,
@@ -109,18 +122,23 @@ export const getInventoryItemInfo = asyncErrorHandler(async (req, res) => {
 
     ${TO_STRING}
     `
-   )
+  );
 
-   res.status(200).json(new ApiResponse(200, "Inventory Item List", rows))
-})
+  res.status(200).json(new ApiResponse(200, "Inventory Item List", rows));
+});
 
-export const getSingleInventoryItemInfo = asyncErrorHandler(async (req, res) => {
-  const { error, value } = VSingleInventoryItem.validate(req.params ?? {});
-  if(error) throw new ErrorHandler(400, error.message);
+export const getSingleInventoryItemInfo = asyncErrorHandler(
+  async (req, res) => {
+    const { error, value } = VSingleInventoryItem.validate(req.params ?? {});
+    if (error) throw new ErrorHandler(400, error.message);
 
-  const { rows, rowCount } = await pool.query("SELECT *, TO_CHAR(created_at, 'YYYY-MM-DD') AS created_at FROM inventory_items_v2 WHERE id = $1", [value.id]);
+    const { rows, rowCount } = await pool.query(
+      "SELECT *, TO_CHAR(created_at, 'YYYY-MM-DD') AS created_at FROM inventory_items_v2 WHERE id = $1",
+      [value.id]
+    );
 
-  if(rowCount === 0) throw new ErrorHandler(404, "No inventory item found");
+    if (rowCount === 0) throw new ErrorHandler(404, "No inventory item found");
 
-  res.status(200).json(new ApiResponse(200, "", rows[0]))
-})
+    res.status(200).json(new ApiResponse(200, "", rows[0]));
+  }
+);

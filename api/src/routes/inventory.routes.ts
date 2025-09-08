@@ -5,11 +5,11 @@ import { addItemStock, addNewInventoryItem, createAmcItem, deleteInventoryItem, 
 export const inventoryRoutes = Router();
 
 inventoryRoutes
-  .post("/amc", isAuthorized(12), createAmcItem)
-  .put("/amc", isAuthorized(12), updateAmcItem)
-  .delete("/amc", isAuthorized(12), deleteSingleAmcItem)
-  .get("/amc", isAuthorized(12), getAmcListItems)
-  .get("/amc/:id", isAuthorized(12), getSingleAmcItem)
+  .post("/amc", isAuthorized(13), createAmcItem)
+  .put("/amc", isAuthorized(13), updateAmcItem)
+  .delete("/amc", isAuthorized(13), deleteSingleAmcItem)
+  .get("/amc", isAuthorized(13), getAmcListItems)
+  .get("/amc/:id", isAuthorized(13), getSingleAmcItem)
 
 
   .post("/item/add", isAuthorized(8), addNewInventoryItem)
