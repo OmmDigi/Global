@@ -48,6 +48,7 @@ const BasicTableInventory: React.FC<IProps> = ({
   const [id, setId] = useState("");
   const [closingStock, setClosingStock] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | null>(today);
+  const [ minimum_quantity , setMinimum_quantity] = useState("")
   console.log("selectedDate", selectedDate);
 
   // vandorlist
@@ -65,7 +66,8 @@ const BasicTableInventory: React.FC<IProps> = ({
     id: string,
     avilable_quantity: string,
     vendor: "",
-    vendorId: ""
+    vendorId: "",
+    minimum_quantity:"",
   ) => {
     setFormType(type);
     setItemName(name);
@@ -73,6 +75,7 @@ const BasicTableInventory: React.FC<IProps> = ({
     setClosingStock(avilable_quantity);
     setVendor(vendor);
     setVendorId(vendorId);
+    setMinimum_quantity(minimum_quantity)
     setFormData({
       quantity: "",
       transaction_date: `${dayjs(new Date()).format("YYYY-MM-DD")}`,
@@ -277,7 +280,7 @@ const BasicTableInventory: React.FC<IProps> = ({
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   {order.minimum_quantity}
                 </TableCell>
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                <TableCell className={`px-4 py-3 ${ order.avilable_quantity < order.minimum_quantity ? "text-red-500" : "text-gray-500" }   text-start text-theme-sm`}>
                   {order.avilable_quantity}
                 </TableCell>
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
@@ -293,7 +296,8 @@ const BasicTableInventory: React.FC<IProps> = ({
                         order.id,
                         order.avilable_quantity,
                         order.vendor_name,
-                        order.vendor_id
+                        order.vendor_id,
+                        order.minimum_quantity,
                       )
                     }
                     className="px-4 py-3 rounded-3xl text-xl bg-green-200 text-gray-900"
@@ -310,7 +314,9 @@ const BasicTableInventory: React.FC<IProps> = ({
                         order.id,
                         order.avilable_quantity,
                         order.vendor_name,
-                        order.vendor_id
+                        order.vendor_id,
+                        order.minimum_quantity,
+
                       )
                     }
                     className="px-4 py-3 rounded-3xl text-xl bg-gray-400 text-gray-900"
@@ -385,7 +391,7 @@ const BasicTableInventory: React.FC<IProps> = ({
                     onChange={handleChange}
                     className="w-full p-2 border rounded"
                   />
-                  <p className="text-xs text-red-400">
+                  <p className={`text-xs ${closingStock <= minimum_quantity ? "text-red-400" : "text-gray-400"} `}>
                     {formType === "add"
                       ? ""
                       : `You have Quantity ${closingStock}`}
