@@ -187,8 +187,8 @@ export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
           data.form_status === 2
             ? "Approved"
             : data.form_status === 1
-            ? "Pending"
-            : "Canceled",
+              ? "Pending"
+              : "Canceled",
       })
     );
     // Style the data rows
@@ -202,10 +202,10 @@ export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
               cellNumber === 8 && data.form_status == 3
                 ? "DC2626"
                 : cellNumber === 8 && data.form_status == 2
-                ? "139429"
-                : cellNumber === 8 && data.form_status == 1
-                ? "e6e639"
-                : "000000",
+                  ? "139429"
+                  : cellNumber === 8 && data.form_status == 1
+                    ? "e6e639"
+                    : "000000",
           },
         },
 
@@ -1198,7 +1198,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
   // 1. Set headers
   res.setHeader(
     "Content-Disposition",
-    `attachment; filename="${employeetype}_Payment_Sheet.xlsx"`
+    `attachment; filename="${employeetype}_Payment_Sheet_${formatted.replace(" ", "_")}.xlsx"`
   );
   res.setHeader(
     "Content-Type",
@@ -1210,10 +1210,14 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
     stream: res,
     useStyles: true,
   });
-  const worksheet = workbook.addWorksheet("Employee Salary");
+  const worksheet = workbook.addWorksheet("Employee Salary", {
+    views: [{
+      state: 'frozen', ySplit: 2
+    }]
+  });
 
   if (employeetype === "Staff") {
-    worksheet.mergeCells("A1:M1");
+    worksheet.mergeCells("A1:N1");
   } else {
     worksheet.mergeCells("A1:H1");
   }
@@ -1241,9 +1245,10 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
       "Absent",
       "Leave",
       "Holiday",
+      "Sunday In Month",
       "Payment Components",
       null,
-      "Sunday",
+      "Working Sunday",
       "Per Day Rate",
       "Gross Amount",
       "Deduction",
@@ -1285,7 +1290,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
 
   if (employeetype === "Staff") {
     // Merge header "Payment Component" across B1:C1
-    worksheet.mergeCells("F2:G2");
+    worksheet.mergeCells("G2:H2");
   }
 
   let rowIndex = 3;
@@ -1371,6 +1376,12 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
               interval '1 day'
           )::DATE AS dt
       ),
+      sundays_in_month AS (
+        -- Count Sundays in the month
+        SELECT COUNT(*) AS total_sundays
+        FROM month_days
+        WHERE EXTRACT(DOW FROM dt) = 0
+      ),
       holidays_in_month AS (
           -- Pick holidays that fall in this month (excluding Sundays)
           SELECT h.date
@@ -1415,7 +1426,8 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
                   WHERE EXTRACT(DOW FROM a.date) = 0 AND a.status = 'Present'
               ) AS sunday_worked,
               COUNT(w.dt) AS total_working_days,
-              (SELECT COUNT(*) FROM holidays_in_month) AS holiday_count
+              (SELECT COUNT(*) FROM holidays_in_month) AS holiday_count,
+              (SELECT total_sundays FROM sundays_in_month) AS total_sundays_in_month
           FROM users e
           JOIN working_days w ON TRUE
           LEFT JOIN attendance a 
@@ -1432,7 +1444,8 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
           COALESCE(a.leave_days, 0) AS leave_days,
           COALESCE(a.sunday_worked, 0) AS sunday_worked,
           a.holiday_count,
-          (a.total_working_days - (COALESCE(a.present_days,0) + COALESCE(a.leave_days,0))) AS absent_days
+          (a.total_working_days - (COALESCE(a.present_days,0) + COALESCE(a.leave_days,0))) AS absent_days,
+          a.total_sundays_in_month
       FROM emp_salary es
       JOIN attendance_summary a ON a.employee_id = es.id;`;
   } else if (employeetype === "Teacher") {
@@ -1544,6 +1557,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
             i === 0 ? absentDays : null,
             i === 0 ? data.leave_days : null,
             i === 0 ? data.holiday_count : null,
+            i === 0 ? data.total_sundays_in_month : null,
             comp.salary_type,
             comp.amount,
             i === 0 ? sundayPayTxt : null,
@@ -1575,13 +1589,15 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
           worksheet.mergeCells(`C${startRow}:C${endRow}`); // Absent
           worksheet.mergeCells(`D${startRow}:D${endRow}`); // Leave
           worksheet.mergeCells(`E${startRow}:E${endRow}`); // Holiday
+          worksheet.mergeCells(`F${startRow}:F${endRow}`); // TOTAL SUNDAY
           // worksheet.mergeCells(`G${startRow}:G${endRow}`); // Sunday
-          worksheet.mergeCells(`H${startRow}:H${endRow}`); // Per Day Rate
+          // worksheet.mergeCells(`H${startRow}:H${endRow}`); // Per Day Rate
           worksheet.mergeCells(`I${startRow}:I${endRow}`); // Gross Amount
           worksheet.mergeCells(`J${startRow}:J${endRow}`); // Deduction
           worksheet.mergeCells(`K${startRow}:K${endRow}`); // Net Amount
           worksheet.mergeCells(`L${startRow}:L${endRow}`);
           worksheet.mergeCells(`M${startRow}:M${endRow}`);
+          worksheet.mergeCells(`N${startRow}:N${endRow}`);
         }
       } else if (employeetype === "Teacher") {
         // Add teacher name in the first column, spanning multiple rows
