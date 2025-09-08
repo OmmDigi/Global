@@ -1245,7 +1245,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
       "Absent",
       "Leave",
       "Holiday",
-      "Sunday In Month",
+      "Sunday",
       "Payment Components",
       null,
       "Working Sunday",
