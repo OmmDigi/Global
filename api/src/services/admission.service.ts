@@ -34,7 +34,7 @@ export const doAdmission = async (data: IFillUpForm) => {
 
   const { rows } = await pgClient.query(
     `
-     INSERT INTO fillup_forms (form_name, student_id, declaration_status)
+     INSERT INTO fillup_forms (form_name, student_id ${data.declaration_status !== undefined ? ",declaration_status" : ""})
      VALUES ($1 || nextval('${fillup_form_seq_constant_key}')::TEXT, $2 ${data.declaration_status !== undefined ? ",$3" : ""})
      RETURNING form_name, id
     `,
