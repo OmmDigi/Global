@@ -195,6 +195,7 @@ export default function CreateEmployee() {
   };
   const handleNameChange = (selected: any[]) => {
     setFormData((prev: any) => ({
+      
       ...prev,
       permissions: selected,
     }));
@@ -202,7 +203,6 @@ export default function CreateEmployee() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     try {
       const response = await create(formData as any);
       mutate(
@@ -424,7 +424,6 @@ export default function CreateEmployee() {
     });
   };
 
-  console.log(formData?.permissions);
 
   return (
     <div>

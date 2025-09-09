@@ -443,7 +443,10 @@ function page() {
                 Don&apos;t Close or Refreash this page
               </p>{" "}
             </div>
-
+       <div className="p-4 bg-gray-100 rounded-lg shadow-sm flex justify-center items-center mb-3">
+        {/* ghfghf */}
+        {feesStructure?.data?.course_name}
+       </div>
             <form onSubmit={handleSubmit2} className="space-y-6">
               <div className="p-4 bg-gray-100 rounded-lg shadow-sm flex justify-center items-center">
                 <div className="space-y-6">

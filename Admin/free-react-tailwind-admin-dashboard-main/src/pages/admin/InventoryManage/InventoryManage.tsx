@@ -42,7 +42,6 @@ export default function InventoryManage() {
     isLoading: inventoryLoding,
     mutate,
   } = useSWR(`api/v2/inventory/item?page=${pageCount}`, getFetcher);
-  console.log("inventoryList", inventoryList);
 
   // create inventory
   const { trigger: create } = useSWRMutation(
@@ -69,7 +68,6 @@ export default function InventoryManage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    console.log("formdataaa", formData);
 
     try {
       const response = await create(formData as any);
@@ -77,7 +75,6 @@ export default function InventoryManage() {
         type: "success",
         content: response.message,
       });
-      console.log("Upload Success:", response);
       mutate();
       setFormData({
         // item_id: 0,
@@ -90,7 +87,6 @@ export default function InventoryManage() {
         type: "error",
         content: error.response?.data?.message,
       });
-      console.log("Upload Error:", error);
     }
   };
   const handleChange = (
@@ -99,7 +95,6 @@ export default function InventoryManage() {
     >
   ) => {
     const { name, value } = e.target;
-    console.log("vendor", value, name);
 
     setFormData((prev) => ({
       ...prev,
@@ -134,7 +129,6 @@ export default function InventoryManage() {
         type: "success",
         content: response.message,
       });
-      console.log("Upload Success:", response);
       setAddInventoryItem(false);
 
       setFormData({
@@ -148,7 +142,6 @@ export default function InventoryManage() {
         type: "error",
         content: error.response?.data?.message,
       });
-      console.log("Upload Error:", error);
     }
   };
 

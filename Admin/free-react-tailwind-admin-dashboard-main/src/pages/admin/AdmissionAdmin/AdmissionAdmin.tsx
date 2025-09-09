@@ -222,7 +222,6 @@ export default function AdmissionAdmin() {
     // Array.from(files).forEach((files) => {
     //   const reader = new FileReader();
     //   reader.onload = (event) => {
-    //     console.log("Preview:",files);
     //   };
     //   reader.readAsDataURL(files);
     // });
@@ -346,7 +345,6 @@ export default function AdmissionAdmin() {
       setMontessoriTeachers(true);
       const response = await getFetcher(`api/v1/admission/form/${id}`);
       const userData = JSON.parse(response?.data?.admission_details ?? "{}");
-      console.log("userData", userData);
 
       const tempObj: any = {};
 
@@ -461,7 +459,6 @@ export default function AdmissionAdmin() {
       [name]: value,
     }));
     const courseId = parseInt(e.target.value);
-    console.log("courseId", courseId);
 
     setSelectedCourseId(courseId as any);
   };
@@ -474,7 +471,6 @@ export default function AdmissionAdmin() {
   const selectedCourse = Array.isArray(courseList?.data)
     ? courseList?.data?.find((course: any) => course.id == selectedCourseId)
     : null;
-  console.log("selectedCourse", selectedCourse?.admission_fee);
 
   return (
     <div>

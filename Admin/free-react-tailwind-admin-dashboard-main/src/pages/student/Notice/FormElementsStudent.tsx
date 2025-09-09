@@ -22,7 +22,6 @@
 //     setMessage("");
 //     setSelectedValues([]);
 //     setDropdownOpen("");
-//     console.log("Submitted Values:", {
 //       selectedValues,
 //       title,
 //       message,

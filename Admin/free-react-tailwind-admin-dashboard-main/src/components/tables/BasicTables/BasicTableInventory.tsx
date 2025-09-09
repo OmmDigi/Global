@@ -49,7 +49,6 @@ const BasicTableInventory: React.FC<IProps> = ({
   const [closingStock, setClosingStock] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | null>(today);
   const [minimum_quantity, setMinimum_quantity] = useState("");
-  console.log("selectedDate", selectedDate);
 
   // vandorlist
   const { data: vendorList } = useSWR("api/v1/vendor", getFetcher);
@@ -138,7 +137,6 @@ const BasicTableInventory: React.FC<IProps> = ({
     } else {
       payload = { item_id: id, transaction_type: formType, ...formData };
     }
-    console.log("✅ Final Form Data:", payload);
     try {
       const response = await create(payload as any);
 

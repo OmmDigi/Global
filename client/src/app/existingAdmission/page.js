@@ -134,43 +134,7 @@ function page() {
     }
   };
 
-  const handleChangePayment = (e, item) => {
-    const { checked } = e.target;
-    const id = item.fee_head_id;
-    setCheckedItems((prev) => ({
-      ...prev,
-      [id]: checked,
-    }));
-
-    if (checked) {
-      setFormData2((prev) => {
-        const updatedFeeStructure = prev.fee_structure_info.filter(
-          (fee) => fee.fee_head_id !== id
-        );
-
-        const amount = enteredAmounts[id] ?? item.amount;
-
-        return {
-          ...prev,
-          fee_structure_info: [
-            ...updatedFeeStructure,
-            {
-              fee_head_id: id,
-              custom_min_amount: amount,
-            },
-          ],
-        };
-      });
-    } else {
-      // Remove from fee_structure_info if unchecked
-      setFormData2((prev) => ({
-        ...prev,
-        fee_structure_info: prev.fee_structure_info.filter(
-          (fee) => fee.fee_head_id !== id
-        ),
-      }));
-    }
-  };
+ 
 
   const handleAmountChange = (e, item) => {
     const value = Number(e.target.value);
@@ -399,7 +363,7 @@ function page() {
                         className="flex flex-col gap-1"
                       >
                         <div className="flex items-center gap-4">
-                          <input
+                          {/* <input
                             type="checkbox"
                             checked={
                               checkedItems[item.fee_head_id] ?? item.required
@@ -411,7 +375,7 @@ function page() {
                               }
                               handleChangePayment(e, item);
                             }}
-                          />
+                          /> */}
 
                           <label className="flex-1">
                             {item.fee_head_name} : ₹{item.amount}

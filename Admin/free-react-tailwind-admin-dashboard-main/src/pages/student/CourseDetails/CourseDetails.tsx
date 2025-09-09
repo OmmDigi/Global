@@ -16,10 +16,7 @@ export default function CourseDetails() {
 
   const [enteredAmounts, setEnteredAmounts] = useState<any>({});
 
-  const formData2 = {
-    form_id: "",
-    fee_structure_info: [],
-  };
+ 
   const { id } = useParams();
 
   const {
@@ -39,7 +36,6 @@ export default function CourseDetails() {
   if (feesStructureLoading) {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }
-  console.log("feesStructure", feesStructure);
 
   const handleAmountChange = (e: any, item: any) => {
     const value = e.target.value;
@@ -54,7 +50,6 @@ export default function CourseDetails() {
   // api/v1/payment/create-order
   const handleSubmit2 = async (e: any) => {
     e.preventDefault();
-    console.log("formData2:", formData2);
     const fee_structure_info = feesStructure?.data?.fee_structure_info?.map(
       (item: any) => ({
         fee_head_id: item.fee_head_id,
@@ -68,7 +63,6 @@ export default function CourseDetails() {
     };
 
     // setFormData2(finalFormData);
-    console.log("Submitted FormData:", finalFormData);
     startTransition(async () => {
       try {
         const response = await create2(finalFormData as any);
@@ -85,7 +79,6 @@ export default function CourseDetails() {
             ? error?.response?.data?.message
             : "Try Again",
         });
-        console.log("Upload Error:", error);
       }
     });
   };
@@ -104,7 +97,6 @@ export default function CourseDetails() {
 
   const fees_structure_table = feesStructure?.data?.payments_history;
 
-  console.log("bssFees", admissionFees);
 
   const submitClick = async () => {
     const newFormDate = { form_id: id };
@@ -122,7 +114,6 @@ export default function CourseDetails() {
           ? error.response?.data?.message
           : " try again ",
       });
-      console.log("Upload Error:", error);
     }
   };
 

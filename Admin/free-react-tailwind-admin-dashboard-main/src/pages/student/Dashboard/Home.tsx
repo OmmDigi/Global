@@ -14,8 +14,7 @@ export default function Home() {
     if (token) localStorage.setItem("token", token);
     if (category) localStorage.setItem("category", category);
 
-    console.log("Token:", window.location.search);
-    console.log("Category:", category);
+   
   }, []);
 
   const {
@@ -26,7 +25,6 @@ export default function Home() {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }
 
-  console.log("courseList", courseList);
 
   return (
     <>

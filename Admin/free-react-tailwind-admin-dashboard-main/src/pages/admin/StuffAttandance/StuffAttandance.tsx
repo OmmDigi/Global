@@ -20,10 +20,8 @@ export default function StuffAttandance() {
   if (attandanceError) {
     console.log("stuffError", attandanceError);
   }
-  console.log("attandancelist", attandancelist);
 
   const today = new Date();
-  console.log("today", dayjs(today).format("DD-MM-YYYY"));
 
   return (
     <div>

@@ -14,7 +14,6 @@ export default function StaffPayslip() {
   // Function to capture selected role
   const handleRoleChange = (value: "Stuff" | "Teacher") => {
     setRole(value);
-    console.log("Selected Role:", value);
   };
   const {
     data: attandancelist,
@@ -23,15 +22,14 @@ export default function StaffPayslip() {
   } = useSWR(`api/v1/users/payslip?category=${role}&month=${dayjs(today).format("YYYY-MM")}`, getFetcher);
 
   if (attandanceLoading) {
+    
     console.log("loading", attandanceLoading);
   }
   if (attandanceError) {
     console.log("stuffError", attandanceError);
   }
-  console.log("attandancelist", attandancelist);
 
  
-  console.log("today", dayjs(today).format("DD-MM-YYYY"));
 
   return (
     <div>
