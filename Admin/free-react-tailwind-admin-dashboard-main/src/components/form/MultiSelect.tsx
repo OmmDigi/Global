@@ -165,7 +165,7 @@
 
 // export default MultiSelect;
 
-import { useState } from "react";
+import {  useEffect, useState } from "react";
 import { MultiSelectOption } from "../../types";
 interface MultiSelectProps {
   label: string;
@@ -182,14 +182,14 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   disabled = false,
 }) => {
   const [selectedOptions, setSelectedOptions] = useState<string[]>(
-    () => defaultSelected
+    []
   );
   const [isOpen, setIsOpen] = useState(false);
 
   // 🔑 Keep selectedOptions in sync with defaultSelected (e.g. after edit load)
-  // useEffect(() => {
-  //   setSelectedOptions(defaultSelected);
-  // }, [defaultSelected]);
+  useEffect(() => {
+    setSelectedOptions(defaultSelected);
+  }, [defaultSelected]);
 
   const toggleDropdown = () => {
     if (!disabled) setIsOpen((prev) => !prev);
@@ -197,15 +197,15 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
 
   const handleSelect = (optionValue: string) => {
     const newSelectedOptions = selectedOptions.includes(optionValue)
-      ? selectedOptions.filter((id) => id !== optionValue)
+      ? selectedOptions.filter((id) => id != optionValue)
       : [...selectedOptions, optionValue];
 
     setSelectedOptions(newSelectedOptions);
-    // onChange?.(newSelectedOptions);
+    onChange?.(newSelectedOptions);
   };
 
   const removeOption = (id: string) => {
-    const newSelectedOptions = selectedOptions.filter((opt) => opt !== id);
+    const newSelectedOptions = selectedOptions.filter((opt) => opt != id);
     setSelectedOptions(newSelectedOptions);
     onChange?.(newSelectedOptions);
   };
@@ -219,9 +219,10 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
 
   const selectedValuesText =
     options.filter((option) =>
-      selectedOptions.includes(option.id.toString())
+      selectedOptions.includes(option.id as any)
     ) ?? ([] as MultiSelectOption[]);
 
+    
   return (
     <div className="w-full">
       <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">

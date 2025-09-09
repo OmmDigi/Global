@@ -20,7 +20,6 @@ export default function ManageLeave() {
   );
   if (leaveLoading) {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
-    console.log("leaveList", leaveList);
   }
 
   const handleChange = async (value: any, id: number, employee_id: number) => {
@@ -37,7 +36,6 @@ export default function ManageLeave() {
         type: "success",
         content: response.message,
       });
-      console.log("Upload Success:", response);
     } catch (error: any) {
       messageApi.open({
         type: "error",
@@ -45,7 +43,6 @@ export default function ManageLeave() {
           ? error.response?.data?.message
           : "try Again",
       });
-      console.log("Upload Error:", error);
     }
   };
 

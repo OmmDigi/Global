@@ -83,7 +83,6 @@ export default function PurchaseRecord() {
         type: "success",
         content: response.message,
       });
-      console.log("Upload Success:", response);
       setPhoto(null);
       setFormData({
         file: "",
@@ -102,7 +101,6 @@ export default function PurchaseRecord() {
         type: "error",
         content: error.response?.data?.message,
       });
-      console.log("Upload Error:", error);
     }
   };
   const handleChange = (
@@ -131,7 +129,6 @@ export default function PurchaseRecord() {
         }
       };
 
-      console.log("formData2", file);
       reader.readAsDataURL(file);
 
       uploadFiles({
@@ -190,7 +187,6 @@ export default function PurchaseRecord() {
         type: "success",
         content: response.message,
       });
-      console.log("Upload Success:", response);
       setPhoto(null);
       setId(0);
       setPurchaseRecord(false);
@@ -214,7 +210,6 @@ export default function PurchaseRecord() {
           ? error.response?.data?.message
           : "Try Again ",
       });
-      console.log("Upload Error:", error);
     }
   };
   const handleTeacherShow = () => {

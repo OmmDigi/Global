@@ -35,12 +35,10 @@ export default function CreateLeave() {
 
   if (leaveLoading) {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
-    console.log("leaveList", leaveList);
   }
 
 
   // get course list
-  console.log("dateRange", dayjs(dateRange[0]).format("YYYY-MM-DD"));
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -62,7 +60,6 @@ export default function CreateLeave() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("form1", newFormDate);
     try {
       const response = await create(newFormDate as any);
       messageApi.open({
@@ -70,7 +67,6 @@ export default function CreateLeave() {
         content: response.message,
       });
       mutate("api/v1/users/leave");
-      console.log("Upload Success:", response);
 
       setFormData({
         date: [],
@@ -83,7 +79,6 @@ export default function CreateLeave() {
           ? error.response?.data?.message
           : " try again ",
       });
-      console.log("Upload Error:", error);
     }
   };
 

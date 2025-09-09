@@ -9,6 +9,7 @@ import { getFetcher, postFetcher } from "../../../api/fatcher";
 import useSWRMutation from "swr/mutation";
 import useSWR from "swr";
 import BasicTableCourseDetailsAdmin from "../../../components/tables/BasicTables/BasicTableCourseDetailsAdmin";
+import Input from "../../../components/form/input/InputField";
 
 export default function CourseDetailsAdmin() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -17,7 +18,11 @@ export default function CourseDetailsAdmin() {
   const [enteredAmounts, setEnteredAmounts] = useState<any>({});
   const [paymentMode, setPaymentMode] = useState("");
   const [paymentDetails, setPaymentDetails] = useState("");
-
+  const [maxValue, setMaxValue] = useState(0);
+  const [formData, setFormData] = useState({
+    fee_head_id: "",
+    amount: "",
+  });
   const { id } = useParams();
 
   useEffect(() => {
@@ -26,7 +31,6 @@ export default function CourseDetailsAdmin() {
     const category = query.get("category");
     if (token) localStorage.setItem("token", token);
     if (category) localStorage.setItem("category", category);
-
   }, []);
 
   //   get Fees head
@@ -49,7 +53,7 @@ export default function CourseDetailsAdmin() {
     const value = e.target.value;
     const id = item.fee_head_id;
 
-    setEnteredAmounts((prev:any) => ({
+    setEnteredAmounts((prev: any) => ({
       ...prev,
       [id]: value,
     }));
@@ -97,9 +101,49 @@ export default function CourseDetailsAdmin() {
     setPaymentMode("");
   };
 
-  // const mutateClick = () => {
-  //   mutate();
-  // };
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const payload = {
+      form_id: id,
+      payment_mode: "Discount",
+      payment_details: "Discount",
+      fee_structure_info: [
+        {
+          fee_head_id: formData.fee_head_id,
+          custom_min_amount: formData.amount,
+        },
+      ],
+    };
+
+    try {
+      const response = await create(payload as any);
+
+      messageApi.open({
+        type: "success",
+        content: response.message,
+      });
+      refetch();
+      setFormData({
+        fee_head_id: "",
+        amount: "",
+      });
+    } catch (error: any) {
+      messageApi.open({
+        type: "error",
+        content: error.response?.data?.message,
+      });
+    }
+  };
 
   const fees_structure_table = feesStructure?.data?.payments_history;
   return (
@@ -165,9 +209,76 @@ export default function CourseDetailsAdmin() {
                     </span>{" "}
                   </Label>
                 </div>
+                 {feesStructure?.data?.total_discount 
+                 ? 
+                 <div >
+                  <Label htmlFor={`inputTwo`} className={`${
+                   Number(feesStructure?.data?.total_discount) === 0
+                   ? "dark:text-green-500 text-orange-500"
+                   : "dark:text-orange-400 text-orange-500"
+                   }` }>
+                    Total Discount : {feesStructure?.data?.total_discount}
+                  </Label>
+                </div>
+                      : ""}
               </div>
               <div className="flex flex-wrap justify-center items-center gap-6"></div>
             </div>
+          </ComponentCard>
+          <ComponentCard title="Discount Section">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                <div>
+                  <Label htmlFor="inputTwo">Choose Fee</Label>
+                  <select
+                    name="fee_head_id"
+                    value={formData.fee_head_id}
+                    onChange={(e) => {
+                      const selected =
+                        feesStructure?.data?.fee_structure_info.find(
+                          (opt: any) =>
+                            opt.fee_head_id === Number(e.target.value)
+                        );
+                      setFormData((prev) => ({
+                        ...prev,
+                        fee_head_id: e.target.value,
+                      }));
+                      if (selected) setMaxValue(selected.due_amount); // ✅ set max value here
+                    }}
+                    className="w-auto px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                  >
+                    <option value="">Choose</option>
+                    {feesStructure?.data?.fee_structure_info?.map(
+                      (opt: any, i: number) => (
+                        <option key={i} value={opt.fee_head_id}>
+                          {opt.fee_head_name}
+                        </option>
+                      )
+                    )}
+                  </select>
+                </div>
+                <div>
+                  <Label htmlFor="inputTwo">Discount Amount</Label>
+                  <Input
+                    type="number"
+                    name="amount"
+                    max={`${maxValue}`}
+                    placeholder="discount"
+                    value={formData.amount}
+                    onChange={handleChange}
+                    className="flex-1 border px-3 py-1 rounded-md"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-center">
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                >
+                  Submit
+                </button>
+              </div>
+            </form>
           </ComponentCard>
         </div>
         <div className="space-y-6 ">
@@ -233,16 +344,7 @@ export default function CourseDetailsAdmin() {
                         );
                       }
                     )}
-                    {/* <Radio.Group
-                      style={{ ...style, color: "red" }}
-                      onChange={onChange}
-                      value={paymentMode}
-                      options={[
-                        { value: "Online", label: "Online" },
-                        { value: "Cash", label: "Cash" },
-                        { value: "Cheque", label: "Cheque" },
-                      ]}
-                    /> */}
+
                     <Radio.Group
                       onChange={onChange}
                       value={paymentMode}

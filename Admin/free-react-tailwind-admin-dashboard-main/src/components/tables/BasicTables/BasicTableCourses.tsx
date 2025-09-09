@@ -8,10 +8,7 @@ import {
 
 import Switch from "../../form/switch/Switch";
 import dayjs from "dayjs";
-import useSWRMutation from "swr/mutation";
-import { deleteFetcher } from "../../../api/fatcher";
-import { message } from "antd";
-import { mutate } from "swr";
+
 import { useEffect, useState } from "react";
 import Pagination from "../../form/Pagination";
 
@@ -36,22 +33,7 @@ const BasicTableCourses: React.FC<IProps> = ({
   // ) => {
   // };
 
-  // for delete
-  const { trigger: deleteUser } = useSWRMutation(
-    "api/v1/course",
-    (url, { arg }: { arg: number }) => deleteFetcher(`${url}/${arg}`) // arg contains the id
-  );
-  const handleDelete = async (id: number) => {
-    if (!confirm("Are you want to delete")) return;
-    try {
-      await deleteUser(id);
-      message.success("User deleted successfully");
-      mutate("api/v1/course");
-    } catch (error) {
-      console.error("Delete failed:", error);
-      message.error("Failed to delete user");
-    }
-  };
+
   const [count, setCount] = useState(1);
   useEffect(() => {
     onSendData(count);
@@ -165,12 +147,7 @@ const BasicTableCourses: React.FC<IProps> = ({
                     >
                       Edit
                     </button>
-                    <button
-                      onClick={() => handleDelete(order.id)}
-                      className="text-red-500 hover:underline"
-                    >
-                      Delete
-                    </button>
+                 
                   </div>
                 </TableCell>
               </TableRow>

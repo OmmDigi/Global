@@ -17,7 +17,6 @@ export default function StuffAttandancdDetails() {
 
   const onChange: DatePickerProps["onChange"] = (dateString: any) => {
     setDatePicker(dayjs(dateString).format("YYYY-MM"));
-    console.log("dateString",dateString);
   };
 
 
@@ -34,7 +33,6 @@ export default function StuffAttandancdDetails() {
   if (attandanceLoading) {
     console.log("loading", attandanceLoading);
   }
-  console.log("attandanceList", attandanceList);
 
   const attandanceList_table = attandanceList?.data?.attendance_list;
   const data = [

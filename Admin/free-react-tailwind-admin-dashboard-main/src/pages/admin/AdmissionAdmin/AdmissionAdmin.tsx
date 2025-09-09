@@ -222,7 +222,6 @@ export default function AdmissionAdmin() {
     // Array.from(files).forEach((files) => {
     //   const reader = new FileReader();
     //   reader.onload = (event) => {
-    //     console.log("Preview:",files);
     //   };
     //   reader.readAsDataURL(files);
     // });
@@ -346,7 +345,6 @@ export default function AdmissionAdmin() {
       setMontessoriTeachers(true);
       const response = await getFetcher(`api/v1/admission/form/${id}`);
       const userData = JSON.parse(response?.data?.admission_details ?? "{}");
-      console.log("userData", userData);
 
       const tempObj: any = {};
 
@@ -461,7 +459,6 @@ export default function AdmissionAdmin() {
       [name]: value,
     }));
     const courseId = parseInt(e.target.value);
-    console.log("courseId", courseId);
 
     setSelectedCourseId(courseId as any);
   };
@@ -474,7 +471,6 @@ export default function AdmissionAdmin() {
   const selectedCourse = Array.isArray(courseList?.data)
     ? courseList?.data?.find((course: any) => course.id == selectedCourseId)
     : null;
-  console.log("selectedCourse", selectedCourse?.admission_fee);
 
   return (
     <div>
@@ -1199,26 +1195,22 @@ export default function AdmissionAdmin() {
 
                               <div className="text-sm text-gray-700 mb-4 leading-relaxed">
                                 I hereby declare that all the particulars stated
-                                in this application form are true to the best of
-                                my knowledge and belief. In the event of
-                                admission by incorrect or wrong information or
-                                any fact like educational qualification, marks,
-                                category, etc. That I will be liable for the
-                                cancellation of admission by them. Also agree to
-                                abide by all the Rules & Regulation of the
-                                Institute. I further understand that admission
-                                fees once paid can not be refunded. I clearly
-                                understand that false structure of the course
-                                may be changed at any time according to
-                                circulation from Council/University/Institute
-                                College. I also understand that my Admission is
-                                purely provisional subject to that verification
-                                of the eligibility condition as per prescribed
-                                by the board. I acknowledge that the Institute
-                                has full right to add/delete/change the class
-                                schedule, Fee structure, Rule and Regulation as
-                                and when required. All legal cause concerning
-                                GLOBAL TECHNICAL INSTITUTE shall lie within
+                                in this application form are true to the host of
+                                my knowledge and belief. Also agree to able by
+                                all the Rules & Regulation of the Institute. I
+                                further understand that admission fees once paid
+                                can not be refund. I clearly understand that
+                                fees structure of the choise may be changed at
+                                any time according to circulation from council/
+                                University/ Institute College. I also understand
+                                that my Admission is purely provisional subject
+                                to that verification of the eligibility
+                                condition as per perscribed by the board. I
+                                acknowledge that the institute has full right to
+                                add/delete/ change the class schedule. Fees
+                                structure. Rule and Regulation as and when
+                                required. All legal clause Concerning GLOBAL
+                                TECHNICAL INSTITUTE shall lie within
                                 jurisdiction at Beleghata, Phool Bagan, Kolkata.
                               </div>
 
@@ -1313,111 +1305,6 @@ export default function AdmissionAdmin() {
                             </div>
 
                             {/* Office Use Only Section */}
-                            {/* <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
-                                  <h2 className="text-lg font-semibold mb-4 text-gray-800">
-                                    For Office Use Only
-                                  </h2>
-              
-                                  <div className="space-y-4">
-                                    <div>
-                                      <label className="block text-sm text-start text-gray-700 mb-2">
-                                        Admit Rejected with reason
-                                      </label>
-                                      <input
-                                        type="text"
-                                        name="admitRejectedReason"
-                                        value={formData.admitRejectedReason}
-                                        onChange={handleInputChange}
-                                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="Enter reason if rejected"
-                                      />
-                                    </div>
-              
-                                    <div>
-                                      <label className="block text-sm text-start text-gray-700 mb-2">
-                                        Admission No.
-                                      </label>
-                                      <input
-                                        type="text"
-                                        name="admissionNo"
-                                        value={formData.admissionNo}
-                                        onChange={handleInputChange}
-                                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="Enter admission number"
-                                      />
-                                    </div>
-              
-                                    <div>
-                                      <label className="block text-sm text-start text-gray-700 mb-2">
-                                        Remarks
-                                      </label>
-                                      <textarea
-                                        name="remarks"
-                                        value={formData.remarks}
-                                        onChange={handleInputChange}
-                                        rows="3"
-                                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="Enter any remarks"
-                                      />
-                                    </div>
-              
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                                      <div>
-                                        <label className="block text-sm text-start text-gray-700 mb-2">
-                                          Name of Authority
-                                        </label>
-                                        <input
-                                          type="text"
-                                          name="authoritySignature"
-                                          value={formData.authoritySignature}
-                                          onChange={handleInputChange}
-                                          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                          placeholder="Authority signature"
-                                        />
-                                      </div>
-              
-                                      <div>
-                                        <label className="block text-sm text-start text-gray-700 mb-2">
-                                          Name of Principal
-                                        </label>
-                                        <input
-                                          type="text"
-                                          name="principalSignature"
-                                          value={formData.principalSignature}
-                                          onChange={handleInputChange}
-                                          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                          placeholder="Principal signature"
-                                        />
-                                      </div>
-              
-                                      <div>
-                                        <label className="block text-sm text-start text-gray-700 mb-2">
-                                          Date
-                                        </label>
-                                        <input
-                                          type="date"
-                                          name="authorityDate"
-                                          value={formData.authorityDate}
-                                          onChange={handleInputChange}
-                                          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        />
-                                      </div>
-              
-                                      <div>
-                                        <label className="block text-sm text-start text-gray-700 mb-2">
-                                          Date
-                                        </label>
-                                        <input
-                                          type="date"
-                                          name="principalDate"
-                                          value={formData.principalDate}
-                                          onChange={handleInputChange}
-                                          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        />
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div> */}
                           </div>
                         </div>
                       )}

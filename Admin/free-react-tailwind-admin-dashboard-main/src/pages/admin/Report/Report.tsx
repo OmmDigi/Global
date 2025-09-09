@@ -47,7 +47,6 @@ function Report() {
 
   const handleCourseChange = (e: any) => {
     const value = e.target.value;
-    console.log("handleCourseChange", value);
     setCourse(value);
     setExcelFileUrl(null);
     setExcelFileUrlStudent(null);
@@ -98,7 +97,6 @@ function Report() {
     )}&course=${course}&batch=${batch}&mode=${mode}`,
   };
   const handleSearchAccount = () => {
-    console.log("course", course, batch, mode);
     setExcelFileUrl(null);
     startTransition(async () => {
       if (dateRange[0] && dateRange[0] && course && batch) {

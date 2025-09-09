@@ -94,7 +94,6 @@ export default function VendorManage() {
         type: "success",
         content: response.message,
       });
-      console.log("Upload Success:", response);
 
       setFormData({
         name: "",
@@ -107,12 +106,10 @@ export default function VendorManage() {
         type: "error",
         content: error.response?.data?.message,
       });
-      console.log("Upload Error:", error);
     }
   };
 
   // const handleActive = async (isActive: boolean, id: number) => {
-  //   console.log("isactiveaaaa ", isActive);
 
   //   try {
   //     const response = await update({
@@ -125,13 +122,11 @@ export default function VendorManage() {
   //       type: "success",
   //       content: response.message,
   //     });
-  //     console.log("Upload Success:", response);
   //   } catch (error: any) {
   //     messageApi.open({
   //       type: "error",
   //       content: error.response?.data?.message,
   //     });
-  //     console.log("Upload Error:", error);
   //   }
   // };
 
@@ -162,7 +157,6 @@ export default function VendorManage() {
           ? error.response?.data?.message
           : " try again ",
       });
-      console.log("Upload Error:", error);
     }
   };
   const jumpToTop = () => {

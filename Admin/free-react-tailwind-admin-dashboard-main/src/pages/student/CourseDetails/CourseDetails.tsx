@@ -16,10 +16,7 @@ export default function CourseDetails() {
 
   const [enteredAmounts, setEnteredAmounts] = useState<any>({});
 
-  const formData2 = {
-    form_id: "",
-    fee_structure_info: [],
-  };
+ 
   const { id } = useParams();
 
   const {
@@ -28,8 +25,9 @@ export default function CourseDetails() {
     mutate: refetch,
   } = useSWR(`api/v1/users/admission/${id}`, getFetcher);
 
-   const { trigger: create } = useSWRMutation("api/v1/admission/accept-declaration-status", (url, { arg }) =>
-    patchFetcher(url, arg)
+  const { trigger: create } = useSWRMutation(
+    "api/v1/admission/accept-declaration-status",
+    (url, { arg }) => patchFetcher(url, arg)
   );
   const { trigger: create2 } = useSWRMutation(
     "api/v1/payment/create-order",
@@ -38,7 +36,6 @@ export default function CourseDetails() {
   if (feesStructureLoading) {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }
-  console.log("feesStructure", feesStructure);
 
   const handleAmountChange = (e: any, item: any) => {
     const value = e.target.value;
@@ -53,7 +50,6 @@ export default function CourseDetails() {
   // api/v1/payment/create-order
   const handleSubmit2 = async (e: any) => {
     e.preventDefault();
-    console.log("formData2:", formData2);
     const fee_structure_info = feesStructure?.data?.fee_structure_info?.map(
       (item: any) => ({
         fee_head_id: item.fee_head_id,
@@ -67,7 +63,6 @@ export default function CourseDetails() {
     };
 
     // setFormData2(finalFormData);
-    console.log("Submitted FormData:", finalFormData);
     startTransition(async () => {
       try {
         const response = await create2(finalFormData as any);
@@ -84,7 +79,6 @@ export default function CourseDetails() {
             ? error?.response?.data?.message
             : "Try Again",
         });
-        console.log("Upload Error:", error);
       }
     });
   };
@@ -92,26 +86,18 @@ export default function CourseDetails() {
   // const mutateClick = () => {
   //   mutate();
   // };
-  const admissionFees = feesStructure?.data?.fee_structure_info
-    ?.map((item: any, ) => {
-      if (item.fee_head_id === 3) {
-        return item.price;
-      }
-      return null; // so every iteration has a return
-    })
-    .filter((price: number | null) => price !== null);
+  const admissionFees = feesStructure?.data?.fee_structure_info?.find(
+    (item: any) => item.fee_head_id == 3
+  );
+  // .filter((price: number | null) => price !== null);
 
-  const bssFees = feesStructure?.data?.fee_structure_info
-    ?.map((item: any, ) => {
-      if (item.fee_head_id === 6) {
-        return item.price;
-      }
-      return null; // so every iteration has a return
-    })
-    .filter((price: number | null) => price !== null);
+  const bssFees = feesStructure?.data?.fee_structure_info?.find(
+    (item: any) => item.fee_head_id === 6
+  );
+
   const fees_structure_table = feesStructure?.data?.payments_history;
 
- 
+
   const submitClick = async () => {
     const newFormDate = { form_id: id };
     try {
@@ -120,7 +106,7 @@ export default function CourseDetails() {
         type: "success",
         content: response.message,
       });
-      refetch()
+      refetch();
     } catch (error: any) {
       messageApi.open({
         type: "error",
@@ -128,7 +114,6 @@ export default function CourseDetails() {
           ? error.response?.data?.message
           : " try again ",
       });
-      console.log("Upload Error:", error);
     }
   };
 
@@ -178,7 +163,7 @@ export default function CourseDetails() {
                     type="number"
                     readOnly
                     name="admissionFeeAmount"
-                    value={admissionFees}
+                    value={admissionFees?.price ?? 0}
                     // onChange={handleInputChange}
                     className="mx-2 w-30 p-1 border border-gray-300 rounded text-center"
                   />
@@ -210,7 +195,7 @@ export default function CourseDetails() {
                       type="number"
                       readOnly
                       name="bssRegistrationFee"
-                      value={bssFees ? bssFees : "0"}
+                      value={bssFees.price}
                       // onChange={handleInputChange}
                       className="mx-2 w-30 p-1 border border-gray-300 rounded text-center"
                     />
@@ -220,18 +205,19 @@ export default function CourseDetails() {
                   </p>
                 </div>
               </div>
-              <div className="flex justify-center">
-                <button
-                  type="submit"
-                  onClick={submitClick}
-                  className="bg-blue-200 p-4 hover:bg-blue-400 hover:text-gray-100 text-lg rounded-4xl"
-                >
-                  I Agree
-                </button>
-              </div>
             </div>
           ) : null}
-
+          {admissionFees || bssFees ? (
+            <div className="flex justify-center">
+              <button
+                type="submit"
+                onClick={submitClick}
+                className="bg-blue-200 p-4 hover:bg-blue-400 hover:text-gray-100 text-lg rounded-4xl"
+              >
+                I Agree
+              </button>
+            </div>
+          ) : null}
           {/* Signature Section */}
         </div>
       ) : null}
@@ -301,6 +287,23 @@ export default function CourseDetails() {
                           </span>{" "}
                         </Label>
                       </div>
+                      {feesStructure?.data?.total_discount > 0 ? (
+                        <div>
+                          <Label
+                            htmlFor={`inputTwo`}
+                            className={`${
+                              Number(feesStructure?.data?.total_discount) === 0
+                                ? "dark:text-green-500 text-orange-500"
+                                : "dark:text-orange-400 text-orange-500"
+                            }`}
+                          >
+                            Total Discount :{" "}
+                            {feesStructure?.data?.total_discount}
+                          </Label>
+                        </div>
+                      ) : (
+                        ""
+                      )}
                     </div>
                     <div className="flex flex-wrap justify-center items-center gap-6"></div>
                   </div>

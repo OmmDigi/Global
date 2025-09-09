@@ -73,7 +73,6 @@ export default function Session() {
         type: "success",
         content: response.message,
       });
-      console.log("Upload Success:", response);
 
       setFormData({
         name: "",
@@ -83,12 +82,10 @@ export default function Session() {
         type: "error",
         content: error.response?.data?.message,
       });
-      console.log("Upload Error:", error);
     }
   };
 
   const handleActive = async (isActive: boolean, id: number) => {
-    console.log("isactiveaaaa ", isActive);
 
     type UpdateFormPayload = {
       id: string | number; // depends on your API, choose one
@@ -105,19 +102,16 @@ export default function Session() {
         type: "success",
         content: response.message,
       });
-      console.log("Upload Success:", response);
     } catch (error: any) {
       messageApi.open({
         type: "error",
         content: error.response?.data?.message,
       });
-      console.log("Upload Error:", error);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("form", formData);
     try {
       const response = await create(formData as any);
       //   mutate(
@@ -128,7 +122,6 @@ export default function Session() {
         type: "success",
         content: response.message,
       });
-      console.log("Upload Success:", response);
 
       setFormData({
         name: "",
@@ -140,7 +133,6 @@ export default function Session() {
           ? error.response?.data?.message
           : " try again ",
       });
-      console.log("Upload Error:", error);
     }
   };
   const jumpToTop = () => {

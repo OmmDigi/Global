@@ -176,9 +176,7 @@
 //     e.preventDefault();
 //     setMontessoriTeachers(true);
 
-//     console.log("Form Data:", formData);
-//     console.log("Photo:", photo);
-//     console.log("Signature:", signature);
+//   
 //     alert("Form submitted successfully!");
 //   };
 

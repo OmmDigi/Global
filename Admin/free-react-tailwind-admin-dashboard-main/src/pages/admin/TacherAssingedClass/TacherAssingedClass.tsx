@@ -45,7 +45,6 @@ export default function TacherAssingedClass() {
     getFetcher
   );
 
-  console.log("selectedDate", selectedDate);
 
   useEffect(() => {
     if (teacherList?.data) {
@@ -67,7 +66,6 @@ export default function TacherAssingedClass() {
   if (courseLoading) {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }
-  console.log("teacherList", teacherList);
 
   // increment count
   //   const handleIncrement = (
@@ -124,7 +122,6 @@ export default function TacherAssingedClass() {
     value: any
   ) => {
     setSubmit(teacherId);
-    // console.log("Handling change:", { teacherId, courseId, field, value });
 
     setData((prev) => {
       const updated = prev.map((teacher) =>
@@ -138,7 +135,6 @@ export default function TacherAssingedClass() {
           : teacher
       );
 
-      console.log("Updated inside setData:", updated);
       return updated;
     });
   };
@@ -146,7 +142,6 @@ export default function TacherAssingedClass() {
   // Save only that teacher’s row
   const handleSave = async (teacherId: number) => {
     const updatedTeacher = data.find((teacher) => teacher.id === teacherId);
-    // console.log("teacherList", data);
 
     try {
       const response = await update(updatedTeacher as any);
@@ -154,7 +149,6 @@ export default function TacherAssingedClass() {
         type: "success",
         content: response.message,
       });
-      console.log("Upload Success:", response);
       setSubmit(0);
       // setData([]);
     } catch (error: any) {
@@ -163,7 +157,6 @@ export default function TacherAssingedClass() {
         content: error.response?.data?.message,
       });
     }
-    // console.log("Saving only this row:", updatedTeacher);
   };
 
   return (
