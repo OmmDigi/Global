@@ -5,7 +5,7 @@ import ComponentCard from "../../../components/common/ComponentCard";
 import Label from "../../../components/form/Label";
 import Input from "../../../components/form/input/InputField";
 
-// import useSWR, { mutate } from "swr";
+
 import useSWRMutation from "swr/mutation";
 import { getFetcher, postFetcher, putFetcher } from "../../../api/fatcher";
 import { message } from "antd";
@@ -73,15 +73,12 @@ export default function InventoryManage() {
 
     try {
       const response = await create(formData as any);
-      mutate(
-        (currentData: any) => [...(currentData || []), response.data],
-        false
-      );
       messageApi.open({
         type: "success",
         content: response.message,
       });
       console.log("Upload Success:", response);
+      mutate();
       setFormData({
         // item_id: 0,
         item_name: "",

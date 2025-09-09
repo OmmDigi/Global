@@ -36,9 +36,9 @@ const BasicTableInventory: React.FC<IProps> = ({
 
   const [formType, setFormType] = useState<"add" | "consume" | null>(null);
   const [formData, setFormData] = useState({
-    quantity: "",
+  
     transaction_date: "",
-    vendors: [{ vendor: "", cost_per_unit: "" }],
+    vendors: [{ vendor: "", cost_per_unit: "",quantity:"" }],
     remark: "",
   });
   const today = new Date();
@@ -48,7 +48,7 @@ const BasicTableInventory: React.FC<IProps> = ({
   const [id, setId] = useState("");
   const [closingStock, setClosingStock] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | null>(today);
-  const [ minimum_quantity , setMinimum_quantity] = useState("")
+  const [minimum_quantity, setMinimum_quantity] = useState("");
   console.log("selectedDate", selectedDate);
 
   // vandorlist
@@ -67,7 +67,7 @@ const BasicTableInventory: React.FC<IProps> = ({
     avilable_quantity: string,
     vendor: "",
     vendorId: "",
-    minimum_quantity:"",
+    minimum_quantity: ""
   ) => {
     setFormType(type);
     setItemName(name);
@@ -75,11 +75,11 @@ const BasicTableInventory: React.FC<IProps> = ({
     setClosingStock(avilable_quantity);
     setVendor(vendor);
     setVendorId(vendorId);
-    setMinimum_quantity(minimum_quantity)
+    setMinimum_quantity(minimum_quantity);
     setFormData({
-      quantity: "",
+     
       transaction_date: `${dayjs(new Date()).format("YYYY-MM-DD")}`,
-      vendors: [{ vendor: "", cost_per_unit: "" }],
+      vendors: [{ vendor: "", cost_per_unit: "",quantity:"" }],
       remark: "",
     });
   };
@@ -113,7 +113,7 @@ const BasicTableInventory: React.FC<IProps> = ({
   const handleAddMore = () => {
     setFormData((prev) => ({
       ...prev,
-      vendors: [...prev.vendors, { vendor: "", cost_per_unit: "" }],
+      vendors: [...prev.vendors, { vendor: "", cost_per_unit: "",quantity:"" }],
     }));
   };
 
@@ -148,9 +148,9 @@ const BasicTableInventory: React.FC<IProps> = ({
       });
       mutate();
       setFormData({
-        quantity: "",
+        
         transaction_date: "",
-        vendors: [{ vendor: "", cost_per_unit: "" }],
+        vendors: [{ vendor: "", cost_per_unit: "",quantity:"" }],
 
         remark: "",
       });
@@ -280,7 +280,13 @@ const BasicTableInventory: React.FC<IProps> = ({
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   {order.minimum_quantity}
                 </TableCell>
-                <TableCell className={`px-4 py-3 ${ order.avilable_quantity < order.minimum_quantity ? "text-red-500" : "text-gray-500" }   text-start text-theme-sm`}>
+                <TableCell
+                  className={`px-4 py-3 ${
+                    order.avilable_quantity < order.minimum_quantity
+                      ? "text-red-500"
+                      : "text-gray-500"
+                  }   text-start text-theme-sm`}
+                >
                   {order.avilable_quantity}
                 </TableCell>
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
@@ -297,7 +303,7 @@ const BasicTableInventory: React.FC<IProps> = ({
                         order.avilable_quantity,
                         order.vendor_name,
                         order.vendor_id,
-                        order.minimum_quantity,
+                        order.minimum_quantity
                       )
                     }
                     className="px-4 py-3 rounded-3xl text-xl bg-green-200 text-gray-900"
@@ -315,8 +321,7 @@ const BasicTableInventory: React.FC<IProps> = ({
                         order.avilable_quantity,
                         order.vendor_name,
                         order.vendor_id,
-                        order.minimum_quantity,
-
+                        order.minimum_quantity
                       )
                     }
                     className="px-4 py-3 rounded-3xl text-xl bg-gray-400 text-gray-900"
@@ -376,27 +381,31 @@ const BasicTableInventory: React.FC<IProps> = ({
             >
               {/* Quantity & Date */}
               <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-                <div className=" text-gray-500  dark:text-gray-400">
-                  <label htmlFor="quantity">
-                    {formType === "add" ? "Added Quantity" : "Issued Quantity"}
-                  </label>
-                  <input
-                    type="number"
-                    name="quantity"
-                    max={formType === "add" ? "" : closingStock}
-                    placeholder={
-                      formType === "add" ? "Added Quantity" : "Issued Quantity"
-                    }
-                    value={formData.quantity}
-                    onChange={handleChange}
-                    className="w-full p-2 border rounded"
-                  />
-                  <p className={`text-xs ${closingStock <= minimum_quantity ? "text-red-400" : "text-gray-400"} `}>
-                    {formType === "add"
-                      ? ""
-                      : `You have Quantity ${closingStock}`}
-                  </p>
-                </div>
+                {/* {formType === "add" ? (
+                  ""
+                ) : (
+                  <div className=" text-gray-500  dark:text-gray-400">
+                    <label htmlFor="quantity">{"Issued Quantity"}</label>
+                    <input
+                      type="number"
+                      name="quantity"
+                      max={closingStock}
+                      placeholder={"Issued Quantity"}
+                      value={formData.quantity}
+                      onChange={handleChange}
+                      className="w-full p-2 border rounded"
+                    />
+                    <p
+                      className={`text-xs ${
+                        closingStock <= minimum_quantity
+                          ? "text-red-400"
+                          : "text-gray-400"
+                      } `}
+                    >
+                      {`You have Quantity ${closingStock}`}
+                    </p>
+                  </div>
+                )} */}
 
                 <div className=" text-gray-500 flex flex-col dark:text-gray-400">
                   <label htmlFor="date">Date</label>
@@ -414,7 +423,7 @@ const BasicTableInventory: React.FC<IProps> = ({
                       }));
                     }}
                     dateFormat="yyyy-MM-dd"
-                    className="w-full border rounded px-3 py-2"
+                    className="w-full border rounded px-3 mb-10 py-2"
                     placeholderText="Select a date"
                   />
                 </div>
@@ -422,6 +431,7 @@ const BasicTableInventory: React.FC<IProps> = ({
 
               {/* Vendors Section */}
               <div className="space-y-5">
+                 {formType === "add" ? 
                 <div className="flex justify-end">
                   <button
                     disabled={formType === "add" ? false : true}
@@ -432,11 +442,12 @@ const BasicTableInventory: React.FC<IProps> = ({
                     + Add More
                   </button>
                 </div>
+                : "" }
 
                 {formData.vendors.map((item, index) => (
                   <div
                     key={index}
-                    className="grid grid-cols-1 xl:grid-cols-2 gap-6 relative  "
+                    className="grid grid-cols-1 xl:grid-cols-3 gap-6 relative  "
                   >
                     {/* ❌ Remove Button */}
                     {formData.vendors.length > 1 && (
@@ -493,6 +504,29 @@ const BasicTableInventory: React.FC<IProps> = ({
                         onChange={(e) => handleVendorChange(index, e)}
                         className="w-full px-3 py-2 border rounded-md"
                       />
+                    </div>
+                    <div className=" text-gray-500 flex flex-col dark:text-gray-400">
+                      <label htmlFor="quantity"> Quantity</label>
+                      <input
+                        type="number"
+                        name="quantity"
+                        max={formType === "add" ? "" : closingStock}
+                        placeholder={"Quantity"}
+                        value={item.quantity}
+                        onChange={(e) => handleVendorChange(index, e)}
+                        className="w-full p-2 border rounded"
+                      />
+                       {formType === "add" ? "" :
+                         <p
+                      className={`text-xs ${
+                        closingStock < minimum_quantity
+                          ? "text-red-400"
+                          : "text-gray-400"
+                      } `}
+                    >
+                      {`You have Quantity ${closingStock}`}
+                    </p>
+}
                     </div>
                   </div>
                 ))}

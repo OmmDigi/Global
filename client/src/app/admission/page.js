@@ -95,7 +95,7 @@ function page() {
     applicantSignature: "",
     applicantDate: "",
     guardianSignature: "",
-    guardianPhone:"",
+    guardianPhone: "",
     // guardianDate: "",
 
     // Office use section
@@ -142,9 +142,7 @@ function page() {
   const [photo, setPhoto] = useState(null);
   const [isadmissionPopup, setIsadmissionPopup] = useState(false);
   const [feesStructure, setFeesStructure] = useState("");
-  const [selectedIds, setSelectedIds] = useState([]);
   const [enteredAmounts, setEnteredAmounts] = useState({});
-  const [checkedItems, setCheckedItems] = useState({});
 
   // get Course list
   const {
@@ -288,12 +286,10 @@ function page() {
       });
       setFormData2({
         form_id: response?.data?.form_id,
-        fee_structure_info: response?.data?.fee_structure
-          .filter((fs) => fs.required == true)
-          .map((item) => ({
-            fee_head_id: item.fee_head_id,
-            custom_min_amount: item.min_amount,
-          })),
+        fee_structure_info: response?.data?.fee_structure.map((item) => ({
+          fee_head_id: item.fee_head_id,
+          custom_min_amount: item.min_amount,
+        })),
       });
       openAdmission();
       setCurrent(0);
@@ -309,44 +305,6 @@ function page() {
     }
   };
 
-  const handleChangePayment = (e, item) => {
-    const { checked } = e.target;
-    const id = item.fee_head_id;
-    setCheckedItems((prev) => ({
-      ...prev,
-      [id]: checked,
-    }));
-
-    if (checked) {
-      setFormData2((prev) => {
-        const updatedFeeStructure = prev.fee_structure_info.filter(
-          (fee) => fee.fee_head_id !== id
-        );
-
-        const amount = enteredAmounts[id] ?? item.amount;
-
-        return {
-          ...prev,
-          fee_structure_info: [
-            ...updatedFeeStructure,
-            {
-              fee_head_id: id,
-              custom_min_amount: amount,
-            },
-          ],
-        };
-      });
-    } else {
-      // Remove from fee_structure_info if unchecked
-      setFormData2((prev) => ({
-        ...prev,
-        fee_structure_info: prev.fee_structure_info.filter(
-          (fee) => fee.fee_head_id !== id
-        ),
-      }));
-    }
-  };
-
   const handleAmountChange = (e, item) => {
     const value = Number(e.target.value);
     const id = item.fee_head_id;
@@ -356,24 +314,22 @@ function page() {
       [id]: value,
     }));
 
-    if (checkedItems[id] ?? item.required) {
-      setFormData2((prev) => {
-        const updatedFeeStructure = prev?.fee_structure_info?.filter(
-          (fee) => fee.fee_head_id !== id
-        );
+    setFormData2((prev) => {
+      const updatedFeeStructure = prev?.fee_structure_info?.filter(
+        (fee) => fee.fee_head_id !== id
+      );
 
-        return {
-          ...prev,
-          fee_structure_info: [
-            ...updatedFeeStructure,
-            {
-              fee_head_id: id,
-              custom_min_amount: value,
-            },
-          ],
-        };
-      });
-    }
+      return {
+        ...prev,
+        fee_structure_info: [
+          ...updatedFeeStructure,
+          {
+            fee_head_id: id,
+            custom_min_amount: value,
+          },
+        ],
+      };
+    });
   };
 
   const handleSubmit2 = async (e) => {
@@ -502,7 +458,7 @@ function page() {
                         className="flex flex-col gap-1"
                       >
                         <div className="flex items-center gap-4">
-                          <input
+                          {/* <input
                             type="checkbox"
                             checked={
                               checkedItems[item?.fee_head_id] ?? item?.required
@@ -514,7 +470,7 @@ function page() {
                               }
                               handleChangePayment(e, item);
                             }}
-                          />
+                          /> */}
 
                           <label className="flex-1">
                             {item.fee_head_name} : ₹{item.amount}
@@ -531,13 +487,9 @@ function page() {
                           )}
                         </div>
 
-                        {isAmountEditable &&
-                          enteredAmounts[item.fee_head_id] <
-                            item.min_amount && (
-                            <span className="text-red-600 text-sm ml-6">
-                              The minimum amount is ₹{item?.min_amount}
-                            </span>
-                          )}
+                        <span className="text-red-600 text-sm ml-6">
+                          The minimum amount is ₹{item?.min_amount}
+                        </span>
                       </div>
                     );
                   })}
@@ -578,7 +530,7 @@ function page() {
               <div>
                 <div className="w-12/12  mb-4">
                   <label className="block text-lg font-bold text-gray-700 mb-1">
-                    Choose your Courses
+                    Choose your Courses <span className="text-red-500">*</span>
                   </label>
                   <select
                     name="courseName"
@@ -598,7 +550,8 @@ function page() {
                 <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 mb-10">
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-1">
-                      Choose your Session
+                      Choose your Session{" "}
+                      <span className="text-red-500">*</span>
                     </label>
                     <select
                       disabled={
@@ -621,7 +574,7 @@ function page() {
                   </div>
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-1">
-                      Choose your Batch
+                      Choose your Batch <span className="text-red-500">*</span>
                     </label>
                     <select
                       name="batchName"
@@ -694,8 +647,10 @@ function page() {
 
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-1">
-                          Candidate&apos;s Name
+                          Candidate&apos;s Name{" "}
+                          <span className="text-red-500">*</span>
                         </label>
+
                         <input
                           type="text"
                           name="candidateName"
@@ -707,7 +662,8 @@ function page() {
 
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-1">
-                          Father&apos;s Name
+                          Father&apos;s Name{" "}
+                          <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
@@ -720,7 +676,8 @@ function page() {
 
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-1">
-                          Mother&apos;s Name
+                          Mother&apos;s Name{" "}
+                          <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
@@ -733,7 +690,8 @@ function page() {
 
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-1">
-                          Guardian&apos;s Name
+                          Guardian&apos;s Name{" "}
+                          <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
@@ -746,7 +704,7 @@ function page() {
 
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-1">
-                          Address
+                          Address <span className="text-red-500">*</span>
                         </label>
                         <textarea
                           name="address"
@@ -761,7 +719,7 @@ function page() {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-1">
-                          Whatsapp No
+                          Whatsapp No <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="tel"
@@ -773,7 +731,7 @@ function page() {
                       </div>
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-1">
-                          Mobile
+                          Mobile <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="tel"
@@ -788,7 +746,7 @@ function page() {
                     <div className="grid grid-cols-1 md:grid-cols-3  gap-4">
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-1">
-                          Sex
+                          Sex <span className="text-red-500">*</span>
                         </label>
                         <select
                           name="sex"
@@ -803,7 +761,7 @@ function page() {
                       </div>
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-1">
-                          Date of Birth
+                          Date of Birth <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="date"
@@ -830,7 +788,7 @@ function page() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-1">
-                          Category
+                          Category <span className="text-red-500">*</span>
                         </label>
                         <select
                           name="category"
@@ -847,7 +805,8 @@ function page() {
                       </div>
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-1">
-                          Person with Disability
+                          Person with Disability{" "}
+                          <span className="text-red-500">*</span>
                         </label>
                         <select
                           name="disability"
@@ -862,7 +821,8 @@ function page() {
                       </div>
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-1">
-                          Monthly Income (in Rupees)
+                          Monthly Income (in Rupees){" "}
+                          <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="number"
@@ -1011,7 +971,7 @@ function page() {
                   <div className="grid grid-cols-2 gap-8">
                     <div>
                       <label className="block text-sm text-start text-gray-700 mb-1">
-                        Place
+                        Place <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -1023,7 +983,7 @@ function page() {
                     </div>
                     <div>
                       <label className="block text-sm text-start text-gray-700 mb-1">
-                        Name
+                        Name <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -1037,7 +997,7 @@ function page() {
                   <div className="grid grid-cols-2 gap-8">
                     <div className="mt-4">
                       <label className="block text-sm text-start text-gray-700 mb-1">
-                        Date
+                        Date <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="date"
@@ -1052,17 +1012,6 @@ function page() {
               </div>
             )}
 
-            {/* Office Use Only */}
-
-            {/* Submit Button */}
-            {/* <div className="text-center">
-              <button
-                type="submit"
-                className="bg-blue-600 text-white px-8 py-3 rounded-md font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                Submit Application
-              </button>
-            </div> */}
             {current === 1 && (
               <div className="max-w-4xl mx-auto   min-h-screen">
                 <div className="space-y-6">
@@ -1077,7 +1026,8 @@ function page() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-2">
-                          Self attested copies of last result
+                          Self attested copies of last result{" "}
+                          <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="file"
@@ -1119,7 +1069,8 @@ function page() {
 
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-2">
-                        Age Proof (Madhyamik certificate / PAN Card)
+                          Age Proof (Madhyamik certificate / PAN Card){" "}
+                          <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="file"
@@ -1156,7 +1107,8 @@ function page() {
 
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-2">
-                          Address Proof (Aadhar Card )
+                          Address Proof (Aadhar Card ){" "}
+                          <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="file"
@@ -1199,24 +1151,20 @@ function page() {
 
                     <div className="text-sm text-gray-700 mb-4 leading-relaxed">
                       I hereby declare that all the particulars stated in this
-                      application form are true to the best of my knowledge and
-                      belief. In the event of admission by incorrect or wrong
-                      information or any fact like educational qualification,
-                      marks, category, etc. That I will be liable for the
-                      cancellation of admission by them. Also agree to abide by
-                      all the Rules & Regulation of the Institute. I further
-                      understand that admission fees once paid can not be
-                      refunded. I clearly understand that false structure of the
-                      course may be changed at any time according to circulation
-                      from Council/University/Institute College. I also
-                      understand that my Admission is purely provisional subject
-                      to that verification of the eligibility condition as per
-                      prescribed by the board. I acknowledge that the Institute
-                      has full right to add/delete/change the class schedule,
-                      Fee structure, Rule and Regulation as and when required.
-                      All legal cause concerning GLOBAL TECHNICAL INSTITUTE
-                      shall lie within jurisdiction at Beleghata, Phool Bagan,
-                      Kolkata.
+                      application form are true to the host of my knowledge and
+                      belief. Also agree to able by all the Rules & Regulation
+                      of the Institute. I further understand that admission fees
+                      once paid can not be refund. I clearly understand that
+                      fees structure of the choise may be changed at any time
+                      according to circulation from council/ University/
+                      Institute College. I also understand that my Admission is
+                      purely provisional subject to that verification of the
+                      eligibility condition as per perscribed by the board. I
+                      acknowledge that the institute has full right to
+                      add/delete/ change the class schedule. Fees structure.
+                      Rule and Regulation as and when required. All legal clause
+                      Concerning GLOBAL TECHNICAL INSTITUTE shall lie within
+                      jurisdiction at Beleghata, Phool Bagan, Kolkata.
                     </div>
 
                     <div className="flex items-center space-x-2">
@@ -1240,7 +1188,8 @@ function page() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-2">
-                          Name of Applicant
+                          Name of Applicant{" "}
+                          <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
@@ -1254,7 +1203,8 @@ function page() {
 
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-2">
-                          Name of Parent/Guardian
+                          Name of Parent/Guardian{" "}
+                          <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
@@ -1265,9 +1215,10 @@ function page() {
                           placeholder="Parent/Guardian's Name"
                         />
                       </div>
-                       <div>
+                      <div>
                         <label className="block text-sm text-start text-gray-700 mb-2">
-                          Phone No of Parent/Guardian
+                          Phone No of Parent/Guardian{" "}
+                          <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="number"
@@ -1281,7 +1232,7 @@ function page() {
 
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-2">
-                          Date
+                          Date <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="date"
@@ -1306,130 +1257,13 @@ function page() {
                       </div> */}
                     </div>
                   </div>
-
-                  {/* Office Use Only Section */}
-                  {/* <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
-                    <h2 className="text-lg font-semibold mb-4 text-gray-800">
-                      For Office Use Only
-                    </h2>
-
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm text-start text-gray-700 mb-2">
-                          Admit Rejected with reason
-                        </label>
-                        <input
-                          type="text"
-                          name="admitRejectedReason"
-                          value={formData.admitRejectedReason}
-                          onChange={handleInputChange}
-                          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="Enter reason if rejected"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm text-start text-gray-700 mb-2">
-                          Admission No.
-                        </label>
-                        <input
-                          type="text"
-                          name="admissionNo"
-                          value={formData.admissionNo}
-                          onChange={handleInputChange}
-                          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="Enter admission number"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm text-start text-gray-700 mb-2">
-                          Remarks
-                        </label>
-                        <textarea
-                          name="remarks"
-                          value={formData.remarks}
-                          onChange={handleInputChange}
-                          rows="3"
-                          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="Enter any remarks"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                        <div>
-                          <label className="block text-sm text-start text-gray-700 mb-2">
-                            Name of Authority
-                          </label>
-                          <input
-                            type="text"
-                            name="authoritySignature"
-                            value={formData.authoritySignature}
-                            onChange={handleInputChange}
-                            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="Authority signature"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm text-start text-gray-700 mb-2">
-                            Name of Principal
-                          </label>
-                          <input
-                            type="text"
-                            name="principalSignature"
-                            value={formData.principalSignature}
-                            onChange={handleInputChange}
-                            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="Principal signature"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm text-start text-gray-700 mb-2">
-                            Date
-                          </label>
-                          <input
-                            type="date"
-                            name="authorityDate"
-                            value={formData.authorityDate}
-                            onChange={handleInputChange}
-                            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm text-start text-gray-700 mb-2">
-                            Date
-                          </label>
-                          <input
-                            type="date"
-                            name="principalDate"
-                            value={formData.principalDate}
-                            onChange={handleInputChange}
-                            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div> */}
-
-                  {/* Submit Button */}
-                  {/* <div className="text-center">
-                    <button
-                      type="button"
-                      onClick={handleSubmit}
-                      className="bg-blue-600 hover:bg-blue-700 text-white font-start py-3 px-8 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                    >
-                      Submit Application
-                    </button>
-                  </div> */}
                 </div>
 
                 <div className=" mt-20 grid grid-cols-1 md:grid-cols-2 gap-4 ">
                   <div>
                     <label className="block text-sm font-medium text-start text-gray-700 mb-2">
-                      Set User Name (Mobile No / Gmail)
+                      Set User Name (Mobile No / Gmail){" "}
+                      <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -1443,7 +1277,8 @@ function page() {
 
                   <div>
                     <label className="block text-sm font-medium text-start text-gray-700 mb-2">
-                      Set password (Set Own password)
+                      Set password (Set Own password){" "}
+                      <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="password"
@@ -1732,8 +1567,6 @@ function page() {
                       </div>
                     </div>
                   </div>
-
-                
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">

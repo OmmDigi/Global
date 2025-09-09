@@ -100,7 +100,7 @@ export default function BasicTableCourseDetailsAdmin({
                   <TableCell className="px-5 py-4 sm:px-6 text-start">
                     <div className="flex items-center gap-3">
                       <div>
-                        <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                        <span className={`block font-medium ${order.mode == "Discount" ? " text-orange-400 text-theme-xl" : "dark:text-white/90 text-gray-800 text-theme-sm"}   `}>
                           {order.mode}
                         </span>
                       </div>
