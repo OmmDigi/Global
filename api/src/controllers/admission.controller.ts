@@ -155,7 +155,7 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
 
     if (rowCount === 0) throw new ErrorHandler(404, "No course found");
 
-    const fee_structure = rows[0].fee_structures;
+    const fee_structure = rows[0].fee_structures as { fee_head_id: number, fee_head_name: string, amount: number, min_amount: number, required: boolean }[];
 
     // do the admission
     const { form_id } = await doAdmission({
@@ -166,7 +166,7 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
       batch_id: value.batch_id,
       fee_structure,
       session_id: value.session_id,
-      declaration_status : value?.declaration_status
+      declaration_status: value?.declaration_status
     });
 
     await client.query("COMMIT");
@@ -177,9 +177,9 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
         "Admission info successfully saved",
         {
           form_id,
-          fee_structure,
+          course_name : rows[0].name,
+          fee_structure : fee_structure.filter(item => item.fee_head_id == 1 || item.fee_head_id == 3),
         }
-        // data.instrumentResponse.redirectInfo.url
       )
     );
   } catch (error: any) {

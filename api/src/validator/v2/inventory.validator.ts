@@ -9,12 +9,12 @@ export const VAddInventoryItemv2 = Joi.object({
 export const VAddInventoryItemStockv2 = Joi.object({
   item_id: Joi.number().required(),
   transaction_type: Joi.string().valid("add", "consume").required(),
-  quantity: Joi.number().required(),
 
   vendors: Joi.array().items(
     Joi.object({
       vendor: Joi.number().required(),
       cost_per_unit: Joi.number().required(),
+      quantity: Joi.number().required(),
     })
   ),
 

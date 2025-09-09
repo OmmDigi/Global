@@ -95,7 +95,7 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
   let placeholder = 1;
 
   if (value.student_id || student_id) {
-    filter = `WHERE ff.student_id = $${placeholder++}`;
+    filter = `WHERE ff.student_id = $${placeholder++} AND ff.status = 2`;
     filterValues.push(value.student_id || student_id);
   }
 
@@ -189,7 +189,8 @@ export const getSingleAdmissionData = async (
             b.month_name AS batch_name,
             s.name AS session_name,
             COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id), 0.00) AS course_fee,
-            COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id), 0.00) - COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND status = 2), 0.00) AS due_amount
+            COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id), 0.00) - COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND status = 2), 0.00) AS due_amount,
+            COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND status = 2 AND mode = 'Discount'), 0.00) AS total_discount
           FROM fillup_forms ff
   
           LEFT JOIN users u
@@ -207,7 +208,7 @@ export const getSingleAdmissionData = async (
           LEFT JOIN session s
           ON s.id = ec.session_id
   
-          WHERE ff.id = $1 ${student_id ? " AND ff.student_id = $2" : ""}
+          WHERE ff.id = $1 ${student_id ? " AND ff.student_id = $2 AND ff.status = 2" : ""}
         `,
       student_id ? [form_id, student_id] : [form_id]
     );
@@ -223,11 +224,14 @@ export const getSingleAdmissionData = async (
   
           LEFT JOIN course_fee_head cfh
           ON cfh.id = ffs.fee_head_id
+
+          LEFT JOIN fillup_forms ff
+          ON ff.id = ffs.form_id
   
           LEFT JOIN payments p
           ON p.form_id = $1 AND cfh.id = p.fee_head_id AND p.status = 2
   
-          WHERE ffs.form_id = $1
+          WHERE ffs.form_id = $1 ${student_id ? "AND ff.status = 2" : ""}
   
           GROUP BY cfh.id, ffs.id
         `,
@@ -242,8 +246,11 @@ export const getSingleAdmissionData = async (
   
           LEFT JOIN course_fee_head cfh
           ON cfh.id = p.fee_head_id
+
+          LEFT JOIN fillup_forms ff
+          ON ff.id = p.form_id
   
-          WHERE p.form_id = $1 AND p.status = 2
+          WHERE p.form_id = $1 AND p.status = 2 AND ff.status = 2
   
           ORDER BY p.id DESC
         `,

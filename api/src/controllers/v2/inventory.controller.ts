@@ -30,6 +30,7 @@ export const addInventoryItemStockV2 = asyncErrorHandler(async (req, res) => {
   const vendorInfo = value.vendors as {
     vendor: number;
     cost_per_unit: number;
+    quantity : number
   }[];
 
   if (vendorInfo.length === 0)
@@ -39,8 +40,6 @@ export const addInventoryItemStockV2 = asyncErrorHandler(async (req, res) => {
     "SELECT id FROM inventory_items_v2 WHERE id = $1 AND $2::DATE >= created_at",
     [value.item_id, value.transaction_date]
   );
-
-  console.log(rows)
 
   const typeText = value.transaction_type === "add" ? "Add" : "Consume";
   if (rowCount === 0)
@@ -60,7 +59,7 @@ export const addInventoryItemStockV2 = asyncErrorHandler(async (req, res) => {
       value.item_id,
       value.transaction_type,
       item.vendor,
-      value.quantity,
+      item.quantity,
       value.transaction_date,
       item.cost_per_unit,
       value.remark,

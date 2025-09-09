@@ -73,21 +73,25 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
     }[] = [];
 
     rows.forEach((item) => {
-      const db_min_amount = parseFloat(item.min_amount);
+      // const db_min_amount = parseFloat(item.min_amount);
       const custom_amount =
         fee_structure_info.find((fs) => fs.fee_head_id == item.fee_head_id)
           ?.custom_min_amount ?? 0;
 
-      if (custom_amount >= db_min_amount) {
-        amountToPaid += custom_amount;
-      } else {
-        amountToPaid += db_min_amount;
-      }
+      amountToPaid += custom_amount;
 
-      fee_head_ids_info.push({
-        fee_head_id: item.fee_head_id,
-        amount: custom_amount,
-      });
+      // if (custom_amount >= db_min_amount) {
+      //   amountToPaid += custom_amount;
+      // } else {
+      //   amountToPaid += db_min_amount;
+      // }
+
+      if (custom_amount !== 0) {
+        fee_head_ids_info.push({
+          fee_head_id: item.fee_head_id,
+          amount: custom_amount,
+        });
+      }
     });
 
     const { success, data } = await phonePe().createOrder({
@@ -170,10 +174,9 @@ export const verifyPayment = asyncErrorHandler(async (req, res) => {
     status: response.data.state === "COMPLETED" ? "success" : "failed",
     orderId: response.data.orderId,
     amount: response.data.amount / 100,
-    transactionId : response.data.transactionId,
-    frontendhomepage : process.env.FRONTEND_HOST_URL
+    transactionId: response.data.transactionId,
+    frontendhomepage: process.env.FRONTEND_HOST_URL,
   });
-
 });
 
 // this is from admin panel only
@@ -240,8 +243,6 @@ export const addPayment = asyncErrorHandler(async (req, res) => {
 
   if (rowCount === 0)
     throw new ErrorHandler(404, "No student found of this form");
-
-  console.log(rows);
 
   await setPayment({
     fee_head_ids_info: client_fee_structure_info.map((item) => ({
