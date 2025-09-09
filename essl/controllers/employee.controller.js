@@ -39,7 +39,7 @@ export const deleteEmployee = asyncErrorHandler(async (req, res) => {
   const ws = clients.get(device_id);
 
   if (!ws || ws.readyState !== WebSocket.OPEN) {
-    throw new ErrorHandler(400, "Device not connected");
+    throw new ErrorHandler(400, "Essl Device not connected");
   }
 
   ws.send(JSON.stringify({ action: "delete_employee", user }));
@@ -56,7 +56,7 @@ export const updateEmployee = asyncErrorHandler(async (req, res) => {
   const ws = clients.get(device_id);
 
   if (!ws || ws.readyState !== WebSocket.OPEN) {
-    throw new ErrorHandler(400, "Device not connected");
+    throw new ErrorHandler(400, "Essl Device not connected");
   }
 
   ws.send(JSON.stringify({ action: "update_employee", user }));

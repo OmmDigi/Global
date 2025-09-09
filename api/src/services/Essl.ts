@@ -1,4 +1,5 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
+import { IError } from "../config/types";
 
 type SetUser = {
   uid: string;
@@ -25,27 +26,93 @@ export class Essl {
 
   public async setUser(info: SetUser) {
     if (!this.BASE_URL) throw new Error("Essl Base Api Is Required");
-    return await axios.post(`${this.BASE_URL}/api/v1/employee`, {
-      device_id: "ESSL-001",
-      user: info,
-    });
+    try {
+      await axios.post(`${this.BASE_URL}/api/v1/employee`, {
+        device_id: "ESSL-001",
+        user: info,
+      });
+    } catch (error) {
+      if (axios.isAxiosError<IError>(error)) {
+        if (error.response) {
+          // Server responded with an error
+          // console.error("Server error:", error.response.data);
+          throw new Error(error.response.data.message || "Server error");
+        } else if (error.request) {
+          // Request made but no response
+          // console.error("No response received:", error.request);
+          throw new Error("No response received from essl server");
+        } else {
+          // Something else (setup error, etc.)
+          // console.error("Axios config error:", error.message);
+          throw new Error(error.message);
+        }
+      } else {
+        // Not an AxiosError
+        // console.error("Unexpected error:", error);
+        throw error;
+      }
+    }
   }
 
   public async deleteUser(info: DeleteUser) {
     if (!this.BASE_URL) throw new Error("Essl Base Api Is Required");
-    return await axios.delete(`${this.BASE_URL}/api/v1/employee`, {
-      data: {
-        device_id: "ESSL-001",
-        user: info,
-      },
-    });
+    try {
+      await axios.delete(`${this.BASE_URL}/api/v1/employee`, {
+        data: {
+          device_id: "ESSL-001",
+          user: info,
+        },
+      });
+    } catch (error) {
+      if (axios.isAxiosError<IError>(error)) {
+        if (error.response) {
+          // Server responded with an error
+          // console.error("Server error:", error.response.data);
+          throw new Error(error.response.data.message || "Server error");
+        } else if (error.request) {
+          // Request made but no response
+          // console.error("No response received:", error.request);
+          throw new Error("No response received from essl server");
+        } else {
+          // Something else (setup error, etc.)
+          // console.error("Axios config error:", error.message);
+          throw new Error(error.message);
+        }
+      } else {
+        // Not an AxiosError
+        // console.error("Unexpected error:", error);
+        throw error;
+      }
+    }
   }
 
   public async updateUser(info: SetUser) {
     if (!this.BASE_URL) throw new Error("Essl Base Api Is Required");
-    return await axios.put(`${this.BASE_URL}/api/v1/employee`, {
-      device_id: "ESSL-001",
-      user: info,
-    });
+    try {
+      await axios.put(`${this.BASE_URL}/api/v1/employee`, {
+        device_id: "ESSL-001",
+        user: info,
+      });
+    } catch (error) {
+      if (axios.isAxiosError<IError>(error)) {
+        if (error.response) {
+          // Server responded with an error
+          // console.error("Server error:", error.response.data);
+          throw new Error(error.response.data.message || "Server error");
+        } else if (error.request) {
+          // Request made but no response
+          // console.error("No response received:", error.request);
+          throw new Error("No response received from essl server");
+        } else {
+          // Something else (setup error, etc.)
+          // console.error("Axios config error:", error.message);
+          throw new Error(error.message);
+        }
+      } else {
+        // Not an AxiosError
+        // console.error("Unexpected error:", error);
+        throw error;
+      }
+    }
   }
 }

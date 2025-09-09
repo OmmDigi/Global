@@ -1261,7 +1261,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
       // "Days Worked",
       "Course Name",
       "Type",
-      "Per Day Rate / Fixed",
+      "Fixed / Per Class Rate",
       "Class Taken",
       "Total",
       "Grand Total",
