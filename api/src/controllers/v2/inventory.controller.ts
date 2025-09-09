@@ -103,7 +103,7 @@ export const getInventoryItemInfo = asyncErrorHandler(async (req, res) => {
       ii.item_name,
       ii.minimum_quantity,
       v.name AS vendor_name,
-      TO_CHAR(MAX(it.transaction_date), 'FMDD FMMonth, YYYY') AS last_transaction_date,
+      TO_CHAR(MAX(it.transaction_date), 'DD Mon, YYYY') AS last_transaction_date,
       COALESCE(SUM(it.cost_per_unit * it.quantity) FILTER (WHERE it.transaction_type = 'add'), 0.00) AS total_expense,
       COALESCE(SUM(it.cost_per_unit * it.quantity) FILTER (WHERE it.transaction_type = 'consume'), 0.00) AS total_income,
       COALESCE(SUM(it.quantity) FILTER (WHERE it.transaction_type = 'add'), 0) - COALESCE(SUM(it.quantity) FILTER (WHERE it.transaction_type = 'consume'), 0) AS avilable_quantity,
