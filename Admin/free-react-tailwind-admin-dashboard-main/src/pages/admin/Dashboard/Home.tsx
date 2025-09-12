@@ -189,6 +189,9 @@ export default function Home() {
   //   setOpenDropdown(openDropdown === id ? null : id);
   // };
   // get list
+  const [hasDashboardPermission, setHasDashboardPermission] = useState(false);
+  const [viewTeacherAttendanceTable, setViewTeacherAttendanceTable] =
+    useState(false);
 
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
@@ -201,20 +204,32 @@ export default function Home() {
     }
     if (category) localStorage.setItem("category", category);
     if (permissions) localStorage.setItem("permissions", permissions);
+
+    const localPermissions = localStorage.getItem("permissions");
+    if (localPermissions) {
+      localPermissions.split(",").forEach((item) => {
+        if (item == "1") {
+          setHasDashboardPermission(true);
+        }
+      });
+    }
+
+    const localCategory = localStorage.getItem("category");
+    if (localCategory) {
+      setViewTeacherAttendanceTable(
+        localCategory != "Admin" && localCategory != "Stuff"
+      );
+    }
   }, []);
-  const category = localStorage.getItem("category");
 
   const { data: teacherList, isLoading: courseLoading } = useSWR(
     "api/v1/users/class",
     getFetcher,
     {
-      isPaused() {
-        return category == "Admin";
-      },
+      isPaused: () => !viewTeacherAttendanceTable,
     }
   );
 
-  
   useEffect(() => {
     if (teacherList?.data) {
       setData(teacherList.data);
@@ -261,7 +276,7 @@ export default function Home() {
         title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
         description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
-      <div className="grid grid-cols-12 gap-4 md:gap-6">
+      {/* <div className="grid grid-cols-12 gap-4 md:gap-6">
         <div className="col-span-12 space-y-6 xl:col-span-7">
           {category == "Admin" ? <MonthlySalesChart /> : null}
           {category == "Admin" ? <StuffAttandance /> : null}
@@ -269,7 +284,19 @@ export default function Home() {
         <div className="col-span-12 xl:col-span-5">
           {category == "Admin" ? <MonthlyIncome /> : null}
         </div>
-      </div>
+      </div> */}
+
+      {hasDashboardPermission ? (
+        <div className="grid grid-cols-12 gap-4 md:gap-6">
+          <div className="col-span-12 space-y-6 xl:col-span-7">
+            <MonthlySalesChart />
+            <StuffAttandance />
+          </div>
+          <div className="col-span-12 xl:col-span-5">
+            <MonthlyIncome />
+          </div>
+        </div>
+      ) : null}
 
       {/* for teacher  */}
       {/* <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
@@ -465,7 +492,7 @@ export default function Home() {
           </Table>
         </div>
       </div> */}
-      {category == "Admin" ? null : (
+      {viewTeacherAttendanceTable ? (
         <div className="mt-10 overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
           <div className="max-w-full overflow-x-auto">
             <Table>
@@ -569,7 +596,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-      )}
+      ) : null}
     </>
   );
 }
