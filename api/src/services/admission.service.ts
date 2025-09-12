@@ -171,7 +171,8 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
 
 export const getSingleAdmissionData = async (
   form_id: number,
-  student_id?: number
+  student_id?: number,
+  request_user_id?: number
 ) => {
   const client = await pool.connect();
 
@@ -212,6 +213,7 @@ export const getSingleAdmissionData = async (
         `,
       student_id ? [form_id, student_id] : [form_id]
     );
+
     const { rows: feeStructureInfo } = await client.query(
       `
           SELECT
@@ -237,24 +239,33 @@ export const getSingleAdmissionData = async (
         `,
       [form_id]
     );
+
+
     const { rows: admissionFormPayments } = await client.query(
       `
-          SELECT
-            cfh.name AS fee_head_name,
-            p.*
-          FROM payments p
+        SELECT
+          cfh.name AS fee_head_name,
+          p.*,
+          CASE
+            WHEN p.mode = 'Cash' AND (u.category != 'Admin' AND u.category != 'Student') THEN -1
+            ELSE p.amount
+          END AS amount
+        FROM payments p
   
-          LEFT JOIN course_fee_head cfh
-          ON cfh.id = p.fee_head_id
+        LEFT JOIN course_fee_head cfh
+        ON cfh.id = p.fee_head_id
 
-          LEFT JOIN fillup_forms ff
-          ON ff.id = p.form_id
-  
-          WHERE p.form_id = $1 AND p.status = 2 AND ff.status = 2
-  
-          ORDER BY p.id DESC
-        `,
-      [form_id]
+        LEFT JOIN fillup_forms ff
+        ON ff.id = p.form_id
+
+        LEFT JOIN users u
+        ON u.id = $1
+
+        WHERE p.form_id = $2 AND p.status = 2
+          
+        ORDER BY p.id DESC
+      `,
+      [request_user_id, form_id]
     );
     await client.query("COMMIT");
 

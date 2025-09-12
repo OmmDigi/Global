@@ -6,7 +6,7 @@ import { verifySignedUrl } from "../middlewares/verifySignedUrl";
 export const excelRoute = Router();
 
 excelRoute
-    .post("/url", isAuthorized([13, 6, 12]), generateUrl)
+    .post("/url", isAuthorized([13, 15, 6, 11, 8]), generateUrl)
     .get("/payment-report", verifySignedUrl, generatePaymentExcelReport)
     .get("/admission-report", verifySignedUrl, getAdmissionExcelReport)
     .get("/salary-sheet", verifySignedUrl, createEmployeeSalarySheet)

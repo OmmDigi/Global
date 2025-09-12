@@ -13,23 +13,37 @@ import { ApiResponse } from "../utils/ApiResponse";
 import { createToken } from "../services/jwt";
 import { VCreateEmployeeSalarySheet } from "../validator/users.validator";
 
-const urls = new Map<string, string>();
+const urls = new Map<string, { url: string, route_id: number }>();
 const HOST_URL = process.env.API_HOST_URL;
-urls.set("payment_report", `${HOST_URL}/api/v1/excel/payment-report`);
-urls.set("admission_report", `${HOST_URL}/api/v1/excel/admission-report`);
-urls.set("salary_sheet", `${HOST_URL}/api/v1/excel/salary-sheet`);
-urls.set("inventory_report", `${HOST_URL}/api/v1/excel/inventory-report`);
+urls.set("payment_report", {
+  url: `${HOST_URL}/api/v1/excel/payment-report`,
+  route_id: 15
+});
+urls.set("admission_report", {
+  url: `${HOST_URL}/api/v1/excel/admission-report`,
+  route_id: 6
+});
+urls.set("salary_sheet", {
+  url: `${HOST_URL}/api/v1/excel/salary-sheet`,
+  route_id: 11
+});
+urls.set("inventory_report", {
+  url: `${HOST_URL}/api/v1/excel/inventory-report`,
+  route_id: 8
+});
 
 export const generateUrl = asyncErrorHandler(async (req, res) => {
   const { error, value } = VGenerateUrl.validate(req.body ?? {});
   if (error) throw new ErrorHandler(400, error.message);
 
-  const url = urls.get(value.type);
-  if (!url) throw new ErrorHandler(404, "No route found");
+  const urlinfo = urls.get(value.type);
+  if (!urlinfo) throw new ErrorHandler(404, "No route found");
 
-  const token = createToken({}, { expiresIn: "60s" });
+  const token = createToken({
+    route_id: urlinfo.route_id
+  }, { expiresIn: "60s" });
 
-  const reportUrl = `${url}?${value.query}&token=${token}`;
+  const reportUrl = `${urlinfo.url}?${value.query}&token=${token}`;
   res.status(201).json(new ApiResponse(201, "Signed Url Created", reportUrl));
 });
 
@@ -347,7 +361,7 @@ export const generatePaymentExcelReport = asyncErrorHandler(
     const query = new QueryStream(
       `
         SELECT 
-            row_number() OVER () AS sr_no,
+            row_number() OVER (ORDER BY u.id DESC) AS sr_no,
             u.name AS student_name,
             c.name AS course_name,
             b.month_name AS batch_name,
@@ -384,9 +398,26 @@ export const generatePaymentExcelReport = asyncErrorHandler(
     );
 
     const pgStream = client.query(query);
+    let totalAmount = 0;
+    let index = -1;
+
+    let courseInfo = {
+      course_name : "",
+      batch_name : ""
+    }
 
     // Process PostgreSQL stream data and append to Excel sheet
     pgStream.on("data", (data) => {
+      pgStream.pause();
+
+      if(index == -1) {
+        courseInfo.course_name = data.course_name;
+        courseInfo.batch_name = data.batch_name
+        index++;
+      }
+
+      totalAmount += parseFloat(data.amount);
+
       const excelRow = worksheet.addRow(Object.values(data));
       // Style the data rows
       excelRow.eachCell((cell) => {
@@ -403,9 +434,26 @@ export const generatePaymentExcelReport = asyncErrorHandler(
           },
         };
       });
+
+      pgStream.resume();
     });
 
     pgStream.on("end", () => {
+      worksheet.getCell("A1").value = `Payment Report For ${courseInfo.course_name}(${courseInfo.batch_name}) From : ${value.from_date} - ${value.to_date}`;
+      const addedRow = worksheet.addRow([
+        "",
+        "",
+        "",
+        "",
+        "",
+        `Total : ₹${totalAmount}`,
+      ]);
+      addedRow.getCell(6).style = {
+        font: {
+          size: 12,
+          bold: true
+        },
+      }
       workbook.commit();
       client.release(); // Release the client when done
     });
@@ -1198,7 +1246,10 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
   // 1. Set headers
   res.setHeader(
     "Content-Disposition",
-    `attachment; filename="${employeetype}_Payment_Sheet_${formatted.replace(" ", "_")}.xlsx"`
+    `attachment; filename="${employeetype}_Payment_Sheet_${formatted.replace(
+      " ",
+      "_"
+    )}.xlsx"`
   );
   res.setHeader(
     "Content-Type",
@@ -1211,9 +1262,12 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
     useStyles: true,
   });
   const worksheet = workbook.addWorksheet("Employee Salary", {
-    views: [{
-      state: 'frozen', ySplit: 2
-    }]
+    views: [
+      {
+        state: "frozen",
+        ySplit: 2,
+      },
+    ],
   });
 
   if (employeetype === "Staff") {
@@ -2303,7 +2357,7 @@ export const createInventoryReport = asyncErrorHandler(async (req, res) => {
     "STOCK OUT TOTAL RS",
     "MINIMUM QUANTITY TO MAINTAIN",
     "AVILABLE QUANTITY",
-    "CONSUME QUANTITY"
+    "CONSUME QUANTITY",
   ]);
 
   // Row styling (header row)
@@ -2363,7 +2417,6 @@ export const createInventoryReport = asyncErrorHandler(async (req, res) => {
   );
 
   const pgStream = client.query(query);
-
 
   // Process PostgreSQL stream data and append to Excel sheet
   pgStream.on("data", (data) => {

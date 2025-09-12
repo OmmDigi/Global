@@ -573,7 +573,7 @@ export const getSingleTeacherDailyClassStatus = asyncErrorHandler(
     LEFT JOIN teacher_classes tc 
     ON tc.teacher_id = ess.employee_id AND ess.course_id = tc.course_id
 
-    WHERE ess.employee_id = $1 AND EXISTS (SELECT 1 FROM attendance WHERE employee_id = u.id AND attendance.date = CURRENT_DATE)
+    WHERE ess.employee_id = $1 AND EXISTS (SELECT 1 FROM attendance WHERE employee_id = ess.employee_id AND attendance.date = CURRENT_DATE)
 
     GROUP BY ess.employee_id, c.id
     ORDER BY c.id

@@ -281,11 +281,11 @@ export const updateAdmissionStatus = asyncErrorHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, `Admission ${status_text}`));
 });
 
-export const getSingleAdmission = asyncErrorHandler(async (req, res) => {
+export const getSingleAdmission = asyncErrorHandler(async (req : CustomRequest, res) => {
   const { error, value } = VGetSingleAdmission.validate(req.params ?? {});
   if (error) throw new ErrorHandler(400, error.message);
 
-  const response = await getSingleAdmissionData(value.form_id);
+  const response = await getSingleAdmissionData(value.form_id, undefined, req.user_info?.id);
 
   res.status(200).json(new ApiResponse(200, "Fee Info", response));
 });
