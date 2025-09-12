@@ -49,6 +49,7 @@ import Report from "./pages/admin/Report/Report";
 import AmcRecord from "./pages/admin/AmcRecord/AmcRecord";
 import NotFound from "./pages/admin/OtherPage/NotFound";
 import Settings from "./pages/admin/Settings/FeeHead";
+import AdminReport from "./pages/admin/AdminReport/AdminReport";
 
 export default function App() {
   const [user, setUser] = useState<string | null>(null);
@@ -64,9 +65,8 @@ export default function App() {
       setUser(category);
     } else if (localStorage.getItem("category")) {
       setUser(localStorage.getItem("category"));
-    }
-    else {
-      alert("login First")
+    } else {
+      alert("login First");
       // window.location.href = `${import.meta.env.VITE_HOMEPAGE_URL}login`;
       return;
     }
@@ -79,7 +79,7 @@ export default function App() {
     if (!localStorage.getItem("pageReloaded")) {
       localStorage.setItem("pageReloaded", "true");
       window.location.reload();
-    } 
+    }
   }, []);
 
   return (
@@ -107,6 +107,7 @@ export default function App() {
               <Route path="/createLeave" element={<CreateLeave />} />
               <Route path="/manageLeave" element={<ManageLeave />} />
               <Route path="/report" element={<Report />} />
+              <Route path="/admin-report" element={<AdminReport />} />
               <Route path="/settings" element={<Settings />} />
               Report
               <Route

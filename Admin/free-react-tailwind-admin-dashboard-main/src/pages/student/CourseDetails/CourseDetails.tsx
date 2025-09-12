@@ -16,7 +16,6 @@ export default function CourseDetails() {
 
   const [enteredAmounts, setEnteredAmounts] = useState<any>({});
 
- 
   const { id } = useParams();
 
   const {
@@ -96,7 +95,6 @@ export default function CourseDetails() {
   );
 
   const fees_structure_table = feesStructure?.data?.payments_history;
-
 
   const submitClick = async () => {
     const newFormDate = { form_id: id };

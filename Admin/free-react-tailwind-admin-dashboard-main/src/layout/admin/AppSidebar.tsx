@@ -129,6 +129,12 @@ const navItems: NavItem[] = [
     path: "/amc-record",
   },
   {
+    name: "Admin Report",
+    id: 15,
+    icon: <TbReport />,
+    path: "/admin-report",
+  },
+  {
     name: "Report",
     id: 13,
     icon: <TbReport />,
@@ -141,8 +147,6 @@ const navItems: NavItem[] = [
     path: "/settings",
   },
 ];
-
-
 
 const othersItems: NavItem[] = [
   // {

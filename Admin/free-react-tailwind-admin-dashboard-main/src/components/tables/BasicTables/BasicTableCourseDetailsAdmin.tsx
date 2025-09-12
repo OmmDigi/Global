@@ -6,12 +6,11 @@ import {
   TableRow,
 } from "../../ui/table";
 
-
 import ComponentCard from "../../common/ComponentCard";
 
 interface IProps {
   // batchList: any;
-  fees_structure_table:any;
+  fees_structure_table: any;
   //   onEdit: (id: number) => void;
 }
 
@@ -21,7 +20,14 @@ export default function BasicTableCourseDetailsAdmin({
   fees_structure_table,
 }: IProps) {
   return (
-    <ComponentCard title={`  ${fees_structure_table?.length > 0 ? "Fees Payment List  " : "( There is No Any Payment )"} `} className="mt-15">
+    <ComponentCard
+      title={`  ${
+        fees_structure_table?.length > 0
+          ? "Fees Payment List  "
+          : "( There is No Any Payment )"
+      } `}
+      className="mt-15"
+    >
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
         <div className="max-w-full overflow-x-auto">
           <Table>
@@ -83,7 +89,9 @@ export default function BasicTableCourseDetailsAdmin({
                     <div className="flex items-center gap-3">
                       <div>
                         <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                          {order.transition_id ? order.transition_id : "No Number"}
+                          {order.transition_id
+                            ? order.transition_id
+                            : "No Number"}
                         </span>
                       </div>
                     </div>
@@ -92,7 +100,7 @@ export default function BasicTableCourseDetailsAdmin({
                     <div className="flex items-center gap-3">
                       <div>
                         <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                          {order.amount ? order.amount : "0"}
+                          {order.amount == -1 ? "Amount Paid" : order.amount}
                         </span>
                       </div>
                     </div>
@@ -100,7 +108,13 @@ export default function BasicTableCourseDetailsAdmin({
                   <TableCell className="px-5 py-4 sm:px-6 text-start">
                     <div className="flex items-center gap-3">
                       <div>
-                        <span className={`block font-medium ${order.mode == "Discount" ? " text-orange-400 text-theme-xl" : "dark:text-white/90 text-gray-800 text-theme-sm"}   `}>
+                        <span
+                          className={`block font-medium ${
+                            order.mode == "Discount"
+                              ? " text-orange-400 text-theme-xl"
+                              : "dark:text-white/90 text-gray-800 text-theme-sm"
+                          }   `}
+                        >
                           {order.mode}
                         </span>
                       </div>
