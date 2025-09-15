@@ -185,6 +185,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     []
   );
   const [isOpen, setIsOpen] = useState(false);
+console.log("option",options);
 
   // 🔑 Keep selectedOptions in sync with defaultSelected (e.g. after edit load)
   useEffect(() => {
@@ -316,7 +317,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                   <div
                     key={index}
                     className={`hover:bg-primary/5 w-full cursor-pointer rounded-t border-b border-gray-200 dark:border-gray-800`}
-                    onClick={() => handleSelect(option.id.toString())}
+                    onClick={() => handleSelect(option.id)}
                   >
                     <div
                       className={`relative flex w-full items-center p-2 pl-2 ${
