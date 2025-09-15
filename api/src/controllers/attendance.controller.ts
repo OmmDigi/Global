@@ -20,23 +20,58 @@ export const storeAttendance = asyncErrorHandler(async (req, res) => {
 
   const punchData = value.data as { userId: number; time: string }[];
 
+  // const placeholder = punchData
+  //   .map(
+  //     (_, index) =>
+  //       `($${index * 3 + 1}, $${index * 3 + 2}, $${index * 3 + 3}, CURRENT_DATE)`
+  //   )
+  //   .join(", ");
+
+  // await pool.query(
+  //   `
+  //    INSERT INTO attendance
+  //       (employee_id, in_time, status, date)
+  //    VALUES
+  //       ${placeholder}
+  //    ON CONFLICT (employee_id, date) DO UPDATE
+  //       SET out_time = EXCLUDED.in_time
+  //   `,
+  //   punchData.flatMap((item) => [item.userId, item.time, "Present"])
+  // );
+
   const placeholder = punchData
     .map(
       (_, index) =>
-        `($${index * 3 + 1}, $${index * 3 + 2}, $${index * 3 + 3}, CURRENT_DATE)`
+        `($${index * 4 + 1}, $${index * 4 + 2}, $${index * 4 + 3}, $${
+          index * 4 + 4
+        })`
     )
     .join(", ");
 
   await pool.query(
     `
-     INSERT INTO attendance 
-        (employee_id, in_time, status, date)
-     VALUES
-        ${placeholder}
-     ON CONFLICT (employee_id, date) DO UPDATE
-        SET out_time = EXCLUDED.in_time
-    `,
-    punchData.flatMap((item) => [item.userId, item.time, "Present"])
+   INSERT INTO attendance 
+      (employee_id, in_time, status, date)
+   VALUES
+      ${placeholder}
+   ON CONFLICT (employee_id, date) DO UPDATE
+   SET
+      in_time = CASE
+                  WHEN attendance.in_time IS NULL THEN EXCLUDED.in_time
+                  ELSE attendance.in_time
+                END,
+      out_time = CASE
+                   WHEN attendance.in_time IS NOT NULL 
+                     THEN GREATEST(EXCLUDED.in_time, attendance.out_time)
+                   ELSE attendance.out_time
+                 END
+  `,
+    punchData.flatMap((item) => [
+      item.userId,
+      item.time,
+      "Present",
+      item.time.split(" ")[0], // use the date part
+    ])
   );
 
   res.send("OK");
@@ -76,7 +111,10 @@ export const getAttendanceList = asyncErrorHandler(async (req, res) => {
 
 export const getSingleEmployeeAttendanceList = asyncErrorHandler(
   async (req, res) => {
-    const { error, value } = VSingleAttendance.validate({ ...req.params, ...req.query });
+    const { error, value } = VSingleAttendance.validate({
+      ...req.params,
+      ...req.query,
+    });
     if (error) throw new ErrorHandler(400, error.message);
 
     let monthYear = value.month_year;
@@ -206,7 +244,8 @@ export const getSingleEmployeeAttendanceList = asyncErrorHandler(
         [value.id, monthStr]
       );
 
-      if (rowCount === 0) throw new ErrorHandler(400, "No Data Found Of This Month");
+      if (rowCount === 0)
+        throw new ErrorHandler(400, "No Data Found Of This Month");
 
       const { rows: attendanceList } = await client.query(queryGetAttenList, [
         value.id,
@@ -237,7 +276,7 @@ export const getTeacherClassStatusList = asyncErrorHandler(async (req, res) => {
 
   let placeholder = 1;
   let tcFilter = "tc.class_date = CURRENT_DATE";
-  let attendanceFilter = "attendance.date = CURRENT_DATE"
+  let attendanceFilter = "attendance.date = CURRENT_DATE";
   const filterValues: string[] = [];
 
   if (value.date) {
@@ -286,13 +325,18 @@ export const getTeacherClassStatusList = asyncErrorHandler(async (req, res) => {
         ORDER BY u.id DESC
     `,
     filterValues
-  )
+  );
 
-  res.status(200).json(new ApiResponse(200, "Daily Teacher Class Status Info", rows))
-})
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Daily Teacher Class Status Info", rows));
+});
 
 export const editTeacherClassStatus = asyncErrorHandler(async (req, res) => {
-  const { error, value } = VEditTeacherClassStatus.validate({ ...req.body, ...req.query });
+  const { error, value } = VEditTeacherClassStatus.validate({
+    ...req.body,
+    ...req.query,
+  });
   if (error) throw new ErrorHandler(400, error.message);
 
   const userId = value.id;
@@ -300,8 +344,8 @@ export const editTeacherClassStatus = asyncErrorHandler(async (req, res) => {
   await manageTeacherClassStatus({
     employee_id: userId,
     values: value.for_courses,
-    date: value.date
-  })
+    date: value.date,
+  });
 
-  res.status(200).json(new ApiResponse(200, "Class status updated"))
-})
+  res.status(200).json(new ApiResponse(200, "Class status updated"));
+});
