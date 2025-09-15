@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {  useState } from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import PageMeta from "../../../components/common/PageMeta";
 import ComponentCard from "../../../components/common/ComponentCard";
@@ -76,7 +76,7 @@ const options: MultiSelectOption[] = [
     name: "Report",
     id: 14,
   },
-    {
+  {
     name: "Settings",
     id: 15,
   },
@@ -114,8 +114,6 @@ export default function CreateEmployee() {
   const [id, setId] = useState<number>();
   const [showPassword, setShowPassword] = useState(false);
   const [teacher, setTeacher] = useState<string>("");
-  const [pageCount, setPageCount] = useState<number>(1);
-
   const togglePassword = () => {
     setShowPassword((prev) => !prev);
   };
@@ -147,29 +145,11 @@ export default function CreateEmployee() {
   );
 
   // get course list
-  const { data: courseList, isLoading: courseLoading } = useSWR(
+  const { data: courseList } = useSWR(
     "api/v1/course",
     getFetcher
   );
 
-  // get stuff list
-  const {
-    data: stufflist,
-    isLoading: stuffLoading,
-    error: stuffError,
-  } = useSWR(`api/v1/users?page=${pageCount}`, getFetcher);
-  if (courseLoading) {
-    return <div>Loading ...</div>;
-  }
-  if (stuffLoading) {
-    return <div>Loading...</div>;
-  }
-  if (stuffError) {
-    return <div>Error...</div>;
-  }
-  const handleChildData = (data: any) => {
-    setPageCount(data);
-  };
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -195,7 +175,6 @@ export default function CreateEmployee() {
   };
   const handleNameChange = (selected: any[]) => {
     setFormData((prev: any) => ({
-      
       ...prev,
       permissions: selected,
     }));
@@ -417,13 +396,13 @@ export default function CreateEmployee() {
       ),
     }));
   };
+
   const jumpToTop = () => {
     window.scrollTo({
       top: 0,
       behavior: "smooth",
     });
   };
-
 
   return (
     <div>
@@ -742,8 +721,8 @@ export default function CreateEmployee() {
                     <div className="grid grid-cols-1 gap-6 xl:grid-cols-1">
                       <div className="flex gap-30 text-gray-400 w-[50%]">
                         <div>Salary Head</div>
-                         <div>Amount</div>
-                          <div>Amount Type</div>
+                        <div>Amount</div>
+                        <div>Amount Type</div>
                       </div>
                       {formData?.fee_structure_stuff?.map((entry, index) => (
                         <div key={index} className="flex gap-4 items-center">
@@ -862,11 +841,7 @@ export default function CreateEmployee() {
                 </div>
               </form>
             </div>
-            <BasicTableCreateEmployee
-              stufflist={stufflist}
-              onEdit={handleEdit}
-              onSendData={handleChildData}
-            />
+            <BasicTableCreateEmployee onEdit={handleEdit} />
           </ComponentCard>
         </div>
       </div>

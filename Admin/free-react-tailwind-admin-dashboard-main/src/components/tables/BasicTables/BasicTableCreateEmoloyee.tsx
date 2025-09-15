@@ -5,27 +5,34 @@ import {
   TableHeader,
   TableRow,
 } from "../../ui/table";
-
-// import { mutate } from "swr";
-// import { deleteFetcher } from "../../../api/fatcher";
-// import useSWRMutation from "swr/mutation";
-// import { message } from "antd";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Pagination from "../../form/Pagination";
+import useSWR from "swr";
+import { getFetcher } from "../../../api/fatcher";
 
 interface IProps {
-  stufflist: any;
   onEdit: (id: number) => void;
-  onSendData: any;
 }
 
 // Define the table data using the interface
 
-const BasicTableCreateEmployee: React.FC<IProps> = ({
-  stufflist,
-  onEdit,
-  onSendData,
-}) => {
+const BasicTableCreateEmployee: React.FC<IProps> = ({ onEdit }) => {
+  // const employeeTableRef = useRef<HTMLDivElement>(null);
+  const [page, setPage] = useState(1);
+
+  // get employee list
+  const {
+    data: stufflist,
+    isLoading: stuffLoading,
+    error: stuffError,
+  } = useSWR(`api/v1/users?page=${page}`, getFetcher);
+  if (stuffLoading) {
+    return <div>Loading Stuff...</div>;
+  }
+  if (stuffError) {
+    return <div>Error...</div>;
+  }
+
   // const onShowSizeChange: PaginationProps["onShowSizeChange"] = (
   //   current,
   //   pageSize
@@ -50,10 +57,10 @@ const BasicTableCreateEmployee: React.FC<IProps> = ({
   //     messageApi.error("Failed to delete user");
   //   }
   // };
-  const [count, setCount] = useState(1);
-  useEffect(() => {
-    onSendData(count);
-  }, [count, onSendData]);
+  // const [count, setCount] = useState(1);
+  // useEffect(() => {
+  //   onSendData(count);
+  // }, [count]);
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
@@ -161,8 +168,11 @@ const BasicTableCreateEmployee: React.FC<IProps> = ({
         </Table>
         <div className="p-8">
           <Pagination
-            count={count}
-            onChange={setCount}
+            count={page}
+            onChange={(page) => {
+              setPage(page);
+              // employeeTableRef.current?.scrollIntoView({ behavior: "smooth" });
+            }}
             length={stufflist?.data?.length ? stufflist?.data?.length : 1}
           />
         </div>
