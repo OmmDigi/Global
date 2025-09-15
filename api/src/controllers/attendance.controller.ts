@@ -23,8 +23,7 @@ export const storeAttendance = asyncErrorHandler(async (req, res) => {
   const placeholder = punchData
     .map(
       (_, index) =>
-        `($${index * 4 + 1}, $${index * 4 + 2}, $${index * 3 + 3
-        }, CURRENT_DATE)`
+        `($${index * 3 + 1}, $${index * 3 + 2}, $${index * 3 + 3}, CURRENT_DATE)`
     )
     .join(", ");
 

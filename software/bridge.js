@@ -3,7 +3,6 @@ const { WebSocket } = require("ws");
 
 const config = {
   cloud_api_url: "https://essl.globaltechnicalinstitute.com",
-  // cloud_api_url: "http://127.0.0.1:6001",
   device_id: "ESSL-001",
   auth_token: "YOUR_SECRET_TOKEN",
 };
