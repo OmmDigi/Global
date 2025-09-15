@@ -1,7 +1,7 @@
 // send_punch.js
 import https from "https";
 
-const data = '1 2025-09-15 10:30:15 1 0 0\n1 2025-09-15 10:31:05 1 0 0';
+const data = '1 2025-09-15 10:30:15 1 0 0\n1 2025-09-15 13:44 1 0 0';
 
 const options = {
   hostname: 'punch.globaltechnicalinstitute.com', // change to IP if needed
