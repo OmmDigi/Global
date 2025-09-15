@@ -20,38 +20,48 @@ export const storeAttendance = asyncErrorHandler(async (req, res) => {
 
   const punchData = value.data as { userId: number; time: string }[];
 
-  // const placeholder = punchData
-  //   .map(
-  //     (_, index) =>
-  //       `($${index * 3 + 1}, $${index * 3 + 2}, $${index * 3 + 3}, CURRENT_DATE)`
-  //   )
-  //   .join(", ");
+  // Step 1: group punches by userId + date
+  const grouped = Object.values(
+    punchData.reduce((acc, item) => {
+      const date = item.time.split(" ")[0]; // get YYYY-MM-DD
+      const key = `${item.userId}-${date}`;
 
-  // await pool.query(
-  //   `
-  //    INSERT INTO attendance
-  //       (employee_id, in_time, status, date)
-  //    VALUES
-  //       ${placeholder}
-  //    ON CONFLICT (employee_id, date) DO UPDATE
-  //       SET out_time = EXCLUDED.in_time
-  //   `,
-  //   punchData.flatMap((item) => [item.userId, item.time, "Present"])
-  // );
+      if (!acc[key]) {
+        acc[key] = {
+          userId: item.userId,
+          inTime: item.time,
+          outTime: item.time,
+          status: "Present",
+          date,
+        };
+      } else {
+        // earliest punch = in_time
+        if (item.time < acc[key].inTime) acc[key].inTime = item.time;
+        // latest punch = out_time
+        if (item.time > acc[key].outTime) acc[key].outTime = item.time;
+      }
 
-  const placeholder = punchData
+      return acc;
+    }, {} as Record<string, any>)
+  );
+
+  const finalPunches = grouped;
+
+  // Step 2: build placeholders for bulk insert
+  const placeholder = finalPunches
     .map(
       (_, index) =>
-        `($${index * 4 + 1}, $${index * 4 + 2}, $${index * 4 + 3}, $${
-          index * 4 + 4
-        })`
+        `($${index * 5 + 1}, $${index * 5 + 2}, $${index * 5 + 3}, $${
+          index * 5 + 4
+        }, $${index * 5 + 5})`
     )
     .join(", ");
 
+  // Step 3: execute bulk insert with ON CONFLICT
   await pool.query(
     `
    INSERT INTO attendance 
-      (employee_id, in_time, status, date)
+      (employee_id, in_time, out_time, status, date)
    VALUES
       ${placeholder}
    ON CONFLICT (employee_id, date) DO UPDATE
@@ -60,17 +70,15 @@ export const storeAttendance = asyncErrorHandler(async (req, res) => {
                   WHEN attendance.in_time IS NULL THEN EXCLUDED.in_time
                   ELSE attendance.in_time
                 END,
-      out_time = CASE
-                   WHEN attendance.in_time IS NOT NULL 
-                     THEN GREATEST(EXCLUDED.in_time, attendance.out_time)
-                   ELSE attendance.out_time
-                 END
+      out_time = GREATEST(attendance.out_time, EXCLUDED.out_time),
+      status = EXCLUDED.status
   `,
-    punchData.flatMap((item) => [
+    finalPunches.flatMap((item) => [
       item.userId,
-      item.time,
-      "Present",
-      item.time.split(" ")[0], // use the date part
+      item.inTime,
+      item.outTime,
+      item.status,
+      item.date,
     ])
   );
 
