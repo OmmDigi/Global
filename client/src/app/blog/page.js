@@ -6,8 +6,7 @@ import Navbar from "@/components/Navbar";
 // import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import Link from "next/link";
-import {  wordpressApi } from "@/lib/fetcher";
-import useSWR from "swr";
+import { wordpressApi } from "@/lib/fetcher";
 import Image from "next/image";
 // import Image from "next/image";
 
@@ -25,9 +24,9 @@ import Image from "next/image";
 //     items: 1,
 //   },
 // };
- 
-async function page({searchParams}) {
-  const currentPage = parseInt(await searchParams.page ?? "1")
+
+async function page({ searchParams }) {
+  const currentPage = parseInt((await searchParams.page) ?? "1");
   const api = await wordpressApi();
   // useEffect(() => {
   //   const handleKeyDown = (e) => {
@@ -38,9 +37,11 @@ async function page({searchParams}) {
   // }, []);
 
   // get blog list
-  const response = await api.get(`wp-json/custom/v1/blogs?page=${currentPage}&per_page=10`);
-  console.log("response", response?.data)
-const total  = response?.data?.total_pages
+  const response = await api.get(
+    `wp-json/custom/v1/blogs?page=${currentPage}&per_page=10`
+  );
+  console.log("response", response?.data);
+  const total = response?.data?.total_pages;
   return (
     <>
       <Navbar />
@@ -122,8 +123,8 @@ const total  = response?.data?.total_pages
 
       <div className="flex justify-center items-center space-x-4 mb-5">
         <Link
-           href = {`/blog?page=${currentPage == 1 ? 1 :  currentPage - 1}`}
-         // onClick={handlePrev}
+          href={`/blog?page=${currentPage == 1 ? 1 : currentPage - 1}`}
+          // onClick={handlePrev}
           // disabled={count == 1}
           className="px-4 py-2 bg-gray-500 text-gray-50 rounded disabled:opacity-50"
         >
@@ -138,7 +139,7 @@ const total  = response?.data?.total_pages
         </span>
 
         <Link
-        href = {`/blog?page=${currentPage >= total ? total : currentPage + 1}`}
+          href={`/blog?page=${currentPage >= total ? total : currentPage + 1}`}
           // disabled={length < 10}
           // onClick={handleNext}
           className={`px-4 py-2  bg-blue-500 text-white rounded`}

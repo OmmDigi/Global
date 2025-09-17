@@ -82,7 +82,6 @@ module.exports = {
       },
     },
   },
-  plugins: [],
   theme: {
     extend: {},
     screens: {
@@ -95,7 +94,7 @@ module.exports = {
       "2xl": "1536px", // 2X Large
     },
   },
-  plugins: [],
+  plugins: [ require('@tailwindcss/typography'),],
   theme: {
     extend: {
       animation: {
@@ -129,5 +128,4 @@ module.exports = {
  
   },
   variants: {},
-  plugins: [],
 };
