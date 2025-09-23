@@ -48,3 +48,21 @@ export const deleteFetcher = async (url) => {
   const response = await API.delete(url);
   return response.data;
 };
+
+
+export async function wordpressApi() {
+  // const accessToken = await getRefreshToken();
+ 
+  return axios.create({
+    baseURL:
+      (typeof window !== "undefined"
+        ? process.env.NEXT_PUBLIC_BLOG
+        : "http://blog.globaltechnicalinstitute.com/"),
+    headers: {
+      "Content-Type": "application/json",
+      // Cookie: `refreshToken=${accessToken}`,
+      // Authorization: `Bearer ${accessToken}`,
+    },
+    withCredentials: true,
+  });
+}
