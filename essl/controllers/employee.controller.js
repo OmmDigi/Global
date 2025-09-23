@@ -3,6 +3,7 @@ import asyncErrorHandler from "../middleware/asyncErrorHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ErrorHandler } from "../utils/ErrorHandler.js";
 import {
+  VCreateAttendanceLog,
   VCreateEmployee,
   VDeleteEmployee,
 } from "../validator/employee.validator.js";
@@ -64,3 +65,18 @@ export const updateEmployee = asyncErrorHandler(async (req, res) => {
     .status(201)
     .json(new ApiResponse(200, "User update request sent to the device"));
 });
+
+export const createAttendanceLogFile =asyncErrorHandler(async (req, res) => {
+  const { error, value } = VCreateAttendanceLog.validate(req.body ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
+
+  const device_id = value.device_id;
+
+  const ws = clients.get(device_id);
+
+  if (!ws || ws.readyState !== WebSocket.OPEN) {
+    throw new ErrorHandler(400, "Essl Device not connected");
+  }
+
+  ws.send(JSON.stringify({ action: "set_attendance_logs" }));
+})

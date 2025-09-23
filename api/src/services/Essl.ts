@@ -1,4 +1,4 @@
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import { IError } from "../config/types";
 
 type SetUser = {
