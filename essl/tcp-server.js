@@ -15,6 +15,10 @@ const tcpServer = net.createServer((socket) => {
   socket.on("data", (chunk) => {
     rawData += chunk.toString();
 
+    console.log("DATA IS COMMING FORM ESSL DEVICE");
+    console.log(`__${new Date().toISOString()}__`);
+    console.log(rawData);
+
     if (rawData.includes("\r\n\r\n") || rawData.includes("Connection: close")) {
       const parts = rawData.split("\r\n\r\n");
       const headers = parts[0];

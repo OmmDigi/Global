@@ -35,6 +35,8 @@ export const VGetAdmissionList = Joi.object({
   course: Joi.number().optional(),
   batch: Joi.number().optional(),
   form_no: Joi.string().optional(),
+  ph_no : Joi.string().optional(),
+  name : Joi.string().optional(),
   page: Joi.number().optional(),
   token: Joi.string().optional()
 })

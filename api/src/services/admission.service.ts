@@ -132,6 +132,17 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
     filterValues.push(value.form_no)
   }
 
+  if (value.ph_no) {
+    filter = `WHERE u.ph_no = $${placeholder++}`;
+    filterValues.push(value.ph_no)
+  }
+
+  if (value.name) {
+    filter = `WHERE u.name = $${placeholder++}`;
+    filterValues.push(value.name);
+  }
+
+
   return await pool.query(
     `
       SELECT
