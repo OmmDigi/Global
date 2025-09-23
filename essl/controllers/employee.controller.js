@@ -79,4 +79,7 @@ export const createAttendanceLogFile =asyncErrorHandler(async (req, res) => {
   }
 
   ws.send(JSON.stringify({ action: "set_attendance_logs" }));
+   res
+    .status(201)
+    .json(new ApiResponse(200, "New attendance log file has created"));
 })
