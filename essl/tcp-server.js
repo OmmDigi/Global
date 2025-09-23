@@ -15,6 +15,7 @@ const tcpServer = net.createServer((socket) => {
   socket.on("data", (chunk) => {
     rawData += chunk.toString();
 
+    console.log("");
     console.log("DATA IS COMMING FORM ESSL DEVICE");
     console.log(`__${new Date().toISOString()}__`);
     console.log(rawData);
