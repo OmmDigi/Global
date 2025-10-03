@@ -6,6 +6,7 @@ import useSWR from "swr";
 import { getFetcher, postFetcher } from "../../../api/fatcher";
 import useSWRMutation from "swr/mutation";
 import dayjs from "dayjs";
+import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 
 export default function AdminReport() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -14,6 +15,7 @@ export default function AdminReport() {
     null,
     null,
   ]);
+
   const [startDate, endDate] = dateRange;
   const [excelFileUrl, setExcelFileUrl] = useState<string | null>(null);
   const [course, setCourse] = useState<number>(0);
@@ -91,6 +93,8 @@ export default function AdminReport() {
   return (
     <div>
       {contextHolder}
+            <PageBreadcrumb pageTitle="Admin Report" />
+      
       <ComponentCard title="Report For Admission Payment (Online / Cash / Cheque)">
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-4">
           <div>

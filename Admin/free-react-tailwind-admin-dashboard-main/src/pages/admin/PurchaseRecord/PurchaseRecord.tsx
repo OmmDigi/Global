@@ -333,31 +333,7 @@ export default function PurchaseRecord() {
                         placeholder="Expaire Date"
                       />
                     </div>
-                    <div>
-                      <Label>Previous Balance</Label>
-                      <Input
-                        type="number"
-                        id="inputTwo"
-                        name="previousBalance"
-                        onChange={handleChange}
-                        value={formData?.previousBalance}
-                        placeholder="Previous Balance"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-                    <div>
-                      <Label>Present Balance</Label>
-                      <Input
-                        type="number"
-                        id="inputTwo"
-                        name="presentBalance"
-                        onChange={handleChange}
-                        value={formData?.presentBalance}
-                        placeholder="Present Balance"
-                      />
-                    </div>
-                    <div>
+                       <div>
                       <Label>Quantity Received</Label>
                       <Input
                         type="number"
@@ -368,7 +344,33 @@ export default function PurchaseRecord() {
                         placeholder="Quantity Received"
                       />
                     </div>
+                    {/* <div>
+                      <Label>Previous Balance</Label>
+                      <Input
+                        type="number"
+                        id="inputTwo"
+                        name="previousBalance"
+                        onChange={handleChange}
+                        value={formData?.previousBalance}
+                        placeholder="Previous Balance"
+                      />
+                    </div> */}
+
                   </div>
+                  {/* <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                    <div>
+                      <Label>Present Balance</Label>
+                      <Input
+                        type="number"
+                        id="inputTwo"
+                        name="presentBalance"
+                        onChange={handleChange}
+                        value={formData?.presentBalance}  
+                        placeholder="Present Balance"
+                      />
+                    </div>
+                 
+                  </div> */}
                   {/* photo  */}
                   <div className="flex justify-center">
                     <div className="w-32 h-40 border-2 border-gray-400 flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-800">

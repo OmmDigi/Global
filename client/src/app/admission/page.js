@@ -63,6 +63,7 @@ function page() {
     guardianName: "",
     address: "",
     phone: "",
+    email:"",
     mobile: "",
     sex: "",
     dateOfBirth: "",
@@ -134,6 +135,7 @@ function page() {
     username: "",
     password: "",
   });
+
   const [formData2, setFormData2] = useState({
     form_id: "",
     fee_structure_info: [],
@@ -337,7 +339,7 @@ function page() {
     console.log("formData2:", formData2);
     setFormData2({
       form_id: `${feesStructure?.data?.form_id}`,
-      fee_structure_info: [],
+      fee_structure_info: formData2.fee_structure_info,
     });
 
     try {
@@ -725,7 +727,7 @@ function page() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-3 gap-4">
                       <div>
                         <label className="block text-sm text-start text-gray-700 mb-1">
                           Whatsapp No <span className="text-red-500">*</span>
@@ -746,6 +748,18 @@ function page() {
                           type="tel"
                           name="mobile"
                           value={formData.mobile}
+                          onChange={handleInputChange}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                        <div>
+                        <label className="block text-sm text-start text-gray-700 mb-1">
+                          Email <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="email"
+                          name="email"
+                          value={formData.email}
                           onChange={handleInputChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />

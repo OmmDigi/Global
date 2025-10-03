@@ -33,7 +33,6 @@ const BasicTableCourses: React.FC<IProps> = ({
   // ) => {
   // };
 
-
   const [count, setCount] = useState(1);
   useEffect(() => {
     onSendData(count);
@@ -51,19 +50,19 @@ const BasicTableCourses: React.FC<IProps> = ({
               >
                 Course name
               </TableCell>
-              <TableCell
+              {/* <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
                 Session
-              </TableCell>
+              </TableCell> */}
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
                 Duration
               </TableCell>
-              <TableCell
+              {/* <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
@@ -74,7 +73,7 @@ const BasicTableCourses: React.FC<IProps> = ({
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
                 Price
-              </TableCell>
+              </TableCell> */}
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
@@ -112,18 +111,18 @@ const BasicTableCourses: React.FC<IProps> = ({
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                {/* <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   {order.session_id}
-                </TableCell>
+                </TableCell> */}
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   {order.duration}
                 </TableCell>
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                {/* <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   {order.payment_mode}
                 </TableCell>
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   {order.price}
-                </TableCell>
+                </TableCell> */}
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   {dayjs(order.created_at).format("DD/MM/YYYY")}
                 </TableCell>
@@ -147,7 +146,6 @@ const BasicTableCourses: React.FC<IProps> = ({
                     >
                       Edit
                     </button>
-                 
                   </div>
                 </TableCell>
               </TableRow>

@@ -18,11 +18,15 @@ export default function MonthlyIncome() {
     `api/v1/dashboard/income${
       dateRange[0]
         ? `?from_date=${dayjs(dateRange[0]).format(
-            "YYYY-MM-DD")}&to_date=${dayjs(dateRange[1]).format("YYYY-MM-DD")}`: ""}`,getFetcher);  
+            "YYYY-MM-DD"
+          )}&to_date=${dayjs(dateRange[1]).format("YYYY-MM-DD")}`
+        : ""
+    }`,
+    getFetcher
+  );
   if (incomeLoading) {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }
-
 
   const data = [
     ["Task", "Hours per Day"],
@@ -59,19 +63,21 @@ export default function MonthlyIncome() {
               Target you’ve set for each month
             </p>
           </div>
-          <DatePicker
-            selectsRange={true}
-            startDate={startDate}
-            endDate={endDate}
-            onChange={(update) => {
-              setDateRange(update);
-            }}
-            isClearable={true}
-            dateFormat="dd/MM/yyyy"
-            placeholderText="Select date range"
-            className="border rounded-md px-3 py-1 text-sm dark:bg-gray-800 dark:text-white"
-            calendarClassName="!bg-white dark:!bg-gray-200"
-          />
+          <div>
+            <DatePicker
+              selectsRange={true}
+              startDate={startDate}
+              endDate={endDate}
+              onChange={(update) => {
+                setDateRange(update);
+              }}
+              isClearable={true}
+              dateFormat="dd/MM/yyyy"
+              placeholderText="Select date range"
+              className="border rounded-md px-3 py-1 text-sm dark:bg-gray-800 dark:text-white"
+              calendarClassName="!bg-white dark:!bg-gray-200"
+            />
+          </div>
         </div>
         <div className="relative ">
           <div className="max-h-[630px] " id="chartDarkStyle">

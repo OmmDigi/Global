@@ -5,6 +5,7 @@ import useSWR, { mutate } from "swr";
 import { getFetcher, patchFetcher } from "../../../api/fatcher";
 import { message } from "antd";
 import useSWRMutation from "swr/mutation";
+import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 
 export default function ManageLeave() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -53,6 +54,8 @@ export default function ManageLeave() {
         title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
         description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
+                  <PageBreadcrumb pageTitle="Manage Leave" />
+
       <div className=" max-w-full overflow-x-auto">
         <div className="col-span-12 space-y-6 xl:col-span-7">
           {/* <EcommerceMetrics /> */}

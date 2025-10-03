@@ -42,7 +42,7 @@ export default function SignInForm() {
         try {
           const response = await create( formData as any);
           
-          const queryString = new URLSearchParams({
+            const queryString = new URLSearchParams({
             token: response.data?.token,
             category: response.data?.category,
             id: response.data?.id,

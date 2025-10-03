@@ -15,6 +15,7 @@ import useSWRMutation from "swr/mutation";
 import dayjs from "dayjs";
 import DatePicker from "react-datepicker";
 import Label from "../../../components/form/Label";
+import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 
 type Course = {
   id: number;
@@ -168,6 +169,8 @@ export default function TacherAssingedClass() {
         title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
         description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
+                  <PageBreadcrumb pageTitle="Teacher Assinged Class" />
+
       <div className="flex justify-center flex-col items-center mb-10">
         <Label> Date</Label>
         <DatePicker

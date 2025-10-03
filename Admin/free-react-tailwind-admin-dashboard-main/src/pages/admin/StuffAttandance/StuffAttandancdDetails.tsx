@@ -81,7 +81,7 @@ export default function StuffAttandancdDetails() {
         title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
         description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
-      <PageBreadcrumb pageTitle=" Details" />
+      <PageBreadcrumb pageTitle=" Details" link="stuff-attandance" />
       <h1 className="text-gray-800 dark:text-amber-50 text-3xl mb-15">
         {attandanceList?.data?.name}
       </h1>

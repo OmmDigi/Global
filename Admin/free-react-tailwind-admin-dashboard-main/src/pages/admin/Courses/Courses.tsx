@@ -10,11 +10,11 @@ import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 import { message } from "antd";
 
-
 type FormDataType = {
   id?: number; // optional (if sometimes missing)
   name: string;
   duration: string;
+  duration_name: string;
   fee_structure: {
     fee_head_id: string;
     amount: string;
@@ -33,6 +33,7 @@ export default function Courses() {
     // id: 0,
     name: "",
     duration: "",
+    duration_name: "",
     fee_structure: [
       { fee_head_id: "", amount: "", min_amount: "", required: false },
       { fee_head_id: "", amount: "", min_amount: "", required: false },
@@ -51,10 +52,11 @@ export default function Courses() {
   );
 
   // get course list
-  const { data: courseList, isLoading: courseLoading,mutate } = useSWR(
-    `api/v1/course?page=${pageCount}`,
-    getFetcher
-  );
+  const {
+    data: courseList,
+    isLoading: courseLoading,
+    mutate,
+  } = useSWR(`api/v1/course?page=${pageCount}`, getFetcher);
 
   //  get fees head
   const { data: feehead, isLoading: feeheadLoading } = useSWR(
@@ -85,7 +87,7 @@ export default function Courses() {
       [name]: value,
     }));
   };
- const handleChildData = (data: any) => {
+  const handleChildData = (data: any) => {
     setPageCount(data);
   };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -98,12 +100,13 @@ export default function Courses() {
         type: "success",
         content: response.message,
       });
-mutate()
+      mutate();
       setFormData({
         // id: 0,
         name: "",
         duration: "",
         description: "",
+        duration_name: "",
         fee_structure: [
           { fee_head_id: "", amount: "", min_amount: "", required: false },
           { fee_head_id: "", amount: "", min_amount: "", required: false },
@@ -129,6 +132,7 @@ mutate()
         id: id,
         name: userData?.name,
         duration: userData?.duration,
+        duration_name: userData?.duration_name,
         description: userData?.description,
         fee_structure: Array.isArray(userData?.fee_structure)
           ? userData.fee_structure.map((item: any) => ({
@@ -142,14 +146,13 @@ mutate()
               { fee_head_id: "", amount: "", min_amount: "", requierd: 0 },
             ],
       });
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   const handleUpdate = async () => {
     try {
       const response = await update(formData as any);
-      mutate()
+      mutate();
       messageApi.open({
         type: "success",
         content: response.message,
@@ -159,6 +162,7 @@ mutate()
         // id: 0,
         name: "",
         duration: "",
+        duration_name: "",
         description: "",
         fee_structure: [
           { fee_head_id: "", amount: "", min_amount: "", required: false },
@@ -187,7 +191,7 @@ mutate()
     try {
       const response = await update(UpdateFormPayload as any);
 
-     mutate()
+      mutate();
       messageApi.open({
         type: "success",
         content: response.message,
@@ -258,17 +262,27 @@ mutate()
                   />
                 </div>
 
-                <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-                  <div>
-                    <Label htmlFor="inputTwo">Duration</Label>
+                <div>
+                  <Label htmlFor="inputTwo">Duration</Label>
+                  <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 w-[40%]">
                     <Input
-                      type="text"
+                      type="number"
                       id="inputTwo"
                       name="duration"
                       onChange={handleChange}
                       value={formData.duration}
-                      placeholder="Duration"
+                      placeholder="6"
                     />
+                    <select
+                      name="duration_name"
+                      value={formData?.duration_name as any}
+                      onChange={handleChange}
+                      className="w-auto px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                    >
+                      <option value="">Choose</option>
+                      <option value="month">Month</option>
+                      {/* <option value="year">Year</option> */}
+                    </select>
                   </div>
                 </div>
                 <div className="flex justify-between ">

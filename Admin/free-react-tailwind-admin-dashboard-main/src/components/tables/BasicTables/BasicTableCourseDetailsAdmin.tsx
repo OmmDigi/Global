@@ -52,6 +52,24 @@ export default function BasicTableCourseDetailsAdmin({
                 >
                   Amount
                 </TableCell>
+                 <TableCell
+                  isHeader
+                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                >
+                  Bill No
+                </TableCell>
+                  <TableCell
+                  isHeader
+                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                >
+                  Month Of Payment
+                </TableCell>
+                 <TableCell
+                  isHeader
+                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                >
+                  Payment Date
+                </TableCell>
                 <TableCell
                   isHeader
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
@@ -61,15 +79,6 @@ export default function BasicTableCourseDetailsAdmin({
               </TableRow>
             </TableHeader>
 
-            {/* Table Body */}
-            {/* "id": 6,
-            "course_id": "41",
-            "session_id": "24",
-            "month_id": 2,
-            "is_active": false,
-            "created_at": "2025-07-30T10:38:54.744Z",
-            "session_name": "2026 - 2027",
-            "course_name": " CMS & ED Training" */}
             <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
               {fees_structure_table?.map((order: any, index: number) => (
                 <TableRow key={order.id}>
@@ -101,6 +110,33 @@ export default function BasicTableCourseDetailsAdmin({
                       <div>
                         <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
                           {order.amount == -1 ? "Amount Paid" : order.amount}
+                        </span>
+                      </div>
+                    </div>
+                  </TableCell>
+                   <TableCell className="px-5 py-4 sm:px-6 text-start">
+                    <div className="flex items-center gap-3">
+                      <div>
+                        <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                          {order.bill_no}
+                        </span>
+                      </div>
+                    </div>
+                  </TableCell>
+                    <TableCell className="px-5 py-4 sm:px-6 text-start">
+                    <div className="flex items-center gap-3">
+                      <div>
+                        <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                          {order.month}
+                        </span>
+                      </div>
+                    </div>
+                  </TableCell>
+                   <TableCell className="px-5 py-4 sm:px-6 text-start">
+                    <div className="flex items-center gap-3">
+                      <div>
+                        <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                          {order.payment_date}
                         </span>
                       </div>
                     </div>

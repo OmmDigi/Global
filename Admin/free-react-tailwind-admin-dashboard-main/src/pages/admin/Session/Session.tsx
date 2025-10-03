@@ -14,7 +14,6 @@ export default function Session() {
   const [messageApi, contextHolder] = message.useMessage();
   const [id, setId] = useState<number>(0);
   const [formData, setFormData] = useState({
-    //  id: 0,
     name: "",
   });
 
@@ -110,6 +109,7 @@ export default function Session() {
     }
   };
 
+  
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {

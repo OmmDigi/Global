@@ -31,6 +31,7 @@ const initialFormData = {
   guardianName: "",
   address: "",
   phone: "",
+  email: "",
   mobile: "",
   sex: "",
   dateOfBirth: "",
@@ -118,7 +119,7 @@ export default function AdmissionAdmin() {
   const [course, setCourse] = useState<number>(0);
   const [batch, setBatch] = useState<any>(0);
   const [searchData, setSearchData] = useState<any>({});
-  const [formSearch, setFormSearch] = useState<string>("");
+  const [formSearch, setFormSearch] = useState<any>({});
   const [pageCount, setPageCount] = useState<number>(1);
 
   // get course list
@@ -175,9 +176,11 @@ export default function AdmissionAdmin() {
   };
 
   const handleFormSearch = async () => {
+    console.log("formSearch", formSearch);
+
     if (formSearch) {
       const response = await getFetcher(
-        `api/v1/admission?form_no=${formSearch}`
+        `api/v1/admission?${formSearch.type}=${formSearch.value}`
       );
       if (response) {
         setSearchData(response);
@@ -190,6 +193,7 @@ export default function AdmissionAdmin() {
     }
   };
 
+  
   const { trigger: create } = useSWRMutation(
     "api/v1/admission/create",
     (url, { arg }) => postFetcher(url, arg)
@@ -464,8 +468,11 @@ export default function AdmissionAdmin() {
   };
 
   const FormSearch = (e: any) => {
-    const { value } = e.target;
-    setFormSearch(value);
+    const { name, value } = e.target;
+    setFormSearch((prev: any) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const selectedCourse = Array.isArray(courseList?.data)
@@ -524,7 +531,8 @@ export default function AdmissionAdmin() {
                         <div>
                           <div className="w-12/12  mb-4">
                             <label className="block text-lg font-bold text-gray-700 mb-1">
-                              Choose your Courses
+                              Choose your Courses{" "}
+                              <span className="text-red-500">*</span>
                             </label>
                             <select
                               key={editedFormId + "courseName"}
@@ -549,7 +557,8 @@ export default function AdmissionAdmin() {
                           <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 mb-10">
                             <div>
                               <label className="block text-sm font-bold text-gray-700 mb-1">
-                                Choose your Session
+                                Choose your Session{" "}
+                                <span className="text-red-500">*</span>
                               </label>
                               <select
                                 key={editedFormId + "sessionName"}
@@ -575,7 +584,8 @@ export default function AdmissionAdmin() {
                             </div>
                             <div>
                               <label className="block text-sm font-bold text-gray-700 mb-1">
-                                Choose your Batch
+                                Choose your Batch{" "}
+                                <span className="text-red-500">*</span>
                               </label>
                               <select
                                 key={editedFormId + "batchName"}
@@ -656,7 +666,8 @@ export default function AdmissionAdmin() {
 
                                 <div>
                                   <label className="block text-sm text-start text-gray-700 mb-1">
-                                    Candidate's Name
+                                    Candidate's Name{" "}
+                                    <span className="text-red-500">*</span>
                                   </label>
                                   <input
                                     type="text"
@@ -720,10 +731,11 @@ export default function AdmissionAdmin() {
                                 </div>
                               </div>
 
-                              <div className="grid grid-cols-2 gap-4">
+                              <div className="grid grid-cols-3 gap-4">
                                 <div>
                                   <label className="block text-sm text-start text-gray-700 mb-1">
-                                    Whatsapp No
+                                    Whatsapp No{" "}
+                                    <span className="text-red-500">*</span>
                                   </label>
                                   <input
                                     type="tel"
@@ -741,6 +753,20 @@ export default function AdmissionAdmin() {
                                     type="tel"
                                     name="mobile"
                                     value={formData.mobile}
+                                    onChange={handleInputChange}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-sm text-start text-gray-700 mb-1">
+                                    Email{" "}
+                                    <span className="text-red-500">*</span>
+                                  </label>
+                                  <input
+                                    required
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
                                     onChange={handleInputChange}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                   />
@@ -1606,7 +1632,7 @@ export default function AdmissionAdmin() {
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-10">
                             <div>
                               <label className="block text-sm font-medium text-start text-gray-700 mb-2">
-                                Set User Name
+                                Set User Name <span className="text-red-500">*</span>
                               </label>
                               <input
                                 type="text"
@@ -1620,7 +1646,7 @@ export default function AdmissionAdmin() {
 
                             <div>
                               <label className="block text-sm font-medium text-start text-gray-700 mb-2">
-                                Set Your password
+                                Set Your password <span className="text-red-500">*</span>
                               </label>
                               <input
                                 type="password"
@@ -1750,23 +1776,43 @@ export default function AdmissionAdmin() {
                 </Button>
               </div>
             </div>
-            <div>
+
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+              <div>
+                <label className="block text-sm font-bold text-gray-500 mb-1">
+                  Search Type
+                </label>
+                <select
+                  key={editedFormId + "batchName"}
+                  name="type"
+                  disabled={id ? true : false}
+                  // defaultValue={formData.batchName}
+                  onChange={FormSearch}
+                  className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Option</option>
+                  <option value="form_no">Form No</option>
+                  <option value="name">Name</option>
+                  <option value="email">Email</option>
+                  <option value="ph_no">Ph No</option>
+                </select>
+              </div>
               <div>
                 <label className="block text-sm text-start text-gray-500 mb-1">
-                  Search by Form No
+                  Search by
                 </label>
                 <input
                   type="text"
-                  name="form_no"
+                  name="value"
                   onChange={FormSearch}
                   className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md"
                 />
               </div>
-              <div className="flex justify-end mt-5">
-                <Button type="primary" onClick={handleFormSearch}>
-                  Search
-                </Button>
-              </div>
+            </div>
+            <div className="flex justify-end mt-5">
+              <Button type="primary" onClick={handleFormSearch}>
+                Search
+              </Button>
             </div>
             <BasicTableAdmission
               admissionlist={searchData?.data ? searchData : admissionlist}
