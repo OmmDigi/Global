@@ -132,6 +132,22 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
     filterValues.push(value.form_no)
   }
 
+  if (value.ph_no) {
+    filter = `WHERE u.ph_no = $${placeholder++}`;
+    filterValues.push(value.ph_no)
+  }
+
+  if (value.name) {
+    filter = `WHERE u.name = $${placeholder++}`;
+    filterValues.push(value.name);
+  }
+
+  if(value.email) {
+    filter = `WHERE u.email = $${placeholder++}`;
+    filterValues.push(value.email);
+  }
+ 
+
   return await pool.query(
     `
       SELECT
@@ -184,9 +200,12 @@ export const getSingleAdmissionData = async (
             ff.id AS form_id,
             ff.form_name,
             u.name AS student_name,
+            u.email,
+            u.ph_no,
             ff.declaration_status,
             u.image AS student_image,
             c.name AS course_name,
+            (c.duration || ' ' || c.duration_name) AS duration,
             b.month_name AS batch_name,
             s.name AS session_name,
             COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id), 0.00) AS course_fee,
@@ -246,6 +265,8 @@ export const getSingleAdmissionData = async (
         SELECT
           cfh.name AS fee_head_name,
           p.*,
+          TO_CHAR(p.payment_date, 'FMDD FMMonth, YYYY') AS payment_date,
+          TO_CHAR(p.month, 'FMMonth, YYYY') AS month,
           CASE
             WHEN p.mode = 'Cash' AND (u.category != 'Admin' AND u.category != 'Student') THEN -1
             ELSE p.amount

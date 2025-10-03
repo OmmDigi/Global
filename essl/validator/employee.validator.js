@@ -1,5 +1,9 @@
 import Joi from "joi";
 
+export const VCreateAttendanceLog = Joi.object({
+  device_id: Joi.string().required(),
+})
+
 export const VCreateEmployee = Joi.object({
   device_id: Joi.string().required(),
   user: Joi.object({

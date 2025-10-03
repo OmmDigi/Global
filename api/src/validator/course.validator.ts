@@ -59,7 +59,8 @@ export const VUpdateFeeStructure = Joi.object({
 export const VCreateCourse = Joi.object({
   name: Joi.string().required(),
   // payment_mode: Joi.string().valid("Cash", "Online").required(),
-  duration: Joi.string().required(),
+  duration: Joi.number().required(),
+  duration_name: Joi.string().valid("month", "year").required(),
   // price: Joi.number().required(),
   // min_pay: Joi.number().required(),
   description: Joi.string().optional().allow(""),
@@ -89,7 +90,8 @@ export const VUpdateCourse = Joi.object({
   // payment_mode: Joi.string()
   //   .valid("UPI", "Cash", "Cash/UPI", "Cheque")
   //   .optional(),
-  duration: Joi.string().optional(),
+  duration: Joi.number().required(),
+  duration_name: Joi.string().valid("month", "year").required(),
   // price: Joi.number().optional(),
   description: Joi.string().optional().allow(""),
   is_active: Joi.bool().optional(),

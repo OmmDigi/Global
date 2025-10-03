@@ -462,3 +462,13 @@ VALUES
     ('9', 'Saraswati Puja fee', 'TRUE'),
     ('10', 'Summer camp fee for teachers training ', 'TRUE'),
     ('11', 'Workshop fee', 'TRUE');
+
+ALTER TABLE payments ADD COLUMN remark TEXT; 
+ALTER TABLE payments ADD COLUMN payment_date DATE;
+ALTER TABLE payments ADD COLUMN month DATE;
+
+ALTER TABLE course DROP COLUMN duration;
+ALTER TABLE course ADD COLUMN duration INT DEFAULT 0;
+ALTER TABLE course ADD COLUMN duration_name TEXT DEFAULT 'month' CHECK (duration_name IN ('month', 'year'));
+
+ALTER TABLE payments ADD COLUMN bill_no VARCHAR(255);

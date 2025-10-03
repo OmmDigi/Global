@@ -269,8 +269,8 @@ export const createCourse = asyncErrorHandler(async (req, res) => {
   try {
     await client.query("BEGIN");
     const { rows } = await client.query(
-      "INSERT INTO course (name, duration, description) VALUES ($1, $2, $3) RETURNING id",
-      [value.name, value.duration, value.description]
+      "INSERT INTO course (name, duration, duration_name description) VALUES ($1, $2, $3, $4) RETURNING id",
+      [value.name, value.duration, value.duration_name, value.description]
     );
 
     const course_id = rows[0].id;

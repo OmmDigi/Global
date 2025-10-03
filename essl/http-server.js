@@ -6,10 +6,12 @@ import {
   addNewEmployee,
   deleteEmployee,
   updateEmployee,
+  createAttendanceLogFile,
 } from "./controllers/employee.controller.js";
 import { globalErrorController } from "./controllers/error.controller.js";
 import { clients } from "./constant.js";
 import { getEsslConfig } from "./utils/getEsslConfig.js";
+import fs from "fs";
 
 dotenv.config();
 
@@ -19,7 +21,7 @@ const app = express();
 app.use(express.json());
 app.get("/", (_, res) => {
   const config = getEsslConfig();
-  res.json(config)
+  res.json(config);
 });
 
 // Create HTTP server manually (required for WebSocket to hook in)
@@ -92,6 +94,17 @@ wss.on("connection", (ws, req) => {
         console.log(`Connection failed for device ${deviceId}`);
         clients.delete(deviceId);
       }
+
+      if (data?.action === "attendance_logs") {
+        fs.writeFile("attendance-logs.json", JSON.stringify(data?.message), "utf-8", (err) => {
+          if (err) {
+            console.log(
+              "Something went wrong while creating attendance-logs.json"
+            );
+          }
+        });
+      }
+
       console.log(`📨 Message from ${deviceId}:`, data);
     } catch (error) {
       console.error("Error parsing message:", error.message);
@@ -113,6 +126,7 @@ wss.on("connection", (ws, req) => {
 app.post("/api/v1/employee", addNewEmployee);
 app.delete("/api/v1/employee", deleteEmployee);
 app.put("/api/v1/employee", updateEmployee);
+app.post("/api/v1/set-attendance", createAttendanceLogFile);
 
 app.use(globalErrorController);
 

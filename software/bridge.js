@@ -3,6 +3,7 @@ const { WebSocket } = require("ws");
 
 const config = {
   cloud_api_url: "https://essl.globaltechnicalinstitute.com",
+  // cloud_api_url : "http://127.0.0.1:6001",
   device_id: "ESSL-001",
   auth_token: "YOUR_SECRET_TOKEN",
 };
@@ -101,15 +102,12 @@ function connectWebSocket() {
 
   const wsUrl = `${config.cloud_api_url.replace(/^https/, "wss")}/device`;
 
-  const ws = new WebSocket(
-    wsUrl,
-    {
-      headers: {
-        Authorization: `Bearer ${config.auth_token}`,
-        "X-Device-ID": config.device_id,
-      },
-    }
-  );
+  const ws = new WebSocket(wsUrl, {
+    headers: {
+      Authorization: `Bearer ${config.auth_token}`,
+      "X-Device-ID": config.device_id,
+    },
+  });
 
   ws.on("open", async () => {
     console.log("📡 WebSocket connected to cloud API");
@@ -127,6 +125,15 @@ function connectWebSocket() {
       if (!zks || zks.length === 0) {
         ws.send(JSON.stringify({ action: "connection_failed" }));
         console.error("❌ Could not start bridge. Check device connection.");
+        return;
+      }
+
+
+      // get the instructions to f
+      if(data.action === "set_attendance_logs") {
+        // send the log to the essl ws sever
+        const logs = await zks[0].getAttendances();
+        ws.send(JSON.stringify({ action : "attendance_logs", message : logs}));
         return;
       }
 

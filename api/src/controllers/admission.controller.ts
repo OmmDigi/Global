@@ -92,6 +92,7 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
       const userName = admission_data?.username;
       const password = admission_data?.password;
       const profileImage = admission_data?.image;
+      const email = admission_data?.email;
 
       if (!password)
         throw new ErrorHandler(400, "Account password is required", [
@@ -107,7 +108,7 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
       const encodedPassword = encrypt(password);
       const { id, name, ph_no, username } = await createNewUser({
         category: "Student",
-        email: "",
+        email: email,
         ph_no: studentPhNumber,
         name: studentName,
         designation: "Student",
@@ -200,6 +201,7 @@ export const updateAdmissionData = asyncErrorHandler(async (req, res) => {
   const userName = admission_data?.username;
   const password = admission_data?.password;
   const profileImage = admission_data?.image;
+  const email = admission_data?.email;
 
   if (!password)
     throw new ErrorHandler(400, "Account password is required", ["password"]);
@@ -226,13 +228,14 @@ export const updateAdmissionData = asyncErrorHandler(async (req, res) => {
 
     // update the student basic info accoding to the form
     await client.query(
-      "UPDATE users SET username = $1, password = $2, name = $3, ph_no = $4, image = $5 WHERE id = $6",
+      "UPDATE users SET username = $1, password = $2, name = $3, ph_no = $4, image = $5, email = $6 WHERE id = $7",
       [
         userName,
         encodedPassword,
         studentName,
         studentPhNumber,
         profileImage,
+        email,
         studentId,
       ]
     );
