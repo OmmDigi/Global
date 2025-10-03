@@ -5,6 +5,7 @@ ALLOWED_COURSE_FIELDS.set("id", "c.id");
 ALLOWED_COURSE_FIELDS.set("name", "c.name");
 // ALLOWED_COURSE_FIELDS.set("payment_mode", "c.payment_mode");
 ALLOWED_COURSE_FIELDS.set("duration", "c.duration");
+ALLOWED_COURSE_FIELDS.set("duration_name", "c.duration_name");
 // ALLOWED_COURSE_FIELDS.set("price", "c.price");
 // ALLOWED_COURSE_FIELDS.set("min_pay", "c.min_pay");
 ALLOWED_COURSE_FIELDS.set("description", "c.description");
@@ -38,3 +39,5 @@ avilable_permissions.set("8", "Inventory Manage");
 avilable_permissions.set("9", "Purchase Record");
 avilable_permissions.set("10", "Maintenance Record");
 avilable_permissions.set("11", "Stuff Attandance");
+
+export const MONTHLY_PAYMENT_HEAD_ID = 4

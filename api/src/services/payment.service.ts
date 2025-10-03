@@ -6,9 +6,16 @@ type IPaymentProps = {
   student_id: number;
   order_id?: string;
   mode: string;
-  transition_id?:string;
-  status : 1 | 2 | 3;
-  fee_head_ids_info: { fee_head_id: number; amount: number }[];
+  transition_id?: string;
+  payment_details: string | null; // remark
+  status: 1 | 2 | 3;
+  fee_head_ids_info: {
+    fee_head_id: number;
+    amount: number;
+    payment_date: string | null;
+    month: string | null;
+    bill_no : string | null;
+  }[];
   client?: PoolClient;
 };
 export const setPayment = async (data: IPaymentProps) => {
@@ -24,14 +31,20 @@ export const setPayment = async (data: IPaymentProps) => {
   const placeholder = data.fee_head_ids_info
     .map(
       (_, index) =>
-        `($${index * 10 + 1}, $${index * 10 + 2}, $${index * 10 + 3}, $${
-          index * 10 + 4
-        }, $${index * 10 + 5}, $${index * 10 + 6}, $${index * 10 + 7}, $${index * 10 + 8}, $${index * 10 + 9}, $${index * 10 + 10})`
+        `($${index * 14 + 1}, $${index * 14 + 2}, $${index * 14 + 3}, $${
+          index * 14 + 4
+        }, $${index * 14 + 5}, $${index * 14 + 6}, $${index * 14 + 7}, $${
+          index * 14 + 8
+        }, $${index * 14 + 9}, $${index * 14 + 10}, $${index * 14 + 11}, $${
+          index * 14 + 12
+        }, $${index * 14 + 13}, $${index * 14 + 14})`
     )
     .join(", ");
+
   await pgClient.query(
-    `INSERT INTO payments (form_id, mode, student_id, payment_name_id, order_id, receipt_id, amount, fee_head_id, status, transition_id) VALUES ${placeholder}`,
-    data.fee_head_ids_info.flatMap((fee_head_info) => [
+    `INSERT INTO payments (form_id, mode, student_id, payment_name_id, order_id, receipt_id, amount, fee_head_id, status, transition_id, remark, payment_date, month, bill_no) VALUES ${placeholder}`,
+    data.fee_head_ids_info.flatMap((fee_head_info) => {
+      return [
       data.form_id,
       data.mode,
       data.student_id,
@@ -41,8 +54,13 @@ export const setPayment = async (data: IPaymentProps) => {
       fee_head_info.amount,
       fee_head_info.fee_head_id,
       data.status,
-      data.transition_id
-    ])
+      data.transition_id,
+      data.payment_details,
+      fee_head_info.payment_date ?? new Date(),
+      fee_head_info.month,
+      fee_head_info.bill_no
+    ]
+    })
   );
 
   return {

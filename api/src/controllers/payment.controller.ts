@@ -1,5 +1,6 @@
 import { pool } from "../config/db";
 import { phonePe } from "../config/phonePe";
+import { MONTHLY_PAYMENT_HEAD_ID } from "../constant";
 import asyncErrorHandler from "../middlewares/asyncErrorHandler";
 import { setPayment } from "../services/payment.service";
 import { ApiResponse } from "../utils/ApiResponse";
@@ -28,6 +29,8 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
         custom_min_amount: number;
       }[]
     ).filter((item) => item.custom_min_amount != 0);
+
+    if(fee_structure_info.length === 0) throw new ErrorHandler(400, "Nothing to pay")
 
     const placeholder = fee_structure_info
       .map((_, index) => `$${index + 2}`)
@@ -70,7 +73,12 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
     const fee_head_ids_info: {
       fee_head_id: number;
       amount: number;
+      month: string | null;
+      payment_date: string | null;
+      bill_no : string | null;
     }[] = [];
+
+    const payment_date_str = new Date().toUTCString();
 
     rows.forEach((item) => {
       // const db_min_amount = parseFloat(item.min_amount);
@@ -90,6 +98,9 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
         fee_head_ids_info.push({
           fee_head_id: item.fee_head_id,
           amount: custom_amount,
+          month: null,
+          payment_date: payment_date_str,
+          bill_no : null
         });
       }
     });
@@ -119,6 +130,7 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
       fee_head_ids_info: fee_head_ids_info,
       client: client,
       status: 1,
+      payment_details: "Online Payment Form Website",
     });
 
     await client.query("COMMIT");
@@ -149,12 +161,14 @@ export const verifyPayment = asyncErrorHandler(async (req, res) => {
   };
 
   await pool.query(
-    "UPDATE payments SET payment_name_id = $1, status = $2, transition_id = $3, order_id = $4 WHERE order_id = $5",
+    "UPDATE payments SET payment_name_id = $1, status = $2, transition_id = $3, order_id = $4, payment_date = $5, remark = $6 WHERE order_id = $7",
     [
       response.data.transactionId,
       payment_status[response.data.state],
       response.data.transactionId,
       response.data.orderId,
+      new Date(),
+      `Online Transaction ID : ${response.data.transactionId}`,
       req.query.merchant_order_id?.toString(),
     ]
   );
@@ -184,10 +198,15 @@ export const addPayment = asyncErrorHandler(async (req, res) => {
   const { error, value } = VAddPayment.validate(req.body ?? {});
   if (error) throw new ErrorHandler(400, error.message);
 
+  const form_id = value.form_id;
+
   const client_fee_structure_info = (
     value.fee_structure_info as {
       fee_head_id: number;
       custom_min_amount: number;
+      month?: string;
+      payment_date?: string;
+      bill_no : string;
     }[]
   ).filter((item) => item.custom_min_amount != 0);
 
@@ -238,22 +257,65 @@ export const addPayment = asyncErrorHandler(async (req, res) => {
 
   const { rows, rowCount } = await pool.query(
     "SELECT student_id FROM fillup_forms WHERE id = $1",
-    [value.form_id]
+    [form_id]
   );
 
   if (rowCount === 0)
     throw new ErrorHandler(404, "No student found of this form");
 
-  await setPayment({
-    fee_head_ids_info: client_fee_structure_info.map((item) => ({
+  // before adding payment check if the user already paid for the month which client sent send him conflict error;
+  //!! remamber one thing if monthly payment is only one than this logic will work else it could give unreal behiaver
+  let monthlyPaymentMonthStartDate: string | null = null;
+  const fee_head_ids_info = client_fee_structure_info.map((item) => {
+    let monthFirstDateToStore: string | null = null;
+    if (item.month && item.fee_head_id === MONTHLY_PAYMENT_HEAD_ID) {
+      if (!/^\d{4}-\d{2}$/.test(item.month)) {
+        throw new ErrorHandler(
+          400,
+          "Invalid month format. Use 'YYYY-MM' (e.g., 2025-08)."
+        );
+      }
+
+      const monthStart = `${item.month}-01`;
+      const monthDate = new Date(monthStart);
+      if (isNaN(monthDate.getTime())) {
+        throw new ErrorHandler(400, "Invalid month value.");
+      }
+
+      monthFirstDateToStore = monthStart;
+      monthlyPaymentMonthStartDate = monthStart;
+    }
+
+    return {
       fee_head_id: item.fee_head_id,
       amount: item.custom_min_amount,
-    })),
-    form_id: value.form_id,
+      month: monthFirstDateToStore,
+      payment_date: item.payment_date ?? null,
+      bill_no : item.bill_no
+    };
+  });
+
+  if (monthlyPaymentMonthStartDate !== null && !value.do_continue) {
+    // now need to check is any monthly payment already had or not
+    const { rowCount, rows } = await pool.query(
+      "SELECT TO_CHAR(month, 'FMMonth, YYYY') AS month FROM payments WHERE form_id = $1 AND month IS NOT NULL AND month = $2",
+      [form_id, monthlyPaymentMonthStartDate]
+    );
+    if (rowCount !== 0)
+      throw new ErrorHandler(
+        409,
+        `Student already paid payment for this month : ${rows[0].month} do you want to continue`
+      );
+  }
+
+  await setPayment({
+    fee_head_ids_info,
+    form_id,
     mode: value.payment_mode,
     student_id: rows[0].student_id,
     transition_id: value.payment_details,
     status: 2,
+    payment_details: value.payment_details ?? null,
   });
 
   res.status(200).json(new ApiResponse(200, "New payment details added"));

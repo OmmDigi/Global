@@ -6,30 +6,38 @@ import { pool } from "../config/db";
 import ExcelJS from "exceljs";
 import {
   VGenerateUrl,
+  VGetNewAdmissionReport,
   VInventoryReport,
+  VMonthlyPaymentReport,
   VPaymentReport,
 } from "../validator/excel.validator";
 import { ApiResponse } from "../utils/ApiResponse";
 import { createToken } from "../services/jwt";
 import { VCreateEmployeeSalarySheet } from "../validator/users.validator";
+import { getExcelColumnName } from "../utils/getExcelColumnName";
 
-const urls = new Map<string, { url: string, route_id: number }>();
+const urls = new Map<string, { url: string; route_id: number }>();
 const HOST_URL = process.env.API_HOST_URL;
 urls.set("payment_report", {
   url: `${HOST_URL}/api/v1/excel/payment-report`,
-  route_id: 15
+  route_id: 15,
 });
 urls.set("admission_report", {
   url: `${HOST_URL}/api/v1/excel/admission-report`,
-  route_id: 6
+  route_id: 6,
 });
 urls.set("salary_sheet", {
   url: `${HOST_URL}/api/v1/excel/salary-sheet`,
-  route_id: 11
+  route_id: 11,
 });
 urls.set("inventory_report", {
   url: `${HOST_URL}/api/v1/excel/inventory-report`,
-  route_id: 8
+  route_id: 8,
+});
+
+urls.set("monthly_payment_report", {
+  url: `${HOST_URL}/api/v1/excel/monthly-payment-report`,
+  route_id: 8,
 });
 
 export const generateUrl = asyncErrorHandler(async (req, res) => {
@@ -39,9 +47,12 @@ export const generateUrl = asyncErrorHandler(async (req, res) => {
   const urlinfo = urls.get(value.type);
   if (!urlinfo) throw new ErrorHandler(404, "No route found");
 
-  const token = createToken({
-    route_id: urlinfo.route_id
-  }, { expiresIn: "60s" });
+  const token = createToken(
+    {
+      route_id: urlinfo.route_id,
+    },
+    { expiresIn: "60s" }
+  );
 
   const reportUrl = `${urlinfo.url}?${value.query}&token=${token}`;
   res.status(201).json(new ApiResponse(201, "Signed Url Created", reportUrl));
@@ -49,7 +60,7 @@ export const generateUrl = asyncErrorHandler(async (req, res) => {
 
 //admission excel report
 export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
-  const { error, value } = VGetAdmissionList.validate(req.query);
+  const { error, value } = VGetNewAdmissionReport.validate(req.query);
   if (error) throw new ErrorHandler(400, error.message);
 
   // Set response headers for streaming
@@ -94,19 +105,14 @@ export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
     filterValues.push(value.batch);
   }
 
-  if (value.form_no) {
-    filter = `WHERE ff.form_name = $${placeholder++}`;
-    filterValues.push(value.form_no);
-  }
-
   const workbook = new ExcelJS.stream.xlsx.WorkbookWriter({
     stream: res,
     useStyles: true,
   });
   const worksheet = workbook.addWorksheet("Admission Report");
 
-  worksheet.mergeCells("A1:H1");
-  worksheet.getCell("A1").value = `Admission Report`;
+  // worksheet.mergeCells("A1:H1");
+  // worksheet.getCell("A1").value = `Admission Report (${rows[0].name}) (${value.from_date} - ${value.to_date})`;
   worksheet.getCell("A1").font = {
     size: 20,
     bold: true,
@@ -119,111 +125,45 @@ export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
   };
   worksheet.getRow(1).height = 30;
   worksheet.getCell("A1").alignment = {
-    horizontal: "center",
+    horizontal: "left",
     vertical: "middle",
   };
 
-  worksheet.addRow([
+  const rowArray = [
     "Sr Number",
     "Student Name",
+    "Form Name",
     "Course Name",
-    "Batch",
-    "Form No",
-    "Total Fee",
-    "Due Amount",
-    "Status",
-  ]);
+    "Month Name",
+    "Session Name",
+    "Duration",
+    "Total Amount",
+    "All Fees Head",
+  ];
+
+  worksheet.addRow(rowArray);
+
+  worksheet.mergeCells("A2:A3");
+  worksheet.mergeCells("B2:B3");
+  worksheet.mergeCells("C2:C3");
+  worksheet.mergeCells("D2:D3");
+  worksheet.mergeCells("E2:E3");
+  worksheet.mergeCells("F2:F3");
+  worksheet.mergeCells("G2:G3");
+  worksheet.mergeCells("H2:H3");
 
   // Row styling (header row)
-  worksheet.getRow(2).eachCell((cell) => {
-    cell.style = {
-      font: { bold: true, size: 14, color: { argb: "000000" } },
-      alignment: { horizontal: "center", vertical: "middle" },
-      fill: {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: "F4A460" },
-      }, // Red background
-      border: {
-        top: { style: "thin" },
-        left: { style: "thin" },
-        right: { style: "thin" },
-        bottom: { style: "thin" },
-      },
-    };
-  });
-
-  const client = await pool.connect();
-  const query = new QueryStream(
-    `
-      SELECT
-        row_number() OVER () AS sr_no,
-        u.name AS student_name,
-        c.name AS course_name,
-        b.month_name AS batch_name,
-        ff.form_name,
-        (SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id) AS course_fee,
-        COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id), 0.00) - COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND status = 2), 0.00) AS due_amount,
-        ff.status AS form_status
-      FROM fillup_forms ff
-  
-      LEFT JOIN users u
-      ON u.id = ff.student_id
-  
-      LEFT JOIN enrolled_courses ec
-      ON ec.form_id = ff.id
-  
-      LEFT JOIN batch b
-      ON b.id = ec.batch_id
-  
-      LEFT JOIN course c
-      ON c.id = ec.course_id
-
-     ${filter}
-  
-      GROUP BY ff.id, u.id, c.id, b.id
-      ORDER BY ff.id DESC
-      `,
-    filterValues,
-    {
-      batchSize: 10,
-    }
-  );
-
-  const pgStream = client.query(query);
-
-  // Process PostgreSQL stream data and append to Excel sheet
-  pgStream.on("data", (data) => {
-    const excelRow = worksheet.addRow(
-      Object.values({
-        ...data,
-        form_status:
-          data.form_status === 2
-            ? "Approved"
-            : data.form_status === 1
-              ? "Pending"
-              : "Canceled",
-      })
-    );
-    // Style the data rows
-    excelRow.eachCell((cell, cellNumber) => {
+  const ROWS = [worksheet.getRow(2), worksheet.getRow(3)];
+  ROWS.forEach((item) => {
+    item.eachCell((cell) => {
       cell.style = {
-        font: {
-          size: 12,
-          bold: cellNumber === 8,
-          color: {
-            argb:
-              cellNumber === 8 && data.form_status == 3
-                ? "DC2626"
-                : cellNumber === 8 && data.form_status == 2
-                  ? "139429"
-                  : cellNumber === 8 && data.form_status == 1
-                    ? "e6e639"
-                    : "000000",
-          },
-        },
-
-        alignment: { horizontal: "center" },
+        font: { bold: true, size: 14, color: { argb: "000000" } },
+        alignment: { horizontal: "center", vertical: "middle" },
+        fill: {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "F4A460" },
+        }, // Red background
         border: {
           top: { style: "thin" },
           left: { style: "thin" },
@@ -234,6 +174,268 @@ export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
     });
   });
 
+  const client = await pool.connect();
+  const query = new QueryStream(
+    `
+      WITH payment_calcluction AS (
+        SELECT
+          p.form_id,
+          p.fee_head_id,
+          SUM(p.amount) AS amount,
+          COALESCE(SUM(p.amount) FILTER (WHERE p.mode = 'Discount'), 0) AS discount_amount,
+          STRING_AGG(DISTINCT(p.bill_no), ' + ') AS bill_number,
+          STRING_AGG(DISTINCT(p.payment_date)::text, ' + ') AS payment_date,
+          p.month
+        FROM payments p
+              
+        LEFT JOIN course_fee_head cfh
+        ON cfh.id = p.fee_head_id
+
+        GROUP BY p.form_id, p.fee_head_id, p.month
+      ),
+
+      payment_summery AS (
+        SELECT
+          pc.form_id,
+          pc.fee_head_id,
+          STRING_AGG(pc.amount::text, ' + ') AS amounts,
+          STRING_AGG(pc.payment_date, ' + ') AS payment_dates,
+          STRING_AGG(pc.bill_number, ' + ') AS bill_numbers,
+          STRING_AGG(DISTINCT(TO_CHAR(pc.month, 'FMMonth, YYYY')), ' + ') AS months
+        FROM payment_calcluction pc
+
+        GROUP BY pc.form_id, pc.fee_head_id
+      ),
+
+      total_payment AS (
+        SELECT
+          p.form_id,
+          SUM(p.amount) AS total_payment
+        FROM payments p
+        
+        GROUP BY p.form_id
+      )
+
+      SELECT 
+        row_number() OVER () AS sr_no,
+        u.name,
+        c.name AS course_name,
+        b.month_name AS batch_name,
+        ff.form_name,
+        c.name AS course_name,
+        b.month_name,
+        s.name AS session_name,
+        (c.duration || ' ' || c.duration_name) AS duration,
+        COALESCE(
+          JSON_AGG(ps) FILTER (WHERE ps.form_id IS NOT NULL),
+          '[]'::json
+        ) AS payment_summery_list,
+        (SELECT json_agg(json_build_object('id', cfh.id, 'name', cfh.name) ORDER BY cfh.id) FROM course_fee_head cfh) AS course_fee_heads,
+        COALESCE(MAX(tp.total_payment), 0) AS total_payment
+      FROM fillup_forms ff
+
+      LEFT JOIN users u
+      ON u.id = ff.student_id
+
+      LEFT JOIN enrolled_courses ec
+      ON ec.form_id = ff.id
+
+      LEFT JOIN course c
+      ON c.id = ec.course_id
+
+      LEFT JOIN batch b
+      ON b.id = ec.batch_id
+
+      LEFT JOIN session s
+      ON s.id = ec.session_id
+
+      LEFT JOIN payment_summery ps
+      ON ps.form_id = ff.id
+
+      LEFT JOIN total_payment tp
+      ON tp.form_id = ff.id
+
+      ${filter}
+            
+      GROUP BY ff.id, u.id, c.id, b.id, s.id
+    `,
+    filterValues,
+    {
+      batchSize: 10,
+    }
+  );
+
+  const pgStream = client.query(query);
+
+  // Process PostgreSQL stream data and append to Excel sheet
+  let index = 0;
+  const created_fee_head_column_info: {
+    colname: string;
+    fee_head_id: number;
+    type: "fee_head" | "bill_no_date" | "month_name";
+  }[] = [];
+
+  pgStream.on("data", (data) => {
+    pgStream.pause();
+
+    if (index === 0) {
+      worksheet.getCell(
+        "A1"
+      ).value = `Admission Report (${data.course_name}) (${data.batch_name}) (${value.from_date} - ${value.to_date})`;
+
+      const ROW_NUMBER = 3;
+      let currentCol = 9; // Start at column H (9th col)
+
+      data.course_fee_heads.forEach((item: any) => {
+        // 1️⃣ Head name
+        const colName1 = getExcelColumnName(currentCol);
+        const cell1 = worksheet.getCell(`${colName1}${ROW_NUMBER}`);
+        cell1.value = item.name;
+        created_fee_head_column_info.push({
+          fee_head_id: item.id,
+          colname: colName1,
+          type: "fee_head",
+        });
+
+        cell1.style = {
+          font: { bold: true, size: 14, color: { argb: "000000" } },
+          alignment: { horizontal: "center", vertical: "middle" },
+          border: {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            right: { style: "thin" },
+            bottom: { style: "thin" },
+          },
+        };
+
+        // 3️⃣ Monthly fee → add extra "Month" column
+        if (item.id === 4) {
+          const colName3 = getExcelColumnName(currentCol + 1);
+          const cell3 = worksheet.getCell(`${colName3}${ROW_NUMBER}`);
+          cell3.value = "Month";
+          cell1.fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "f4b084" },
+          };
+
+          cell3.style = {
+            font: { bold: true, size: 14, color: { argb: "000000" } },
+            alignment: { horizontal: "center", vertical: "middle" },
+            fill: {
+              type: "pattern",
+              pattern: "solid",
+              fgColor: { argb: "f4b084" },
+            },
+            border: {
+              top: { style: "thin" },
+              left: { style: "thin" },
+              right: { style: "thin" },
+              bottom: { style: "thin" },
+            },
+          };
+
+          created_fee_head_column_info.push({
+            fee_head_id: item.id,
+            colname: colName3,
+            type: "month_name",
+          });
+        }
+
+        // 2️⃣ Bill No & Date
+        const colName2 = getExcelColumnName(
+          currentCol + (item.id === 4 ? 2 : 1)
+        );
+        const cell2 = worksheet.getCell(`${colName2}${ROW_NUMBER}`);
+        cell2.value = "Bill No & Date";
+        created_fee_head_column_info.push({
+          fee_head_id: item.id,
+          colname: colName2,
+          type: "bill_no_date",
+        });
+        cell2.style = {
+          font: { bold: true, size: 14, color: { argb: "000000" } },
+          alignment: { horizontal: "center", vertical: "middle" },
+          fill: {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "87CEEB" },
+          },
+          border: {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            right: { style: "thin" },
+            bottom: { style: "thin" },
+          },
+        };
+
+        if (item.id === 4) {
+          // shift by 3 for monthly
+          currentCol += 3;
+        } else {
+          // shift by 2 for normal heads
+          currentCol += 2;
+        }
+      });
+
+      // Marge the heading
+      worksheet.mergeCells(1, 1, 1, currentCol - 1);
+
+      // Merge row 2 across all used columns
+      worksheet.mergeCells(2, 9, 2, currentCol - 1);
+    }
+
+    const excelRow = worksheet.addRow([
+      data.sr_no,
+      data.name,
+      data.form_name,
+      data.course_name,
+      data.month_name,
+      data.session_name,
+      data.duration,
+      data.total_payment,
+    ]);
+
+    created_fee_head_column_info.forEach((item) => {
+      const payment_summery_info = data.payment_summery_list.find(
+        (payment: any) => payment.fee_head_id == item.fee_head_id
+      );
+      const cell = worksheet.getCell(`${item.colname}${excelRow.number}`);
+
+      if (payment_summery_info) {
+        if (item.type === "fee_head") {
+          cell.value = payment_summery_info.amounts;
+        } else if (item.type === "bill_no_date") {
+          cell.value = `Bill No : ${payment_summery_info.bill_numbers}, DT : ${payment_summery_info.payment_dates}`;
+        } else if (item.type === "month_name") {
+          cell.value = payment_summery_info.months;
+        }
+      } else {
+        cell.value = "-";
+      }
+    });
+
+    // Style the data rows
+    excelRow.eachCell((cell, cellNumber) => {
+      // worksheet.mergeCells("A1:H1");
+      cell.style = {
+        font: {
+          size: 12,
+        },
+        alignment: { horizontal: "center" },
+        border: {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          right: { style: "thin" },
+          bottom: { style: "thin" },
+        },
+      };
+    });
+
+    index++;
+    pgStream.resume();
+  });
+
   pgStream.on("end", () => {
     workbook.commit();
     client.release(); // Release the client when done
@@ -241,7 +443,9 @@ export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
 
   pgStream.on("error", (err) => {
     client.release();
-    throw new ErrorHandler(500, err.message);
+    workbook.commit();
+    console.log(err);
+    // throw new ErrorHandler(500, err.message);
   });
 });
 
@@ -402,17 +606,17 @@ export const generatePaymentExcelReport = asyncErrorHandler(
     let index = -1;
 
     let courseInfo = {
-      course_name : "",
-      batch_name : ""
-    }
+      course_name: "",
+      batch_name: "",
+    };
 
     // Process PostgreSQL stream data and append to Excel sheet
     pgStream.on("data", (data) => {
       pgStream.pause();
 
-      if(index == -1) {
+      if (index == -1) {
         courseInfo.course_name = data.course_name;
-        courseInfo.batch_name = data.batch_name
+        courseInfo.batch_name = data.batch_name;
         index++;
       }
 
@@ -439,7 +643,9 @@ export const generatePaymentExcelReport = asyncErrorHandler(
     });
 
     pgStream.on("end", () => {
-      worksheet.getCell("A1").value = `Payment Report For ${courseInfo.course_name}(${courseInfo.batch_name}) From : ${value.from_date} - ${value.to_date}`;
+      worksheet.getCell(
+        "A1"
+      ).value = `Payment Report For ${courseInfo.course_name}(${courseInfo.batch_name}) From : ${value.from_date} - ${value.to_date}`;
       const addedRow = worksheet.addRow([
         "",
         "",
@@ -451,9 +657,9 @@ export const generatePaymentExcelReport = asyncErrorHandler(
       addedRow.getCell(6).style = {
         font: {
           size: 12,
-          bold: true
+          bold: true,
         },
-      }
+      };
       workbook.commit();
       client.release(); // Release the client when done
     });
@@ -2449,5 +2655,339 @@ export const createInventoryReport = asyncErrorHandler(async (req, res) => {
   pgStream.on("error", () => {
     client.release();
     res.destroy();
+  });
+});
+
+// monthly payment report
+
+export const monthlyPaymentReport = asyncErrorHandler(async (req, res) => {
+  const { error, value } = VMonthlyPaymentReport.validate(req.query ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
+
+  // Set response headers for streaming
+  res.setHeader(
+    "Content-Disposition",
+    'attachment; filename="Monthly_Payment_Report.xlsx"'
+  );
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
+
+  let filter = "";
+  const filterValues: string[] = [];
+  let placeholder = 1;
+
+  if (value.from_date && value.to_date) {
+    if (filter == "") {
+      filter = `WHERE ff.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
+    } else {
+      filter += ` AND ff.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
+    }
+    filterValues.push(value.from_date);
+    filterValues.push(value.to_date);
+  }
+
+  if (value.course) {
+    if (filter == "") {
+      filter = `WHERE c.id = $${placeholder++}`;
+    } else {
+      filter += ` AND c.id = $${placeholder++}`;
+    }
+    filterValues.push(value.course);
+  }
+
+  if (value.batch) {
+    if (filter == "") {
+      filter = `WHERE b.id = $${placeholder++}`;
+    } else {
+      filter += ` AND b.id = $${placeholder++}`;
+    }
+    filterValues.push(value.batch);
+  }
+
+  const workbook = new ExcelJS.stream.xlsx.WorkbookWriter({
+    stream: res,
+    useStyles: true,
+  });
+  const worksheet = workbook.addWorksheet("Monthly Payment Report");
+
+  // worksheet.mergeCells("A1:H1");
+  // worksheet.getCell("A1").value = `Admission Report (${rows[0].name}) (${value.from_date} - ${value.to_date})`;
+  worksheet.getCell("A1").font = {
+    size: 20,
+    bold: true,
+    color: { argb: "000000" },
+  };
+  worksheet.getCell("A1").fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "FFFF00" },
+  };
+  worksheet.getRow(1).height = 30;
+  worksheet.getCell("A1").alignment = {
+    horizontal: "left",
+    vertical: "middle",
+  };
+
+  const rowArray = [
+    "Sr Number",
+    "Student Name",
+    "Date Of Admission",
+    "Session",
+    "Monthly Fees per Month",
+    "Total Months paid",
+  ];
+
+  worksheet.addRow(rowArray);
+
+  // Row styling (header row)
+  const ROWS = [worksheet.getRow(2)];
+  ROWS.forEach((item) => {
+    item.eachCell((cell) => {
+      cell.style = {
+        font: { bold: true, size: 14, color: { argb: "000000" } },
+        alignment: { horizontal: "center", vertical: "middle" },
+        fill: {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "F4A460" },
+        }, // Red background
+        border: {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          right: { style: "thin" },
+          bottom: { style: "thin" },
+        },
+      };
+    });
+  });
+
+  const client = await pool.connect();
+  const query = new QueryStream(
+    `
+      WITH month_series AS (
+          SELECT generate_series(
+                    DATE_TRUNC('month', $1::date),     -- from_date
+                    DATE_TRUNC('month', $2::date),     -- to_date
+                    interval '1 month'
+                )::date AS month_date
+      ),
+      monthly_payment_calcluction AS (
+          SELECT
+              p.form_id,
+              DATE_TRUNC('month', p.month)::date AS month_date,
+              SUM(p.amount) AS sum_monthly_amount,
+              STRING_AGG(DISTINCT(p.bill_no), ' + ') AS bill_number,
+              STRING_AGG(DISTINCT(p.payment_date)::text, ' + ') AS payment_date
+          FROM payments p
+          WHERE p.fee_head_id = 4
+          GROUP BY p.form_id, DATE_TRUNC('month', p.month)
+      ),
+      final_months AS (
+          SELECT
+              row_number() OVER () AS temp_id,
+              ff.id AS form_id,
+              ms.month_date,
+              COALESCE(mpc.sum_monthly_amount, 0) AS sum_monthly_amount,
+              mpc.payment_date AS payment_dates,
+              mpc.bill_number AS bill_numbers
+          FROM fillup_forms ff
+          CROSS JOIN month_series ms
+          LEFT JOIN monthly_payment_calcluction mpc
+                ON mpc.form_id = ff.id AND ms.month_date = mpc.month_date
+      )
+      SELECT
+          row_number() OVER () AS sr_no,
+          u.name,
+          c.name AS course_name,
+          b.month_name AS batch_name,
+          TO_CHAR(ff.created_at, 'DD FMMonth YYYY') AS created_at,
+          s.name AS session_name,
+          ROUND(
+              MAX(ffs.amount / c.duration)::numeric, 
+              2
+          ) AS monthly_fee,
+          c.duration AS month_duration,
+          COALESCE(
+              JSON_AGG(
+                  json_build_object(
+                      'temp_id', fm.temp_id,
+                      'month', TO_CHAR(fm.month_date, 'Mon, YYYY'),
+                      'amount', fm.sum_monthly_amount,
+                      'payment_dates', fm.payment_dates,
+                      'bill_numbers', fm.bill_numbers
+                  ) ORDER BY fm.month_date
+              ) FILTER (WHERE fm.form_id IS NOT NULL),
+              '[]'::json
+          ) AS monthly_payment_summery,
+
+      COUNT(fm.month_date) FILTER(WHERE fm.sum_monthly_amount != 0) AS total_month_paid
+      FROM fillup_forms ff
+      LEFT JOIN users u ON u.id = ff.student_id
+      LEFT JOIN enrolled_courses ec ON ec.form_id = ff.id
+      LEFT JOIN session s ON s.id = ec.session_id
+      LEFT JOIN course c ON c.id = ec.course_id
+      LEFT JOIN batch b ON b.id = ec.batch_id
+      LEFT JOIN form_fee_structure ffs 
+            ON ffs.form_id = ff.id AND ffs.fee_head_id = 4
+      LEFT JOIN final_months fm ON fm.form_id = ff.id
+      ${filter}
+      GROUP BY u.id, c.id, ff.id, s.id, b.id;
+    `,
+    filterValues,
+    {
+      batchSize: 10,
+    }
+  );
+
+  const pgStream = client.query(query);
+
+  let index = 0;
+  const created_fee_head_column_info: {
+    colname: string;
+    array_index: number;
+    type: "fee_head" | "bill_no_date";
+  }[] = [];
+
+  pgStream.on("data", (data) => {
+    pgStream.pause();
+
+    if (index === 0) {
+      worksheet.getCell(
+        "A1"
+      ).value = `Monthly Payment Report (${data.course_name}) (${data.batch_name}) (${value.from_date} - ${value.to_date})`;
+
+      const ROW_NUMBER = 2;
+      let currentCol = 7; // Start at column H (9th col)
+
+      data.monthly_payment_summery.forEach((item: any, index: number) => {
+        const colName1 = getExcelColumnName(currentCol);
+        const cell1 = worksheet.getCell(`${colName1}${ROW_NUMBER}`);
+
+        cell1.style = {
+          font: { bold: true, size: 14, color: { argb: "000000" } },
+          alignment: { horizontal: "center", vertical: "middle" },
+          fill: {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "87CEEB" },
+          },
+          border: {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            right: { style: "thin" },
+            bottom: { style: "thin" },
+          },
+        };
+
+        cell1.value = item.month;
+
+        created_fee_head_column_info.push({
+          array_index: index,
+          colname: colName1,
+          type: "fee_head",
+        });
+
+        const colName2 = getExcelColumnName(currentCol + 1);
+        const cell2 = worksheet.getCell(`${colName2}${ROW_NUMBER}`);
+
+        cell2.style = {
+          font: { bold: true, size: 14, color: { argb: "000000" } },
+          alignment: { horizontal: "center", vertical: "middle" },
+          border: {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            right: { style: "thin" },
+            bottom: { style: "thin" },
+          },
+        };
+
+        created_fee_head_column_info.push({
+          array_index: index,
+          colname: colName2,
+          type: "bill_no_date",
+        });
+
+        cell2.value = "Bill No & Date";
+
+        currentCol += 2;
+      });
+
+      // Marge the heading
+      worksheet.mergeCells(1, 1, 1, currentCol - 1);
+
+      index++;
+    }
+
+    const excelRow = worksheet.addRow([
+      data.sr_no,
+      data.name,
+      data.created_at,
+      data.session_name,
+      data.monthly_fee,
+      data.total_month_paid,
+    ]);
+
+    created_fee_head_column_info.forEach((item) => {
+      const monthly_payment_summery =
+        data.monthly_payment_summery[item.array_index];
+      const cell = worksheet.getCell(`${item.colname}${excelRow.number}`);
+
+      if (monthly_payment_summery) {
+        if (item.type === "fee_head") {
+          cell.value = monthly_payment_summery.amount;
+        } else if (item.type === "bill_no_date") {
+          let valueToStore = "";
+          if (monthly_payment_summery.bill_numbers != null) {
+            valueToStore += `Bill No : ${monthly_payment_summery.bill_numbers}, `;
+          }
+
+          if (monthly_payment_summery.payment_dates != null) {
+            valueToStore += `DT No : ${monthly_payment_summery.payment_dates}`;
+          }
+
+          if (
+            monthly_payment_summery.payment_date == null &&
+            monthly_payment_summery.bill_numbers == null
+          ) {
+            valueToStore = "-";
+          }
+          cell.value = valueToStore;
+        }
+      } else {
+        cell.value = "-";
+      }
+    });
+
+    // Style the data rows
+    excelRow.eachCell((cell) => {
+      cell.style = {
+        font: {
+          size: 12,
+        },
+        alignment: { horizontal: "center" },
+        border: {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          right: { style: "thin" },
+          bottom: { style: "thin" },
+        },
+      };
+    });
+
+    pgStream.resume();
+  });
+
+  pgStream.on("end", () => {
+    workbook.commit();
+    client.release(); // Release the client when done
+  });
+
+  pgStream.on("error", (err) => {
+    client.release();
+    workbook.commit();
+    console.log(err);
+    // throw new ErrorHandler(500, err.message);
   });
 });
