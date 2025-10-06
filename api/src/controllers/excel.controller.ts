@@ -4,6 +4,7 @@ import { ErrorHandler } from "../utils/ErrorHandler";
 import { pool } from "../config/db";
 import ExcelJS from "exceljs";
 import {
+  VFeeSummaryReport,
   VGenerateUrl,
   VGetNewAdmissionReport,
   VInventoryReport,
@@ -41,7 +42,7 @@ urls.set("monthly_payment_report", {
 
 urls.set("fee_summary_report", {
   url: `${HOST_URL}/api/v1/excel/fee-summery`,
-  route_id : 8
+  route_id: 8
 })
 
 export const generateUrl = asyncErrorHandler(async (req, res) => {
@@ -2997,6 +2998,41 @@ export const monthlyPaymentReport = asyncErrorHandler(async (req, res) => {
 
 // Summary Report for Student Current Fees Status
 export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
+  const { error, value } = VFeeSummaryReport.validate(req.query ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
+
+  let filter = "";
+  const filterValues: string[] = [];
+  let placeholder = 1;
+
+  if (value.from_date && value.to_date) {
+    if (filter == "") {
+      filter = `WHERE ff.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
+    } else {
+      filter += ` AND ff.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
+    }
+    filterValues.push(value.from_date);
+    filterValues.push(value.to_date);
+  }
+
+  if (value.course) {
+    if (filter == "") {
+      filter = `WHERE c.id = $${placeholder++}`;
+    } else {
+      filter += ` AND c.id = $${placeholder++}`;
+    }
+    filterValues.push(value.course);
+  }
+
+  if (value.batch) {
+    if (filter == "") {
+      filter = `WHERE b.id = $${placeholder++}`;
+    } else {
+      filter += ` AND b.id = $${placeholder++}`;
+    }
+    filterValues.push(value.batch);
+  }
+
   // Set response headers for streaming
   res.setHeader(
     "Content-Disposition",
@@ -3140,8 +3176,10 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
 
     GROUP BY u.id, c.id, ff.id, s.id, b.id
 
+    ${filter}
+
     ORDER BY ff.id;
-  `, [], {
+  `, filterValues, {
     batchSize: 10,
   })
 
@@ -3160,7 +3198,7 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
 
       worksheet.getCell(
         "A1"
-      ).value = `Fee Summery Report (${data.course_name}) (${data.batch_name}) (${data.session_name}`;
+      ).value = `Fee Summery Report (${data.course_name}) (${data.batch_name}) (${data.session_name}) (${value.from_date} - ${value.to_date})`;
 
       const ROW_NUMBER = 3;
       let currentCol = 8 // Start at column H (8th col)
