@@ -1,7 +1,6 @@
 import QueryStream from "pg-query-stream";
 import asyncErrorHandler from "../middlewares/asyncErrorHandler";
 import { ErrorHandler } from "../utils/ErrorHandler";
-import { VGetAdmissionList } from "../validator/admission.validator";
 import { pool } from "../config/db";
 import ExcelJS from "exceljs";
 import {
@@ -2659,7 +2658,6 @@ export const createInventoryReport = asyncErrorHandler(async (req, res) => {
 });
 
 // monthly payment report
-
 export const monthlyPaymentReport = asyncErrorHandler(async (req, res) => {
   const { error, value } = VMonthlyPaymentReport.validate(req.query ?? {});
   if (error) throw new ErrorHandler(400, error.message);
@@ -2991,3 +2989,340 @@ export const monthlyPaymentReport = asyncErrorHandler(async (req, res) => {
     // throw new ErrorHandler(500, err.message);
   });
 });
+
+// Summary Report for Student Current Fees Status
+export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
+  // Set response headers for streaming
+  res.setHeader(
+    "Content-Disposition",
+    'attachment; filename="Fee_Summary_Report.xlsx"'
+  );
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
+
+  const workbook = new ExcelJS.stream.xlsx.WorkbookWriter({
+    stream: res,
+    useStyles: true,
+  });
+  const worksheet = workbook.addWorksheet("Fee Summart Report");
+
+  worksheet.getCell("A1").font = {
+    size: 20,
+    bold: true,
+    color: { argb: "000000" },
+  };
+  worksheet.getCell("A1").fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "FFFF00" },
+  };
+  worksheet.getRow(1).height = 30;
+  worksheet.getCell("A1").alignment = {
+    horizontal: "left",
+    vertical: "middle",
+  };
+
+  const rowArray = [
+    "Sr Number",
+    "Student Name",
+    "Form ID",
+    "Course",
+    "Batch",
+    "Session",
+    "Duration"
+  ];
+
+  worksheet.addRow(rowArray);
+
+  worksheet.mergeCells("A2:A3");
+  worksheet.mergeCells("B2:B3");
+  worksheet.mergeCells("C2:C3");
+  worksheet.mergeCells("D2:D3");
+  worksheet.mergeCells("E2:E3");
+  worksheet.mergeCells("F2:F3");
+  worksheet.mergeCells("G2:G3");
+
+  // Row styling (header row)
+  const ROWS = [worksheet.getRow(2), worksheet.getRow(3)];
+  ROWS.forEach((item) => {
+    item.eachCell((cell) => {
+      cell.style = {
+        font: { bold: true, size: 14, color: { argb: "000000" } },
+        alignment: { horizontal: "center", vertical: "middle" },
+        fill: {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "F4A460" },
+        }, // Red background
+        border: {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          right: { style: "thin" },
+          bottom: { style: "thin" },
+        },
+      };
+    });
+  });
+
+  const client = await pool.connect();
+  const query = new QueryStream(`
+    SELECT
+      row_number() OVER () AS sr_no,
+      u.name AS student_name,
+      ff.form_name,
+      c.name AS course_name,
+      b.month_name AS batch_name,
+      s.name AS session_name,
+      c.duration AS month_duration,
+      JSON_AGG(effi) FILTER (WHERE effi.form_id IS NOT NULL) AS fee_info,
+      (SELECT JSON_AGG(JSON_BUILD_OBJECT('id', id, 'name', name) ORDER BY id) FROM course_fee_head) AS fee_head_info
+    FROM fillup_forms ff
+
+    LEFT JOIN users u ON u.id = ff.student_id
+    LEFT JOIN enrolled_courses ec ON ec.form_id = ff.id
+    LEFT JOIN course c ON c.id = ec.course_id
+    LEFT JOIN batch b ON b.id = ec.batch_id
+    LEFT JOIN session s ON s.id = ec.session_id
+
+    -- LEFT JOIN each_form_fee_info effi ON effi.form_id = ff.id
+
+    LEFT JOIN LATERAL (
+      SELECT
+        ffs.form_id,
+        ffs.fee_head_id,
+        cfh.name AS fee_head_name,
+        CASE
+          WHEN ffs.fee_head_id = 4 THEN MAX(ffs.amount) / c.duration
+        ELSE MAX(ffs.amount)
+        END AS total_amount,
+        
+        CASE
+          WHEN ffs.fee_head_id = 4 THEN COALESCE(SUM(p.amount) FILTER (WHERE mode = 'Discount'), 0) / c.duration
+        ELSE COALESCE(SUM(p.amount) FILTER (WHERE mode = 'Discount'), 0)
+        END AS any_discount,
+
+        CASE
+          WHEN ffs.fee_head_id = 4 THEN
+          (MAX(ffs.amount) / c.duration) - (COALESCE(SUM(p.amount) FILTER (WHERE mode = 'Discount'), 0) / c.duration)
+        ELSE COALESCE(MAX(ffs.amount), 0) - COALESCE(SUM(p.amount) FILTER (WHERE mode = 'Discount'), 0)
+        END AS actule_fee_after_discount,
+
+        CASE
+          WHEN ffs.fee_head_id = 4 THEN MAX(ffs.amount)
+        ELSE NULL
+        END AS total_monthly_fee_in_this_session, -- this is only for monthly fees
+        
+        COALESCE(SUM(p.amount) FILTER (WHERE mode != 'Discount'), 0) AS total_fee_collected,
+
+        CASE
+          WHEN ffs.fee_head_id = 4 THEN COALESCE(MAX(ffs.amount), 0) - COALESCE(SUM(p.amount) FILTER (WHERE mode != 'Discount'), 0)
+        ELSE COALESCE(MAX(ffs.amount), 0) - COALESCE(SUM(p.amount) FILTER (WHERE mode = 'Discount'), 0) - COALESCE(SUM(p.amount) FILTER (WHERE mode != 'Discount'), 0)
+        END AS pending_amount
+      FROM form_fee_structure ffs
+      
+      LEFT JOIN course_fee_head cfh
+      ON cfh.id = ffs.fee_head_id
+      
+      LEFT JOIN payments p
+      ON p.form_id = ffs.form_id AND p.fee_head_id = ffs.fee_head_id
+      
+      GROUP BY ffs.form_id, ffs.fee_head_id, cfh.id
+      
+      ORDER BY ffs.form_id
+    ) effi ON effi.form_id = ff.id
+
+    GROUP BY u.id, c.id, ff.id, s.id, b.id
+
+    ORDER BY ff.id;
+  `, [], {
+    batchSize: 10,
+  })
+
+  const pgStream = client.query(query);
+
+  let index = 0;
+  const created_fee_head_column_info: {
+    colname: string;
+    fee_head_id: number;
+    type: "total_fee" | "discount_amount" | "total_monthly_fee_in_this_session" | "actule_fee_after_disc" | "total_fee_collected" | "pending_fee";
+  }[] = [];
+  pgStream.on("data", data => {
+    pgStream.pause();
+
+    if (index === 0) {
+
+      worksheet.getCell(
+        "A1"
+      ).value = `Fee Summery Report (${data.course_name}) (${data.batch_name}) (${data.session_name}`;
+
+      const ROW_NUMBER = 3;
+      let currentCol = 8 // Start at column H (8th col)
+
+      data.fee_head_info.forEach((item: any) => {
+        const colName1 = getExcelColumnName(currentCol);
+        const cell1 = worksheet.getCell(`${colName1}${ROW_NUMBER}`);
+
+        cell1.value = `Total ${item.name}`;
+
+        created_fee_head_column_info.push({
+          type: "total_fee",
+          fee_head_id: item.id,
+          colname: colName1
+        })
+
+        const colName2 = getExcelColumnName(currentCol + 1);
+        const cell2 = worksheet.getCell(`${colName2}${ROW_NUMBER}`);
+
+        cell2.value = `Discount Amount For ${item.name}`;
+
+        created_fee_head_column_info.push({
+          type: "discount_amount",
+          fee_head_id: item.id,
+          colname: colName2
+        })
+
+        const colName3 = getExcelColumnName(currentCol + 2);
+        const cell3 = worksheet.getCell(`${colName3}${ROW_NUMBER}`);
+
+        cell3.value = `Actual ${item.name} After Discount`;
+
+        created_fee_head_column_info.push({
+          type: "actule_fee_after_disc",
+          fee_head_id: item.id,
+          colname: colName3
+        })
+
+
+        let cell6: ExcelJS.Cell | null = null;
+        if (item.id === 4) {
+          const colName6 = getExcelColumnName(currentCol + 3);
+          cell6 = worksheet.getCell(`${colName6}${ROW_NUMBER}`);
+
+          cell6.value = `Total ${item.name} for this Session`;
+
+          created_fee_head_column_info.push({
+            type: "total_monthly_fee_in_this_session",
+            fee_head_id: item.id,
+            colname: colName6
+          })
+        }
+
+        const colName4 = getExcelColumnName(currentCol + (item.id === 4 ? 4 : 3));
+        const cell4 = worksheet.getCell(`${colName4}${ROW_NUMBER}`);
+
+        cell4.value = `Total ${item.name} Collected`;
+
+        created_fee_head_column_info.push({
+          type: "total_fee_collected",
+          fee_head_id: item.id,
+          colname: colName4
+        })
+
+        const colName5 = getExcelColumnName(currentCol + (item.id === 4 ? 5 : 4));
+        const cell5 = worksheet.getCell(`${colName5}${ROW_NUMBER}`);
+
+        cell5.value = `Pending ${item.name}`;
+
+        created_fee_head_column_info.push({
+          type: "pending_fee",
+          fee_head_id: item.id,
+          colname: colName5
+        });
+
+        [cell1, cell2, cell3, cell4, cell5, cell6].forEach(cell => {
+          if (cell !== null) {
+            cell.style = {
+              alignment: { horizontal: "center", vertical: "middle" },
+              border: {
+                top: { style: "thin" },
+                bottom: { style: "thin" },
+                left: { style: "thin" },
+                right: { style: "thin" },
+              }
+            }
+          }
+        })
+
+        // Merge the cells
+        worksheet.mergeCells(`${colName1}2:${colName5}2`);
+        const mergedCell = worksheet.getCell(`${colName1}2`);
+
+        // Set value and style for the merged cell
+        mergedCell.value = item.name;
+        mergedCell.style = {
+          font: { bold: true, size: 14 },
+          alignment: { horizontal: 'center', vertical: 'middle' },
+        };
+
+        // Apply borders to all cells in the merged range
+        const startCol = worksheet.getColumn(colName1).number;
+        const endCol = worksheet.getColumn(colName5).number;
+
+        for (let c = startCol; c <= endCol; c++) {
+          const cell = worksheet.getCell(2, c);
+          cell.border = {
+            top: { style: "thin" },
+            bottom: { style: "thin" },
+            left: c === startCol ? { style: "thin" } : {},
+            right: c === endCol ? { style: "thin" } : {},
+          };
+        }
+
+        if (item.id === 4) {
+          currentCol += 6;
+        } else {
+          currentCol += 5;
+        }
+      })
+
+      const lastCellName = getExcelColumnName(currentCol);
+      worksheet.mergeCells(`A1:${lastCellName}1`);
+
+      index++;
+    }
+
+    const excelRow = worksheet.addRow([data.sr_no, data.student_name, data.form_name, data.course_name, data.batch_name, data.session_name, data.month_duration])
+
+    created_fee_head_column_info.forEach(item => {
+      const fee_info = data.fee_info.find((fee: any) => fee.fee_head_id == item.fee_head_id);
+      const cell = worksheet.getCell(`${item.colname}${excelRow.number}`);
+
+      if (fee_info) {
+        if (item.type === "total_fee") {
+          cell.value = fee_info.total_amount;
+        } else if (item.type === "discount_amount") {
+          cell.value = fee_info.any_discount;
+        } else if (item.type === "actule_fee_after_disc") {
+          cell.value = fee_info.actule_fee_after_discount
+        } else if (item.type === "total_fee_collected") {
+          cell.value = fee_info.total_fee_collected
+        } else if (item.type === "pending_fee") {
+          cell.value = fee_info.pending_amount
+        } else if (item.type === "total_monthly_fee_in_this_session") {
+          cell.value = fee_info.total_monthly_fee_in_this_session
+        } else {
+          cell.value = "-"
+        }
+      } else {
+        cell.value = "-"
+      }
+    })
+
+    pgStream.resume();
+  })
+
+
+  pgStream.on("end", () => {
+    workbook.commit();
+    client.release(); // Release the client when done
+  });
+
+  pgStream.on("error", (err) => {
+    client.release();
+    workbook.commit();
+    console.log(err);
+    // throw new ErrorHandler(500, err.message);
+  });
+})

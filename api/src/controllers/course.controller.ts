@@ -6,22 +6,22 @@ import { ErrorHandler } from "../utils/ErrorHandler";
 import { generatePlaceholders } from "../utils/generatePlaceholders";
 import {
   objectToSqlConverterUpdate,
-  objectToSqlInsert,
+  // objectToSqlInsert,
 } from "../utils/objectToSql";
 import { parsePagination } from "../utils/parsePagination";
 import {
   VCreateBatches,
   VCreateCourse,
   VCreateFeeHead,
-  VCreateFeeStructure,
+  // VCreateFeeStructure,
   VCreateSession,
-  VGetFeeStructure,
+  // VGetFeeStructure,
   VGetSessionList,
-  VSingleFeeStructure,
+  // VSingleFeeStructure,
   VSingleSession,
   VUpdateCourse,
   VUpdateFeeHead,
-  VUpdateFeeStructure,
+  // VUpdateFeeStructure,
   VUpdateSession,
 } from "../validator/course.validator";
 
@@ -269,7 +269,7 @@ export const createCourse = asyncErrorHandler(async (req, res) => {
   try {
     await client.query("BEGIN");
     const { rows } = await client.query(
-      "INSERT INTO course (name, duration, duration_name description) VALUES ($1, $2, $3, $4) RETURNING id",
+      "INSERT INTO course (name, duration, duration_name, description) VALUES ($1, $2, $3, $4) RETURNING id",
       [value.name, value.duration, value.duration_name, value.description]
     );
 
