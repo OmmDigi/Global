@@ -3033,6 +3033,8 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
     filterValues.push(value.batch);
   }
 
+  console.log(filter);
+
   // Set response headers for streaming
   res.setHeader(
     "Content-Disposition",
