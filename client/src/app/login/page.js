@@ -141,7 +141,7 @@ function page() {
 
             <hr className="my-6 border-t-2 border-gray-400 w-11/12" />
 
-            <info-box className="flex items-start space-x-4 mb-2">
+            {/* <info-box className="flex items-start space-x-4 mb-2">
               <div>
                 <img
                   src="/image/map.png"
@@ -159,12 +159,12 @@ function page() {
                   Near: Geetanjali metro station and Naktala Sib Mandir.
                 </div>
               </div>
-            </info-box>
+            </info-box> */}
 
             <contact-list>
               <phone className="flex items-center space-x-2 text-sm text-gray-700">
-                <icon className="text-green-600">&#9742;</icon>
-                <span>90516 29028</span>
+                {/* <icon className="text-green-600"></icon> */}
+                <span className="text-green-800 text-xl">All <span className="text-blue-800 text-xl font-bold">courses</span> under one roof. We have no branches.</span>
               </phone>
             </contact-list>
           </branch>

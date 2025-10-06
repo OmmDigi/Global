@@ -3,6 +3,10 @@ import { IoIosMail } from "react-icons/io";
 import { FaPhoneAlt } from "react-icons/fa";
 import { FaLocationDot } from "react-icons/fa6";
 import Link from "next/link";
+import { CiFacebook } from "react-icons/ci";
+import { FaInstagram } from "react-icons/fa";
+import { FaWhatsapp } from "react-icons/fa";
+
 function Footer() {
   return (
     <div>
@@ -64,24 +68,33 @@ function Footer() {
               <Link
                 href="http://facebook.com/gtitrainingcourse"
                 target="_blank"
+                className="inline-block transform transition-transform duration-300 hover:scale-110"
               >
-                <i className="fab fa-facebook-f"></i>
+                <i className="fab fa-facebook-f text-4xl">
+                  <CiFacebook />
+                </i>
               </Link>
               <Link
                 href="http://instagram.com/globaltechnicalinstitute/"
                 target="_blank"
+                className="inline-block transform transition-transform duration-300 hover:scale-110"
               >
-                <i className="fab fa-instagram"></i>
+                <i className="fab fa-instagram text-4xl">
+                  <FaInstagram />
+                </i>
               </Link>
               <Link
                 href="http://api.whatsapp.com/send/?phone=919231551285"
                 target="_blank"
+                className="inline-block transform transition-transform duration-300 hover:scale-110"
               >
-                <i className="fab fa-whatsapp"></i>
+                <i className="fab fa-whatsapp text-4xl">
+                  <FaWhatsapp />
+                </i>
               </Link>
             </div>
           </div>
- 
+
           <div>
             <div className="flex justify-between">
               <h2 className="text-xl font-semibold mb-4">USEFUL LINKS</h2>
