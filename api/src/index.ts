@@ -20,6 +20,7 @@ import { excelRoute } from "./routes/excel.routes";
 import { initCronJobs } from "./cron-jobs";
 import { inventoryRouteV2 } from "./routes/v2/inventory.routes";
 import { settingsRoutes } from "./routes/settings.routes";
+import { pool } from "./config/db";
 
 const app: Application = express();
 
@@ -72,74 +73,59 @@ app.use("/api/v1/settings", settingsRoutes)
 
 initCronJobs();
 
-// app.get("/pay", async (req, res) => {
-//   // res.render('payment-confirm', {
-//   //   orderId: "OM25083015144279540489",
-//   //   transactionId: "OM25083015144281540439",
-//   //   amount: "2999",
-//   //   paymentDate: "August 30, 2025",
-//   //   // Student Information
-//   //   studentName: "John Doe",
-
-//   //   // Course Information
-//   //   courseTitle: "Complete Web Development Bootcamp",
-//   //   courseStartDate: "September 15, 2025",
-//   //   courseDuration: "6 months",
-
-//   //   // Links
-//   //   dashboardUrl: "https://yourwebsite.com/dashboard",
-//   //   courseUrl: "https://yourwebsite.com/courses/web-development",
-
-//   //   // Support Information
-//   //   supportEmail: "support@yourwebsite.com",
-//   //   supportPhone: "+91-9876543210",
-
-//   //   // Company Branding
-//   //   companyName: "Your Learning Platform",
-
-//   //   // Additional Features
-//   //   whatsappGroup: true, // Boolean - shows WhatsApp group mention
-
-//   //   // Social Media Links (all optional)
-//   //   socialLinks: {
-//   //     website: "https://yourwebsite.com",
-//   //     facebook: "https://facebook.com/yourpage",
-//   //     instagram: "https://instagram.com/yourpage",
-//   //     linkedin: "https://linkedin.com/company/yourcompany"
-//   //   }
-//   // });
-
-//   const data = {
-//     recipientName: "Global Technical Institute",
-//     generatedTime: new Date().toLocaleString("en-GB", {
-//       day: "2-digit",
-//       month: "short",
-//       year: "numeric",
-//       hour: "2-digit",
-//       minute: "2-digit",
-//     }),
-//     items: [
-//       {
-//         companyName: "ABC Corporation",
-//         name: "Server Maintenance Contract",
-//         renewalDate: "2024-12-31",
-//         daysRemaining: 30,
-//       },
-//       {
-//         companyName: "XYZ Industries",
-//         name: "Network Equipment AMC",
-//         renewalDate : "2024-11-20",
-//         daysRemaining: -5, // Overdue
-//       },
-//     ],
-//   };
-
-//   // await sendEmail('locbilla@gmail.com', 'AMC_ALERT', data)
-//   // res.send("Email Done")
-//   res.render("amc-notification.ejs", data);
-// });
-
 app.use(globalErrorController);
+
+app.get("/test", async (req, res) => {
+  const { rows } = await pool.query(`
+  WITH each_form_fee_info AS (
+    SELECT
+      ffs.form_id,
+      ffs.fee_head_id,
+      cfh.name AS fee_head_name,
+      MAX(ffs.amount) AS total_amount,
+      COALESCE(SUM(p.amount) FILTER (WHERE mode = 'Discount'), 0) AS any_discount,
+      COALESCE(MAX(ffs.amount), 0) - COALESCE(SUM(p.amount) FILTER (WHERE mode = 'Discount'), 0) AS actule_fee_after_discount,
+      COALESCE(SUM(p.amount) FILTER (WHERE mode != 'Discount'), 0) AS total_admission_fee_collected,
+      COALESCE(MAX(ffs.amount), 0) - COALESCE(SUM(p.amount) FILTER (WHERE mode = 'Discount'), 0) - COALESCE(SUM(p.amount) FILTER (WHERE mode != 'Discount'), 0) AS pending_amount
+    FROM form_fee_structure ffs
+    
+    LEFT JOIN course_fee_head cfh
+    ON cfh.id = ffs.fee_head_id
+    
+    LEFT JOIN payments p
+    ON p.form_id = ffs.form_id AND p.fee_head_id = ffs.fee_head_id
+    
+    GROUP BY ffs.form_id, ffs.fee_head_id, cfh.id
+    
+    ORDER BY ffs.form_id
+)
+
+SELECT
+ row_number() OVER () AS sr_no,
+ u.name AS student_name,
+ ff.form_name,
+ c.name AS course_name,
+ b.month_name AS batch_name,
+ s.name AS session_name,
+ c.duration AS month_duration,
+ JSON_AGG(effi) FILTER (WHERE effi.form_id IS NOT NULL) AS fee_info,
+ (SELECT JSON_AGG(JSON_BUILD_OBJECT('id', id, 'name', name) ORDER BY id) FROM course_fee_head) AS fee_head_info
+FROM fillup_forms ff
+
+LEFT JOIN users u ON u.id = ff.student_id
+LEFT JOIN enrolled_courses ec ON ec.form_id = ff.id
+LEFT JOIN course c ON c.id = ec.course_id
+LEFT JOIN batch b ON b.id = ec.batch_id
+LEFT JOIN session s ON s.id = ec.session_id
+
+LEFT JOIN each_form_fee_info effi ON effi.form_id = ff.id
+
+GROUP BY u.id, c.id, ff.id, s.id, b.id
+
+ORDER BY ff.id`);
+
+  res.json(rows);
+})
 
 const PORT = parseInt(process.env.PORT || "4001");
 const HOST = process.env.HOST ?? "127.0.0.1";

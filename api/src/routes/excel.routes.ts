@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createEmployeeSalarySheet, createInventoryReport, generatePaymentExcelReport, generateUrl, getAdmissionExcelReport, monthlyPaymentReport } from "../controllers/excel.controller";
+import { createEmployeeSalarySheet, createInventoryReport, generatePaymentExcelReport, generateUrl, getAdmissionExcelReport, monthlyPaymentReport, studetnFeeSummaryReport } from "../controllers/excel.controller";
 import { isAuthorized } from "../middlewares/isAuthorized";
 import { verifySignedUrl } from "../middlewares/verifySignedUrl";
 
@@ -11,5 +11,6 @@ excelRoute
     .get("/admission-report", verifySignedUrl, getAdmissionExcelReport)
     .get("/monthly-payment-report", verifySignedUrl, monthlyPaymentReport)
     .get("/salary-sheet", verifySignedUrl, createEmployeeSalarySheet)
+    .get("/fee-summery", verifySignedUrl, studetnFeeSummaryReport)
     // .get("/inventory-report", verifySignedUrl, createInventoryReport)
     .get("/inventory-report", verifySignedUrl, createInventoryReport)
