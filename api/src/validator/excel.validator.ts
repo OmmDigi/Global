@@ -10,7 +10,7 @@ export const VPaymentReport = Joi.object({
 });
 
 export const VGenerateUrl = Joi.object({
-  type: Joi.string().valid("payment_report", "admission_report", "salary_sheet", "inventory_report", "monthly_payment_report").required(),
+  type: Joi.string().valid("payment_report", "admission_report", "salary_sheet", "inventory_report", "monthly_payment_report", "fee_summary_report").required(),
   query: Joi.string().required()
 });
 

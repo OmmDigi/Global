@@ -11,6 +11,6 @@ excelRoute
     .get("/admission-report", verifySignedUrl, getAdmissionExcelReport)
     .get("/monthly-payment-report", verifySignedUrl, monthlyPaymentReport)
     .get("/salary-sheet", verifySignedUrl, createEmployeeSalarySheet)
-    .get("/fee-summery", studetnFeeSummaryReport)
+    .get("/fee-summery", verifySignedUrl, studetnFeeSummaryReport)
     // .get("/inventory-report", verifySignedUrl, createInventoryReport)
     .get("/inventory-report", verifySignedUrl, createInventoryReport)

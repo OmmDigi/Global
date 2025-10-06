@@ -39,6 +39,11 @@ urls.set("monthly_payment_report", {
   route_id: 8,
 });
 
+urls.set("fee_summary_report", {
+  url: `${HOST_URL}/api/v1/excel/fee-summery`,
+  route_id : 8
+})
+
 export const generateUrl = asyncErrorHandler(async (req, res) => {
   const { error, value } = VGenerateUrl.validate(req.body ?? {});
   if (error) throw new ErrorHandler(400, error.message);
