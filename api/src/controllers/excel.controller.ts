@@ -3033,8 +3033,6 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
     filterValues.push(value.batch);
   }
 
-  console.log(filter);
-
   // Set response headers for streaming
   res.setHeader(
     "Content-Disposition",
@@ -3176,9 +3174,9 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
       ORDER BY ffs.form_id
     ) effi ON effi.form_id = ff.id
 
-    GROUP BY u.id, c.id, ff.id, s.id, b.id
-
     ${filter}
+
+    GROUP BY u.id, c.id, ff.id, s.id, b.id
 
     ORDER BY ff.id;
   `, filterValues, {
