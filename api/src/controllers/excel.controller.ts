@@ -2737,7 +2737,7 @@ export const monthlyPaymentReport = asyncErrorHandler(async (req, res) => {
     } else {
       filter += ` AND ec.session_id = $${placeholder++}`;
     }
-    filterValues.push(value.batch);
+    filterValues.push(value.session);
   }
 
   let paymentFilter = "WHERE p.fee_head_id = 4";
@@ -2806,7 +2806,7 @@ export const monthlyPaymentReport = asyncErrorHandler(async (req, res) => {
       };
     });
   });
-
+  
   const client = await pool.connect();
   const query = new QueryStream(
     `
