@@ -111,13 +111,14 @@ export default function AdmissionAdmin() {
   const [id, setId] = useState<number>();
   const [editedFormId, setEditedFormId] = useState<number>(-1);
   const [formData, setFormData] = useState(initialFormData);
-  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
-    null,
-    null,
-  ]);
-  const [startDate, endDate] = dateRange;
+  // const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
+  //   null,
+  //   null,
+  // ]);
+  // const [startDate, endDate] = dateRange;
   const [course, setCourse] = useState<number>(0);
   const [batch, setBatch] = useState<any>(0);
+  const [changeSession, setChangeSession] = useState<any>(0);
   const [searchData, setSearchData] = useState<any>({});
   const [formSearch, setFormSearch] = useState<any>({});
   const [pageCount, setPageCount] = useState<number>(1);
@@ -156,15 +157,15 @@ export default function AdmissionAdmin() {
   );
 
   const handleSearch = async () => {
-    if (dateRange[0] && dateRange[0] && course && batch) {
+    if (changeSession && course && batch) {
       const response = await getFetcher(
-        `api/v1/admission?from_date=${dayjs(dateRange[0]).format(
-          "YYYY-MM-DD"
-        )}&to_date=${dayjs(dateRange[1]).format(
-          "YYYY-MM-DD"
-        )}&course=${course}&batch=${batch}`
+        `api/v1/admission?session=${changeSession}&course=${course}&batch=${batch}`
       );
       if (response) {
+        messageApi.open({
+          type: "success",
+          content: response.message,
+        });
         setSearchData(response);
       }
     } else {
@@ -183,6 +184,10 @@ export default function AdmissionAdmin() {
         `api/v1/admission?${formSearch.type}=${formSearch.value}`
       );
       if (response) {
+        messageApi.open({
+          type: "success",
+          content: response.message,
+        });
         setSearchData(response);
       }
     } else {
@@ -193,7 +198,6 @@ export default function AdmissionAdmin() {
     }
   };
 
-  
   const { trigger: create } = useSWRMutation(
     "api/v1/admission/create",
     (url, { arg }) => postFetcher(url, arg)
@@ -214,6 +218,16 @@ export default function AdmissionAdmin() {
   ) => {
     const { name, value } = e.target;
     setBatch(value);
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+  const handleSessionChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setChangeSession(value);
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -565,7 +579,7 @@ export default function AdmissionAdmin() {
                                 name="sessionName"
                                 disabled={id ? true : false}
                                 defaultValue={formData.sessionName}
-                                onChange={handleInputChange}
+                                onChange={handleSessionChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                               >
                                 <option value="">Option</option>
@@ -596,16 +610,19 @@ export default function AdmissionAdmin() {
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                               >
                                 <option value="">Option</option>
-                                {selectedCourse?.batch?.map(
-                                  (batch: any, index: number) => (
+                                {selectedCourse?.batch
+                                  ?.filter(
+                                    (batch: any) =>
+                                      batch.session_id == formData.sessionName
+                                  )
+                                  .map((batch: any, index: number) => (
                                     <option
                                       key={index}
-                                      value={`${batch?.batch_id}`}
+                                      value={`${batch.batch_id}`}
                                     >
                                       {batch.month_name}
                                     </option>
-                                  )
-                                )}
+                                  ))}
                               </select>
                             </div>
                           </div>
@@ -1632,7 +1649,8 @@ export default function AdmissionAdmin() {
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-10">
                             <div>
                               <label className="block text-sm font-medium text-start text-gray-700 mb-2">
-                                Set User Name <span className="text-red-500">*</span>
+                                Set User Name{" "}
+                                <span className="text-red-500">*</span>
                               </label>
                               <input
                                 type="text"
@@ -1646,7 +1664,8 @@ export default function AdmissionAdmin() {
 
                             <div>
                               <label className="block text-sm font-medium text-start text-gray-700 mb-2">
-                                Set Your password <span className="text-red-500">*</span>
+                                Set Your password{" "}
+                                <span className="text-red-500">*</span>
                               </label>
                               <input
                                 type="password"
@@ -1710,7 +1729,7 @@ export default function AdmissionAdmin() {
             </div>
 
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-4">
-              <div>
+              {/* <div>
                 <label className="block text-sm font-bold text-gray-500 mb-1">
                   Select date range
                 </label>
@@ -1727,7 +1746,7 @@ export default function AdmissionAdmin() {
                   className="border rounded-md px-3 py-2 text-sm dark:bg-gray-800 dark:text-white"
                   calendarClassName="!bg-white dark:!bg-gray-200"
                 />
-              </div>
+              </div> */}
               <div className="  mb-4">
                 <label className="block text-sm font-bold text-gray-500 mb-1">
                   Choose your Courses
@@ -1749,6 +1768,29 @@ export default function AdmissionAdmin() {
                   ))}
                 </select>
               </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">
+                  Choose your Session
+                </label>
+                <select
+                  key={editedFormId + "sessionName"}
+                  name="sessionName"
+                  disabled={id ? true : false}
+                  defaultValue={formData.sessionName}
+                  onChange={handleSessionChange}
+                  className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Option</option>
+
+                  {selectedCourse?.session?.map(
+                    (session: any, index: number) => (
+                      <option key={index} value={`${session?.session_id}`}>
+                        {session.session_name}
+                      </option>
+                    )
+                  )}
+                </select>
+              </div>
 
               <div>
                 <label className="block text-sm font-bold text-gray-500 mb-1">
@@ -1763,11 +1805,15 @@ export default function AdmissionAdmin() {
                   className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Option</option>
-                  {selectedCourse?.batch?.map((batch: any, index: number) => (
-                    <option key={index} value={`${batch?.batch_id}`}>
-                      {batch.month_name}
-                    </option>
-                  ))}
+                  {selectedCourse?.batch
+                    ?.filter(
+                      (batch: any) => batch.session_id == formData.sessionName
+                    )
+                    .map((batch: any, index: number) => (
+                      <option key={index} value={`${batch.batch_id}`}>
+                        {batch.month_name}
+                      </option>
+                    ))}
                 </select>
               </div>
               <div className="flex justify-end mt-5">
