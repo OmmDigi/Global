@@ -17,8 +17,8 @@ import {
 } from "../../../api/fatcher";
 import useSWRMutation from "swr/mutation";
 import { uploadFiles } from "../../../utils/uploadFile";
-import dayjs from "dayjs";
-import DatePicker from "react-datepicker";
+// import dayjs from "dayjs";
+// import DatePicker from "react-datepicker";
 
 const initialFormData = {
   courseName: "",
