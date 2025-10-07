@@ -30,10 +30,13 @@ export const VUpdateAdmissionStatus = Joi.object({
 
 export const VGetAdmissionList = Joi.object({
   student_id: Joi.number().optional(),
-  from_date: Joi.string().optional(),
-  to_date: Joi.string().optional(),
+  // from_date: Joi.string().optional(),
+  // to_date: Joi.string().optional(),
+  
   course: Joi.number().optional(),
   batch: Joi.number().optional(),
+  session : Joi.number().optional(),
+
   form_no: Joi.string().optional(),
   ph_no : Joi.string().optional(),
   email : Joi.string().email().optional(),
