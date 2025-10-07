@@ -24,6 +24,8 @@ export const VGetNewAdmissionReport = Joi.object({
   batch: Joi.number().required(),
   from_date: Joi.string().required(),
   to_date: Joi.string().required(),
+  session : Joi.number().optional(),
+  mode : Joi.string().valid("Cash", "Online", "Both").optional(),
   course: Joi.number().required(),
   token: Joi.string().optional()
 })
@@ -33,6 +35,10 @@ export const VMonthlyPaymentReport = Joi.object({
   from_date: Joi.string().required(),
   to_date: Joi.string().required(),
   course: Joi.number().required(),
+
+  session : Joi.number().optional(),
+  mode : Joi.string().valid("Cash", "Online", "Both").optional(),
+
   token: Joi.string().optional()
 })
 
@@ -41,5 +47,9 @@ export const VFeeSummaryReport = Joi.object({
   from_date: Joi.string().required(),
   to_date: Joi.string().required(),
   course: Joi.number().required(),
+
+  session : Joi.number().optional(),
+  mode : Joi.string().valid("Cash", "Online", "Both").optional(),
+  
   token: Joi.string().optional()
 })

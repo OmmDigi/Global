@@ -94,20 +94,39 @@ export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
 
   if (value.course) {
     if (filter == "") {
-      filter = `WHERE c.id = $${placeholder++}`;
+      filter = `WHERE ec.course_id = $${placeholder++}`;
     } else {
-      filter += ` AND c.id = $${placeholder++}`;
+      filter += ` AND ec.course_id = $${placeholder++}`;
     }
     filterValues.push(value.course);
   }
 
   if (value.batch) {
     if (filter == "") {
-      filter = `WHERE b.id = $${placeholder++}`;
+      filter = `WHERE ec.batch_id = $${placeholder++}`;
     } else {
-      filter += ` AND b.id = $${placeholder++}`;
+      filter += ` AND ec.batch_id = $${placeholder++}`;
     }
     filterValues.push(value.batch);
+  }
+
+  if (value.session) {
+    if (filter == "") {
+      filter = `WHERE ec.session_id = $${placeholder++}`;
+    } else {
+      filter += ` AND ec.session_id = $${placeholder++}`;
+    }
+    filterValues.push(value.batch);
+  }
+
+  let paymentFilter = "";
+  if (value.mode && value.mode !== "Both") {
+    if (paymentFilter == "") {
+      paymentFilter = `WHERE p.mode = $${placeholder++} OR p.mode = 'Discount'`;
+    } else {
+      paymentFilter += ` (AND p.mode = $${placeholder++} OR p.mode = 'Discount')`;
+    }
+    filterValues.push(value.mode);
   }
 
   const workbook = new ExcelJS.stream.xlsx.WorkbookWriter({
@@ -195,6 +214,8 @@ export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
               
         LEFT JOIN course_fee_head cfh
         ON cfh.id = p.fee_head_id
+
+        ${paymentFilter}
 
         GROUP BY p.form_id, p.fee_head_id, p.month
       ),
@@ -2694,20 +2715,39 @@ export const monthlyPaymentReport = asyncErrorHandler(async (req, res) => {
 
   if (value.course) {
     if (filter == "") {
-      filter = `WHERE c.id = $${placeholder++}`;
+      filter = `WHERE ec.course_id = $${placeholder++}`;
     } else {
-      filter += ` AND c.id = $${placeholder++}`;
+      filter += ` AND ec.course_id = $${placeholder++}`;
     }
     filterValues.push(value.course);
   }
 
   if (value.batch) {
     if (filter == "") {
-      filter = `WHERE b.id = $${placeholder++}`;
+      filter = `WHERE ec.batch_id = $${placeholder++}`;
     } else {
-      filter += ` AND b.id = $${placeholder++}`;
+      filter += ` AND ec.batch_id = $${placeholder++}`;
     }
     filterValues.push(value.batch);
+  }
+
+  if (value.session) {
+    if (filter == "") {
+      filter = `WHERE ec.session_id = $${placeholder++}`;
+    } else {
+      filter += ` AND ec.session_id = $${placeholder++}`;
+    }
+    filterValues.push(value.batch);
+  }
+
+  let paymentFilter = "WHERE p.fee_head_id = 4";
+  if (value.mode && value.mode !== "Both") {
+    if (paymentFilter == "") {
+      paymentFilter = `WHERE p.mode = $${placeholder++} OR p.mode = 'Discount'`;
+    } else {
+      paymentFilter += ` (AND p.mode = $${placeholder++} OR p.mode = 'Discount')`;
+    }
+    filterValues.push(value.mode);
   }
 
   const workbook = new ExcelJS.stream.xlsx.WorkbookWriter({
@@ -2785,7 +2825,7 @@ export const monthlyPaymentReport = asyncErrorHandler(async (req, res) => {
               STRING_AGG(DISTINCT(p.bill_no), ' + ') AS bill_number,
               STRING_AGG(DISTINCT(p.payment_date)::text, ' + ') AS payment_date
           FROM payments p
-          WHERE p.fee_head_id = 4
+          ${paymentFilter}
           GROUP BY p.form_id, DATE_TRUNC('month', p.month)
       ),
       final_months AS (
@@ -2992,7 +3032,6 @@ export const monthlyPaymentReport = asyncErrorHandler(async (req, res) => {
     client.release();
     workbook.commit();
     console.log(err);
-    // throw new ErrorHandler(500, err.message);
   });
 });
 
@@ -3017,20 +3056,30 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
 
   if (value.course) {
     if (filter == "") {
-      filter = `WHERE c.id = $${placeholder++}`;
+      filter = `WHERE ec.course_id = $${placeholder++}`;
     } else {
-      filter += ` AND c.id = $${placeholder++}`;
+      filter += ` AND ec.course_id = $${placeholder++}`;
     }
     filterValues.push(value.course);
   }
 
   if (value.batch) {
     if (filter == "") {
-      filter = `WHERE b.id = $${placeholder++}`;
+      filter = `WHERE ec.batch_id = $${placeholder++}`;
     } else {
-      filter += ` AND b.id = $${placeholder++}`;
+      filter += ` AND ec.batch_id = $${placeholder++}`;
     }
     filterValues.push(value.batch);
+  }
+
+  let paymentFilter = "";
+  if (value.mode && value.mode !== "Both") {
+    if (paymentFilter == "") {
+      paymentFilter = `WHERE p.mode = $${placeholder++} OR p.mode = 'Discount'`;
+    } else {
+      paymentFilter += ` (AND p.mode = $${placeholder++} OR p.mode = 'Discount')`;
+    }
+    filterValues.push(value.mode);
   }
 
   // Set response headers for streaming
@@ -3168,6 +3217,8 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
       
       LEFT JOIN payments p
       ON p.form_id = ffs.form_id AND p.fee_head_id = ffs.fee_head_id
+
+      ${paymentFilter}
       
       GROUP BY ffs.form_id, ffs.fee_head_id, cfh.id
       
