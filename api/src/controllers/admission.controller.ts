@@ -10,7 +10,6 @@ import { verifyToken } from "../services/jwt";
 import { createNewUser } from "../services/user.service";
 import { CustomRequest, IUserToken } from "../types";
 import { ApiResponse } from "../utils/ApiResponse";
-import { DeclarationFormGenerator } from "../utils/DeclarationFormGenerator";
 import { ErrorHandler } from "../utils/ErrorHandler";
 import { getAuthToken } from "../utils/getAuthToken";
 import {
@@ -266,7 +265,7 @@ export const updateAdmissionData = asyncErrorHandler(async (req, res) => {
 
 export const getAdmissionList = asyncErrorHandler(async (req, res) => {
   const { rows } = await getAdmissions(req);
-  res.status(200).json(new ApiResponse(200, "Admission List", rows));
+  res.status(200).json(new ApiResponse(200, "Admission Search List", rows));
 });
 
 export const updateAdmissionStatus = asyncErrorHandler(async (req, res) => {

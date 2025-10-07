@@ -18,7 +18,7 @@ type IFillUpForm = {
   }[];
   admission_data?: string;
   client?: PoolClient;
-  declaration_status?: number
+  declaration_status?: number;
 };
 
 export const doAdmission = async (data: IFillUpForm) => {
@@ -34,11 +34,17 @@ export const doAdmission = async (data: IFillUpForm) => {
 
   const { rows } = await pgClient.query(
     `
-     INSERT INTO fillup_forms (form_name, student_id ${data.declaration_status !== undefined ? ",declaration_status" : ""})
-     VALUES ($1 || nextval('${fillup_form_seq_constant_key}')::TEXT, $2 ${data.declaration_status !== undefined ? ",$3" : ""})
+     INSERT INTO fillup_forms (form_name, student_id ${
+       data.declaration_status !== undefined ? ",declaration_status" : ""
+     })
+     VALUES ($1 || nextval('${fillup_form_seq_constant_key}')::TEXT, $2 ${
+      data.declaration_status !== undefined ? ",$3" : ""
+    })
      RETURNING form_name, id
     `,
-    data.declaration_status !== undefined ? [customFormIdPrefix, data.student_id, data.declaration_status] : [customFormIdPrefix, data.student_id]
+    data.declaration_status !== undefined
+      ? [customFormIdPrefix, data.student_id, data.declaration_status]
+      : [customFormIdPrefix, data.student_id]
   );
 
   const form_name = rows[0].form_name as string;
@@ -54,7 +60,8 @@ export const doAdmission = async (data: IFillUpForm) => {
   const placeholder = data.fee_structure
     .map(
       (_, index) =>
-        `($${index * 5 + 1}, $${index * 5 + 2}, $${index * 5 + 3}, $${index * 5 + 4
+        `($${index * 5 + 1}, $${index * 5 + 2}, $${index * 5 + 3}, $${
+          index * 5 + 4
         }, $${index * 5 + 5})`
     )
     .join(", ");
@@ -99,42 +106,52 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
     filterValues.push(value.student_id || student_id);
   }
 
-  if (value.from_date && value.to_date) {
-    if (filter == "") {
-      filter = `WHERE ff.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
-    } else {
-      filter += ` AND ff.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
-    }
-    filterValues.push(value.from_date)
-    filterValues.push(value.to_date)
-  }
+  // if (value.from_date && value.to_date) {
+  //   if (filter == "") {
+  //     filter = `WHERE ff.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
+  //   } else {
+  //     filter += ` AND ff.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
+  //   }
+  //   filterValues.push(value.from_date)
+  //   filterValues.push(value.to_date)
+  // }
 
   if (value.course) {
     if (filter == "") {
-      filter = `WHERE c.id = $${placeholder++}`;
+      filter = `WHERE ec.course_id = $${placeholder++}`;
     } else {
-      filter += ` AND c.id = $${placeholder++}`;
+      filter += ` AND ec.course_id = $${placeholder++}`;
     }
-    filterValues.push(value.course)
+    filterValues.push(value.course);
   }
 
   if (value.batch) {
     if (filter == "") {
-      filter = `WHERE b.id = $${placeholder++}`;
+      filter = `WHERE ec.batch_id = $${placeholder++}`;
     } else {
-      filter += ` AND b.id = $${placeholder++}`;
+      filter += ` AND ec.batch_id = $${placeholder++}`;
     }
-    filterValues.push(value.batch)
+    filterValues.push(value.batch);
+  }
+
+  if (value.session) {
+    if (filter === "") {
+      filter += `WHERE ec.session_id = $${placeholder++}`;
+    } else {
+      filter += ` AND ec.session_id = $${placeholder++}`;
+    }
+
+    filterValues.push(value.session);
   }
 
   if (value.form_no) {
     filter = `WHERE ff.form_name = $${placeholder++}`;
-    filterValues.push(value.form_no)
+    filterValues.push(value.form_no);
   }
 
   if (value.ph_no) {
     filter = `WHERE u.ph_no = $${placeholder++}`;
-    filterValues.push(value.ph_no)
+    filterValues.push(value.ph_no);
   }
 
   if (value.name) {
@@ -142,14 +159,12 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
     filterValues.push(value.name);
   }
 
-  if(value.email) {
+  if (value.email) {
     filter = `WHERE u.email = $${placeholder++}`;
     filterValues.push(value.email);
   }
- 
 
-  return await pool.query(
-    `
+  const query = `
       SELECT
         ff.id AS form_id,
         ff.form_name,
@@ -180,9 +195,9 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
       GROUP BY ff.id, u.id, c.id, b.id
       ORDER BY ff.id DESC
       ${TO_STRING}
-      `,
-    filterValues
-  );
+  `;
+
+  return await pool.query(query, filterValues);
 };
 
 export const getSingleAdmissionData = async (
@@ -228,7 +243,9 @@ export const getSingleAdmissionData = async (
           LEFT JOIN session s
           ON s.id = ec.session_id
   
-          WHERE ff.id = $1 ${student_id ? " AND ff.student_id = $2 AND ff.status = 2" : ""}
+          WHERE ff.id = $1 ${
+            student_id ? " AND ff.student_id = $2 AND ff.status = 2" : ""
+          }
         `,
       student_id ? [form_id, student_id] : [form_id]
     );
@@ -258,7 +275,6 @@ export const getSingleAdmissionData = async (
         `,
       [form_id]
     );
-
 
     const { rows: admissionFormPayments } = await client.query(
       `
