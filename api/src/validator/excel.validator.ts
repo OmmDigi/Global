@@ -35,3 +35,11 @@ export const VMonthlyPaymentReport = Joi.object({
   course: Joi.number().required(),
   token: Joi.string().optional()
 })
+
+export const VFeeSummaryReport = Joi.object({
+  batch: Joi.number().required(),
+  from_date: Joi.string().required(),
+  to_date: Joi.string().required(),
+  course: Joi.number().required(),
+  token: Joi.string().optional()
+})
