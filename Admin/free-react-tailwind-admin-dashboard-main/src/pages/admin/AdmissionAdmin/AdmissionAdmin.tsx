@@ -193,7 +193,6 @@ export default function AdmissionAdmin() {
     }
   };
 
-  
   const { trigger: create } = useSWRMutation(
     "api/v1/admission/create",
     (url, { arg }) => postFetcher(url, arg)
@@ -596,16 +595,19 @@ export default function AdmissionAdmin() {
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                               >
                                 <option value="">Option</option>
-                                {selectedCourse?.batch?.map(
-                                  (batch: any, index: number) => (
+                                {selectedCourse?.batch
+                                  ?.filter(
+                                    (batch: any) =>
+                                      batch.session_id == formData.sessionName
+                                  )
+                                  .map((batch: any, index: number) => (
                                     <option
                                       key={index}
-                                      value={`${batch?.batch_id}`}
+                                      value={`${batch.batch_id}`}
                                     >
                                       {batch.month_name}
                                     </option>
-                                  )
-                                )}
+                                  ))}
                               </select>
                             </div>
                           </div>
@@ -1632,7 +1634,8 @@ export default function AdmissionAdmin() {
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-10">
                             <div>
                               <label className="block text-sm font-medium text-start text-gray-700 mb-2">
-                                Set User Name <span className="text-red-500">*</span>
+                                Set User Name{" "}
+                                <span className="text-red-500">*</span>
                               </label>
                               <input
                                 type="text"
@@ -1646,7 +1649,8 @@ export default function AdmissionAdmin() {
 
                             <div>
                               <label className="block text-sm font-medium text-start text-gray-700 mb-2">
-                                Set Your password <span className="text-red-500">*</span>
+                                Set Your password{" "}
+                                <span className="text-red-500">*</span>
                               </label>
                               <input
                                 type="password"
