@@ -334,6 +334,7 @@ export default function AdmissionAdmin() {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    // setFormData({ ...initialFormData, courseName: formData.courseName });
     try {
       const response = await create(admissionForm as any);
       messageApi.open({
@@ -341,7 +342,7 @@ export default function AdmissionAdmin() {
         content: response.message,
       });
       if (response.success === true) {
-        setFormData(initialFormData);
+        setFormData({ ...initialFormData, courseName: formData.courseName,sessionName :formData.sessionName,batchName: formData.batchName });
       }
       mutate();
       setCurrent(0);
