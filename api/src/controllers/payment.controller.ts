@@ -8,6 +8,7 @@ import { ErrorHandler } from "../utils/ErrorHandler";
 import {
   VAddPayment,
   VCreateOrderValidator,
+  VDeletePayment,
 } from "../validator/payment.validator";
 
 import { v4 as uuidv4 } from "uuid";
@@ -30,7 +31,7 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
       }[]
     ).filter((item) => item.custom_min_amount != 0);
 
-    if(fee_structure_info.length === 0) throw new ErrorHandler(400, "Nothing to pay")
+    if (fee_structure_info.length === 0) throw new ErrorHandler(400, "Nothing to pay")
 
     const placeholder = fee_structure_info
       .map((_, index) => `$${index + 2}`)
@@ -75,7 +76,7 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
       amount: number;
       month: string | null;
       payment_date: string | null;
-      bill_no : string | null;
+      bill_no: string | null;
     }[] = [];
 
     const payment_date_str = new Date().toUTCString();
@@ -100,7 +101,7 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
           amount: custom_amount,
           month: null,
           payment_date: payment_date_str,
-          bill_no : null
+          bill_no: null
         });
       }
     });
@@ -206,7 +207,7 @@ export const addPayment = asyncErrorHandler(async (req, res) => {
       custom_min_amount: number;
       month?: string;
       payment_date?: string;
-      bill_no : string;
+      bill_no: string;
     }[]
   ).filter((item) => item.custom_min_amount != 0);
 
@@ -291,7 +292,7 @@ export const addPayment = asyncErrorHandler(async (req, res) => {
       amount: item.custom_min_amount,
       month: monthFirstDateToStore,
       payment_date: item.payment_date ?? null,
-      bill_no : item.bill_no
+      bill_no: item.bill_no
     };
   });
 
@@ -320,3 +321,34 @@ export const addPayment = asyncErrorHandler(async (req, res) => {
 
   res.status(200).json(new ApiResponse(200, "New payment details added"));
 });
+
+export const deletePayment = asyncErrorHandler(async (req, res) => {
+  const { error, value } = VDeletePayment.validate(req.params ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
+
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN')
+
+    const { rows, rowCount } = await client.query('DELETE FROM payments WHERE id = $1 AND form_id = $2 RETURNING *', [value.id, value.form_id]);
+
+    if (rowCount === 0) {
+      throw new ErrorHandler(404, "No admission form found")
+    }
+
+    const paymentInfoJson = JSON.stringify(rows[0]);
+
+    await client.query("INSERT INTO deleted_payments (payment_row_id, payment_info, form_id) VALUES ($1, $2, $3)", [rows[0].id, paymentInfoJson, rows[0].form_id])
+
+
+    await client.query('COMMIT');
+
+    res.status(200).json(new ApiResponse(200, "Payment info successfully removed"))
+  } catch (error: any) {
+    await client.query('ROLLBACK');
+    throw new ErrorHandler(400, error.message)
+  } finally {
+    client.release()
+  }
+})
