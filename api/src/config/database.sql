@@ -472,3 +472,13 @@ ALTER TABLE course ADD COLUMN duration INT DEFAULT 0;
 ALTER TABLE course ADD COLUMN duration_name TEXT DEFAULT 'month' CHECK (duration_name IN ('month', 'year'));
 
 ALTER TABLE payments ADD COLUMN bill_no VARCHAR(255);
+
+CREATE TABLE deleted_payments (
+    payment_row_id BIGINT,
+    payment_info TEXT,
+
+    form_id BIGINT,
+    FOREIGN KEY (form_id) REFERENCES fillup_forms(id) ON DELETE SET NULL,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

@@ -1,9 +1,11 @@
 import { Router } from "express";
-import { addPayment, createOrder, verifyPayment } from "../controllers/payment.controller";
+import { addPayment, createOrder, deletePayment, verifyPayment } from "../controllers/payment.controller";
+import { isAuthorized } from "../middlewares/isAuthorized";
 
 export const paymentRoute = Router();
 
 paymentRoute
-.post("/create-order", createOrder)
-.get("/verify", verifyPayment)
-.post("/add", addPayment)
+    .post("/create-order", createOrder)
+    .get("/verify", verifyPayment)
+    .post("/add", addPayment)
+    .delete("/:form_id/:id", isAuthorized(6), deletePayment) //the person who have option of the admission module can delete the payment
