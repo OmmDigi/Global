@@ -337,6 +337,7 @@ export default function CourseDetailsAdmin() {
             <div className="flex flex-wrap justify-center items-center gap-6"></div>
           </div>
         </ComponentCard>
+
         <ComponentCard title="Discount Section">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
@@ -392,6 +393,8 @@ export default function CourseDetailsAdmin() {
           </form>
         </ComponentCard>
       </div>
+
+
       <div className="grid grid-cols-1 mt-2 gap-6 xl:grid-cols-1">
         <div className="space-y-6 ">
           <ComponentCard title="Fees head">
@@ -538,6 +541,7 @@ export default function CourseDetailsAdmin() {
                               <div>
                                 <input
                                   type="number"
+                                  max={item?.due_amount}
                                   onChange={(e) => handleAmountChange(e, item)}
                                   className="w-22 px-2 py-1 border border-amber-400 rounded"
                                   placeholder="Amount"
@@ -662,8 +666,11 @@ export default function CourseDetailsAdmin() {
           </ComponentCard>
         </div>
       </div>
+
       <BasicTableCourseDetailsAdmin
         fees_structure_table={fees_structure_table}
+        refetch={refetch}
+        formId={id}
       />
     </>
   );

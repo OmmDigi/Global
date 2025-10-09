@@ -7,10 +7,16 @@ import {
 } from "../../ui/table";
 
 import ComponentCard from "../../common/ComponentCard";
+import useSWRMutation from "swr/mutation";
+import { deleteFetcher } from "../../../api/fatcher";
+import { message } from "antd";
+import { mutate } from "swr";
 
 interface IProps {
   // batchList: any;
   fees_structure_table: any;
+  refetch:any;
+  formId:any;
   //   onEdit: (id: number) => void;
 }
 
@@ -18,7 +24,26 @@ interface IProps {
 
 export default function BasicTableCourseDetailsAdmin({
   fees_structure_table,
+  refetch,
+  formId
 }: IProps) {
+  const { trigger: deleteUser } = useSWRMutation(
+    "api/v1/payment",
+    (url, { arg }: { arg: number }) => deleteFetcher(`${url}/${formId}/${arg}`) // arg contains the id
+  );
+  const handleDelete = async (id: number) => {
+    if (!confirm("Are you want to delete")) return;
+
+    try {
+      await deleteUser(id);
+      message.success("User deleted successfully");
+      refetch()
+    } catch (error) {
+      console.error("Delete failed:", error);
+      message.error("Failed to delete user");
+    }
+  };
+
   return (
     <ComponentCard
       title={`  ${
@@ -52,19 +77,19 @@ export default function BasicTableCourseDetailsAdmin({
                 >
                   Amount
                 </TableCell>
-                 <TableCell
+                <TableCell
                   isHeader
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                 >
                   Bill No
                 </TableCell>
-                  <TableCell
+                <TableCell
                   isHeader
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                 >
                   Month Of Payment
                 </TableCell>
-                 <TableCell
+                <TableCell
                   isHeader
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                 >
@@ -75,6 +100,12 @@ export default function BasicTableCourseDetailsAdmin({
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                 >
                   Payment Mode
+                </TableCell>
+                <TableCell
+                  isHeader
+                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                >
+                  Action
                 </TableCell>
               </TableRow>
             </TableHeader>
@@ -114,7 +145,7 @@ export default function BasicTableCourseDetailsAdmin({
                       </div>
                     </div>
                   </TableCell>
-                   <TableCell className="px-5 py-4 sm:px-6 text-start">
+                  <TableCell className="px-5 py-4 sm:px-6 text-start">
                     <div className="flex items-center gap-3">
                       <div>
                         <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
@@ -123,7 +154,7 @@ export default function BasicTableCourseDetailsAdmin({
                       </div>
                     </div>
                   </TableCell>
-                    <TableCell className="px-5 py-4 sm:px-6 text-start">
+                  <TableCell className="px-5 py-4 sm:px-6 text-start">
                     <div className="flex items-center gap-3">
                       <div>
                         <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
@@ -132,7 +163,7 @@ export default function BasicTableCourseDetailsAdmin({
                       </div>
                     </div>
                   </TableCell>
-                   <TableCell className="px-5 py-4 sm:px-6 text-start">
+                  <TableCell className="px-5 py-4 sm:px-6 text-start">
                     <div className="flex items-center gap-3">
                       <div>
                         <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
@@ -154,6 +185,22 @@ export default function BasicTableCourseDetailsAdmin({
                           {order.mode}
                         </span>
                       </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                    <div className="flex items-center gap-2">
+                      {/* <button
+                      onClick={() => onEdit(order.id)}
+                      className="text-blue-500 hover:underline"
+                    >
+                      Edit
+                    </button> */}
+                      <button
+                        onClick={() => handleDelete(order.id)}
+                        className="text-red-500 hover:underline"
+                      >
+                        Delete
+                      </button>
                     </div>
                   </TableCell>
                 </TableRow>

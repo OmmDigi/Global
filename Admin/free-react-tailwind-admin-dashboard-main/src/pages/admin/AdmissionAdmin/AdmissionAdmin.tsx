@@ -203,6 +203,7 @@ export default function AdmissionAdmin() {
     (url, { arg }) => postFetcher(url, arg)
   );
 
+  
   // update course
   const { trigger: update } = useSWRMutation(
     "api/v1/admission/form",
