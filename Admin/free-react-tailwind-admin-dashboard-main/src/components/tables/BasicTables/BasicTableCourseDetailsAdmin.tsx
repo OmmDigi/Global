@@ -10,7 +10,7 @@ import ComponentCard from "../../common/ComponentCard";
 import useSWRMutation from "swr/mutation";
 import { deleteFetcher } from "../../../api/fatcher";
 import { message } from "antd";
-import { mutate } from "swr";
+// import { mutate } from "swr";
 
 interface IProps {
   // batchList: any;
