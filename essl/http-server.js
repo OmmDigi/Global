@@ -12,6 +12,7 @@ import { globalErrorController } from "./controllers/error.controller.js";
 import { clients } from "./constant.js";
 import { getEsslConfig } from "./utils/getEsslConfig.js";
 import fs from "fs";
+import { generateUniqueFileName } from "./utils/generateUniqueFileName.js";
 
 dotenv.config();
 
@@ -96,12 +97,16 @@ wss.on("connection", (ws, req) => {
       }
 
       if (data?.action === "attendance_logs") {
-        fs.writeFile("attendance-logs.json", JSON.stringify(data?.message), "utf-8", (err) => {
+        const fileName = generateUniqueFileName("", "json");
+        fs.writeFile(`./attendance-logs/${fileName}`, JSON.stringify(data?.message), "utf-8", (err) => {
           if (err) {
             console.log(
               "Something went wrong while creating attendance-logs.json"
             );
+            return;
           }
+          //attendance logs successfully created
+          console.log("Attendance File Successfully Created")
         });
       }
 
