@@ -18,6 +18,7 @@ import {
   VGetSessionCourseHeadPrice,
   VGetSingleAdmission,
   VGetSingleAdmissionForm,
+  VModifyAdmissionFeeHead,
   VUpdateAdmission,
   VUpdateAdmissionStatus,
   VUpdateDeclarationStatus,
@@ -483,4 +484,23 @@ export const getAdmissionFeeHeadHistoryList = asyncErrorHandler(async (req, res)
   )
 
   res.status(200).json(new ApiResponse(200, "Admission amount history", rows))
+})
+
+export const modifyFeeHeadOfAdmission = asyncErrorHandler(async (req, res) => {
+  const { error, value } = VModifyAdmissionFeeHead.validate(req.body ?? {});
+  if(error) throw new ErrorHandler(400, error.message);
+
+  await pool.query(
+    `
+    INSERT INTO form_fee_structure 
+      (form_id, fee_head_id, amount, min_amount, required)
+    VALUES
+      ($1, $2, $3, $4, $5)
+    ON CONFLICT (form_id, fee_head_id) DO UPDATE 
+      SET amount = EXCLUDED.amount
+    `,
+    [value.form_id, value.fee_head_id, value.amount, value.amount, false]
+  );
+
+  res.status(200).json(new ApiResponse(200, "Admission Fee Head Successfully Modified"))
 })

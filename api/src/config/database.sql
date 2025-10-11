@@ -495,3 +495,6 @@ CREATE TABLE admission_fee_head_amount_history (
 );
 
 ALTER TABLE deleted_payments ADD COLUMN user_id BIGINT REFERENCES users(id);
+
+ALTER TABLE form_fee_structure 
+ADD CONSTRAINT unique_form_id_fee_head_id UNIQUE(form_id, fee_head_id);
