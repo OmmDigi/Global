@@ -158,10 +158,10 @@ export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
     "Student Name",
     "Form Name",
     "Course Name",
-    "Month Name",
+    "Batch",
     "Session Name",
     "Duration",
-    "Total Amount",
+    "Total Fees Collect",
     "All Fees Head",
   ];
 
@@ -3466,6 +3466,36 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
 
     created_fee_head_column_info.forEach((item) => {
       const cell = worksheet.getCell(`${item.colname}${excelRow.number}`);
+
+      let feesCellBgColor = "";
+      if (item.fee_head_id === 4) {
+        // monthly fee
+        feesCellBgColor = "70ad47";
+      } else if (item.fee_head_id === 3) {
+        //admission fee
+        feesCellBgColor = "ed7d31";
+      } else if (item.fee_head_id === 5) {
+        //late fine fee
+        feesCellBgColor = "f4b084";
+      } else if (item.fee_head_id === -1) {
+        // other fee structure
+        feesCellBgColor = "ffe699"
+      }
+
+      cell.style = {
+        border: {
+          top: { style: "thin" },
+          bottom: { style: "thin" },
+          left: { style: "thin" },
+          right: { style: "thin" },
+        },
+        fill: {
+          pattern: "solid",
+          type: "pattern",
+          fgColor: { argb: feesCellBgColor },
+        }
+      };
+
       if (item.fee_head_id == -1) {
         data.fee_info.forEach((f_info: any) => {
           if (SHOW_FEE_HEAD_IDS.includes(f_info.fee_head_id)) return;
