@@ -435,7 +435,7 @@ export default function CourseDetailsAdmin() {
             </form>
           </ComponentCard>
 
-          <ComponentCard title="Add extra Fees">
+          {/* <ComponentCard title="Add extra Fees">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
                 <div>
@@ -489,7 +489,7 @@ export default function CourseDetailsAdmin() {
                 </button>
               </div>
             </form>
-          </ComponentCard>
+          </ComponentCard> */}
         </div>
       </div>
 
