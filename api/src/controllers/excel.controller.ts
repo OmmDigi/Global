@@ -42,8 +42,8 @@ urls.set("monthly_payment_report", {
 
 urls.set("fee_summary_report", {
   url: `${HOST_URL}/api/v1/excel/fee-summery`,
-  route_id: 8
-})
+  route_id: 8,
+});
 
 export const generateUrl = asyncErrorHandler(async (req, res) => {
   const { error, value } = VGenerateUrl.validate(req.body ?? {});
@@ -84,9 +84,9 @@ export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
 
   if (value.from_date && value.to_date) {
     if (filter == "") {
-      filter = `WHERE ff.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
+      filter = `WHERE DATE(ff.created_at) BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
     } else {
-      filter += ` AND ff.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
+      filter += ` AND DATE(ff.created_at) BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
     }
     filterValues.push(value.from_date);
     filterValues.push(value.to_date);
@@ -116,7 +116,7 @@ export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
     } else {
       filter += ` AND ec.session_id = $${placeholder++}`;
     }
-    filterValues.push(value.batch);
+    filterValues.push(value.session);
   }
 
   let paymentFilter = "";
@@ -2806,7 +2806,7 @@ export const monthlyPaymentReport = asyncErrorHandler(async (req, res) => {
       };
     });
   });
-  
+
   const client = await pool.connect();
   const query = new QueryStream(
     `
@@ -3046,9 +3046,9 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
 
   if (value.from_date && value.to_date) {
     if (filter == "") {
-      filter = `WHERE ff.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
+      filter = `WHERE DATE(ff.created_at) BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
     } else {
-      filter += ` AND ff.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
+      filter += ` AND DATE(ff.created_at) BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
     }
     filterValues.push(value.from_date);
     filterValues.push(value.to_date);
@@ -3121,7 +3121,8 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
     "Course",
     "Batch",
     "Session",
-    "Duration"
+    "Duration",
+    "Total Due Amount",
   ];
 
   worksheet.addRow(rowArray);
@@ -3133,19 +3134,20 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
   worksheet.mergeCells("E2:E3");
   worksheet.mergeCells("F2:F3");
   worksheet.mergeCells("G2:G3");
+  worksheet.mergeCells("H2:H3");
 
   // Row styling (header row)
   const ROWS = [worksheet.getRow(2), worksheet.getRow(3)];
   ROWS.forEach((item) => {
-    item.eachCell((cell) => {
+    item.eachCell((cell, colNumber) => {
       cell.style = {
         font: { bold: true, size: 14, color: { argb: "000000" } },
         alignment: { horizontal: "center", vertical: "middle" },
         fill: {
           type: "pattern",
           pattern: "solid",
-          fgColor: { argb: "F4A460" },
-        }, // Red background
+          fgColor: { argb: colNumber === 8 ? "d6dce4" : "F4A460" },
+        },
         border: {
           top: { style: "thin" },
           left: { style: "thin" },
@@ -3157,7 +3159,9 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
   });
 
   const client = await pool.connect();
-  const query = new QueryStream(`
+  const SHOW_FEE_HEAD_IDS = [3, 4, 5];
+  const query = new QueryStream(
+    `
     SELECT
       row_number() OVER () AS sr_no,
       u.name AS student_name,
@@ -3167,7 +3171,10 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
       s.name AS session_name,
       c.duration AS month_duration,
       JSON_AGG(effi) FILTER (WHERE effi.form_id IS NOT NULL) AS fee_info,
-      (SELECT JSON_AGG(JSON_BUILD_OBJECT('id', id, 'name', name) ORDER BY id) FROM course_fee_head) AS fee_head_info
+      SUM(effi.pending_amount) AS total_due_amount,
+      (SELECT JSON_AGG(JSON_BUILD_OBJECT('id', id, 'name', name) ORDER BY id) FROM course_fee_head WHERE id IN (${SHOW_FEE_HEAD_IDS.join(
+      ", "
+    )})) AS fee_head_info
     FROM fillup_forms ff
 
     LEFT JOIN users u ON u.id = ff.student_id
@@ -3230,9 +3237,12 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
     GROUP BY u.id, c.id, ff.id, s.id, b.id
 
     ORDER BY ff.id;
-  `, filterValues, {
-    batchSize: 10,
-  })
+  `,
+    filterValues,
+    {
+      batchSize: 10,
+    }
+  );
 
   const pgStream = client.query(query);
 
@@ -3240,92 +3250,127 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
   const created_fee_head_column_info: {
     colname: string;
     fee_head_id: number;
-    type: "total_fee" | "discount_amount" | "total_monthly_fee_in_this_session" | "actule_fee_after_disc" | "total_fee_collected" | "pending_fee";
+    type:
+    | "total_fee"
+    | "discount_amount"
+    | "total_monthly_fee_in_this_session"
+    | "actule_fee_after_disc"
+    | "total_fee_collected"
+    | "pending_fee";
   }[] = [];
-  pgStream.on("data", data => {
+
+  pgStream.on("data", (data) => {
     pgStream.pause();
 
     if (index === 0) {
-
       worksheet.getCell(
         "A1"
       ).value = `Fee Summery Report (${data.course_name}) (${data.batch_name}) (${data.session_name}) (${value.from_date} - ${value.to_date})`;
 
       const ROW_NUMBER = 3;
-      let currentCol = 8 // Start at column H (8th col)
+      let currentCol = 9; // Start at column I (9th col)
+
+      data.fee_head_info.push({
+        id: -1,
+        name: "Others Fees Stracture",
+      });
 
       data.fee_head_info.forEach((item: any) => {
         const colName1 = getExcelColumnName(currentCol);
         const cell1 = worksheet.getCell(`${colName1}${ROW_NUMBER}`);
 
-        cell1.value = `Total ${item.name}`;
+        // cell1.value = `Total ${item.name}`;
+        cell1.value = "Total Fee";
 
         created_fee_head_column_info.push({
           type: "total_fee",
           fee_head_id: item.id,
-          colname: colName1
-        })
+          colname: colName1,
+        });
 
         const colName2 = getExcelColumnName(currentCol + 1);
         const cell2 = worksheet.getCell(`${colName2}${ROW_NUMBER}`);
 
-        cell2.value = `Discount Amount For ${item.name}`;
+        // cell2.value = `Discount Amount For ${item.name}`;
+        cell2.value = "Discount Amount";
 
         created_fee_head_column_info.push({
           type: "discount_amount",
           fee_head_id: item.id,
-          colname: colName2
-        })
+          colname: colName2,
+        });
 
         const colName3 = getExcelColumnName(currentCol + 2);
         const cell3 = worksheet.getCell(`${colName3}${ROW_NUMBER}`);
 
-        cell3.value = `Actual ${item.name} After Discount`;
+        // cell3.value = `Actual ${item.name} After Discount`;
+        cell3.value = "Actual Fee After Discount";
 
         created_fee_head_column_info.push({
           type: "actule_fee_after_disc",
           fee_head_id: item.id,
-          colname: colName3
-        })
-
+          colname: colName3,
+        });
 
         let cell6: ExcelJS.Cell | null = null;
         if (item.id === 4) {
           const colName6 = getExcelColumnName(currentCol + 3);
           cell6 = worksheet.getCell(`${colName6}${ROW_NUMBER}`);
 
-          cell6.value = `Total ${item.name} for this Session`;
+          // cell6.value = `Total ${item.name} for this Session`;
+          cell6.value = "Total fee this Session";
 
           created_fee_head_column_info.push({
             type: "total_monthly_fee_in_this_session",
             fee_head_id: item.id,
-            colname: colName6
-          })
+            colname: colName6,
+          });
         }
 
-        const colName4 = getExcelColumnName(currentCol + (item.id === 4 ? 4 : 3));
+        const colName4 = getExcelColumnName(
+          currentCol + (item.id === 4 ? 4 : 3)
+        );
         const cell4 = worksheet.getCell(`${colName4}${ROW_NUMBER}`);
 
-        cell4.value = `Total ${item.name} Collected`;
+        // cell4.value = `Total ${item.name} Collected`;
+        cell4.value = "Total Fee Collected";
 
         created_fee_head_column_info.push({
           type: "total_fee_collected",
           fee_head_id: item.id,
-          colname: colName4
-        })
+          colname: colName4,
+        });
 
-        const colName5 = getExcelColumnName(currentCol + (item.id === 4 ? 5 : 4));
+        const colName5 = getExcelColumnName(
+          currentCol + (item.id === 4 ? 5 : 4)
+        );
         const cell5 = worksheet.getCell(`${colName5}${ROW_NUMBER}`);
 
-        cell5.value = `Pending ${item.name}`;
+        // cell5.value = `Pending ${item.name}`;
+        cell5.value = "Pending Fee";
 
         created_fee_head_column_info.push({
           type: "pending_fee",
           fee_head_id: item.id,
-          colname: colName5
+          colname: colName5,
         });
 
-        [cell1, cell2, cell3, cell4, cell5, cell6].forEach(cell => {
+        let feesCellBgColor = "";
+        if (item.id === 4) {
+          // monthly fee
+          feesCellBgColor = "70ad47";
+        } else if (item.id === 3) {
+          //admission fee
+          feesCellBgColor = "ed7d31";
+        } else if (item.id === 5) {
+          //late fine fee
+          feesCellBgColor = "f4b084";
+        } else if (item.id === -1) {
+          // other fee structure
+          feesCellBgColor = "ffe699"
+        }
+
+        [cell1, cell2, cell3, cell4, cell5, cell6].forEach((cell, index) => {
           if (cell !== null) {
             cell.style = {
               alignment: { horizontal: "center", vertical: "middle" },
@@ -3334,10 +3379,15 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
                 bottom: { style: "thin" },
                 left: { style: "thin" },
                 right: { style: "thin" },
+              },
+              fill: {
+                pattern: "solid",
+                type: "pattern",
+                fgColor: { argb: feesCellBgColor },
               }
-            }
+            };
           }
-        })
+        });
 
         // Merge the cells
         worksheet.mergeCells(`${colName1}2:${colName5}2`);
@@ -3346,8 +3396,17 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
         // Set value and style for the merged cell
         mergedCell.value = item.name;
         mergedCell.style = {
-          font: { bold: true, size: 14 },
-          alignment: { horizontal: 'center', vertical: 'middle' },
+          font: {
+            bold: true,
+            size: 14,
+            // color: { argb: item.id === 4 ? "FFFFFF" : "000000" },
+          },
+          alignment: { horizontal: "center", vertical: "middle" },
+          fill: {
+            pattern: "solid",
+            type: "pattern",
+            fgColor: { argb: feesCellBgColor },
+          },
         };
 
         // Apply borders to all cells in the merged range
@@ -3369,7 +3428,7 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
         } else {
           currentCol += 5;
         }
-      })
+      });
 
       const lastCellName = getExcelColumnName(currentCol);
       worksheet.mergeCells(`A1:${lastCellName}1`);
@@ -3377,11 +3436,71 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
       index++;
     }
 
-    const excelRow = worksheet.addRow([data.sr_no, data.student_name, data.form_name, data.course_name, data.batch_name, data.session_name, data.month_duration])
+    const excelRow = worksheet.addRow([
+      data.sr_no,
+      data.student_name,
+      data.form_name,
+      data.course_name,
+      data.batch_name,
+      data.session_name,
+      data.month_duration,
+      data.total_due_amount,
+    ]);
 
-    created_fee_head_column_info.forEach(item => {
-      const fee_info = data.fee_info.find((fee: any) => fee.fee_head_id == item.fee_head_id);
+    const totalDuAmountCell = worksheet.getCell(`H${excelRow.number}`);
+    totalDuAmountCell.style = {
+      fill: {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "d6dce4" },
+      },
+    };
+
+    const otherFee = {
+      total_fee: 0,
+      discount_amount: 0,
+      actule_fee_after_disc: 0,
+      total_fee_collected: 0,
+      pending_fee: 0,
+    };
+
+    created_fee_head_column_info.forEach((item) => {
       const cell = worksheet.getCell(`${item.colname}${excelRow.number}`);
+      if (item.fee_head_id == -1) {
+        data.fee_info.forEach((f_info: any) => {
+          if (SHOW_FEE_HEAD_IDS.includes(f_info.fee_head_id)) return;
+
+          if (item.type === "total_fee") {
+            otherFee.total_fee += f_info.total_amount;
+          } else if (item.type === "discount_amount") {
+            otherFee.discount_amount += f_info.any_discount;
+          } else if (item.type === "actule_fee_after_disc") {
+            otherFee.actule_fee_after_disc += f_info.actule_fee_after_discount;
+          } else if (item.type === "total_fee_collected") {
+            otherFee.total_fee_collected += f_info.total_fee_collected;
+          } else if (item.type === "pending_fee") {
+            otherFee.pending_fee += f_info.pending_amount;
+          }
+        });
+
+        if (item.type === "total_fee") {
+          cell.value = otherFee.total_fee;
+        } else if (item.type === "discount_amount") {
+          cell.value = otherFee.discount_amount;
+        } else if (item.type === "actule_fee_after_disc") {
+          cell.value = otherFee.actule_fee_after_disc;
+        } else if (item.type === "total_fee_collected") {
+          cell.value = otherFee.total_fee_collected;
+        } else if (item.type === "pending_fee") {
+          cell.value = otherFee.pending_fee;
+        }
+
+        return;
+      }
+
+      const fee_info = data.fee_info.find(
+        (fee: any) => fee.fee_head_id == item.fee_head_id
+      );
 
       if (fee_info) {
         if (item.type === "total_fee") {
@@ -3389,24 +3508,23 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
         } else if (item.type === "discount_amount") {
           cell.value = fee_info.any_discount;
         } else if (item.type === "actule_fee_after_disc") {
-          cell.value = fee_info.actule_fee_after_discount
+          cell.value = fee_info.actule_fee_after_discount;
         } else if (item.type === "total_fee_collected") {
-          cell.value = fee_info.total_fee_collected
+          cell.value = fee_info.total_fee_collected;
         } else if (item.type === "pending_fee") {
-          cell.value = fee_info.pending_amount
+          cell.value = fee_info.pending_amount;
         } else if (item.type === "total_monthly_fee_in_this_session") {
-          cell.value = fee_info.total_monthly_fee_in_this_session
+          cell.value = fee_info.total_monthly_fee_in_this_session;
         } else {
-          cell.value = "-"
+          cell.value = "-";
         }
       } else {
-        cell.value = "-"
+        cell.value = "-";
       }
-    })
+    });
 
     pgStream.resume();
-  })
-
+  });
 
   pgStream.on("end", () => {
     workbook.commit();
@@ -3419,4 +3537,4 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
     console.log(err);
     // throw new ErrorHandler(500, err.message);
   });
-})
+});

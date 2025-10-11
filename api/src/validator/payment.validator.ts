@@ -15,8 +15,8 @@ export const VCreateOrderValidator = Joi.object({
 
 export const VAddPayment = Joi.object({
   form_id: Joi.number().required(),
-  payment_mode: Joi.string().required(),
-  payment_details : Joi.string().required(),
+  // payment_mode: Joi.string().required(),
+  payment_details : Joi.string().optional().allow(null),
   do_continue : Joi.boolean().optional().default(false),
   fee_structure_info: Joi.array()
     .items(
@@ -25,6 +25,7 @@ export const VAddPayment = Joi.object({
         custom_min_amount: Joi.number().required(),
         month: Joi.string().optional().allow(null),
         payment_date : Joi.string().optional().allow(null),
+        payment_mode : Joi.string().optional().allow(null),
         bill_no : Joi.string().optional().allow(null)
       })
     )

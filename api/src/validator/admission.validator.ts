@@ -49,3 +49,16 @@ export const VUpdateDeclarationStatus = Joi.object({
   form_id: Joi.number().required(),
   // declaration_status: Joi.number().valid(0, 1).required()
 })
+
+export const VGetSessionCourseHeadPrice = Joi.object({
+  session_id : Joi.number().required(),
+  // course_id : Joi.number().required(),
+  fee_head_id : Joi.number().required()
+})
+
+export const VUpdateSessionCourseHeadPrice = Joi.object({
+  session_id : Joi.number().required(),
+  fee_head_id : Joi.number().required(),
+  previous_amount : Joi.number().required(),
+  current_amount : Joi.number().required()
+})

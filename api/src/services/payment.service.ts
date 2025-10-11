@@ -5,7 +5,7 @@ type IPaymentProps = {
   form_id: number;
   student_id: number;
   order_id?: string;
-  mode: string;
+  mode: string | null;
   transition_id?: string;
   payment_details: string | null; // remark
   status: 1 | 2 | 3;
@@ -15,6 +15,7 @@ type IPaymentProps = {
     payment_date: string | null;
     month: string | null;
     bill_no : string | null;
+    payment_mode : string | null
   }[];
   client?: PoolClient;
 };
@@ -46,7 +47,7 @@ export const setPayment = async (data: IPaymentProps) => {
     data.fee_head_ids_info.flatMap((fee_head_info) => {
       return [
       data.form_id,
-      data.mode,
+      fee_head_info.payment_mode ?? data.mode,
       data.student_id,
       date.getTime(),
       data.order_id,

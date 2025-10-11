@@ -482,3 +482,14 @@ CREATE TABLE deleted_payments (
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE admission_fee_head_amount_history (
+    session_id BIGINT,
+
+    fee_head_id BIGINT,
+
+    previous_amount DECIMAL(10, 2) DEFAULT 0.00,
+    current_amount DECIMAL(10, 2) DEFAULT 0.00,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

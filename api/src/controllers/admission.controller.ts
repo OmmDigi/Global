@@ -12,13 +12,16 @@ import { CustomRequest, IUserToken } from "../types";
 import { ApiResponse } from "../utils/ApiResponse";
 import { ErrorHandler } from "../utils/ErrorHandler";
 import { getAuthToken } from "../utils/getAuthToken";
+import { parsePagination } from "../utils/parsePagination";
 import {
   VCreateAdmission,
+  VGetSessionCourseHeadPrice,
   VGetSingleAdmission,
   VGetSingleAdmissionForm,
   VUpdateAdmission,
   VUpdateAdmissionStatus,
   VUpdateDeclarationStatus,
+  VUpdateSessionCourseHeadPrice,
 } from "../validator/admission.validator";
 
 type IUserData = {
@@ -155,7 +158,13 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
 
     if (rowCount === 0) throw new ErrorHandler(404, "No course found");
 
-    const fee_structure = rows[0].fee_structures as { fee_head_id: number, fee_head_name: string, amount: number, min_amount: number, required: boolean }[];
+    const fee_structure = rows[0].fee_structures as {
+      fee_head_id: number;
+      fee_head_name: string;
+      amount: number;
+      min_amount: number;
+      required: boolean;
+    }[];
 
     // do the admission
     const { form_id } = await doAdmission({
@@ -166,21 +175,19 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
       batch_id: value.batch_id,
       fee_structure,
       session_id: value.session_id,
-      declaration_status: value?.declaration_status
+      declaration_status: value?.declaration_status,
     });
 
     await client.query("COMMIT");
 
     res.status(201).json(
-      new ApiResponse(
-        201,
-        "Admission info successfully saved",
-        {
-          form_id,
-          course_name : rows[0].name,
-          fee_structure : fee_structure.filter(item => item.fee_head_id == 1 || item.fee_head_id == 3),
-        }
-      )
+      new ApiResponse(201, "Admission info successfully saved", {
+        form_id,
+        course_name: rows[0].name,
+        fee_structure: fee_structure.filter(
+          (item) => item.fee_head_id == 1 || item.fee_head_id == 3
+        ),
+      })
     );
   } catch (error: any) {
     await client.query("ROLLBACK");
@@ -283,14 +290,20 @@ export const updateAdmissionStatus = asyncErrorHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, `Admission ${status_text}`));
 });
 
-export const getSingleAdmission = asyncErrorHandler(async (req : CustomRequest, res) => {
-  const { error, value } = VGetSingleAdmission.validate(req.params ?? {});
-  if (error) throw new ErrorHandler(400, error.message);
+export const getSingleAdmission = asyncErrorHandler(
+  async (req: CustomRequest, res) => {
+    const { error, value } = VGetSingleAdmission.validate(req.params ?? {});
+    if (error) throw new ErrorHandler(400, error.message);
 
-  const response = await getSingleAdmissionData(value.form_id, undefined, req.user_info?.id);
+    const response = await getSingleAdmissionData(
+      value.form_id,
+      undefined,
+      req.user_info?.id
+    );
 
-  res.status(200).json(new ApiResponse(200, "Fee Info", response));
-});
+    res.status(200).json(new ApiResponse(200, "Fee Info", response));
+  }
+);
 
 export const getSingleAdmissionFormData = asyncErrorHandler(
   async (req, res) => {
@@ -344,4 +357,130 @@ export const downloadDeclarationStatus = asyncErrorHandler(async (req, res) => {
   // buffer.generateDeclarationForm({
   //   address : "Something"
   // })
+});
+
+export const getAdmissionFeeHeadPrice = asyncErrorHandler(async (req, res) => {
+  const { error, value } = VGetSessionCourseHeadPrice.validate(req.query ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
+
+  const { rows, rowCount } = await pool.query(
+    `
+    SELECT
+      ffs.amount
+    FROM enrolled_courses ec
+
+    LEFT JOIN form_fee_structure ffs
+    ON ffs.form_id = ec.form_id
+
+    WHERE ec.session_id = $1 AND ffs.fee_head_id = $2
+
+    LIMIT 1
+    `,
+    [value.session_id, value.fee_head_id]
+  );
+
+  if (rowCount === 0) {
+    return res.status(200).json(new ApiResponse(200, "Form Amount", 0));
+  }
+
+  res.status(200).json(new ApiResponse(200, "Form Amount", rows[0].amount));
+});
+
+export const updateAdmissionFeeHeadAmount = asyncErrorHandler(
+  async (req, res) => {
+    const { error, value } = VUpdateSessionCourseHeadPrice.validate(
+      req.body ?? {}
+    );
+    if (error) throw new ErrorHandler(400, error.message);
+
+    const client = await pool.connect();
+
+    try {
+      await client.query("BEGIN");
+
+      await client.query(
+        "INSERT INTO admission_fee_head_amount_history (session_id, fee_head_id, previous_amount, current_amount) VALUES ($1, $2, $3, $4)",
+        [
+          value.session_id,
+          value.fee_head_id,
+          value.previous_amount,
+          value.current_amount,
+        ]
+      );
+
+      await client.query(
+        `
+        UPDATE 
+          form_fee_structure 
+          SET amount = $1, min_amount = $1
+        WHERE fee_head_id = $2 AND form_id IN (
+          SELECT
+          form_id
+          FROM enrolled_courses WHERE session_id = $3
+        )
+        `,
+        [value.current_amount, value.fee_head_id, value.session_id]
+      )
+      await client.query("COMMIT");
+
+      res
+        .status(201)
+        .json(
+          new ApiResponse(
+            200,
+            "Admission Fee Head Amount Successfully Update For This Session"
+          )
+        );
+    } catch (error : any) {
+      await client.query("ROLLBACK");
+      throw new ErrorHandler(400, error.message)
+    } finally {
+      client.release();
+    }
+  }
+);
+
+export const getAdmissionFeeHeadHistoryList = asyncErrorHandler(async (req, res) => {
+  const {TO_STRING} = parsePagination(req);
+
+
+  let filter = "";
+  let placeholder = 1;
+  const filterValues : string[] = [];
+
+  if(req.query.fee_head_id) {
+    if(filter === "") {
+      filter = `WHERE afhah.fee_head_id = $${placeholder++}`
+    } else {
+      filter += ` AND afhah.fee_head_id = $${placeholder++}`
+    }
+    filterValues.push(req.query.fee_head_id.toString());
+  }
+
+  const { rows } = await pool.query(
+    `
+     SELECT
+      cfh.name AS fee_head_name,
+      s.name AS session_name,
+      afhah.previous_amount,
+      afhah.current_amount,
+      TO_CHAR(afhah.created_at, 'FMDD FMMonth, YYYY') AS created_at
+     FROM admission_fee_head_amount_history afhah
+
+     LEFT JOIN course_fee_head cfh
+     ON cfh.id = afhah.fee_head_id
+
+     LEFT JOIN session s
+     ON s.id = afhah.session_id
+
+     ${filter}
+
+     ORDER BY created_at DESC
+
+     ${TO_STRING}
+    `,
+    filterValues
+  )
+
+  res.status(200).json(new ApiResponse(200, "Admission amount history", rows))
 })

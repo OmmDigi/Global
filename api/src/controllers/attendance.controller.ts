@@ -1,4 +1,5 @@
 import { pool } from "../config/db";
+import { essl } from "../config/essl";
 import asyncErrorHandler from "../middlewares/asyncErrorHandler";
 import { manageTeacherClassStatus } from "../services/attendance.service";
 import { ApiResponse } from "../utils/ApiResponse";
@@ -357,3 +358,10 @@ export const editTeacherClassStatus = asyncErrorHandler(async (req, res) => {
 
   res.status(200).json(new ApiResponse(200, "Class status updated"));
 });
+
+//sync attendance form the device
+export const syncAttendanceFromTheDevice = asyncErrorHandler(async (req, res) => {
+  // https://essl.globaltechnicalinstitute.com/api/v1/set-attendance
+  // const data = await essl.getAttendanceList();
+  throw new ErrorHandler(400, "Nothing to do")
+})

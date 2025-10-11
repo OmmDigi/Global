@@ -77,6 +77,7 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
       month: string | null;
       payment_date: string | null;
       bill_no: string | null;
+      payment_mode : string | null
     }[] = [];
 
     const payment_date_str = new Date().toUTCString();
@@ -101,7 +102,8 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
           amount: custom_amount,
           month: null,
           payment_date: payment_date_str,
-          bill_no: null
+          bill_no: null,
+          payment_mode : null
         });
       }
     });
@@ -207,6 +209,7 @@ export const addPayment = asyncErrorHandler(async (req, res) => {
       custom_min_amount: number;
       month?: string;
       payment_date?: string;
+      payment_mode : string;
       bill_no: string;
     }[]
   ).filter((item) => item.custom_min_amount != 0);
@@ -292,7 +295,8 @@ export const addPayment = asyncErrorHandler(async (req, res) => {
       amount: item.custom_min_amount,
       month: monthFirstDateToStore,
       payment_date: item.payment_date ?? null,
-      bill_no: item.bill_no
+      bill_no: item.bill_no,
+      payment_mode : item.payment_mode
     };
   });
 
@@ -312,7 +316,7 @@ export const addPayment = asyncErrorHandler(async (req, res) => {
   await setPayment({
     fee_head_ids_info,
     form_id,
-    mode: value.payment_mode,
+    mode: null,
     student_id: rows[0].student_id,
     transition_id: value.payment_details,
     status: 2,
@@ -351,4 +355,4 @@ export const deletePayment = asyncErrorHandler(async (req, res) => {
   } finally {
     client.release()
   }
-})
+});
