@@ -78,7 +78,8 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
       month: string | null;
       payment_date: string | null;
       bill_no: string | null;
-      payment_mode: string | null
+      payment_mode: string | null;
+      payment_details : string | null
     }[] = [];
 
     const payment_date_str = new Date().toUTCString();
@@ -104,7 +105,8 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
           month: null,
           payment_date: payment_date_str,
           bill_no: null,
-          payment_mode: null
+          payment_mode: null,
+          payment_details : null
         });
       }
     });
@@ -211,6 +213,7 @@ export const addPayment = asyncErrorHandler(async (req, res) => {
       month?: string;
       payment_date?: string;
       payment_mode: string;
+      payment_details : string | null;
       bill_no: string;
     }[]
   ).filter((item) => item.custom_min_amount != 0);
@@ -297,7 +300,8 @@ export const addPayment = asyncErrorHandler(async (req, res) => {
       month: monthFirstDateToStore,
       payment_date: item.payment_date ?? null,
       bill_no: item.bill_no,
-      payment_mode: item.payment_mode
+      payment_mode: item.payment_mode,
+      payment_details : item.payment_details
     };
   });
 
@@ -319,9 +323,10 @@ export const addPayment = asyncErrorHandler(async (req, res) => {
     form_id,
     mode: null,
     student_id: rows[0].student_id,
-    transition_id: value.payment_details,
+    // transition_id: value.payment_details,
     status: 2,
-    payment_details: value.payment_details ?? null,
+    // payment_details: value.payment_details ?? null,
+    payment_details : null
   });
 
   res.status(200).json(new ApiResponse(200, "New payment details added"));

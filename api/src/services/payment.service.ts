@@ -15,7 +15,8 @@ type IPaymentProps = {
     payment_date: string | null;
     month: string | null;
     bill_no : string | null;
-    payment_mode : string | null
+    payment_mode : string | null;
+    payment_details : string | null;
   }[];
   client?: PoolClient;
 };
@@ -56,7 +57,7 @@ export const setPayment = async (data: IPaymentProps) => {
       fee_head_info.fee_head_id,
       data.status,
       data.transition_id,
-      data.payment_details,
+      fee_head_info.payment_details ?? data.payment_details,
       fee_head_info.payment_date ?? new Date(),
       fee_head_info.month,
       fee_head_info.bill_no
