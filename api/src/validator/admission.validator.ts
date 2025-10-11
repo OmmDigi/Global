@@ -62,3 +62,9 @@ export const VUpdateSessionCourseHeadPrice = Joi.object({
   previous_amount : Joi.number().required(),
   current_amount : Joi.number().required()
 })
+
+export const VModifyAdmissionFeeHead = Joi.object({
+  form_id : Joi.number().required(),
+  fee_head_id : Joi.number().required(),
+  amount : Joi.number().required()
+})

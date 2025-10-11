@@ -8,6 +8,7 @@ import {
   getAdmissionList,
   getSingleAdmission,
   getSingleAdmissionFormData,
+  modifyFeeHeadOfAdmission,
   updateAdmissionData,
   updateAdmissionFeeHeadAmount,
   updateAdmissionStatus,
@@ -30,5 +31,6 @@ admissionRoute
   .get("/amount", isAuthorized(6), getAdmissionFeeHeadPrice)
   .get("/amount/history", isAuthorized(6), getAdmissionFeeHeadHistoryList)
   .post("/amount", isAuthorized(6), updateAdmissionFeeHeadAmount)
+  .post("/fee-head", isAuthorized(6), modifyFeeHeadOfAdmission)
   .get("/:form_id", isAuthorized(6), getSingleAdmission)
 
