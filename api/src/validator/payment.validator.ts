@@ -35,5 +35,6 @@ export const VAddPayment = Joi.object({
 
 export const VDeletePayment = Joi.object({
   id : Joi.number().required(),
-  form_id : Joi.number().required()
+  form_id : Joi.number().required(),
+  user_id : Joi.number().required().label("User Id")
 })

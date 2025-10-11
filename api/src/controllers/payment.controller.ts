@@ -3,6 +3,7 @@ import { phonePe } from "../config/phonePe";
 import { MONTHLY_PAYMENT_HEAD_ID } from "../constant";
 import asyncErrorHandler from "../middlewares/asyncErrorHandler";
 import { setPayment } from "../services/payment.service";
+import { CustomRequest } from "../types";
 import { ApiResponse } from "../utils/ApiResponse";
 import { ErrorHandler } from "../utils/ErrorHandler";
 import {
@@ -77,7 +78,7 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
       month: string | null;
       payment_date: string | null;
       bill_no: string | null;
-      payment_mode : string | null
+      payment_mode: string | null
     }[] = [];
 
     const payment_date_str = new Date().toUTCString();
@@ -103,7 +104,7 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
           month: null,
           payment_date: payment_date_str,
           bill_no: null,
-          payment_mode : null
+          payment_mode: null
         });
       }
     });
@@ -209,7 +210,7 @@ export const addPayment = asyncErrorHandler(async (req, res) => {
       custom_min_amount: number;
       month?: string;
       payment_date?: string;
-      payment_mode : string;
+      payment_mode: string;
       bill_no: string;
     }[]
   ).filter((item) => item.custom_min_amount != 0);
@@ -296,7 +297,7 @@ export const addPayment = asyncErrorHandler(async (req, res) => {
       month: monthFirstDateToStore,
       payment_date: item.payment_date ?? null,
       bill_no: item.bill_no,
-      payment_mode : item.payment_mode
+      payment_mode: item.payment_mode
     };
   });
 
@@ -326,8 +327,8 @@ export const addPayment = asyncErrorHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, "New payment details added"));
 });
 
-export const deletePayment = asyncErrorHandler(async (req, res) => {
-  const { error, value } = VDeletePayment.validate(req.params ?? {});
+export const deletePayment = asyncErrorHandler(async (req: CustomRequest, res) => {
+  const { error, value } = VDeletePayment.validate(req.params ? { ...req.params, user_id: req.user_info?.id } : {});
   if (error) throw new ErrorHandler(400, error.message);
 
   const client = await pool.connect();
@@ -343,8 +344,7 @@ export const deletePayment = asyncErrorHandler(async (req, res) => {
 
     const paymentInfoJson = JSON.stringify(rows[0]);
 
-    await client.query("INSERT INTO deleted_payments (payment_row_id, payment_info, form_id) VALUES ($1, $2, $3)", [rows[0].id, paymentInfoJson, rows[0].form_id])
-
+    await client.query("INSERT INTO deleted_payments (payment_row_id, payment_info, form_id, user_id) VALUES ($1, $2, $3, $4)", [rows[0].id, paymentInfoJson, rows[0].form_id, value.user_id])
 
     await client.query('COMMIT');
 
