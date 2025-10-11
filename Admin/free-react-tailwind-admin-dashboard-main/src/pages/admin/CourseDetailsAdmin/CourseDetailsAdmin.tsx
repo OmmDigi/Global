@@ -33,7 +33,8 @@ export default function CourseDetailsAdmin() {
   }>({});
 
   // const [paymentMode, setPaymentMode] = useState("");
-  const [paymentDetails, setPaymentDetails] = useState("");
+  // const [paymentDetails, setPaymentDetails] = useState("");
+
   const [maxValue, setMaxValue] = useState(0);
   const [formData, setFormData] = useState({
     fee_head_id: "",
@@ -42,6 +43,8 @@ export default function CourseDetailsAdmin() {
   const { id } = useParams();
   const [formId, setFormId] = useState(id);
 
+   const [remarksPopup, setRemarksPopup] = useState<any>({}); // store open state per row
+  const [remarksText, setRemarksText] = useState<any>({}); 
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
     const token = query.get("token");
@@ -127,7 +130,7 @@ export default function CourseDetailsAdmin() {
       setEnteredAmounts("");
       setEnteredBillno("");
       setPaymentMode("");
-      setPaymentDetails("");
+      // setPaymentDetails("");
       // refatch(`api/v1/admission/${id}`, undefined, { revalidate: true });
       // const response = await getFetcher(`{api/v1/admission/${id}}`);
     } catch (error: any) {
@@ -149,7 +152,6 @@ export default function CourseDetailsAdmin() {
 
   const handleSubmit2 = (e: any) => {
     e.preventDefault();
-
     const fee_structure_info = feesStructure?.data?.fee_structure_info?.map(
       (item: any) => ({
         fee_head_id: item.fee_head_id,
@@ -166,7 +168,7 @@ export default function CourseDetailsAdmin() {
     const finalFormData = {
       form_id: id,
       // payment_mode: paymentMode,
-      payment_details: paymentDetails ? paymentDetails : null,
+      // payment_details: paymentDetails ? paymentDetails : null,
       fee_structure_info,
     };
 
@@ -217,6 +219,35 @@ export default function CourseDetailsAdmin() {
         content: error.response?.data?.message,
       });
     }
+  };
+
+ // store remarks per row
+
+  // Handle save per row
+  const handleRowSave = (item: any) => {
+    const fee_structure_info = [{
+      fee_head_id: item.fee_head_id,
+      // fee_head_name: item.fee_head_name,
+      payment_mode: paymentMode[item.fee_head_id] || "",
+      bill_no: enteredBillno[item.fee_head_id] || "",
+      custom_min_amount: enteredAmounts[item.fee_head_id] || "",
+      payment_date: selectedDates[item.fee_head_id] || null,
+      month: month[item.fee_head_id] || null,
+      payment_details: remarksText[item.fee_head_id] || "",
+    }];
+
+    console.log("Saving row payload:", fee_structure_info);
+    const finalFormData = {
+      form_id: id,
+      // payment_mode: paymentMode,
+      // payment_details: paymentDetails ? paymentDetails : null,
+      fee_structure_info,
+    };
+
+    setRemarksPopup((prev: any) => ({ ...prev, [item.fee_head_id]: false }));
+    startTransition(async () => {
+      await doPayment(finalFormData as any);
+    });
   };
 
   const fees_structure_table = feesStructure?.data?.payments_history;
@@ -465,9 +496,9 @@ export default function CourseDetailsAdmin() {
       <div className="grid grid-cols-1 mt-2 gap-6 xl:grid-cols-1">
         <div className="space-y-6 ">
           <ComponentCard title="Fees head">
-            <div className="space-y-6">
+            <div className="space-y-1">
               <form onSubmit={handleSubmit2} className="space-y-6">
-                <div className="p-4 bg-gray-100 dark:bg-gray-800 dark:text-gray-200 rounded-lg shadow-sm  ">
+                <div className="p-2 bg-gray-100 dark:bg-gray-800 dark:text-gray-200 rounded-lg shadow-sm  ">
                   <div className="space-y-6">
                     {/* <div className="text-lg font-bold">
                                   Total Selected Amount: ₹{totalAmount}
@@ -493,21 +524,6 @@ export default function CourseDetailsAdmin() {
                                   item.fee_head_id == 4 ? " ml-30 " : ""
                                 } `}
                               >
-                                {/* <label className="flex">
-                                  Fees : ₹ {item.price}
-                                </label>
-                                <label className="flex-1">
-                                  Due Fees : ₹{" "}
-                                  <span
-                                    className={`${
-                                      Number(item?.due_amount) === 0
-                                        ? "text-green-500"
-                                        : "text-red-500"
-                                    }`}
-                                  >
-                                    {item.due_amount}
-                                  </span>
-                                </label> */}
                                 <div className="flex gap-12 justify-items-center">
                                   <span className="items-start">Fees :</span>
                                   <span className="items-end">
@@ -529,7 +545,7 @@ export default function CourseDetailsAdmin() {
                                   </span>
                                 </div>
                               </div>
-                              <div className=" mr-3">
+                              <div className=" mr-1">
                                 <select
                                   name="payment_mode"
                                   value={paymentMode[item.fee_head_id] || ""}
@@ -545,7 +561,7 @@ export default function CourseDetailsAdmin() {
                               {item.fee_head_id == 4 ? (
                                 ""
                               ) : (
-                                <div className=" mr-3 text-gray-500 flex flex-col dark:text-gray-400">
+                                <div className=" mr-2 text-gray-500 flex flex-col dark:text-gray-400">
                                   <DatePicker
                                     selected={
                                       selectedDates[item.fee_head_id] || null
@@ -557,7 +573,7 @@ export default function CourseDetailsAdmin() {
                                       }));
                                     }}
                                     dateFormat="yyyy-MM-dd"
-                                    className="w-30 border rounded px-1 py-1"
+                                    className="w-25 border rounded px-1 py-1"
                                     placeholderText="Choose date"
                                   />
                                 </div>
@@ -594,7 +610,7 @@ export default function CourseDetailsAdmin() {
                                       }}
                                       dateFormat="MMMM yyyy"
                                       showMonthYearPicker
-                                      className="border w-30  border-gray-300 dark:border-gray-600 dark:text-gray-200 rounded-md px-1 py-1 mr-4 mt-1 text-sm"
+                                      className="border w-30  border-gray-300 dark:border-gray-600 dark:text-gray-200 rounded-md px-1 py-1 mr-2 mt-1 text-sm"
                                       autoComplete="off"
                                       placeholderText="Select Month"
                                     />
@@ -611,7 +627,7 @@ export default function CourseDetailsAdmin() {
                                           }));
                                         }}
                                         dateFormat="yyyy-MM-dd"
-                                        className="w-30 border mr-4 rounded px-1 py-1"
+                                        className="w-25 border mr-2 rounded px-1 py-1"
                                         placeholderText="Choose date"
                                       />
                                     </div>
@@ -624,7 +640,7 @@ export default function CourseDetailsAdmin() {
                                   type="text"
                                   value={enteredBillno[item.fee_head_id] || ""}
                                   onChange={(e) => handleBillnoChange(e, item)}
-                                  className="w-22 px-2 py-0 mt-1 mr-4 border border-blue-400 rounded"
+                                  className="w-22 px-2 py-0 mt-1 mr-2 border border-blue-400 rounded"
                                   placeholder="Bill-No"
                                 />
                               </div>
@@ -638,54 +654,87 @@ export default function CourseDetailsAdmin() {
                                   placeholder="Amount"
                                 />
                               </div>
+
+                              {/* Individual Save Button */}
+                              <div>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setRemarksPopup((prev: any) => ({
+                                      ...prev,
+                                      [item.fee_head_id]:
+                                        !prev[item.fee_head_id],
+                                    }))
+                                  }
+                                  className="bg-green-400 hover:bg-green-500 m-1 text-white px-1 py-1 rounded-md text-xs"
+                                >
+                                  Remark
+                                </button>
+                              </div>
+                              <div>
+                                <button
+                                  type="button"
+                                  disabled={isPending}
+                                  //
+                                  onClick={() => handleRowSave(item)}
+                                  className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
+                                >
+                                  {isPending ? (
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                  ) : (
+                                    " Save "
+                                  )}
+                                </button>
+                              </div>
                             </div>
+
+                            {/* Popup (inline textarea) */}
+                            {remarksPopup[item.fee_head_id] && (
+                              <div className="mt-2 ml-8 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                                <label className="block mb-1 font-medium">
+                                  Remarks for {item.fee_head_name}
+                                </label>
+                                <textarea
+                                  rows={3}
+                                  value={remarksText[item.fee_head_id] || ""}
+                                  onChange={(e) =>
+                                    setRemarksText((prev: any) => ({
+                                      ...prev,
+                                      [item.fee_head_id]: e.target.value,
+                                    }))
+                                  }
+                                  className="w-full border rounded px-3 py-2 text-gray-700 dark:text-gray-200"
+                                  placeholder="Enter remarks..."
+                                />
+                                <div className="mt-2 flex gap-3">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRowSave(item)}
+                                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded"
+                                  >
+                                    Confirm Save
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setRemarksPopup((prev: any) => ({
+                                        ...prev,
+                                        [item.fee_head_id]: false,
+                                      }))
+                                    }
+                                    className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-1 rounded"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         );
                       })}
 
-                    {/* <Radio.Group
-                      onChange={onChange}
-                      value={paymentMode}
-                      style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        gap: 40,
-                      }}
-                    >
-                      <Radio
-                        value="Online"
-                        style={{
-                          color: "#94a1bd",
-                          fontSize: "20px",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        Online
-                      </Radio>
-                      <Radio
-                        value="Cash"
-                        style={{
-                          color: "#94a1bd",
-                          fontSize: "20px",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        Cash
-                      </Radio>
-                      <Radio
-                        value="Cheque"
-                        style={{
-                          color: "#94a1bd",
-                          fontSize: "20px",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        Cheque
-                      </Radio>
-                    </Radio.Group> */}
-
                     {/* {paymentMode === "Online" && ( */}
-                    <div className="mt-4">
+                    {/* <div className="mt-4">
                       <label className="block mb-1 font-medium">Remarks</label>
                       <textarea
                         rows={3}
@@ -694,40 +743,11 @@ export default function CourseDetailsAdmin() {
                         className="w-full border rounded px-4 py-2 text-gray-700 dark:text-gray-400 "
                         placeholder="Remarks"
                       />
-                    </div>
-                    {/* )} */}
-                    {/* {paymentMode === "Cash" && (
-                      <div className="mt-4">
-                        <label className="block mb-1 font-medium">
-                          Enter Receipt Number
-                        </label>
-                        <textarea
-                         rows={3}
-                          value={paymentDetails}
-                          onChange={(e) => setPaymentDetails(e.target.value)}
-                          className="w-full border rounded px-4 py-2 text-gray-700 dark:text-gray-400 "
-                          placeholder="e.g., 55555"
-                        />
-                      </div>
-                    )}
-                    {paymentMode === "Cheque" && (
-                      <div className="mt-4">
-                        <label className="block mb-1 font-medium">
-                          Enter Cheque Number
-                        </label>
-                         <textarea
-                         rows={3}
-                          value={paymentDetails}
-                          onChange={(e) => setPaymentDetails(e.target.value)}
-                          className="w-full border rounded px-4 py-2 text-gray-700 dark:text-gray-400 "
-                          placeholder="e.g., CHQ123456"
-                        />
-                      </div>
-                    )} */}
+                    </div> */}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-6 hidden">
                   <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm">
                     <div className="space-x-4">
                       <div className="flex flex-wrap justify-center font-bold items-center gap-10">
@@ -748,12 +768,6 @@ export default function CourseDetailsAdmin() {
                   </div>
                 </div>
               </form>
-              {/* <button
-                onClick={mutateClick}
-                className="bg-blue-200 p-4 hover:bg-blue-400 hover:text-gray-100 text-lg rounded-4xl"
-              >
-                Click
-              </button> */}
             </div>
           </ComponentCard>
         </div>

@@ -129,8 +129,8 @@ export default function BasicTableCourseDetailsAdmin({
                     <div className="flex items-center gap-3">
                       <div>
                         <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                          {order.transition_id
-                            ? order.transition_id
+                          {order.remark
+                            ? order.remark
                             : "--"}
                         </span>
                       </div>
