@@ -13,24 +13,21 @@ export default function Home() {
 
     if (token) localStorage.setItem("token", token);
     if (category) localStorage.setItem("category", category);
-
-   
   }, []);
 
-  const {
-    data: courseList,
-    isLoading: courseLoading,
-  } = useSWR("api/v1/users/course", getFetcher);
+  const { data: courseList, isLoading: courseLoading } = useSWR(
+    "api/v1/users/course",
+    getFetcher
+  );
   if (courseLoading) {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }
 
-
   return (
     <>
       <PageMeta
-        title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
-        description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title=" Dashboard Ecommerce Dashboard |  "
+        description="This is  Dashboard Ecommerce Dashboard page for TailAdmin -  Dashboard Tailwind CSS Admin Dashboard Template"
       />
       <div className=" max-w-full overflow-x-auto">
         <div className="col-span-12 space-y-6 xl:col-span-7">

@@ -273,8 +273,8 @@ export default function Home() {
     <>
       {contextHolder}
       <PageMeta
-        title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
-        description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title=" Dashboard Ecommerce Dashboard |  "
+        description="This is  Dashboard Ecommerce Dashboard page for TailAdmin -  Dashboard Tailwind CSS Admin Dashboard Template"
       />
       {/* <div className="grid grid-cols-12 gap-4 md:gap-6">
         <div className="col-span-12 space-y-6 xl:col-span-7">
@@ -288,15 +288,15 @@ export default function Home() {
 
       {hasDashboardPermission ? (
         <>
-        <div className="grid grid-cols-12 gap-4 md:gap-6">
-          <div className="col-span-12 space-y-6 xl:col-span-7">
-            <MonthlySalesChart />
-            <StuffAttandance />
+          <div className="grid grid-cols-12 gap-4 md:gap-6">
+            <div className="col-span-12 space-y-6 xl:col-span-7">
+              <MonthlySalesChart />
+              <StuffAttandance />
+            </div>
+            <div className="col-span-12 xl:col-span-5">
+              <MonthlyIncome />
+            </div>
           </div>
-          <div className="col-span-12 xl:col-span-5">
-            <MonthlyIncome />
-          </div>
-        </div>
           {/* <DemographicCard/> */}
         </>
       ) : null}

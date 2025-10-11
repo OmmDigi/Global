@@ -132,7 +132,20 @@ const navItems: NavItem[] = [
     name: "Admin Report",
     id: 15,
     icon: <TbReport />,
-    path: "/admin-report",
+    subItems: [
+      {
+        name: "Admin Report",
+        id: 5.1,
+        path: "/admin-report",
+        pro: false,
+      },
+      {
+        name: "Fees Update",
+        id: 5.1,
+        path: "/fees-update",
+        pro: false,
+      },
+    ],
   },
   {
     name: "Report",

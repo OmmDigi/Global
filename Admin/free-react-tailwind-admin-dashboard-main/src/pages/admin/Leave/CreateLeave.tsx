@@ -17,7 +17,7 @@ export default function CreateLeave() {
     date: [],
     description: "",
   });
-    const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
+  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
     null,
     null,
   ]);
@@ -32,11 +32,9 @@ export default function CreateLeave() {
     postFetcher(url, arg)
   );
 
-
   if (leaveLoading) {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }
-
 
   // get course list
 
@@ -86,8 +84,8 @@ export default function CreateLeave() {
     <div>
       {contextHolder}
       <PageMeta
-        title="React.js Form Elements Dashboard | TailAdmin - React.js Admin Dashboard Template"
-        description="This is React.js Form Elements Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title=" Dashboard Form Elements Dashboard |  "
+        description="This is  Dashboard Form Elements Dashboard page for TailAdmin -  Dashboard Tailwind CSS Admin Dashboard Template"
       />
       <PageBreadcrumb pageTitle="Leave Apply" />
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-1">

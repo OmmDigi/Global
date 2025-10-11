@@ -46,7 +46,6 @@ export default function FeeHead() {
     "api/v1/course/fee-head",
     (url, { arg }) => putFetcher(url, arg)
   );
-  
 
   if (sessionLoading) {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
@@ -82,7 +81,7 @@ export default function FeeHead() {
 
   const handleUpdate = async () => {
     try {
-      const response = await update( formData as any);
+      const response = await update(formData as any);
       mutate("api/v1/course/session");
       messageApi.open({
         type: "success",
@@ -91,8 +90,7 @@ export default function FeeHead() {
 
       setFormData({
         //  id: 0,
-    name: "",
-       
+        name: "",
       });
     } catch (error: any) {
       messageApi.open({
@@ -103,8 +101,7 @@ export default function FeeHead() {
   };
 
   const handleActive = async (isActive: boolean, id: number) => {
-
-  type UpdateFormPayload = {
+    type UpdateFormPayload = {
       id: string | number; // depends on your API, choose one
       is_active: boolean;
     };
@@ -113,7 +110,7 @@ export default function FeeHead() {
       is_active: isActive,
     };
     try {
-      const response = await update( UpdateFormPayload as any);
+      const response = await update(UpdateFormPayload as any);
 
       mutate("api/v1/course/session");
       messageApi.open({
@@ -131,7 +128,7 @@ export default function FeeHead() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await create( formData as any);
+      const response = await create(formData as any);
       //   mutate(
       //     (currentData: any) => [...(currentData || []), response.data],
       //     false
@@ -143,7 +140,7 @@ export default function FeeHead() {
 
       setFormData({
         // id: 0,
-    name: "",
+        name: "",
       });
     } catch (error: any) {
       messageApi.open({
@@ -165,8 +162,8 @@ export default function FeeHead() {
     <div>
       {contextHolder}
       <PageMeta
-        title="React.js Form Elements Dashboard | TailAdmin - React.js Admin Dashboard Template"
-        description="This is React.js Form Elements Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title=" Dashboard Form Elements Dashboard |  "
+        description="This is  Dashboard Form Elements Dashboard page for TailAdmin -  Dashboard Tailwind CSS Admin Dashboard Template"
       />
       <PageBreadcrumb pageTitle="Fees" />
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-1">

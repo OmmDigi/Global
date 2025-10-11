@@ -16,12 +16,11 @@ type FormDataType = {
   id?: number; // optional (if sometimes missing)
   date: string;
   holiday_name: string;
-};  
+};
 
 export default function ManageHolidays() {
   const [messageApi, contextHolder] = message.useMessage();
   const [pageCount, setPageCount] = useState<number>(1);
-
 
   const [id, setId] = useState<number>();
   const [formData, setFormData] = useState<FormDataType>({
@@ -31,24 +30,22 @@ export default function ManageHolidays() {
   });
 
   // get Holiday List
-  const {
-    data: holidayList,
-    isLoading: holidayLoading,
-  } = useSWR(`api/v1/holiday?page=${pageCount}`, getFetcher);
+  const { data: holidayList, isLoading: holidayLoading } = useSWR(
+    `api/v1/holiday?page=${pageCount}`,
+    getFetcher
+  );
   // create Holiday
   const { trigger: create } = useSWRMutation("api/v1/holiday", (url, { arg }) =>
     postFetcher(url, arg)
-);
+  );
 
   if (holidayLoading) {
   }
 
   // Update course
-  const {
-    trigger: update,
-  
-  } = useSWRMutation("api/v1/holiday", (url, { arg }) => putFetcher(url, arg));
-
+  const { trigger: update } = useSWRMutation("api/v1/holiday", (url, { arg }) =>
+    putFetcher(url, arg)
+  );
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -65,7 +62,6 @@ export default function ManageHolidays() {
       });
 
       setFormData({
-      
         date: "",
         holiday_name: "",
       });
@@ -78,7 +74,6 @@ export default function ManageHolidays() {
       });
     }
   };
-
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -104,7 +99,6 @@ export default function ManageHolidays() {
         date: userData?.date,
         holiday_name: userData?.holiday_name,
       });
-
     } catch (error) {
       console.error("Failed to fetch user data for edit:", error);
     }
@@ -120,7 +114,6 @@ export default function ManageHolidays() {
       });
       setId(0);
       setFormData({
-       
         date: "",
         holiday_name: "",
       });
@@ -160,8 +153,8 @@ export default function ManageHolidays() {
     <div>
       {contextHolder}
       <PageMeta
-        title="React.js Form Elements Dashboard | TailAdmin - React.js Admin Dashboard Template"
-        description="This is React.js Form Elements Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title=" Dashboard Form Elements Dashboard |  "
+        description="This is  Dashboard Form Elements Dashboard page for TailAdmin -  Dashboard Tailwind CSS Admin Dashboard Template"
       />
       <PageBreadcrumb pageTitle="Manage Holidays" />
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-1">

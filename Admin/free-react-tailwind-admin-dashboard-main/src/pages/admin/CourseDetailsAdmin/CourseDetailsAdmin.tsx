@@ -4,7 +4,7 @@ import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import { useParams } from "react-router-dom";
 import ComponentCard from "../../../components/common/ComponentCard";
 import Label from "../../../components/form/Label";
-import { message, Radio } from "antd";
+import { message } from "antd";
 import { getFetcher, postFetcher } from "../../../api/fatcher";
 import useSWRMutation from "swr/mutation";
 import useSWR from "swr";
@@ -24,14 +24,15 @@ export default function CourseDetailsAdmin() {
   const [month, setMonth] = useState<{
     [key: number]: Date | null;
   }>({});
-  const [enteredAmounts, setEnteredAmounts] = useState<any>({});
-  const [enteredBillno, setEnteredBillno] = useState<any>({});
+  const [enteredAmounts, setEnteredAmounts] = useState<any>("");
+  const [enteredBillno, setEnteredBillno] = useState<any>("");
+  const [paymentMode, setPaymentMode] = useState<any>("");
 
   const [selectedDates, setSelectedDates] = useState<{
     [key: number]: Date | null;
   }>({});
 
-  const [paymentMode, setPaymentMode] = useState("");
+  // const [paymentMode, setPaymentMode] = useState("");
   const [paymentDetails, setPaymentDetails] = useState("");
   const [maxValue, setMaxValue] = useState(0);
   const [formData, setFormData] = useState({
@@ -71,6 +72,15 @@ export default function CourseDetailsAdmin() {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }
 
+  const handleBillnoChange = (e: any, item: any) => {
+    const value = e.target.value;
+    const id = item.fee_head_id;
+
+    setEnteredBillno((prev: any) => ({
+      ...prev,
+      [id]: value,
+    }));
+  };
   const handleAmountChange = (e: any, item: any) => {
     const value = e.target.value;
     const id = item.fee_head_id;
@@ -80,20 +90,19 @@ export default function CourseDetailsAdmin() {
       [id]: value,
     }));
   };
-  const handleBillnoChange = (e: any, item: any) => {
+  const handlePaymentType = (e: any, item: any) => {
     const value = e.target.value;
     const id = item.fee_head_id;
 
-    setEnteredBillno((prev: any) => ({
+    setPaymentMode((prev: any) => ({
       ...prev,
       [id]: value,
     }));
-    console.log("enteredBillno", enteredBillno);
   };
 
-  const onChange = (e: any) => {
-    setPaymentMode(e.target.value);
-  };
+  // const onChange = (e: any) => {
+  //   setPaymentMode(e.target.value);
+  // };
   const FormSearch = (e: any) => {
     const { value } = e.target;
     const split1 = value.split("/");
@@ -115,8 +124,8 @@ export default function CourseDetailsAdmin() {
         content: response.message,
       });
       refetch();
-      setEnteredAmounts({});
-      setEnteredBillno({});
+      setEnteredAmounts("");
+      setEnteredBillno("");
       setPaymentMode("");
       setPaymentDetails("");
       // refatch(`api/v1/admission/${id}`, undefined, { revalidate: true });
@@ -146,6 +155,7 @@ export default function CourseDetailsAdmin() {
         fee_head_id: item.fee_head_id,
         custom_min_amount: enteredAmounts[item.fee_head_id] || 0,
         bill_no: enteredBillno[item.fee_head_id] || null,
+        payment_mode: paymentMode[item.fee_head_id] || null,
         month: dayjs(month[item.fee_head_id]).format("YYYY-MM") || null,
         payment_date: selectedDates[item.fee_head_id]
           ? dayjs(selectedDates[item.fee_head_id]).format("YYYY-MM-DD")
@@ -155,7 +165,7 @@ export default function CourseDetailsAdmin() {
 
     const finalFormData = {
       form_id: id,
-      payment_mode: paymentMode,
+      // payment_mode: paymentMode,
       payment_details: paymentDetails ? paymentDetails : null,
       fee_structure_info,
     };
@@ -214,8 +224,8 @@ export default function CourseDetailsAdmin() {
     <>
       {contextHolder}
       <PageMeta
-        title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
-        description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title=" Dashboard Ecommerce Dashboard |  "
+        description="This is  Dashboard Ecommerce Dashboard page for TailAdmin -  Dashboard Tailwind CSS Admin Dashboard Template"
       />
       <button
         onClick={() => window.history.back()}
@@ -312,7 +322,7 @@ export default function CourseDetailsAdmin() {
                   </span>{" "}
                 </Label>
               </div>
-               <div>
+              <div>
                 <Label htmlFor="inputTwo">
                   Total Course Duration : {feesStructure?.data?.duration}
                 </Label>
@@ -337,61 +347,121 @@ export default function CourseDetailsAdmin() {
             <div className="flex flex-wrap justify-center items-center gap-6"></div>
           </div>
         </ComponentCard>
-        <ComponentCard title="Discount Section">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-              <div>
-                <Label htmlFor="inputTwo">Choose Fee</Label>
-                <select
-                  name="fee_head_id"
-                  value={formData.fee_head_id}
-                  onChange={(e) => {
-                    const selected =
-                      feesStructure?.data?.fee_structure_info.find(
-                        (opt: any) => opt.fee_head_id === Number(e.target.value)
-                      );
-                    setFormData((prev) => ({
-                      ...prev,
-                      fee_head_id: e.target.value,
-                    }));
-                    if (selected) setMaxValue(selected.due_amount); // ✅ set max value here
-                  }}
-                  className="w-full px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+        <div className="space-y-6 ">
+          <ComponentCard title="Discount Section">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                <div>
+                  <Label htmlFor="inputTwo">Choose Fee</Label>
+                  <select
+                    name="fee_head_id"
+                    value={formData.fee_head_id}
+                    onChange={(e) => {
+                      const selected =
+                        feesStructure?.data?.fee_structure_info.find(
+                          (opt: any) =>
+                            opt.fee_head_id === Number(e.target.value)
+                        );
+                      setFormData((prev) => ({
+                        ...prev,
+                        fee_head_id: e.target.value,
+                      }));
+                      if (selected) setMaxValue(selected.due_amount); // ✅ set max value here
+                    }}
+                    className="w-full px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                  >
+                    <option value="">Choose</option>
+                    {feesStructure?.data?.fee_structure_info?.map(
+                      (opt: any, i: number) => (
+                        <option key={i} value={opt.fee_head_id}>
+                          {opt.fee_head_name}
+                        </option>
+                      )
+                    )}
+                  </select>
+                </div>
+                <div>
+                  <Label htmlFor="inputTwo">Discount Amount</Label>
+                  <Input
+                    type="number"
+                    name="amount"
+                    max={`${maxValue}`}
+                    placeholder="discount"
+                    value={formData.amount}
+                    onChange={handleChange}
+                    className="flex-1 border px-3 py-1 rounded-md"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-center">
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
                 >
-                  <option value="">Choose</option>
-                  {feesStructure?.data?.fee_structure_info?.map(
-                    (opt: any, i: number) => (
-                      <option key={i} value={opt.fee_head_id}>
-                        {opt.fee_head_name}
-                      </option>
-                    )
-                  )}
-                </select>
+                  Submit
+                </button>
               </div>
-              <div>
-                <Label htmlFor="inputTwo">Discount Amount</Label>
-                <Input
-                  type="number"
-                  name="amount"
-                  max={`${maxValue}`}
-                  placeholder="discount"
-                  value={formData.amount}
-                  onChange={handleChange}
-                  className="flex-1 border px-3 py-1 rounded-md"
-                />
+            </form>
+          </ComponentCard>
+
+          <ComponentCard title="Add extra Fees">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                <div>
+                  <Label htmlFor="inputTwo">Choose Fee</Label>
+                  <select
+                    name="fee_head_id"
+                    value={formData.fee_head_id}
+                    onChange={(e) => {
+                      const selected =
+                        feesStructure?.data?.fee_structure_info.find(
+                          (opt: any) =>
+                            opt.fee_head_id === Number(e.target.value)
+                        );
+                      setFormData((prev) => ({
+                        ...prev,
+                        fee_head_id: e.target.value,
+                      }));
+                      if (selected) setMaxValue(selected.due_amount); // ✅ set max value here
+                    }}
+                    className="w-full px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                  >
+                    <option value="">Choose</option>
+                    {feesStructure?.data?.fee_structure_info?.map(
+                      (opt: any, i: number) => (
+                        <option key={i} value={opt.fee_head_id}>
+                          {opt.fee_head_name}
+                        </option>
+                      )
+                    )}
+                  </select>
+                </div>
+                <div>
+                  <Label htmlFor="inputTwo">Discount Amount</Label>
+                  <Input
+                    type="number"
+                    name="amount"
+                    max={`${maxValue}`}
+                    placeholder="discount"
+                    value={formData.amount}
+                    onChange={handleChange}
+                    className="flex-1 border px-3 py-1 rounded-md"
+                  />
+                </div>
               </div>
-            </div>
-            <div className="flex justify-center">
-              <button
-                type="submit"
-                className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-              >
-                Submit
-              </button>
-            </div>
-          </form>
-        </ComponentCard>
+              <div className="flex justify-center">
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                >
+                  Submit
+                </button>
+              </div>
+            </form>
+          </ComponentCard>
+        </div>
       </div>
+
       <div className="grid grid-cols-1 mt-2 gap-6 xl:grid-cols-1">
         <div className="space-y-6 ">
           <ComponentCard title="Fees head">
@@ -418,7 +488,11 @@ export default function CourseDetailsAdmin() {
                               <label className="flex-1">
                                 {index + 1}. {item.fee_head_name}
                               </label>
-                              <div className={`flex-1 flex-col ${ item.fee_head_id == 4 ? " ml-30 " :""} `}>
+                              <div
+                                className={`flex-1 flex-col ${
+                                  item.fee_head_id == 4 ? " ml-30 " : ""
+                                } `}
+                              >
                                 {/* <label className="flex">
                                   Fees : ₹ {item.price}
                                 </label>
@@ -436,10 +510,14 @@ export default function CourseDetailsAdmin() {
                                 </label> */}
                                 <div className="flex gap-12 justify-items-center">
                                   <span className="items-start">Fees :</span>
-                                  <span className="items-end" >₹ {item.price}</span>
+                                  <span className="items-end">
+                                    ₹ {item.price}
+                                  </span>
                                 </div>
                                 <div className="flex gap-5 justify-items-center">
-                                  <span className="items-start">Due Fees :</span>
+                                  <span className="items-start">
+                                    Due Fees :
+                                  </span>
                                   <span
                                     className={
                                       Number(item?.due_amount) === 0
@@ -450,6 +528,19 @@ export default function CourseDetailsAdmin() {
                                     ₹ {item.due_amount}
                                   </span>
                                 </div>
+                              </div>
+                              <div className=" mr-3">
+                                <select
+                                  name="payment_mode"
+                                  value={paymentMode[item.fee_head_id] || ""}
+                                  onChange={(e) => handlePaymentType(e, item)}
+                                  className="w-full px-3 py-2  bg-gray-100  pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                                >
+                                  <option value="">Mode</option>
+                                  <option value="Online">Online</option>
+                                  <option value="Cash">Cash</option>
+                                  <option value="Cheque">Cheque</option>
+                                </select>
                               </div>
                               {item.fee_head_id == 4 ? (
                                 ""
@@ -521,15 +612,17 @@ export default function CourseDetailsAdmin() {
                                         }}
                                         dateFormat="yyyy-MM-dd"
                                         className="w-30 border mr-4 rounded px-1 py-1"
-                                        placeholderText="Choose payment date"
+                                        placeholderText="Choose date"
                                       />
                                     </div>
                                   </div>
                                 ) : null}
                               </div>
+
                               <div>
                                 <input
                                   type="text"
+                                  value={enteredBillno[item.fee_head_id] || ""}
                                   onChange={(e) => handleBillnoChange(e, item)}
                                   className="w-22 px-2 py-0 mt-1 mr-4 border border-blue-400 rounded"
                                   placeholder="Bill-No"
@@ -538,6 +631,8 @@ export default function CourseDetailsAdmin() {
                               <div>
                                 <input
                                   type="number"
+                                  max={item?.due_amount}
+                                  value={enteredAmounts[item.fee_head_id] || ""}
                                   onChange={(e) => handleAmountChange(e, item)}
                                   className="w-22 px-2 py-1 border border-amber-400 rounded"
                                   placeholder="Amount"
@@ -548,7 +643,7 @@ export default function CourseDetailsAdmin() {
                         );
                       })}
 
-                    <Radio.Group
+                    {/* <Radio.Group
                       onChange={onChange}
                       value={paymentMode}
                       style={{
@@ -587,7 +682,8 @@ export default function CourseDetailsAdmin() {
                       >
                         Cheque
                       </Radio>
-                    </Radio.Group>
+                    </Radio.Group> */}
+
                     {/* {paymentMode === "Online" && ( */}
                     <div className="mt-4">
                       <label className="block mb-1 font-medium">Remarks</label>
@@ -662,8 +758,11 @@ export default function CourseDetailsAdmin() {
           </ComponentCard>
         </div>
       </div>
+
       <BasicTableCourseDetailsAdmin
         fees_structure_table={fees_structure_table}
+        refetch={refetch}
+        formId={id}
       />
     </>
   );

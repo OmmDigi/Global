@@ -133,7 +133,7 @@ function Report() {
     if (value.name == "batchName") {
       setBatch(value.value);
     }
-    if (value.name == "paymentType") {
+    if (value.name == "mode") {
       setpaymentType(value.value);
     }
     // setExcelFileUrl(null);
@@ -274,8 +274,8 @@ function Report() {
     <div>
       {contextHolder}
       <PageMeta
-        title="React.js Form Elements Dashboard | TailAdmin - React.js Admin Dashboard Template"
-        description="This is React.js Form Elements Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title=" Dashboard Form Elements Dashboard |  "
+        description="This is  Dashboard Form Elements Dashboard page for TailAdmin -  Dashboard Tailwind CSS Admin Dashboard Template"
       />
       <PageBreadcrumb pageTitle="Report" />
 
@@ -729,4 +729,3 @@ function Report() {
 }
 
 export default Report;
-

@@ -342,7 +342,12 @@ export default function AdmissionAdmin() {
         content: response.message,
       });
       if (response.success === true) {
-        setFormData({ ...initialFormData, courseName: formData.courseName,sessionName :formData.sessionName,batchName: formData.batchName });
+        setFormData({
+          ...initialFormData,
+          courseName: formData.courseName,
+          sessionName: formData.sessionName,
+          batchName: formData.batchName,
+        });
       }
       mutate();
       setCurrent(0);
@@ -451,12 +456,12 @@ export default function AdmissionAdmin() {
   };
 
   const next = () => {
-    jumpToTop();
+    // jumpToTop();
 
     setCurrent(current + 1);
   };
   const prev = () => {
-    jumpToTop();
+    // jumpToTop();
     setCurrent(current - 1);
   };
 
@@ -498,8 +503,8 @@ export default function AdmissionAdmin() {
     <div>
       <div className="z-50 fixed top-50">{contextHolder}</div>
       <PageMeta
-        title="React.js Form Elements Dashboard | TailAdmin - React.js Admin Dashboard Template"
-        description="This is React.js Form Elements Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title=" Dashboard Form Elements Dashboard |  "
+        description="This is  Dashboard Form Elements Dashboard page for TailAdmin -  Dashboard Tailwind CSS Admin Dashboard Template"
       />
       <PageBreadcrumb pageTitle="Admission" />
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-1">

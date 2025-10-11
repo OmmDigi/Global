@@ -1,9 +1,9 @@
 import PageMeta from "../../../components/common/PageMeta";
-import {  useState } from "react";
+import { useState } from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
-import {  useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import ComponentCard from "../../../components/common/ComponentCard";
-import { getFetcher, } from "../../../api/fatcher";
+import { getFetcher } from "../../../api/fatcher";
 import useSWR from "swr";
 import BasicTableAttandanceDetails from "../../../components/tables/BasicTables/BasicTableAttandanceDetails";
 import type { DatePickerProps } from "antd";
@@ -19,14 +19,10 @@ export default function StuffAttandancdDetails() {
     setDatePicker(dayjs(dateString).format("YYYY-MM"));
   };
 
-
   const today = new Date();
   const todayDate = dayjs(today).format("YYYY-MM");
   // get Holiday List
-  const {
-    data: attandanceList,
-    isLoading: attandanceLoading,
-  } = useSWR(
+  const { data: attandanceList, isLoading: attandanceLoading } = useSWR(
     `api/v1/attendance/${id}?month_year=${datePicker ? datePicker : todayDate}`,
     getFetcher
   );
@@ -51,7 +47,6 @@ export default function StuffAttandancdDetails() {
     ],
   ];
 
-  
   const options = {
     backgroundColor: "transparent",
     borderRedious: "50%",
@@ -76,10 +71,9 @@ export default function StuffAttandancdDetails() {
 
   return (
     <>
-      
       <PageMeta
-        title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
-        description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title=" Dashboard Ecommerce Dashboard |  "
+        description="This is  Dashboard Ecommerce Dashboard page for TailAdmin -  Dashboard Tailwind CSS Admin Dashboard Template"
       />
       <PageBreadcrumb pageTitle=" Details" link="stuff-attandance" />
       <h1 className="text-gray-800 dark:text-amber-50 text-3xl mb-15">
@@ -128,7 +122,7 @@ export default function StuffAttandancdDetails() {
                   <p>Designation : {attandanceList?.data?.designation} </p>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 text-2xl text-gray-500 dark:text-gray-400 ">
                 <div>
                   <p>Joining Date : {attandanceList?.data?.joining_date} </p>
