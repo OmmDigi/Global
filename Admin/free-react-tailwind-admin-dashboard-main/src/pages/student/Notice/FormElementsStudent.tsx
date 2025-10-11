@@ -12,9 +12,6 @@
 //   const [selectedValue, setSelectedValue] = useState<string>("option1");
 //   const [dropdownOpen, setDropdownOpen] = useState("");
 
- 
-
-
 //   const submit = (e: React.MouseEvent<HTMLDivElement>) => {
 //     e.preventDefault();
 //     setSelectedValue("option1");
@@ -31,15 +28,14 @@
 //   return (
 //     <div>
 //       <PageMeta
-//         title="React.js Form Elements Dashboard | TailAdmin - React.js Admin Dashboard Template"
-//         description="This is React.js Form Elements Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+//         title=" Dashboard Form Elements Dashboard |  "
+//         description="This is  Dashboard Form Elements Dashboard page for TailAdmin -  Dashboard Tailwind CSS Admin Dashboard Template"
 //       />
 //       <PageBreadcrumb pageTitle="Notice / Message" />
 //       <div className="grid grid-cols-1 gap-6 xl:grid-cols-1">
 //         <div className="space-y-6 ">
 //           <ComponentCard title="Notice / Message List">
-            
-           
+
 //             <BasicTableNotice />
 //           </ComponentCard>
 //         </div>

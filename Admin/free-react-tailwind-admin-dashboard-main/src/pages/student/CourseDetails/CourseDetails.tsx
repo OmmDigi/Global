@@ -120,8 +120,8 @@ export default function CourseDetails() {
     <>
       {contextHolder}
       <PageMeta
-        title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
-        description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title=" Dashboard Ecommerce Dashboard |  "
+        description="This is  Dashboard Ecommerce Dashboard page for TailAdmin -  Dashboard Tailwind CSS Admin Dashboard Template"
       />
       {feesStructure?.data?.declaration_status == 0 ? (
         <div className="space-y-8">
@@ -398,9 +398,7 @@ export default function CourseDetails() {
                 </ComponentCard>
               </div> */}
             </div>
-            <BasicTableCourses
-              fees_structure_table={fees_structure_table}
-            />
+            <BasicTableCourses fees_structure_table={fees_structure_table} />
           </div>
         </>
       )}

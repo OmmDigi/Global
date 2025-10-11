@@ -10,7 +10,7 @@ import { useState } from "react";
 
 export default function StaffPayslip() {
   const [role, setRole] = useState<"Stuff" | "Teacher" | "">("Stuff");
- const today = new Date();
+  const today = new Date();
   // Function to capture selected role
   const handleRoleChange = (value: "Stuff" | "Teacher") => {
     setRole(value);
@@ -19,23 +19,25 @@ export default function StaffPayslip() {
     data: attandancelist,
     isLoading: attandanceLoading,
     error: attandanceError,
-  } = useSWR(`api/v1/users/payslip?category=${role}&month=${dayjs(today).format("YYYY-MM")}`, getFetcher);
+  } = useSWR(
+    `api/v1/users/payslip?category=${role}&month=${dayjs(today).format(
+      "YYYY-MM"
+    )}`,
+    getFetcher
+  );
 
   if (attandanceLoading) {
-    
     console.log("loading", attandanceLoading);
   }
   if (attandanceError) {
     console.log("stuffError", attandanceError);
   }
 
- 
-
   return (
     <div>
       <PageMeta
-        title="React.js Form Elements Dashboard | TailAdmin - React.js Admin Dashboard Template"
-        description="This is React.js Form Elements Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title=" Dashboard Form Elements Dashboard |  "
+        description="This is  Dashboard Form Elements Dashboard page for TailAdmin -  Dashboard Tailwind CSS Admin Dashboard Template"
       />
       <PageBreadcrumb pageTitle=" Payslip" />
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-1">
@@ -48,7 +50,6 @@ export default function StaffPayslip() {
                   type="radio"
                   name="role"
                   value="Stuff"
-                  
                   checked={role === "Stuff"}
                   onChange={() => handleRoleChange("Stuff")}
                   className="h-4 w-4 text-blue-600"

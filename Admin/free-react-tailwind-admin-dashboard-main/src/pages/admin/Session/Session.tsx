@@ -85,7 +85,6 @@ export default function Session() {
   };
 
   const handleActive = async (isActive: boolean, id: number) => {
-
     type UpdateFormPayload = {
       id: string | number; // depends on your API, choose one
       is_active: boolean;
@@ -109,7 +108,6 @@ export default function Session() {
     }
   };
 
-  
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
@@ -146,8 +144,8 @@ export default function Session() {
     <div>
       {contextHolder}
       <PageMeta
-        title="React.js Form Elements Dashboard | TailAdmin - React.js Admin Dashboard Template"
-        description="This is React.js Form Elements Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title=" Dashboard Form Elements Dashboard |  "
+        description="This is  Dashboard Form Elements Dashboard page for TailAdmin -  Dashboard Tailwind CSS Admin Dashboard Template"
       />
       <PageBreadcrumb pageTitle="Sessions" />
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-1">

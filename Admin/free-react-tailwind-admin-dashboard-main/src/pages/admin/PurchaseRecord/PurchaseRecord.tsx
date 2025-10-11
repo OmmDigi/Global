@@ -54,7 +54,10 @@ export default function PurchaseRecord() {
   });
 
   // get purchaseList
-  const { data: purchaseList } = useSWR(`api/v1/purchase?page=${pageCount}`, getFetcher);
+  const { data: purchaseList } = useSWR(
+    `api/v1/purchase?page=${pageCount}`,
+    getFetcher
+  );
   // create Holiday
   const { trigger: create } = useSWRMutation(
     "api/v1/purchase",
@@ -67,7 +70,7 @@ export default function PurchaseRecord() {
     (url, { arg }) => putFetcher(url, arg)
   );
 
-     const handleChildData = (data: any) => {
+  const handleChildData = (data: any) => {
     setPageCount(data);
   };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -230,8 +233,8 @@ export default function PurchaseRecord() {
     <div>
       {contextHolder}
       <PageMeta
-        title="React.js Form Elements Dashboard | TailAdmin - React.js Admin Dashboard Template"
-        description="This is React.js Form Elements Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title=" Dashboard Form Elements Dashboard |  "
+        description="This is  Dashboard Form Elements Dashboard page for TailAdmin -  Dashboard Tailwind CSS Admin Dashboard Template"
       />
       <PageBreadcrumb pageTitle="Purchase Record" />
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-1">
@@ -333,7 +336,7 @@ export default function PurchaseRecord() {
                         placeholder="Expaire Date"
                       />
                     </div>
-                       <div>
+                    <div>
                       <Label>Quantity Received</Label>
                       <Input
                         type="number"
@@ -355,7 +358,6 @@ export default function PurchaseRecord() {
                         placeholder="Previous Balance"
                       />
                     </div> */}
-
                   </div>
                   {/* <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
                     <div>
@@ -440,7 +442,6 @@ export default function PurchaseRecord() {
               purchaseList={purchaseList}
               onEdit={handleEdit}
               onSendData={handleChildData}
-
             />
           </ComponentCard>
         </div>

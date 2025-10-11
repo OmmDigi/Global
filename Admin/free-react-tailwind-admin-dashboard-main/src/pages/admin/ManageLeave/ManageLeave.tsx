@@ -51,10 +51,10 @@ export default function ManageLeave() {
     <>
       {contextHolder}
       <PageMeta
-        title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
-        description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title=" Dashboard Ecommerce Dashboard |  "
+        description="This is  Dashboard Ecommerce Dashboard page for TailAdmin -  Dashboard Tailwind CSS Admin Dashboard Template"
       />
-                  <PageBreadcrumb pageTitle="Manage Leave" />
+      <PageBreadcrumb pageTitle="Manage Leave" />
 
       <div className=" max-w-full overflow-x-auto">
         <div className="col-span-12 space-y-6 xl:col-span-7">

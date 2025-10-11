@@ -46,7 +46,6 @@ export default function TacherAssingedClass() {
     getFetcher
   );
 
-
   useEffect(() => {
     if (teacherList?.data) {
       setData(teacherList.data);
@@ -166,10 +165,10 @@ export default function TacherAssingedClass() {
       {/* for teacher  */}
 
       <PageMeta
-        title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
-        description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title=" Dashboard Ecommerce Dashboard |  "
+        description="This is  Dashboard Ecommerce Dashboard page for TailAdmin -  Dashboard Tailwind CSS Admin Dashboard Template"
       />
-                  <PageBreadcrumb pageTitle="Teacher Assinged Class" />
+      <PageBreadcrumb pageTitle="Teacher Assinged Class" />
 
       <div className="flex justify-center flex-col items-center mb-10">
         <Label> Date</Label>

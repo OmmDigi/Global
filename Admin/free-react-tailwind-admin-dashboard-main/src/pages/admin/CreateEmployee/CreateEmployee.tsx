@@ -1,4 +1,4 @@
-import {  useState } from "react";
+import { useState } from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import PageMeta from "../../../components/common/PageMeta";
 import ComponentCard from "../../../components/common/ComponentCard";
@@ -145,10 +145,7 @@ export default function CreateEmployee() {
   );
 
   // get course list
-  const { data: courseList } = useSWR(
-    "api/v1/course",
-    getFetcher
-  );
+  const { data: courseList } = useSWR("api/v1/course", getFetcher);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -408,8 +405,8 @@ export default function CreateEmployee() {
     <div>
       {contextHolder}
       <PageMeta
-        title="React.js Form Elements Dashboard | TailAdmin - React.js Admin Dashboard Template"
-        description="This is React.js Form Elements Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title=" Dashboard Form Elements Dashboard |  "
+        description="This is  Dashboard Form Elements Dashboard page for TailAdmin -  Dashboard Tailwind CSS Admin Dashboard Template"
       />
       <PageBreadcrumb pageTitle="Cteate Employee" />
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-1">

@@ -39,14 +39,11 @@ export default function Settings() {
     }));
   };
 
-
-
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       const response = await create(formData as any);
-   
+
       messageApi.open({
         type: "success",
         content: response.message,
@@ -67,13 +64,12 @@ export default function Settings() {
     }
   };
 
-
   return (
     <div>
       {contextHolder}
       <PageMeta
-        title="React.js Form Elements Dashboard | TailAdmin - React.js Admin Dashboard Template"
-        description="This is React.js Form Elements Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title=" Dashboard Form Elements Dashboard |  "
+        description="This is  Dashboard Form Elements Dashboard page for TailAdmin -  Dashboard Tailwind CSS Admin Dashboard Template"
       />
       <PageBreadcrumb pageTitle="Settings" />
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-1">
@@ -108,14 +104,12 @@ export default function Settings() {
 
                 <div className="flex flex-wrap justify-center items-center gap-6">
                   <div className="flex items-center gap-5">
-                
-                      <button
-                        type="submit"
-                        className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-                      >
-                        Submit
-                      </button>
-                 
+                    <button
+                      type="submit"
+                      className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                    >
+                      Submit
+                    </button>
                   </div>
                 </div>
               </form>

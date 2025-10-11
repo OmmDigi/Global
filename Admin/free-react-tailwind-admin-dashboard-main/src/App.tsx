@@ -50,6 +50,7 @@ import AmcRecord from "./pages/admin/AmcRecord/AmcRecord";
 import NotFound from "./pages/admin/OtherPage/NotFound";
 import Settings from "./pages/admin/Settings/FeeHead";
 import AdminReport from "./pages/admin/AdminReport/AdminReport";
+import FeesUpdate from "./pages/admin/FesUpdate/FeesUpdate";
 
 export default function App() {
   const [user, setUser] = useState<string | null>(null);
@@ -60,6 +61,8 @@ export default function App() {
     const category = query.get("category");
     const permissions = query.get("permissions");
     // const id = query.get("id");
+
+    
 
     if (category) {
       setUser(category);
@@ -108,6 +111,7 @@ export default function App() {
               <Route path="/manageLeave" element={<ManageLeave />} />
               <Route path="/report" element={<Report />} />
               <Route path="/admin-report" element={<AdminReport />} />
+              <Route path="/fees-update" element={<FeesUpdate />} />
               <Route path="/settings" element={<Settings />} />
               Report
               <Route
@@ -127,7 +131,6 @@ export default function App() {
               <Route path="/stuff-attandance" element={<StuffAttandance />} />
               <Route path="/stuff-payslip" element={<StaffPayslip />} />
               <Route path="/advance-payment" element={<AdvancePayment />} />
-              AdvancePayment
               <Route
                 path="/teacher-assigned-class"
                 element={<TeacherAssignedClass />}

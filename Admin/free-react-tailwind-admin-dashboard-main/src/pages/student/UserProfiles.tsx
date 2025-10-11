@@ -13,23 +13,18 @@ export default function UserProfiles() {
     closeModal();
   };
 
-
-  
-
   return (
     <>
       <PageMeta
-        title="React.js Profile Dashboard | TailAdmin - Next.js Admin Dashboard Template"
-        description="This is React.js Profile Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title=" Dashboard Profile Dashboard | TailAdmin - Next.js Admin Dashboard Template"
+        description="This is  Dashboard Profile Dashboard page for TailAdmin -  Dashboard Tailwind CSS Admin Dashboard Template"
       />
       <PageBreadcrumb pageTitle="Profile" />
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
         <h3 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-7">
-          Profile 
+          Profile
         </h3>
         <div className="space-y-6">
-
-
           {/* Title  */}
           <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
             <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
@@ -553,7 +548,6 @@ export default function UserProfiles() {
               </form>
             </div>
           </Modal>
-
         </div>
       </div>
     </>
