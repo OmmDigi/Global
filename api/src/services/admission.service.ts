@@ -283,10 +283,11 @@ export const getSingleAdmissionData = async (
           p.*,
           TO_CHAR(p.payment_date, 'FMDD FMMonth, YYYY') AS payment_date,
           TO_CHAR(p.month, 'FMMonth, YYYY') AS month,
-          CASE
-            WHEN p.mode = 'Cash' AND (u.category != 'Admin' AND u.category != 'Student') THEN -1
-            ELSE p.amount
-          END AS amount
+          p.amount
+          -- CASE
+          --  WHEN p.mode = 'Cash' AND (u.category != 'Admin' AND u.category != 'Student') THEN -1
+          --  ELSE p.amount
+          -- END AS amount
         FROM payments p
   
         LEFT JOIN course_fee_head cfh

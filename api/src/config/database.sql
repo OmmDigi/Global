@@ -493,3 +493,5 @@ CREATE TABLE admission_fee_head_amount_history (
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE deleted_payments ADD COLUMN user_id BIGINT REFERENCES users(id);
