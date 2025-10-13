@@ -93,6 +93,7 @@ export default function CreateEmployee() {
     ph_no: string;
     password: string;
     category: string;
+    p_tax?: number;
     fee_structure_teacher: {
       course_id: string;
       type: string;
@@ -128,6 +129,7 @@ export default function CreateEmployee() {
     password: "",
     category: "",
     permissions: [],
+    p_tax: 0,
     fee_structure_teacher: [],
     fee_structure_stuff: [],
     description: "",
@@ -158,6 +160,8 @@ export default function CreateEmployee() {
       [name]: value,
     }));
   };
+
+
   const handleChangeCatagort = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -170,6 +174,7 @@ export default function CreateEmployee() {
       [name]: value,
     }));
   };
+  
   const handleNameChange = (selected: any[]) => {
     setFormData((prev: any) => ({
       ...prev,
@@ -200,6 +205,7 @@ export default function CreateEmployee() {
         password: "",
         category: "",
         permissions: [],
+        p_tax: 0,
         fee_structure_teacher: [],
         fee_structure_stuff: [],
         description: "",
@@ -271,6 +277,7 @@ export default function CreateEmployee() {
         password: userData?.password,
         category: userData?.category,
         permissions: userData?.permissions,
+        p_tax: userData?.p_tax,
         fee_structure_teacher: Array.isArray(userData?.fee_structure_teacher)
           ? userData.fee_structure_teacher.map((item: any) => ({
               course_id: item.course_id || "",
@@ -321,6 +328,7 @@ export default function CreateEmployee() {
         password: "",
         category: "",
         permissions: [],
+        p_tax: 0,
         fee_structure_teacher: [],
         fee_structure_stuff: [],
         description: "",
@@ -572,11 +580,26 @@ export default function CreateEmployee() {
                         onClick={handleAdd}
                         className="bg-blue-500 text-white px-4 py-2 rounded-md"
                       >
-                        + Add More
+                        + Add Salary Structure
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-6 xl:grid-cols-1">
+                    <div className="grid grid-cols-1 gap-6 mt-3 xl:grid-cols-5">
+                      <div>
+                        <Label htmlFor="inputTwo">P-Tax</Label>
+                        <Input
+                          type="text"
+                          id="inputTwo"
+                          name="p_tax"
+                          onChange={handleChange}
+                          value={formData.p_tax}
+                          placeholder="P-Tax"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-6 mt-3 xl:grid-cols-1">
+                    
                       {formData?.fee_structure_teacher?.map((entry, index) => (
                         <div key={index} className="flex gap-4 items-center">
                           <div>
@@ -711,7 +734,7 @@ export default function CreateEmployee() {
                         onClick={handleAddStuff}
                         className="bg-blue-500 text-white px-4 py-2 rounded-md"
                       >
-                        + Add More
+                        + Add Salary Structure
                       </button>
                     </div>
 

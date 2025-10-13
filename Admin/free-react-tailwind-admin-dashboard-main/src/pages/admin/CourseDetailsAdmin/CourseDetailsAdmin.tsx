@@ -40,6 +40,13 @@ export default function CourseDetailsAdmin() {
     fee_head_id: "",
     amount: "",
   });
+   const [addFormData, setAddFormData] = useState({
+    fee_head_id: "",
+    amount: "",
+  });
+
+  console.log("addFormData",addFormData);
+  
   const { id } = useParams();
   const [formId, setFormId] = useState(id);
 
@@ -60,6 +67,12 @@ export default function CourseDetailsAdmin() {
     mutate: refetch,
   } = useSWR(`api/v1/admission/${id}`, getFetcher);
 
+   const { data: feeHeadList } = useSWR(
+    "api/v1/course/fee-head",
+    getFetcher
+  );
+  console.log("feeHeadList",feeHeadList);
+  
   //  if(!feesStructure?.data?.student_name){
   //     messageApi.open({
   //         type: "error",
@@ -69,6 +82,11 @@ export default function CourseDetailsAdmin() {
   // admin payment
   const { trigger: create } = useSWRMutation(
     `api/v1/payment/add`,
+    (url, { arg }) => postFetcher(url, arg)
+  );
+
+   const { trigger: addCreate } = useSWRMutation(
+    `api/v1/admission/fee-head`,
     (url, { arg }) => postFetcher(url, arg)
   );
   if (feesStructureLoading) {
@@ -187,6 +205,7 @@ export default function CourseDetailsAdmin() {
     }));
   };
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const payload = {
@@ -220,6 +239,44 @@ export default function CourseDetailsAdmin() {
       });
     }
   };
+
+   const handleAddAmountChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setAddFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+    const handleAddAmountSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const payload = {
+      form_id: id,
+      fee_head_id: addFormData.fee_head_id,
+      amount: addFormData.amount,
+    };
+
+    try {
+      const response = await addCreate(payload as any);
+      messageApi.open({
+        type: "success",
+        content: response.message,
+      });
+      refetch();
+      setAddFormData({
+        fee_head_id: "",
+        amount: "",
+      });
+    } catch (error: any) {
+      messageApi.open({
+        type: "error",
+        content: error.response?.data?.message,
+      });
+    }
+  };
+
 
  // store remarks per row
 
@@ -435,21 +492,21 @@ export default function CourseDetailsAdmin() {
             </form>
           </ComponentCard>
 
-          {/* <ComponentCard title="Add extra Fees">
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <ComponentCard title="Add extra Fees">
+            <form onSubmit={handleAddAmountSubmit} className="space-y-6">
               <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
                 <div>
                   <Label htmlFor="inputTwo">Choose Fee</Label>
                   <select
                     name="fee_head_id"
-                    value={formData.fee_head_id}
+                    value={addFormData.fee_head_id}
                     onChange={(e) => {
                       const selected =
-                        feesStructure?.data?.fee_structure_info.find(
+                        feeHeadList?.data?.find(
                           (opt: any) =>
-                            opt.fee_head_id === Number(e.target.value)
+                            opt.id === Number(e.target.value)
                         );
-                      setFormData((prev) => ({
+                      setAddFormData((prev) => ({
                         ...prev,
                         fee_head_id: e.target.value,
                       }));
@@ -458,24 +515,24 @@ export default function CourseDetailsAdmin() {
                     className="w-full px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
                   >
                     <option value="">Choose</option>
-                    {feesStructure?.data?.fee_structure_info?.map(
+                    {feeHeadList?.data?.map(
                       (opt: any, i: number) => (
-                        <option key={i} value={opt.fee_head_id}>
-                          {opt.fee_head_name}
+                        <option key={i} value={opt.id}>
+                          {opt.name}
                         </option>
                       )
                     )}
                   </select>
                 </div>
                 <div>
-                  <Label htmlFor="inputTwo">Discount Amount</Label>
+                  <Label htmlFor="inputTwo"> Amount</Label>
                   <Input
                     type="number"
                     name="amount"
                     max={`${maxValue}`}
-                    placeholder="discount"
-                    value={formData.amount}
-                    onChange={handleChange}
+                    placeholder="Amount"
+                    value={addFormData.amount}
+                    onChange={handleAddAmountChange}
                     className="flex-1 border px-3 py-1 rounded-md"
                   />
                 </div>
@@ -489,7 +546,8 @@ export default function CourseDetailsAdmin() {
                 </button>
               </div>
             </form>
-          </ComponentCard> */}
+          </ComponentCard>
+          
         </div>
       </div>
 
