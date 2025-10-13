@@ -27,50 +27,112 @@ export const addInventoryItemStockV2 = asyncErrorHandler(async (req, res) => {
   const { error, value } = VAddInventoryItemStockv2.validate(req.body ?? {});
   if (error) throw new ErrorHandler(400, error.details[0].message);
 
-  const vendorInfo = value.vendors as {
-    vendor: number;
-    cost_per_unit: number;
-    quantity : number
-  }[];
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
 
-  if (vendorInfo.length === 0)
-    throw new ErrorHandler(400, "Vendor info must be added");
-
-  const { rowCount, rows } = await pool.query(
-    "SELECT id FROM inventory_items_v2 WHERE id = $1 AND $2::DATE >= created_at",
-    [value.item_id, value.transaction_date]
-  );
-
-  const typeText = value.transaction_type === "add" ? "Add" : "Consume";
-  if (rowCount === 0)
-    throw new ErrorHandler(
-      400,
-      `You are not able to ${typeText} stock as ${typeText} Date is less than product addition date`
+    const { rowCount } = await client.query(
+      "SELECT id FROM inventory_items_v2 WHERE id = $1 AND $2::DATE >= created_at",
+      [value.item_id, value.transaction_date]
     );
 
-  await pool.query(
-    `
-    INSERT INTO inventory_transactions_v2 
-        (item_id, transaction_type, vendor_id, quantity, transaction_date, cost_per_unit, remark)
-     VALUES
-        ${generatePlaceholders(vendorInfo.length, 7)}
-     `,
-    vendorInfo.flatMap((item) => [
-      value.item_id,
-      value.transaction_type,
-      item.vendor,
-      item.quantity,
-      value.transaction_date,
-      item.cost_per_unit,
-      value.remark,
-    ])
-  );
-  const SUCCESS_MESSAGE =
-    value.transaction_type === "add"
-      ? "Stock Successfully Added"
-      : "Stock Successfully Consumed";
+    const typeText = value.transaction_type === "add" ? "Add" : "Consume";
 
-  res.status(201).json(new ApiResponse(201, SUCCESS_MESSAGE));
+    if (rowCount === 0)
+      throw new ErrorHandler(
+        400,
+        `You are not able to ${typeText} stock as ${typeText} Date is less than product addition date`
+      );
+
+    if (value.transaction_type === "add") {
+      const vendorInfo = value.vendors as {
+        vendor: number;
+        cost_per_unit: number;
+        quantity: number;
+      }[];
+
+      if (vendorInfo.length === 0)
+        throw new ErrorHandler(400, "Vendor info must be added");
+
+      await client.query(
+        `
+        INSERT INTO inventory_transactions_v2 
+          (item_id, transaction_type, vendor_id, quantity, transaction_date, cost_per_unit, remark)
+        VALUES
+          ${generatePlaceholders(vendorInfo.length, 7)}
+     `,
+        vendorInfo.flatMap((item) => [
+          value.item_id,
+          value.transaction_type,
+          item.vendor,
+          item.quantity,
+          value.transaction_date,
+          item.cost_per_unit,
+          value.remark,
+        ])
+      );
+    } else if (value.transaction_type === "consume") {
+      const receiverInfo = value.receivers as {
+        receiver_type: string;
+        receiver_value: string;
+        bill_no: string;
+        quantity: number;
+        vendor_id : number;
+      }[];
+
+      if (receiverInfo.length === 0)
+        throw new ErrorHandler(400, "Receiver info must be added");
+
+      const { rows, rowCount } = await client.query(
+        `
+      INSERT INTO inventory_transactions_v2 
+        (item_id, transaction_type, vendor_id, quantity, transaction_date, cost_per_unit, remark)
+      VALUES
+        ${generatePlaceholders(receiverInfo.length, 7)}
+      RETURNING id
+     `,
+        receiverInfo.flatMap((item) => [
+          value.item_id,
+          value.transaction_type,
+          value.vendor_id,
+          item.quantity,
+          value.transaction_date,
+          0,
+          value.remark,
+        ])
+      );
+
+      if (rowCount === 0)
+        throw new ErrorHandler(400, "Unable to consume stock");
+
+      await client.query(
+        `INSERT INTO inventory_item_receivers_v2 (transition_id, receiver_type, receiver_value, bill_no) VALUES ${generatePlaceholders(
+          receiverInfo.length,
+          4
+        )}`,
+        receiverInfo.flatMap((item) => [
+          rows[0].id,
+          item.receiver_type,
+          item.receiver_value,
+          item.bill_no ?? null,
+        ])
+      );
+    }
+
+    const SUCCESS_MESSAGE =
+      value.transaction_type === "add"
+        ? "Stock Successfully Added"
+        : "Stock Successfully Consumed";
+
+    res.status(201).json(new ApiResponse(201, SUCCESS_MESSAGE));
+
+    await client.query("COMMIT");
+  } catch (error: any) {
+    await client.query("ROLLBACK");
+    throw new ErrorHandler(400, error.message);
+  } finally {
+    client.release();
+  }
 });
 
 export const updateInventoryItemInfoV2 = asyncErrorHandler(async (req, res) => {

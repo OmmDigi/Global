@@ -498,3 +498,18 @@ ALTER TABLE deleted_payments ADD COLUMN user_id BIGINT REFERENCES users(id);
 
 ALTER TABLE form_fee_structure 
 ADD CONSTRAINT unique_form_id_fee_head_id UNIQUE(form_id, fee_head_id);
+
+ALTER TABLE purchase_record DROP COLUMN per_item_rate;
+ALTER TABLE purchase_record ADD COLUMN total_item_rate DECIMAL(10, 2) DEFAULT 0.00;
+
+
+CREATE TABLE IF NOT EXISTS inventory_item_receivers_v2 (
+    id SERIAL PRIMARY KEY,
+
+    transition_id BIGINT REFERENCES inventory_transactions_v2(id) ON DELETE CASCADE,
+
+    receiver_type VARCHAR(100) NOT NULL,
+    receiver_value VARCHAR(255) NOT NULL,
+
+    bill_no VARCHAR(255)
+);

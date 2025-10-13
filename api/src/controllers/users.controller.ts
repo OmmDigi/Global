@@ -127,7 +127,7 @@ export const createUser = asyncErrorHandler(async (req, res) => {
     // customize the fee structure as needed
     if (userCategory === "Teacher") {
       const valueToStore: {
-        course_id: number;
+        course_id: number | null;
         amount: number;
         salary_type: string;
         class_per_month: number | null;
@@ -153,6 +153,15 @@ export const createUser = asyncErrorHandler(async (req, res) => {
           class_per_month: null,
         });
       });
+
+      if (value.p_tax) {
+        valueToStore.push({
+          amount: value.p_tax,
+          class_per_month: null,
+          course_id: null,
+          salary_type: 'P_tax'
+        })
+      }
 
       await client.query(
         `
@@ -218,6 +227,7 @@ export const getOneUser = asyncErrorHandler(async (req, res) => {
     `
     SELECT 
       *,
+      0 AS p_tax,
       TO_CHAR(joining_date, 'YYYY-MM-DD') AS joining_date,
       TO_CHAR(joining_date, 'FMDD FMMonth, YYYY') AS formatted_joining_date
     FROM users WHERE id = $1
@@ -233,8 +243,8 @@ export const getOneUser = asyncErrorHandler(async (req, res) => {
       `
         SELECT 
           course_id,
-          MAX(CASE WHEN salary_type IN ('fixed', 'per_class') THEN salary_type END) AS type,
-          MAX(CASE WHEN salary_type IN ('fixed', 'per_class') THEN amount END) AS amount,
+          MAX(CASE WHEN salary_type IN ('fixed', 'per_class', 'P_tax') THEN salary_type END) AS type,
+          MAX(CASE WHEN salary_type IN ('fixed', 'per_class', 'P_tax') THEN amount END) AS amount,
           MAX(amount) FILTER (WHERE salary_type = 'workshop') AS workshop,
           MAX(amount) FILTER (WHERE salary_type = 'extra') AS extra,
           MAX(class_per_month) AS class_per_month
@@ -246,7 +256,8 @@ export const getOneUser = asyncErrorHandler(async (req, res) => {
       [user_id]
     );
 
-    rows[0].fee_structure_teacher = feeStructrueTeacher;
+    rows[0].fee_structure_teacher = feeStructrueTeacher.filter((item : any) => item.type != "P_tax");
+    rows[0].p_tax = feeStructrueTeacher.find((item : any) => item.type == "P_tax")?.amount ?? 0;
     rows[0].fee_structure_stuff = [];
   } else {
     const { rows: feeStructrueStaff } = await pool.query(
@@ -377,7 +388,7 @@ export const updateUser = asyncErrorHandler(async (req, res) => {
 
     if (userCategory === "Teacher") {
       const valueToStore: {
-        course_id: number;
+        course_id: number | null;
         amount: number;
         salary_type: string;
         class_per_month: number | null;
@@ -403,6 +414,16 @@ export const updateUser = asyncErrorHandler(async (req, res) => {
           class_per_month: null,
         });
       });
+
+
+      if (value.p_tax) {
+        valueToStore.push({
+          amount: value.p_tax,
+          class_per_month: null,
+          course_id: null,
+          salary_type: 'P_tax'
+        })
+      }
 
       await client.query(
         `

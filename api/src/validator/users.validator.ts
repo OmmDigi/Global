@@ -32,6 +32,8 @@ export const VCreateUser = Joi.object({
   password: Joi.string().required(),
   permissions: Joi.array().items(Joi.number()).required(),
 
+  p_tax : Joi.number().optional(),
+
   fee_structure_teacher: Joi.array().items(Joi.object({
     course_id: Joi.number().required(),
     amount: Joi.number().required(),
@@ -63,6 +65,8 @@ export const VUpdateUser = Joi.object({
   image: Joi.string().optional().allow(""),
   password: Joi.string().required(),
   permissions: Joi.array().items(Joi.number()).required(),
+
+  p_tax : Joi.number().optional(),
 
   fee_structure_teacher: Joi.array().items(Joi.object({
     course_id: Joi.number().required(),
