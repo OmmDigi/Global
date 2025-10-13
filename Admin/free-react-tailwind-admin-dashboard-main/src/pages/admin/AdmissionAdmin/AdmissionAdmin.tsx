@@ -19,7 +19,7 @@ import useSWRMutation from "swr/mutation";
 import { uploadFiles } from "../../../utils/uploadFile";
 // import dayjs from "dayjs";
 // import DatePicker from "react-datepicker";
-
+    import { useSearchParams } from 'react-router-dom';
 const initialFormData = {
   courseName: "",
   sessionName: "",
@@ -122,7 +122,7 @@ export default function AdmissionAdmin() {
   const [searchData, setSearchData] = useState<any>({});
   const [formSearch, setFormSearch] = useState<any>({});
   const [pageCount, setPageCount] = useState<number>(1);
-
+    const [searchParams, setSearchParams] = useSearchParams();
   // get course list
   // const steps = [
   //   {
@@ -151,28 +151,53 @@ export default function AdmissionAdmin() {
     setPageCount(data);
   };
   // get Admission list
-  const { data: admissionlist, mutate } = useSWR(
-    `api/v1/admission?page=${pageCount}`,
+  
+  
+  const { data: admissionlist, mutate: mutateAdmissionList } = useSWR(
+    `api/v1/admission?page=${pageCount}&${searchParams.toString()}`,
     getFetcher
   );
+  // const id = query.get("id");
+
+    // useEffect(() => {
+    //    const response =  getFetcher(
+    //     `api/v1/admission?session=${ getSession}&course=${ getCourse}&batch=${ getBatch}`
+    //   );
+    //   if (response) {
+       
+    //     setSearchData(response);
+    //   }
+    // }, [getSession, getCourse, getBatch]);
+
+   
+ 
 
   const handleSearch = async () => {
     if (changeSession && course && batch) {
-      const response = await getFetcher(
-        `api/v1/admission?session=${changeSession}&course=${course}&batch=${batch}`
-      );
-      if (response) {
-        messageApi.open({
-          type: "success",
-          content: response.message,
-        });
-        setSearchData(response);
-      }
-    } else {
-      messageApi.open({
-        type: "error",
-        content: "Please Select all Input Fields",
-      });
+      setSearchParams({ session: changeSession, course: course, batch: batch } as any);
+      mutateAdmissionList()
+      // const queryParams = new URLSearchParams({
+      //   session: changeSession,
+      //   course : course,
+      //   batch: batch,
+      // });
+      // window.history.pushState({}, "", `?${queryParams}`);
+
+      // const response = await getFetcher(
+      //   `api/v1/admission?session=${changeSession}&course=${course}&batch=${batch}`
+      // );
+      // if (response) {
+      //   messageApi.open({
+      //     type: "success",
+      //     content: response.message,
+      //   });
+      //   setSearchData(response);
+      // }
+    // } else {
+    //   messageApi.open({
+    //     type: "error",
+    //     content: "Please Select all Input Fields",
+    //   });
     }
   };
 
@@ -349,7 +374,7 @@ export default function AdmissionAdmin() {
           batchName: formData.batchName,
         });
       }
-      mutate();
+      mutateAdmissionList();
       setCurrent(0);
     } catch (error: any) {
       messageApi.open({
@@ -399,7 +424,7 @@ export default function AdmissionAdmin() {
         type: "success",
         content: response.message,
       });
-      mutate();
+      mutateAdmissionList();
       setId(0);
       setMontessoriTeachers(false);
       setCurrent(0);
@@ -427,7 +452,7 @@ export default function AdmissionAdmin() {
     try {
       const response = await update2(UpdateFormPayload as any);
 
-      mutate();
+      mutateAdmissionList();
       messageApi.open({
         type: "success",
         content: response.message,
@@ -1761,7 +1786,7 @@ export default function AdmissionAdmin() {
                   key={editedFormId + "courseName"}
                   name="courseName"
                   disabled={id ? true : false}
-                  defaultValue={formData?.courseName}
+                  defaultValue={formData.courseName}
                   // value={formData.courseName}
                   onChange={handleCourseChange}
                   className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 "
@@ -1782,7 +1807,7 @@ export default function AdmissionAdmin() {
                   key={editedFormId + "sessionName"}
                   name="sessionName"
                   disabled={id ? true : false}
-                  defaultValue={formData.sessionName}
+                  defaultValue={formData.sessionName }
                   onChange={handleSessionChange}
                   className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
