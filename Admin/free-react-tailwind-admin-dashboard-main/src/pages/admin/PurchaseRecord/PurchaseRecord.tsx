@@ -21,13 +21,13 @@ import { message } from "antd";
 
 type FormDataType = {
   id?: number; // optional (if sometimes missing)
-  file: string;
+  file: string | null;
   name: string;
   bill_no: string;
-  per_item_rate: string;
+  total_item_rate: string;
   company_details: string;
   purchase_date: string;
-  expaire_date: string;
+  expaire_date: string | null;
   previousBalance: number;
   presentBalance: number;
   quantityReceived: number;
@@ -44,10 +44,10 @@ export default function PurchaseRecord() {
     file: "",
     name: "",
     bill_no: "",
-    per_item_rate: "",
+    total_item_rate: "",
     company_details: "",
     purchase_date: "",
-    expaire_date: "",
+    expaire_date: null,
     previousBalance: 0,
     presentBalance: 0,
     quantityReceived: 0,
@@ -88,10 +88,10 @@ export default function PurchaseRecord() {
       });
       setPhoto(null);
       setFormData({
-        file: "",
+        file: null,
         name: "",
         bill_no: "",
-        per_item_rate: "",
+        total_item_rate: "",
         company_details: "",
         purchase_date: "",
         expaire_date: "",
@@ -165,7 +165,7 @@ export default function PurchaseRecord() {
         name: userData?.name,
         file: userData?.file,
         bill_no: userData?.bill_no,
-        per_item_rate: userData?.per_item_rate,
+        total_item_rate: userData?.total_item_rate,
         company_details: userData?.company_details,
         purchase_date: userData?.purchase_date,
         expaire_date: userData?.expaire_date,
@@ -198,7 +198,7 @@ export default function PurchaseRecord() {
         file: "",
         name: "",
         bill_no: "",
-        per_item_rate: "",
+        total_item_rate: "",
         company_details: "",
         purchase_date: "",
         expaire_date: "",
@@ -288,14 +288,14 @@ export default function PurchaseRecord() {
                       />
                     </div>
                     <div>
-                      <Label>Per Item Rate</Label>
+                      <Label>Total Item Rate</Label>
                       <Input
                         type="number"
                         id="inputTwo"
-                        name="per_item_rate"
+                        name="total_item_rate"
                         onChange={handleChange}
-                        value={formData?.per_item_rate}
-                        placeholder="Per Item Rate"
+                        value={formData?.total_item_rate}
+                        placeholder="Total Item Rate"
                       />
                     </div>
                   </div>
@@ -332,7 +332,7 @@ export default function PurchaseRecord() {
                         id="inputTwo"
                         name="expaire_date"
                         onChange={handleChange}
-                        value={formData?.expaire_date}
+                        value={formData?.expaire_date ?? ""}
                         placeholder="Expaire Date"
                       />
                     </div>
@@ -449,3 +449,5 @@ export default function PurchaseRecord() {
     </div>
   );
 }
+
+

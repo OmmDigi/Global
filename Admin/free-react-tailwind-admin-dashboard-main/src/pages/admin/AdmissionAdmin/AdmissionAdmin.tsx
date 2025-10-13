@@ -1800,7 +1800,7 @@ export default function AdmissionAdmin() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">
+                <label className="block text-sm font-bold text-gray-500 mb-1">
                   Choose your Session
                 </label>
                 <select

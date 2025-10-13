@@ -73,7 +73,7 @@ const [count, setCount] = useState(1);
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Per Item Rate
+                Total Item Rate
               </TableCell>
               <TableCell
                 isHeader
@@ -114,7 +114,7 @@ const [count, setCount] = useState(1);
                   {order.quantityreceived}
                 </TableCell>
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  {order.per_item_rate}
+                  {order.total_item_rate}
                 </TableCell>
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   {order.company_details}
