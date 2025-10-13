@@ -1505,7 +1505,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
   if (employeetype === "Staff") {
     worksheet.mergeCells("A1:N1");
   } else {
-    worksheet.mergeCells("A1:H1");
+    worksheet.mergeCells("A1:I1");
   }
   worksheet.getCell("A1").value = `Payment Sheet For The Month Of ${formatted}`;
   worksheet.getCell("A1").font = {
@@ -1550,6 +1550,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
       "Fixed / Per Class Rate",
       "Class Taken",
       "Total",
+      "P-Tax",
       "Grand Total",
       "Signature",
     ]);
@@ -1760,6 +1761,14 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
               AND ess.salary_type = tc.class_type
               AND ess.course_id = c.id
           ) AS rate_per_date_text,
+          (
+           SELECT
+            amount
+           FROM employee_salary_structure ess
+           WHERE ess.employee_id = u.id 
+              AND salary_type = 'P_tax'
+           LIMIT 1
+          ) AS p_tax,
           SUM(tc.daily_earning) AS earning,
           SUM(tc.units) AS total_classes_taken
         FROM users u
@@ -1773,6 +1782,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
           teacher_id,
           name,
           course_name,
+          COALESCE(MAX(p_tax), 0) AS p_tax,
           json_agg(
             json_build_object(
               'class_type', class_type,
@@ -1796,7 +1806,8 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
             'courseTotal', course_total
           ) ORDER BY course_name
         ) AS courses,
-        SUM(course_total) AS "teacherTotal"
+        SUM(course_total) - MAX(p_tax) AS "teacherTotal",
+        MAX(p_tax) AS p_tax
       FROM course_grouped
       GROUP BY teacher_id, name;
   `;
@@ -1905,6 +1916,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
               classData.rate_per_date_text,
               classData.total_classes_taken,
               classData.earning,
+              data.p_tax,
               data.teacherTotal && teacherRowCount === 0 && index === 0
                 ? data.teacherTotal
                 : "", // Teacher total only on very first row
@@ -1952,6 +1964,7 @@ export const createEmployeeSalarySheet = asyncErrorHandler(async (req, res) => {
           // worksheet.mergeCells(`D${teacherStartRow}:D${rowIndex - 1}`);
           worksheet.mergeCells(`G${teacherStartRow}:G${rowIndex - 1}`);
           worksheet.mergeCells(`H${teacherStartRow}:H${rowIndex - 1}`);
+          worksheet.mergeCells(`I${teacherStartRow}:I${rowIndex - 1}`);
         }
       }
 

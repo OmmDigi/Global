@@ -498,3 +498,6 @@ ALTER TABLE deleted_payments ADD COLUMN user_id BIGINT REFERENCES users(id);
 
 ALTER TABLE form_fee_structure 
 ADD CONSTRAINT unique_form_id_fee_head_id UNIQUE(form_id, fee_head_id);
+
+ALTER TABLE purchase_record DROP COLUMN per_item_rate;
+ALTER TABLE purchase_record ADD COLUMN total_item_rate DECIMAL(10, 2) DEFAULT 0.00;
