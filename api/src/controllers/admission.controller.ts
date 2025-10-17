@@ -11,6 +11,7 @@ import { createNewUser } from "../services/user.service";
 import { CustomRequest, IUserToken } from "../types";
 import { ApiResponse } from "../utils/ApiResponse";
 import { ErrorHandler } from "../utils/ErrorHandler";
+import { generatePlaceholders } from "../utils/generatePlaceholders";
 import { getAuthToken } from "../utils/getAuthToken";
 import { parsePagination } from "../utils/parsePagination";
 import {
@@ -381,7 +382,7 @@ export const getAdmissionFeeHeadPrice = asyncErrorHandler(async (req, res) => {
   );
 
   if (rowCount === 0) {
-    return res.status(200).json(new ApiResponse(200, "Form Amount", 0));
+    return res.status(200).json(new ApiResponse(200, "Form Amount", "0"));
   }
 
   res.status(200).json(new ApiResponse(200, "Form Amount", rows[0].amount));
@@ -409,19 +410,31 @@ export const updateAdmissionFeeHeadAmount = asyncErrorHandler(
         ]
       );
 
+      //get the list of form id which should be update
+      const { rows } = await client.query(
+        "SELECT form_id FROM enrolled_courses WHERE session_id = $1",
+        [value.session_id]
+      );
+
+      const placeholder = generatePlaceholders(rows.length, 5);
+
       await client.query(
         `
-        UPDATE 
-          form_fee_structure 
-          SET amount = $1, min_amount = $1
-        WHERE fee_head_id = $2 AND form_id IN (
-          SELECT
-          form_id
-          FROM enrolled_courses WHERE session_id = $3
-        )
+        INSERT INTO form_fee_structure 
+          (form_id, fee_head_id, amount, min_amount, required)
+        VALUES
+          ${placeholder}
+        ON CONFLICT (form_id, fee_head_id) DO UPDATE 
+          SET amount = EXCLUDED.amount
         `,
-        [value.current_amount, value.fee_head_id, value.session_id]
-      )
+        rows.flatMap((row: any) => [
+          row.form_id,
+          value.fee_head_id,
+          value.current_amount,
+          value.current_amount,
+          true,
+        ])
+      );
       await client.query("COMMIT");
 
       res
@@ -432,34 +445,34 @@ export const updateAdmissionFeeHeadAmount = asyncErrorHandler(
             "Admission Fee Head Amount Successfully Update For This Session"
           )
         );
-    } catch (error : any) {
+    } catch (error: any) {
       await client.query("ROLLBACK");
-      throw new ErrorHandler(400, error.message)
+      throw new ErrorHandler(400, error.message);
     } finally {
       client.release();
     }
   }
 );
 
-export const getAdmissionFeeHeadHistoryList = asyncErrorHandler(async (req, res) => {
-  const {TO_STRING} = parsePagination(req);
+export const getAdmissionFeeHeadHistoryList = asyncErrorHandler(
+  async (req, res) => {
+    const { TO_STRING } = parsePagination(req);
 
+    let filter = "";
+    let placeholder = 1;
+    const filterValues: string[] = [];
 
-  let filter = "";
-  let placeholder = 1;
-  const filterValues : string[] = [];
-
-  if(req.query.fee_head_id) {
-    if(filter === "") {
-      filter = `WHERE afhah.fee_head_id = $${placeholder++}`
-    } else {
-      filter += ` AND afhah.fee_head_id = $${placeholder++}`
+    if (req.query.fee_head_id) {
+      if (filter === "") {
+        filter = `WHERE afhah.fee_head_id = $${placeholder++}`;
+      } else {
+        filter += ` AND afhah.fee_head_id = $${placeholder++}`;
+      }
+      filterValues.push(req.query.fee_head_id.toString());
     }
-    filterValues.push(req.query.fee_head_id.toString());
-  }
 
-  const { rows } = await pool.query(
-    `
+    const { rows } = await pool.query(
+      `
      SELECT
       cfh.name AS fee_head_name,
       s.name AS session_name,
@@ -480,15 +493,18 @@ export const getAdmissionFeeHeadHistoryList = asyncErrorHandler(async (req, res)
 
      ${TO_STRING}
     `,
-    filterValues
-  )
+      filterValues
+    );
 
-  res.status(200).json(new ApiResponse(200, "Admission amount history", rows))
-})
+    res
+      .status(200)
+      .json(new ApiResponse(200, "Admission amount history", rows));
+  }
+);
 
 export const modifyFeeHeadOfAdmission = asyncErrorHandler(async (req, res) => {
   const { error, value } = VModifyAdmissionFeeHead.validate(req.body ?? {});
-  if(error) throw new ErrorHandler(400, error.message);
+  if (error) throw new ErrorHandler(400, error.message);
 
   await pool.query(
     `
@@ -502,5 +518,7 @@ export const modifyFeeHeadOfAdmission = asyncErrorHandler(async (req, res) => {
     [value.form_id, value.fee_head_id, value.amount, value.amount, false]
   );
 
-  res.status(200).json(new ApiResponse(200, "Admission Fee Head Successfully Modified"))
-})
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Admission Fee Head Successfully Modified"));
+});
