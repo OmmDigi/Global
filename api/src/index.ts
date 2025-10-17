@@ -20,7 +20,7 @@ import { excelRoute } from "./routes/excel.routes";
 import { initCronJobs } from "./cron-jobs";
 import { inventoryRouteV2 } from "./routes/v2/inventory.routes";
 import { settingsRoutes } from "./routes/settings.routes";
-import { pool } from "./config/db";
+import { Worker } from "worker_threads";
 
 const app: Application = express();
 
@@ -69,63 +69,44 @@ app.use("/api/v1/purchase", purchaseRoute);
 app.use("/api/v1/inventory", inventoryRoutes);
 app.use("/api/v1/excel", excelRoute);
 app.use("/api/v2/inventory", inventoryRouteV2);
-app.use("/api/v1/settings", settingsRoutes)
+app.use("/api/v1/settings", settingsRoutes);
 
 initCronJobs();
 
 app.use(globalErrorController);
 
-app.get("/test", async (req, res) => {
-  const { rows } = await pool.query(`
-  WITH each_form_fee_info AS (
-    SELECT
-      ffs.form_id,
-      ffs.fee_head_id,
-      cfh.name AS fee_head_name,
-      MAX(ffs.amount) AS total_amount,
-      COALESCE(SUM(p.amount) FILTER (WHERE mode = 'Discount'), 0) AS any_discount,
-      COALESCE(MAX(ffs.amount), 0) - COALESCE(SUM(p.amount) FILTER (WHERE mode = 'Discount'), 0) AS actule_fee_after_discount,
-      COALESCE(SUM(p.amount) FILTER (WHERE mode != 'Discount'), 0) AS total_admission_fee_collected,
-      COALESCE(MAX(ffs.amount), 0) - COALESCE(SUM(p.amount) FILTER (WHERE mode = 'Discount'), 0) - COALESCE(SUM(p.amount) FILTER (WHERE mode != 'Discount'), 0) AS pending_amount
-    FROM form_fee_structure ffs
-    
-    LEFT JOIN course_fee_head cfh
-    ON cfh.id = ffs.fee_head_id
-    
-    LEFT JOIN payments p
-    ON p.form_id = ffs.form_id AND p.fee_head_id = ffs.fee_head_id
-    
-    GROUP BY ffs.form_id, ffs.fee_head_id, cfh.id
-    
-    ORDER BY ffs.form_id
-)
+app.get("/test", (req, res) => {
+    const filepath = path.resolve(
+    __dirname,
+    "../../attendance-logs/attendance-logs.json"
+  );
+  res.send(filepath)
+  // const workerProcessPath = path.resolve(__dirname, "./workers/processAttendance.ts");
+  
+  // const worker = new Worker(workerProcessPath, {
+  //   workerData: { filepath },
+  //   execArgv: ["-r", "ts-node/register"],
+  // });
 
-SELECT
- row_number() OVER () AS sr_no,
- u.name AS student_name,
- ff.form_name,
- c.name AS course_name,
- b.month_name AS batch_name,
- s.name AS session_name,
- c.duration AS month_duration,
- JSON_AGG(effi) FILTER (WHERE effi.form_id IS NOT NULL) AS fee_info,
- (SELECT JSON_AGG(JSON_BUILD_OBJECT('id', id, 'name', name) ORDER BY id) FROM course_fee_head) AS fee_head_info
-FROM fillup_forms ff
+  // // Listen for messages from the worker
+  // worker.on("message", (result) => {
+  //   console.log("Message From Worker Thread, : ", result);
+  // });
 
-LEFT JOIN users u ON u.id = ff.student_id
-LEFT JOIN enrolled_courses ec ON ec.form_id = ff.id
-LEFT JOIN course c ON c.id = ec.course_id
-LEFT JOIN batch b ON b.id = ec.batch_id
-LEFT JOIN session s ON s.id = ec.session_id
+  // // Handle errors from the worker
+  // worker.on("error", (error) => {
+  //   console.log("Error in worker thread", error);
+  // });
 
-LEFT JOIN each_form_fee_info effi ON effi.form_id = ff.id
+  // // Handle worker exit (optional)
+  // worker.on("exit", (code) => {
+  //   if (code !== 0) {
+  //     console.error(`Worker stopped with exit code ${code}`);
+  //   }
+  // });
 
-GROUP BY u.id, c.id, ff.id, s.id, b.id
-
-ORDER BY ff.id`);
-
-  res.json(rows);
-})
+  // res.send("Processing done");
+});
 
 const PORT = parseInt(process.env.PORT || "4001");
 const HOST = process.env.HOST ?? "127.0.0.1";

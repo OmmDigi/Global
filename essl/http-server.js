@@ -13,6 +13,8 @@ import { clients } from "./constant.js";
 import { getEsslConfig } from "./utils/getEsslConfig.js";
 import fs from "fs";
 import { generateUniqueFileName } from "./utils/generateUniqueFileName.js";
+import path from "path";
+import axios from "axios";
 
 dotenv.config();
 
@@ -98,16 +100,36 @@ wss.on("connection", (ws, req) => {
 
       if (data?.action === "attendance_logs") {
         const fileName = generateUniqueFileName("", "json");
-        fs.writeFile(`./attendance-logs/${fileName}`, JSON.stringify(data?.message), "utf-8", (err) => {
-          if (err) {
-            console.log(
-              "Something went wrong while creating attendance-logs.json"
-            );
-            return;
+        const pathToStore = path.resolve(__dirname, "../attendance-logs");
+
+        fs.writeFile(
+          `${pathToStore}/${fileName}`,
+          JSON.stringify(data?.message),
+          "utf-8",
+          (err) => {
+            if (err) {
+              console.log(
+                "Something went wrong while creating attendance-logs.json"
+              );
+              return;
+            }
+            //attendance logs successfully created
+            console.log("Attendance File Successfully Created");
+
+            // now trigger the main api to process the attendance to the database with the filename
+            axios
+              .post(`${process.env.API_BASE_URL}/api/v1/attendance/process`, {
+                filepath: `${pathToStore}/${fileName}`,
+                password: process.env.PROCESS_ATTENDANCE_PASSWORD,
+              })
+              .catch((reason) =>
+                console.log(
+                  "Error while trigger process attendance api",
+                  reason
+                )
+              );
           }
-          //attendance logs successfully created
-          console.log("Attendance File Successfully Created")
-        });
+        );
       }
 
       console.log(`📨 Message from ${deviceId}:`, data);

@@ -1,22 +1,19 @@
+import { Worker } from "node:worker_threads";
 import { pool } from "../config/db";
+import { essl } from "../config/essl";
 import asyncErrorHandler from "../middlewares/asyncErrorHandler";
 import { manageTeacherClassStatus } from "../services/attendance.service";
+import { TFinalPunch } from "../types";
 import { ApiResponse } from "../utils/ApiResponse";
 import { ErrorHandler } from "../utils/ErrorHandler";
+import { storeAttendanceDataToDb } from "../utils/storeAttendanceDataToDb";
 import {
   VAddAttendance,
   VEditTeacherClassStatus,
   VGetTeacherClassList,
   VSingleAttendance,
 } from "../validator/attendance.validator";
-
-type TFinalPunch = {
-  userId: number;
-  inTime: string;
-  outTime: string;
-  status: string;
-  date: string;
-};
+import path from "node:path";
 
 export const storeAttendance = asyncErrorHandler(async (req, res) => {
   const { error, value } = VAddAttendance.validate(req.body ?? {});
@@ -43,10 +40,17 @@ export const storeAttendance = asyncErrorHandler(async (req, res) => {
           date,
         };
       } else {
-        // earliest punch = in_time
-        if (item.time < acc[key].inTime) acc[key].inTime = item.time;
-        // latest punch = out_time
-        if (item.time > acc[key].outTime) acc[key].outTime = item.time;
+        const current = new Date(item.time);
+        const inTime = new Date(acc[key].inTime);
+        const outTime = new Date(acc[key].outTime);
+
+        // // earliest punch = in_time
+        // if (item.time < acc[key].inTime) acc[key].inTime = item.time;
+        // // latest punch = out_time
+        // if (item.time > acc[key].outTime) acc[key].outTime = item.time;
+
+        if (current < inTime) acc[key].inTime = item.time;
+        if (current > outTime) acc[key].outTime = item.time;
       }
 
       return acc;
@@ -55,109 +59,13 @@ export const storeAttendance = asyncErrorHandler(async (req, res) => {
 
   const finalPunches = grouped as TFinalPunch[];
 
-  const client = await pool.connect();
+  const { success, message } = await storeAttendanceDataToDb(finalPunches);
 
-  try {
-    await client.query("BEGIN");
-
-    let datePlaceholder = "";
-    let employeeIdPlaceholder = "";
-    const valuesToSearch: any[] = [];
-    for (let i = 0; i < finalPunches.length; i++) {
-      if (datePlaceholder === "") {
-        datePlaceholder += `$${i * 2 + 1}`;
-      } else {
-        datePlaceholder += `, $${i * 2 + 1}`;
-      }
-
-      if (employeeIdPlaceholder === "") {
-        employeeIdPlaceholder += `$${i * 2 + 2}`;
-      } else {
-        employeeIdPlaceholder += `, $${i * 2 + 2}`;
-      }
-
-      valuesToSearch.push(finalPunches[i].date);
-      valuesToSearch.push(finalPunches[i].userId);
-    }
-
-    // get employee attedance data with date and employee_id
-    const { rows } = await client.query(
-      `SELECT *, TO_CHAR(date, 'YYYY-MM-DD') AS date FROM attendance WHERE date IN (${datePlaceholder}) AND employee_id IN (${employeeIdPlaceholder})`,
-      valuesToSearch
-    );
-
-    const dataToInsert: TFinalPunch[] = [];
-    const dataToUpdate: TFinalPunch[] = [];
-
-    for (const punch of finalPunches) {
-      // now will check is the list of employee already provide attendace or not
-      // if attendace record avilable than update the out time only else insert a new record of attendace with in time
-
-      const index = rows.findIndex(
-        (row: any) => row.employee_id == punch.userId && row.date == punch.date
-      );
-
-      if (index == -1) {
-        // than no record avilable insert a new row in attendace table
-        dataToInsert.push(punch);
-      } else {
-        // update the outtime
-        dataToUpdate.push(punch);
-      }
-    }
-
-    if (dataToInsert.length !== 0) {
-      const insertPlaceholder = dataToInsert
-        .map(
-          (_, index) =>
-            `($${index * 5 + 1}, $${index * 5 + 2}, $${index * 5 + 3}, $${
-              index * 5 + 4
-            }, $${index * 5 + 5})`
-        )
-        .join(", ");
-
-      const insertQuery = `
-     INSERT INTO attendance (employee_id, in_time, out_time, status, date) VALUES ${insertPlaceholder}
-    `;
-
-      await client.query(
-        insertQuery,
-        dataToInsert.flatMap((item) => [
-          item.userId,
-          item.inTime,
-          null,
-          item.status,
-          item.date,
-        ])
-      );
-    }
-
-    if (dataToUpdate.length !== 0) {
-      const updatePlaceholder = dataToUpdate
-        .map((_, i) => `($${i * 3 + 1}, $${i * 3 + 2}, $${i * 3 + 3})`)
-        .join(", ");
-      const updateQuery = `
-      UPDATE attendance AS a
-      SET out_time = v.new_time::timestamp
-      FROM (VALUES ${updatePlaceholder}) AS v(employee_id, new_time, date)
-      WHERE a.employee_id = v.employee_id::BIGINT AND v.new_time::timestamp > in_time
-      AND a.date = v.date::DATE;
-    `;
-      await client.query(
-        updateQuery,
-        dataToUpdate.flatMap((item) => [item.userId, item.outTime, item.date])
-      );
-    }
-
-    res.send("OK");
-
-    await client.query("COMMIT");
-  } catch (error: any) {
-    await client.query("ROLLBACK");
-    throw new ErrorHandler(400, error.message);
-  } finally {
-    client.release();
+  if (!success) {
+    throw new ErrorHandler(400, message);
   }
+
+  res.send("OK");
 
   // Step 3: execute bulk insert with ON CONFLICT
   // await pool.query(
@@ -485,8 +393,59 @@ export const editTeacherClassStatus = asyncErrorHandler(async (req, res) => {
 //sync attendance form the device
 export const syncAttendanceFromTheDevice = asyncErrorHandler(
   async (req, res) => {
-    // https://essl.globaltechnicalinstitute.com/api/v1/set-attendance
-    // const data = await essl.getAttendanceList();
-    throw new ErrorHandler(400, "Nothing to do");
+    try {
+      await essl.syncAttendance();
+    } catch (error: any) {
+      throw new ErrorHandler(400, error.message);
+    }
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          "Attendance sync request successfully processed wait for some time"
+        )
+      );
   }
 );
+
+export const processAttendaceToTheDb = asyncErrorHandler(async (req, res) => {
+  if (req.body?.password != process.env.PROCESS_ATTENDANCE_PASSWORD) {
+    throw new ErrorHandler(401, "Unauthorized");
+  }
+
+  // const filepath = req.body.filepath;
+  const filepath = req.body?.filepath;
+
+  if (!filepath) throw new ErrorHandler(400, "Filepath is required");
+
+  const workerProcessPath = path.resolve(
+    __dirname,
+    "../workers/processAttendance.ts"
+  );
+
+  const worker = new Worker(workerProcessPath, {
+    workerData: { filepath },
+    execArgv: ["-r", "ts-node/register"],
+  });
+
+  // Listen for messages from the worker
+  worker.on("message", (result) => {
+    console.log("Message From Worker Thread, : ", result);
+    res.send("Processing done");
+  });
+
+  // Handle errors from the worker
+  worker.on("error", (error) => {
+    console.log("Error in worker thread", error);
+    res.status(400).json(new ApiResponse(400, error.message));
+  });
+
+  // Handle worker exit (optional)
+  worker.on("exit", (code) => {
+    if (code !== 0) {
+      console.error(`Worker stopped with exit code ${code}`);
+    }
+  });
+});

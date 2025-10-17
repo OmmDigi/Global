@@ -82,15 +82,15 @@ export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
   const filterValues: string[] = [];
   let placeholder = 1;
 
-  if (value.from_date && value.to_date) {
-    if (filter == "") {
-      filter = `WHERE DATE(ff.created_at) BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
-    } else {
-      filter += ` AND DATE(ff.created_at) BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
-    }
-    filterValues.push(value.from_date);
-    filterValues.push(value.to_date);
-  }
+  // if (value.from_date && value.to_date) {
+  //   if (filter == "") {
+  //     filter = `WHERE DATE(ff.created_at) BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
+  //   } else {
+  //     filter += ` AND DATE(ff.created_at) BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
+  //   }
+  //   filterValues.push(value.from_date);
+  //   filterValues.push(value.to_date);
+  // }
 
   if (value.course) {
     if (filter == "") {
@@ -239,6 +239,8 @@ export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
           SUM(p.amount) AS total_payment
         FROM payments p
         
+        ${paymentFilter}
+
         GROUP BY p.form_id
       )
 
@@ -307,7 +309,7 @@ export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
     if (index === 0) {
       worksheet.getCell(
         "A1"
-      ).value = `Admission Report (${data.course_name}) (${data.batch_name}) (${value.from_date} - ${value.to_date})`;
+      ).value = `Admission Report (${data.course_name}) (${data.batch_name}) (${data.session_name}) (Mode : ${value.mode  == "Both" ? "Cash & Online Both" : value.mode})`;
 
       const ROW_NUMBER = 3;
       let currentCol = 9; // Start at column H (9th col)
@@ -2913,7 +2915,7 @@ export const monthlyPaymentReport = asyncErrorHandler(async (req, res) => {
     if (index === 0) {
       worksheet.getCell(
         "A1"
-      ).value = `Monthly Payment Report (${data.course_name}) (${data.batch_name}) (${value.from_date} - ${value.to_date})`;
+      ).value = `Monthly Payment Report (${data.course_name}) (${data.batch_name}) (${data.session_name}) (Mode : ${value.mode  == "Both" ? "Cash & Online Both" : value.mode})`;
 
       const ROW_NUMBER = 2;
       let currentCol = 7; // Start at column H (9th col)
@@ -3057,15 +3059,15 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
   const filterValues: string[] = [];
   let placeholder = 1;
 
-  if (value.from_date && value.to_date) {
-    if (filter == "") {
-      filter = `WHERE DATE(ff.created_at) BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
-    } else {
-      filter += ` AND DATE(ff.created_at) BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
-    }
-    filterValues.push(value.from_date);
-    filterValues.push(value.to_date);
-  }
+  // if (value.from_date && value.to_date) {
+  //   if (filter == "") {
+  //     filter = `WHERE DATE(ff.created_at) BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
+  //   } else {
+  //     filter += ` AND DATE(ff.created_at) BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
+  //   }
+  //   filterValues.push(value.from_date);
+  //   filterValues.push(value.to_date);
+  // }
 
   if (value.course) {
     if (filter == "") {
@@ -3278,7 +3280,7 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
     if (index === 0) {
       worksheet.getCell(
         "A1"
-      ).value = `Fee Summery Report (${data.course_name}) (${data.batch_name}) (${data.session_name}) (${value.from_date} - ${value.to_date})`;
+      ).value = `Fee Summery Report (${data.course_name}) (${data.batch_name}) (${data.session_name}) (Mode : ${value.mode  == "Both" ? "Cash & Online Both" : value.mode})`;
 
       const ROW_NUMBER = 3;
       let currentCol = 9; // Start at column I (9th col)

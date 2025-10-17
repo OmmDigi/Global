@@ -48,3 +48,12 @@ export type TEmailData = {
     daysRemaining: number;
   }[];
 };
+
+
+export type TFinalPunch = {
+  userId: number;
+  inTime: string;
+  outTime: string;
+  status: string;
+  date: string;
+};

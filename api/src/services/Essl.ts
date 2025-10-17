@@ -17,7 +17,7 @@ type DeleteUser = {
 
 export class Essl {
   private BASE_URL: null | string = null;
-  private DEVICE_ID = 'ESSL-001';
+  private DEVICE_ID = "ESSL-001";
 
   constructor() {
     const URL = process.env.ESSL_BASE_API;
@@ -117,11 +117,13 @@ export class Essl {
     }
   }
 
-  public async getAttendanceList() {
+  public async syncAttendance() {
     if (!this.BASE_URL) throw new Error("Essl Base Api Is Required");
 
     try {
-      return await axios.get(`${this.BASE_URL}/api/v1/employee?device_id=${this.DEVICE_ID}`)
+      return await axios.post(`${this.BASE_URL}/api/v1/set-attendance`, {
+        device_id: this.DEVICE_ID,
+      });
     } catch (error) {
       if (axios.isAxiosError<IError>(error)) {
         if (error.response) {
@@ -131,7 +133,7 @@ export class Essl {
         } else if (error.request) {
           // Request made but no response
           // console.error("No response received:", error.request);
-          throw new Error("No response received from essl server");
+          throw new Error("No response received from essl device");
         } else {
           // Something else (setup error, etc.)
           // console.error("Axios config error:", error.message);

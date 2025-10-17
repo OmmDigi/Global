@@ -66,7 +66,7 @@ export const updateEmployee = asyncErrorHandler(async (req, res) => {
     .json(new ApiResponse(200, "User update request sent to the device"));
 });
 
-export const createAttendanceLogFile =asyncErrorHandler(async (req, res) => {
+export const createAttendanceLogFile = asyncErrorHandler(async (req, res) => {
   const { error, value } = VCreateAttendanceLog.validate(req.body ?? {});
   if (error) throw new ErrorHandler(400, error.message);
 

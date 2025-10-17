@@ -22,12 +22,12 @@ export const VInventoryReport = Joi.object({
 
 export const VGetNewAdmissionReport = Joi.object({
   batch: Joi.number().required(),
-  from_date: Joi.string().required(),
-  to_date: Joi.string().required(),
-  session : Joi.number().optional(),
-  mode : Joi.string().valid("Cash", "Online", "Both").optional(),
+  // from_date: Joi.string().required(),
+  // to_date: Joi.string().required(),
+  session : Joi.number().required(),
+  mode : Joi.string().valid("Cash", "Online", "Both").required(),
   course: Joi.number().required(),
-  token: Joi.string().optional()
+  token: Joi.string().required()
 })
 
 export const VMonthlyPaymentReport = Joi.object({
@@ -37,19 +37,19 @@ export const VMonthlyPaymentReport = Joi.object({
   course: Joi.number().required(),
 
   session : Joi.number().optional(),
-  mode : Joi.string().valid("Cash", "Online", "Both").optional(),
+  mode : Joi.string().valid("Cash", "Online", "Both").required(),
 
-  token: Joi.string().optional()
+  token: Joi.string().required()
 })
 
 export const VFeeSummaryReport = Joi.object({
   batch: Joi.number().required(),
-  from_date: Joi.string().required(),
-  to_date: Joi.string().required(),
+  // from_date: Joi.string().required(),
+  // to_date: Joi.string().required(),
   course: Joi.number().required(),
 
-  session : Joi.number().optional(),
-  mode : Joi.string().valid("Cash", "Online", "Both").optional(),
+  session : Joi.number().required(),
+  mode : Joi.string().valid("Cash", "Online", "Both").required(),
   
-  token: Joi.string().optional()
+  token: Joi.string().required()
 })
