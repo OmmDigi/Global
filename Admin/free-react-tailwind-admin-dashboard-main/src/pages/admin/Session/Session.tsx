@@ -23,12 +23,14 @@ export default function Session() {
     (url, { arg }) => postFetcher(url, arg)
   );
 
+
   //   get session list
   const { data: sessionList, isLoading: sessionLoading } = useSWR(
     "api/v1/course/session",
     getFetcher
   );
 
+  
   const { trigger: update } = useSWRMutation(
     "api/v1/course/session",
     (url, { arg }) => putFetcher(url, arg)

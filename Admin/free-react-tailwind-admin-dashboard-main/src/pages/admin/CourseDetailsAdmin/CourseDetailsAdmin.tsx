@@ -40,18 +40,18 @@ export default function CourseDetailsAdmin() {
     fee_head_id: "",
     amount: "",
   });
-   const [addFormData, setAddFormData] = useState({
+  const [addFormData, setAddFormData] = useState({
     fee_head_id: "",
     amount: "",
   });
 
-  console.log("addFormData",addFormData);
-  
+  console.log("addFormData", addFormData);
+
   const { id } = useParams();
   const [formId, setFormId] = useState(id);
 
-   const [remarksPopup, setRemarksPopup] = useState<any>({}); // store open state per row
-  const [remarksText, setRemarksText] = useState<any>({}); 
+  const [remarksPopup, setRemarksPopup] = useState<any>({}); // store open state per row
+  const [remarksText, setRemarksText] = useState<any>({});
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
     const token = query.get("token");
@@ -67,12 +67,9 @@ export default function CourseDetailsAdmin() {
     mutate: refetch,
   } = useSWR(`api/v1/admission/${id}`, getFetcher);
 
-   const { data: feeHeadList } = useSWR(
-    "api/v1/course/fee-head",
-    getFetcher
-  );
-  console.log("feeHeadList",feeHeadList);
-  
+  const { data: feeHeadList } = useSWR("api/v1/course/fee-head", getFetcher);
+  console.log("feeHeadList", feeHeadList);
+
   //  if(!feesStructure?.data?.student_name){
   //     messageApi.open({
   //         type: "error",
@@ -85,7 +82,7 @@ export default function CourseDetailsAdmin() {
     (url, { arg }) => postFetcher(url, arg)
   );
 
-   const { trigger: addCreate } = useSWRMutation(
+  const { trigger: addCreate } = useSWRMutation(
     `api/v1/admission/fee-head`,
     (url, { arg }) => postFetcher(url, arg)
   );
@@ -205,7 +202,6 @@ export default function CourseDetailsAdmin() {
     }));
   };
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const payload = {
@@ -240,7 +236,7 @@ export default function CourseDetailsAdmin() {
     }
   };
 
-   const handleAddAmountChange = (
+  const handleAddAmountChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
@@ -250,7 +246,7 @@ export default function CourseDetailsAdmin() {
     }));
   };
 
-    const handleAddAmountSubmit = async (e: React.FormEvent) => {
+  const handleAddAmountSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const payload = {
       form_id: id,
@@ -277,21 +273,24 @@ export default function CourseDetailsAdmin() {
     }
   };
 
-
- // store remarks per row
+  // store remarks per row
 
   // Handle save per row
   const handleRowSave = (item: any) => {
-    const fee_structure_info = [{
-      fee_head_id: item.fee_head_id,
-      // fee_head_name: item.fee_head_name,
-      payment_mode: paymentMode[item.fee_head_id] || "",
-      bill_no: enteredBillno[item.fee_head_id] || "",
-      custom_min_amount: enteredAmounts[item.fee_head_id] || "",
-      payment_date: selectedDates[item.fee_head_id] || null,
-      month: month[item.fee_head_id] || null,
-      payment_details: remarksText[item.fee_head_id] || "",
-    }];
+    const fee_structure_info = [
+      {
+        fee_head_id: item.fee_head_id,
+        // fee_head_name: item.fee_head_name,
+        payment_mode: paymentMode[item.fee_head_id] || "",
+        bill_no: enteredBillno[item.fee_head_id] || "",
+        custom_min_amount: enteredAmounts[item.fee_head_id] || "",
+        payment_date: selectedDates[item.fee_head_id]
+          ? dayjs(selectedDates[item.fee_head_id]).format("YYYY-MM-DD")
+          : null,
+        month: month[item.fee_head_id] || null,
+        payment_details: remarksText[item.fee_head_id] || "",
+      },
+    ];
 
     console.log("Saving row payload:", fee_structure_info);
     const finalFormData = {
@@ -501,11 +500,9 @@ export default function CourseDetailsAdmin() {
                     name="fee_head_id"
                     value={addFormData.fee_head_id}
                     onChange={(e) => {
-                      const selected =
-                        feeHeadList?.data?.find(
-                          (opt: any) =>
-                            opt.id === Number(e.target.value)
-                        );
+                      const selected = feeHeadList?.data?.find(
+                        (opt: any) => opt.id === Number(e.target.value)
+                      );
                       setAddFormData((prev) => ({
                         ...prev,
                         fee_head_id: e.target.value,
@@ -515,13 +512,11 @@ export default function CourseDetailsAdmin() {
                     className="w-full px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
                   >
                     <option value="">Choose</option>
-                    {feeHeadList?.data?.map(
-                      (opt: any, i: number) => (
-                        <option key={i} value={opt.id}>
-                          {opt.name}
-                        </option>
-                      )
-                    )}
+                    {feeHeadList?.data?.map((opt: any, i: number) => (
+                      <option key={i} value={opt.id}>
+                        {opt.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div>
@@ -547,7 +542,6 @@ export default function CourseDetailsAdmin() {
               </div>
             </form>
           </ComponentCard>
-          
         </div>
       </div>
 
@@ -630,9 +624,9 @@ export default function CourseDetailsAdmin() {
                                         [item.fee_head_id]: date,
                                       }));
                                     }}
-                                    dateFormat="yyyy-MM-dd"
+                                    dateFormat="dd-MM-yyyy"
                                     className="w-25 border rounded px-1 py-1"
-                                    placeholderText="Choose date"
+                                    placeholderText="dd-mm-yyyy"
                                   />
                                 </div>
                               )}
@@ -684,9 +678,9 @@ export default function CourseDetailsAdmin() {
                                             [item.fee_head_id]: date,
                                           }));
                                         }}
-                                        dateFormat="yyyy-MM-dd"
+                                        dateFormat="dd-MM-yyyy"
                                         className="w-25 border mr-2 rounded px-1 py-1"
-                                        placeholderText="Choose date"
+                                        placeholderText="dd-mm-yyyy"
                                       />
                                     </div>
                                   </div>

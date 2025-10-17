@@ -4,41 +4,41 @@ import ComponentCard from "../../../components/common/ComponentCard";
 
 import BasicTableAttandance from "../../../components/tables/BasicTables/BasicTableAttandance";
 import useSWR from "swr";
-import { getFetcher } from "../../../api/fatcher";
+import { getFetcher, postFetcher } from "../../../api/fatcher";
 import dayjs from "dayjs";
-// import { message } from "antd";
+import { useTransition } from "react";
+import { message } from "antd";
 
 export default function StuffAttandance() {
-  const {
-    data: attandancelist,
-    isLoading: attandanceLoading,
-    error: attandanceError,
-    // mutate: attandanceMutate,
-  } = useSWR("api/v1/attendance?limit=-1", getFetcher);
+  const [isPending, startTransition] = useTransition();
+  const [messageApi, contextHolder] = message.useMessage();
 
-  if (attandanceLoading) {
-    console.log("loading", attandanceLoading);
-  }
-  if (attandanceError) {
-    console.log("stuffError", attandanceError);
-  }
+  const { data: attandancelist, mutate: attandanceMutate } = useSWR(
+    "api/v1/attendance?limit=-1",
+    getFetcher
+  );
+
   const today = new Date();
 
-  // const syncdata = async () => {
-  //   try {
-  //     const response = await getFetcher("api/v1/attendance/sync");
-  //     if (!response.ok) {
-  //       message.error(response.message || "Failed to sync attendance");
-  //       return;
-  //     }
-  //     attandanceMutate();
-  //   } catch (error) {
-  //     console.error("Error syncing attendance", error);
-  //   }
-  // };
+  const syncAttendance = () => {
+    startTransition(async () => {
+      try {
+        await postFetcher("api/v1/attendance/sync", {});
+        messageApi.success(
+          "Attendance synced successfully it will take some time to reflect"
+        );
+        attandanceMutate();
+      } catch (error: any) {
+        messageApi.error(
+          error?.response?.data?.message || "Failed to sync attendance"
+        );
+      }
+    });
+  };
 
   return (
     <div>
+      {contextHolder}
       <PageMeta
         title=" Dashboard Form Elements Dashboard |  "
         description="This is  Dashboard Form Elements Dashboard page for TailAdmin -  Dashboard Tailwind CSS Admin Dashboard Template"
@@ -48,14 +48,19 @@ export default function StuffAttandance() {
         <div className="space-y-6 ">
           <ComponentCard title="Staff Attandance">
             <div className=" flex justify-end items-end">
-              {/* <div>
-                {" "}
-                <button onClick={syncdata} className="bg-blue-500 text-white px-2 py-2 mr-3 text-xl rounded">
-                  Sync Attendance
+              <div>
+                <button
+                  onClick={syncAttendance}
+                  disabled={isPending}
+                  className={`bg-blue-500 ${
+                    isPending ? "opacity-50 cursor-not-allowed" : ""
+                  } text-white px-5 py-2 mr-3 text-xl rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all duration-300`}
+                >
+                  {isPending ? "Syncing..." : "Sync Attendance"}
                 </button>
-              </div> */}
+              </div>
+
               <div className="text-gray-500 text-3xl font-bold">
-                {" "}
                 {dayjs(today).format("DD-MM-YYYY")}
               </div>
             </div>
