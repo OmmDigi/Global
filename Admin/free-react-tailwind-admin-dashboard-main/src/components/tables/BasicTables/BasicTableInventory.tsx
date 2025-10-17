@@ -36,14 +36,17 @@ const BasicTableInventory: React.FC<IProps> = ({
 
   const [formType, setFormType] = useState<"add" | "consume" | null>(null);
   const [formData, setFormData] = useState({
-  
     transaction_date: "",
-    vendors: [{ vendor: "", cost_per_unit: "",quantity:"" }],
+    vendors: [{ vendor: "", cost_per_unit: "", quantity: "" }],
+    receivers: [
+      { receiver_type: "", receiver_value: "", bill_no: "", quantity: "" },
+    ],
     remark: "",
   });
+
   const today = new Date();
   const [itemName, setItemName] = useState("");
-  const [vendor, setVendor] = useState("");
+  // const [vendor, setVendor] = useState("");
   const [vendorId, setVendorId] = useState("");
   const [id, setId] = useState("");
   const [closingStock, setClosingStock] = useState("");
@@ -64,7 +67,7 @@ const BasicTableInventory: React.FC<IProps> = ({
     name: string,
     id: string,
     avilable_quantity: string,
-    vendor: "",
+    // vendor: "",
     vendorId: "",
     minimum_quantity: ""
   ) => {
@@ -72,28 +75,20 @@ const BasicTableInventory: React.FC<IProps> = ({
     setItemName(name);
     setId(id);
     setClosingStock(avilable_quantity);
-    setVendor(vendor);
+    // setVendor(vendor);
     setVendorId(vendorId);
     setMinimum_quantity(minimum_quantity);
     setFormData({
-     
       transaction_date: `${dayjs(new Date()).format("YYYY-MM-DD")}`,
-      vendors: [{ vendor: "", cost_per_unit: "",quantity:"" }],
+      vendors: [{ vendor: "", cost_per_unit: "", quantity: "" }],
+      receivers: [
+        { receiver_type: "", receiver_value: "", bill_no: "", quantity: "" },
+      ],
+
       remark: "",
     });
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
   const handleVendorChange = (
     index: number,
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -108,11 +103,41 @@ const BasicTableInventory: React.FC<IProps> = ({
       return { ...prev, vendors: updatedVendors };
     });
   };
+  const handleReceiversChange = (
+    index: number,
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    console.log("handleReceiversChange", name, value);
+
+    setFormData((prev) => {
+      const updatedVendors = [...prev.receivers];
+      updatedVendors[index] = {
+        ...updatedVendors[index],
+        [name]: value,
+      };
+      return { ...prev, receivers: updatedVendors };
+    });
+  };
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const handleAddMore = () => {
     setFormData((prev) => ({
       ...prev,
-      vendors: [...prev.vendors, { vendor: "", cost_per_unit: "",quantity:"" }],
+      vendors: [
+        ...prev.vendors,
+        { vendor: "", cost_per_unit: "", quantity: "" },
+      ],
     }));
   };
 
@@ -127,15 +152,18 @@ const BasicTableInventory: React.FC<IProps> = ({
     let payload: any = {};
 
     if (formType == "consume") {
-      const newFormData = { ...formData };
-      (newFormData.vendors[0].vendor = vendorId),
-        (payload = {
-          item_id: id,
-          transaction_type: formType,
-          ...newFormData,
-        });
+      const { vendors, ...newFormData } = formData;
+
+      payload = {
+        item_id: id,
+        vendor_id: vendorId,
+
+        transaction_type: formType,
+        ...newFormData,
+      };
     } else {
-      payload = { item_id: id, transaction_type: formType, ...formData };
+      const { receivers, ...newFormData } = formData;
+      payload = { item_id: id, transaction_type: formType, ...newFormData };
     }
     try {
       const response = await create(payload as any);
@@ -146,9 +174,11 @@ const BasicTableInventory: React.FC<IProps> = ({
       });
       mutate();
       setFormData({
-        
         transaction_date: "",
-        vendors: [{ vendor: "", cost_per_unit: "",quantity:"" }],
+        vendors: [{ vendor: "", cost_per_unit: "", quantity: "" }],
+        receivers: [
+          { receiver_type: "", receiver_value: "", bill_no: "", quantity: "" },
+        ],
 
         remark: "",
       });
@@ -248,7 +278,7 @@ const BasicTableInventory: React.FC<IProps> = ({
           {/* Table Body */}
           <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
             {inventoryList?.data?.map((order: any, index: number) => (
-              <TableRow key={order.id}>
+              <TableRow key={index}>
                 <TableCell className="px-5 py-4 sm:px-6 text-start">
                   <div className="flex items-center gap-3">
                     <div className="block font-medium text-gray-500 text-theme-xs dark:text-gray-400]">
@@ -300,8 +330,8 @@ const BasicTableInventory: React.FC<IProps> = ({
                         order.id,
                         order.avilable_quantity,
                         order.vendor_name,
-                        order.vendor_id,
-                        order.minimum_quantity
+                        order.vendor_id
+                        // order.minimum_quantity
                       )
                     }
                     className="px-4 py-3 rounded-3xl text-xl bg-green-200 text-gray-900"
@@ -318,8 +348,8 @@ const BasicTableInventory: React.FC<IProps> = ({
                         order.id,
                         order.avilable_quantity,
                         order.vendor_name,
-                        order.vendor_id,
-                        order.minimum_quantity
+                        order.vendor_id
+                        // order.minimum_quantity
                       )
                     }
                     className="px-4 py-3 rounded-3xl text-xl bg-gray-400 text-gray-900"
@@ -379,32 +409,6 @@ const BasicTableInventory: React.FC<IProps> = ({
             >
               {/* Quantity & Date */}
               <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-                {/* {formType === "add" ? (
-                  ""
-                ) : (
-                  <div className=" text-gray-500  dark:text-gray-400">
-                    <label htmlFor="quantity">{"Issued Quantity"}</label>
-                    <input
-                      type="number"
-                      name="quantity"
-                      max={closingStock}
-                      placeholder={"Issued Quantity"}
-                      value={formData.quantity}
-                      onChange={handleChange}
-                      className="w-full p-2 border rounded"
-                    />
-                    <p
-                      className={`text-xs ${
-                        closingStock <= minimum_quantity
-                          ? "text-red-400"
-                          : "text-gray-400"
-                      } `}
-                    >
-                      {`You have Quantity ${closingStock}`}
-                    </p>
-                  </div>
-                )} */}
-
                 <div className=" text-gray-500 flex flex-col dark:text-gray-400">
                   <label htmlFor="date">Date</label>
                   <DatePicker
@@ -429,18 +433,20 @@ const BasicTableInventory: React.FC<IProps> = ({
 
               {/* Vendors Section */}
               <div className="space-y-5">
-                 {formType === "add" ? 
-                <div className="flex justify-end">
-                  <button
-                    disabled={formType === "add" ? false : true}
-                    type="button"
-                    onClick={handleAddMore}
-                    className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-                  >
-                    + Add More
-                  </button>
-                </div>
-                : "" }
+                {formType === "add" ? (
+                  <div className="flex justify-end">
+                    <button
+                      disabled={formType === "add" ? false : true}
+                      type="button"
+                      onClick={handleAddMore}
+                      className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                    >
+                      + Add More
+                    </button>
+                  </div>
+                ) : (
+                  ""
+                )}
 
                 {formData.vendors.map((item, index) => (
                   <div
@@ -460,74 +466,140 @@ const BasicTableInventory: React.FC<IProps> = ({
 
                     {/* Vendor Select */}
                     <div className=" text-gray-500 flex flex-col dark:text-gray-400">
-                      <label className="block text-sm mb-1">
-                        Choose Vendor
-                      </label>
                       {formType === "add" ? (
-                        <select
-                          name="vendor"
-                          value={item.vendor}
-                          onChange={(e) => handleVendorChange(index, e)}
-                          className="w-full px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
-                        >
-                          <option value="">Select</option>
-                          {vendorList?.data?.map((data: any) => (
-                            <option key={data.id} value={data.id}>
-                              {data.name}
-                            </option>
-                          ))}
-                        </select>
+                        <>
+                          <label className="block text-sm mb-1">
+                            Choose Vendor
+                          </label>
+                          <select
+                            name="vendor"
+                            value={item.vendor}
+                            onChange={(e) => handleVendorChange(index, e)}
+                            className="w-full px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                          >
+                            <option value="">Select</option>
+                            {vendorList?.data?.map((data: any) => (
+                              <option key={data.id} value={data.id}>
+                                {data.name}
+                              </option>
+                            ))}
+                          </select>
+                        </>
                       ) : (
-                        <input
-                          type="text"
-                          name="vendor"
-                          placeholder="vendor"
-                          value={vendor}
-                          onChange={(e) => handleVendorChange(index, e)}
-                          className="w-full px-3 py-2 border rounded-md"
-                        />
+                        ""
                       )}
                     </div>
 
                     {/* Cost Per Unit */}
-                    <div className=" text-gray-500 flex flex-col dark:text-gray-400">
-                      <label className="block text-sm mb-1">
-                        Cost Per Unit
-                      </label>
-                      <input
-                        type="number"
-                        name="cost_per_unit"
-                        placeholder="Cost Per Unit"
-                        value={item.cost_per_unit}
-                        onChange={(e) => handleVendorChange(index, e)}
-                        className="w-full px-3 py-2 border rounded-md"
-                      />
-                    </div>
-                    <div className=" text-gray-500 flex flex-col dark:text-gray-400">
-                      <label htmlFor="quantity"> Quantity</label>
-                      <input
-                        type="number"
-                        name="quantity"
-                        max={formType === "add" ? "" : closingStock}
-                        placeholder={"Quantity"}
-                        value={item.quantity}
-                        onChange={(e) => handleVendorChange(index, e)}
-                        className="w-full p-2 border rounded"
-                      />
-                       {formType === "add" ? "" :
-                         <p
-                      className={`text-xs ${
-                        closingStock < minimum_quantity
-                          ? "text-red-400"
-                          : "text-gray-400"
-                      } `}
-                    >
-                      {`You have Quantity ${closingStock}`}
-                    </p>
-}
-                    </div>
+                    {formType === "add" ? (
+                      <>
+                        <div className=" text-gray-500 flex flex-col dark:text-gray-400">
+                          <label className="block text-sm mb-1">
+                            Cost Per Unit
+                          </label>
+                          <input
+                            type="number"
+                            name="cost_per_unit"
+                            placeholder="Cost Per Unit"
+                            value={item.cost_per_unit}
+                            onChange={(e) => handleVendorChange(index, e)}
+                            className="w-full px-3 py-2 border rounded-md"
+                          />
+                        </div>
+                        <div className=" text-gray-500 flex flex-col dark:text-gray-400">
+                          <label htmlFor="quantity"> Quantity</label>
+                          <input
+                            type="number"
+                            name="quantity"
+                            max={formType === "add" ? "" : closingStock}
+                            placeholder={"Quantity"}
+                            value={item.quantity}
+                            onChange={(e) => handleVendorChange(index, e)}
+                            className="w-full p-2 border rounded"
+                          />
+                          {formType === "add" ? (
+                            ""
+                          ) : (
+                            <p
+                              className={`text-xs ${
+                                closingStock < minimum_quantity
+                                  ? "text-red-400"
+                                  : "text-gray-400"
+                              } `}
+                            >
+                              {`You have Quantity ${closingStock}`}
+                            </p>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      ""
+                    )}
                   </div>
                 ))}
+                {formType === "consume"
+                  ? formData.receivers.map((item, index) => (
+                      <div
+                        key={index + 1}
+                        className="grid grid-cols-1 xl:grid-cols-3 gap-6 relative"
+                      >
+                        <div className=" text-gray-500 flex flex-col dark:text-gray-400">
+                          <label className="block text-sm mb-1">
+                            Choose Receiver Type
+                          </label>
+                          <select
+                            name="receiver_type"
+                            value={item.receiver_type}
+                            onChange={(e) => handleReceiversChange(index, e)}
+                            className="w-full px-3 py-3 bg-gray-100 pl-2.5 pr-2 text-sm hover:border-gray-200 dark:hover:border-gray-800 border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                          >
+                            <option value="">Select</option>
+                            <option value="student">Student</option>
+                            <option value="employee">Employee</option>
+                            <option value="custom">Custom</option>
+                          </select>
+                        </div>
+
+                        <div className=" text-gray-500 flex flex-col dark:text-gray-400">
+                          <label className="block text-sm mb-1">
+                            Receiver ID(Form ID/ESSL/text)
+                          </label>
+                          <input
+                            type="text"
+                            name="receiver_value"
+                            placeholder=" Receiver ID(Form ID/ESSL/text)"
+                            value={item.receiver_value}
+                            onChange={(e) => handleReceiversChange(index, e)}
+                            className="w-full px-3 py-2 border rounded-md"
+                          />
+                        </div>
+
+                        <div className=" text-gray-500 flex flex-col dark:text-gray-400">
+                          <label htmlFor="quantity"> bill_no</label>
+                          <input
+                            type="text"
+                            name="bill_no"
+                            placeholder={"bill_no"}
+                            value={item.bill_no}
+                            onChange={(e) => handleReceiversChange(index, e)}
+                            className="w-full p-2 border rounded"
+                          />
+                        </div>
+                        <div className=" text-gray-500 flex flex-col dark:text-gray-400">
+                          <label htmlFor="quantity"> Quantity</label>
+                          <input
+                            type="number"
+                            name="quantity"
+                            max={closingStock}
+                            placeholder={"Quantity"}
+                            value={item.quantity}
+                            onChange={(e) => handleReceiversChange(index, e)}
+                            className="w-full p-2 border rounded"
+                          />
+                        </div>
+                      </div>
+                    ))
+                  : ""}
               </div>
 
               {/* Remark */}
