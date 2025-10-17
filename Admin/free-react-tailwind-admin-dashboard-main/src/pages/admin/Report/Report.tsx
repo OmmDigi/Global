@@ -432,7 +432,7 @@ function Report() {
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
           <div>
             <label className="block text-sm font-bold text-gray-500 mb-1">
-              Select date range
+              Select month range
             </label>
             <DatePicker
               selectsRange={true}
