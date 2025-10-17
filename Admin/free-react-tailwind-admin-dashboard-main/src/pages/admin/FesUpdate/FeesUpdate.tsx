@@ -209,14 +209,9 @@ export default function FeesUpdate() {
   };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("formData:", formData);
 
     try {
       const response = await create(payload as any);
-      //   mutate(
-      //     (currentData: any) => [...(currentData || []), response.data],
-      //     false
-      //   );
       messageApi.open({
         type: "success",
         content: response.message,
@@ -334,7 +329,7 @@ export default function FeesUpdate() {
                     <input
                       readOnly
                       name="previous_fee"
-                      value={previousAmount || formData.previous_fee}
+                      value={previousAmount ?? formData.previous_fee}
                       onChange={handlePreviousAmountChange}
                       className="w-full px-3 py-3 bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
                     ></input>
