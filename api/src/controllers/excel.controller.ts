@@ -2719,14 +2719,18 @@ export const monthlyPaymentReport = asyncErrorHandler(async (req, res) => {
   let placeholder = 1;
 
   if (value.from_date && value.to_date) {
-    if (filter == "") {
-      filter = `WHERE ff.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
-    } else {
-      filter += ` AND ff.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
-    }
+    // if (filter == "") {
+    //   filter = `WHERE DATE(ff.created_at) BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
+    // } else {
+    //   filter += ` AND DATE(ff.created_at) BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
+    // }
+    placeholder += 2;
+    
     filterValues.push(value.from_date);
     filterValues.push(value.to_date);
   }
+
+
 
   if (value.course) {
     if (filter == "") {
