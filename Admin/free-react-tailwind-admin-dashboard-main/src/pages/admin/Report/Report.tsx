@@ -17,23 +17,23 @@ function Report() {
   //   null,
   //   null,
   // ]);
-  const [dateRangeStudent, setDateRangeStudent] = useState<
-    [Date | null, Date | null]
-  >([null, null]);
+  // const [dateRangeStudent, setDateRangeStudent] = useState<
+  //   [Date | null, Date | null]
+  // >([null, null]);
   const [dateRangeInventory, setDateRangeInventory] = useState<
     [Date | null, Date | null]
   >([null, null]);
   const [dateRangeStudentMonthlyPayment, setDateRangeStudentMonthlyPayment] =
     useState<[Date | null, Date | null]>([null, null]);
-  const [dateRangeOverAll, setDateRangeOverAll] = useState<
-    [Date | null, Date | null]
-  >([null, null]);
+  // const [dateRangeOverAll, setDateRangeOverAll] = useState<
+  //   [Date | null, Date | null]
+  // >([null, null]);
   // const [startDate, endDate] = dateRange;
-  const [startDateStudent, endDateStudent] = dateRangeStudent;
+  // const [startDateStudent, endDateStudent] = dateRangeStudent;
   const [startDateInventory, endDateInventory] = dateRangeInventory;
   const [startDateStudentMonthlyPayment, endDateStudentMonthlyPayment] =
     dateRangeStudentMonthlyPayment;
-  const [startDateOverAll, endDateOverAll] = dateRangeOverAll;
+  // const [startDateOverAll, endDateOverAll] = dateRangeOverAll;
   // const [ , setEditedFormId] = useState<number>(-1);
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   const [course, setCourse] = useState<number>(0);
@@ -156,19 +156,25 @@ function Report() {
     (url, { arg }) => postFetcher(url, arg)
   );
 
+  // const formDataStudent = {
+  //   type: "admission_report",
+  //   query: `from_date=${dayjs(dateRangeStudent[0]).format(
+  //     "YYYY-MM-DD"
+  //   )}&to_date=${dayjs(dateRangeStudent[1]).format(
+  //     "YYYY-MM-DD"
+  //   )}&course=${course}&session=${changeSession}&batch=${batch}&mode=${paymentType}`,
+  // };
+
   const formDataStudent = {
     type: "admission_report",
-    query: `from_date=${dayjs(dateRangeStudent[0]).format(
-      "YYYY-MM-DD"
-    )}&to_date=${dayjs(dateRangeStudent[1]).format(
-      "YYYY-MM-DD"
-    )}&course=${course}&session=${changeSession}&batch=${batch}&mode=${paymentType}`,
+    query: `course=${course}&session=${changeSession}&batch=${batch}&mode=${paymentType}`,
   };
 
   const handleSearchStudent = () => {
     setExcelFileUrlStudent(null);
     startTransitionStudent(async () => {
-      if (dateRangeStudent[0] && dateRangeStudent[0] && course && batch) {
+      if (course && batch) {
+        // if (dateRangeStudent[0] && dateRangeStudent[0] && course && batch) {
         const response = await create(formDataStudent as any);
 
         if (response?.data) {
@@ -193,13 +199,18 @@ function Report() {
     )}&course=${course}&session=${changeSession}&batch=${batch}&mode=${paymentType}`,
   };
 
+  // const formDataOverAll = {
+  //   type: "fee_summary_report",
+  //   query: `from_date=${dayjs(dateRangeOverAll[0]).format(
+  //     "YYYY-MM-DD"
+  //   )}&to_date=${dayjs(dateRangeOverAll[1]).format(
+  //     "YYYY-MM-DD"
+  //   )}&course=${course}&session=${changeSession}&batch=${batch}&mode=${paymentType}`,
+  // };
+
   const formDataOverAll = {
     type: "fee_summary_report",
-    query: `from_date=${dayjs(dateRangeOverAll[0]).format(
-      "YYYY-MM-DD"
-    )}&to_date=${dayjs(dateRangeOverAll[1]).format(
-      "YYYY-MM-DD"
-    )}&course=${course}&session=${changeSession}&batch=${batch}&mode=${paymentType}`,
+    query: `course=${course}&session=${changeSession}&batch=${batch}&mode=${paymentType}`,
   };
 
   const handleSearchStudentMonthlyPayment = () => {
@@ -227,7 +238,12 @@ function Report() {
   const handleSearchOverAll = () => {
     setExcelFileUrlOverAll(null);
     startTransitionOverAll(async () => {
-      if (dateRangeOverAll[0] && dateRangeOverAll[0] && course && batch) {
+      if (
+        // dateRangeOverAll[0] &&
+        // dateRangeOverAll[0] &&
+        course &&
+        batch
+      ) {
         const response = await create(formDataOverAll as any);
         if (response?.data) {
           setExcelFileUrlOverAll(response?.data);
@@ -281,7 +297,7 @@ function Report() {
 
       <ComponentCard className="mt-15" title="Report For Student Admission ">
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-          <div>
+          {/* <div>
             <label className="block text-sm font-bold text-gray-500 mb-1">
               Select date range
             </label>
@@ -298,7 +314,7 @@ function Report() {
               className="border rounded-md px-3 py-2 text-sm dark:bg-gray-800 dark:text-white"
               calendarClassName="!bg-white dark:!bg-gray-200"
             />
-          </div>
+          </div> */}
           <div className="  mb-4">
             <label className="block text-sm font-bold text-gray-500 mb-1">
               Choose your Courses
@@ -548,7 +564,7 @@ function Report() {
         title="Report For Student Fee summary Report "
       >
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-          <div>
+          {/* <div>
             <label className="block text-sm font-bold text-gray-500 mb-1">
               Select date range
             </label>
@@ -565,7 +581,7 @@ function Report() {
               className="border rounded-md px-3 py-2 text-sm dark:bg-gray-800 dark:text-white"
               calendarClassName="!bg-white dark:!bg-gray-200"
             />
-          </div>
+          </div> */}
           <div className="  mb-4">
             <label className="block text-sm font-bold text-gray-500 mb-1">
               Choose your Courses
