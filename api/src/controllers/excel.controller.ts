@@ -208,7 +208,7 @@ export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
           SUM(p.amount) AS amount,
           COALESCE(SUM(p.amount) FILTER (WHERE p.mode = 'Discount'), 0) AS discount_amount,
           STRING_AGG(DISTINCT(p.bill_no), ' + ') AS bill_number,
-          STRING_AGG(DISTINCT(p.payment_date)::text, ' + ') AS payment_date,
+          STRING_AGG(DISTINCT(TO_CHAR(p.payment_date, 'DD-MM-YYYY'))::text, ' + ') AS payment_date,
           p.month
         FROM payments p
               
