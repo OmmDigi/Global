@@ -513,3 +513,9 @@ CREATE TABLE IF NOT EXISTS inventory_item_receivers_v2 (
 
     bill_no VARCHAR(255)
 );
+
+ALTER TABLE admission_fee_head_amount_history 
+    ADD COLUMN course_id BIGINT REFERENCES course(id) ON DELETE SET NULL;
+
+ALTER TABLE admission_fee_head_amount_history 
+    ADD COLUMN batch_id BIGINT REFERENCES batch(id) ON DELETE SET NULL;

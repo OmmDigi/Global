@@ -1,3 +1,4 @@
+import { ifError } from "assert";
 import { pool } from "../config/db";
 import asyncErrorHandler from "../middlewares/asyncErrorHandler";
 import {
@@ -365,6 +366,50 @@ export const getAdmissionFeeHeadPrice = asyncErrorHandler(async (req, res) => {
   const { error, value } = VGetSessionCourseHeadPrice.validate(req.query ?? {});
   if (error) throw new ErrorHandler(400, error.message);
 
+  let filter = "";
+  let placeholder = 1;
+  const filterValues: string[] = [];
+
+  if (value.course_id) {
+    if (filter === "") {
+      filter = `WHERE ec.course_id = $${placeholder++}`;
+    } else {
+      filter += ` AND ec.course_id = $${placeholder++}`;
+    }
+
+    filterValues.push(value.course_id);
+  }
+
+  if (value.batch_id) {
+    if (filter === "") {
+      filter = `WHERE ec.batch_id = $${placeholder++}`;
+    } else {
+      filter += ` AND ec.batch_id = $${placeholder++}`;
+    }
+
+    filterValues.push(value.batch_id);
+  }
+
+  if (value.fee_head_id) {
+    if (filter === "") {
+      filter = `WHERE ffs.fee_head_id = $${placeholder++}`;
+    } else {
+      filter += ` AND ffs.fee_head_id = $${placeholder++}`;
+    }
+
+    filterValues.push(value.fee_head_id);
+  }
+
+  if (value.session_id) {
+    if (filter === "") {
+      filter = `WHERE ec.session_id = $${placeholder++}`;
+    } else {
+      filter += ` AND ec.session_id = $${placeholder++}`;
+    }
+
+    filterValues.push(value.session_id);
+  }
+
   const { rows, rowCount } = await pool.query(
     `
     SELECT
@@ -374,11 +419,11 @@ export const getAdmissionFeeHeadPrice = asyncErrorHandler(async (req, res) => {
     LEFT JOIN form_fee_structure ffs
     ON ffs.form_id = ec.form_id
 
-    WHERE ec.session_id = $1 AND ffs.fee_head_id = $2
+    ${filter}
 
     LIMIT 1
     `,
-    [value.session_id, value.fee_head_id]
+    filterValues
   );
 
   if (rowCount === 0) {
@@ -394,26 +439,67 @@ export const updateAdmissionFeeHeadAmount = asyncErrorHandler(
       req.body ?? {}
     );
     if (error) throw new ErrorHandler(400, error.message);
-
+    
     const client = await pool.connect();
 
     try {
       await client.query("BEGIN");
 
       await client.query(
-        "INSERT INTO admission_fee_head_amount_history (session_id, fee_head_id, previous_amount, current_amount) VALUES ($1, $2, $3, $4)",
+        "INSERT INTO admission_fee_head_amount_history (session_id, fee_head_id, previous_amount, current_amount, course_id, batch_id) VALUES ($1, $2, $3, $4, $5, $6)",
         [
           value.session_id,
           value.fee_head_id,
           value.previous_amount,
           value.current_amount,
+          value.course_id,
+          value.batch_id ?? null,
         ]
       );
 
       //get the list of form id which should be update
+      let filter = "";
+      let placeholderNum = 1;
+      const filterValues: string[] = [];
+
+      if (value.course_id) {
+        if (filter === "") {
+          filter = `WHERE ec.course_id = $${placeholderNum++}`;
+        } else {
+          filter += ` AND ec.course_id = $${placeholderNum++}`;
+        }
+
+        filterValues.push(value.course_id);
+      }
+
+      if (value.batch_id) {
+        if (filter === "") {
+          filter = `WHERE ec.batch_id = $${placeholderNum++}`;
+        } else {
+          filter += ` AND ec.batch_id = $${placeholderNum++}`;
+        }
+
+        filterValues.push(value.batch_id);
+      }
+
+      if (value.session_id) {
+        if (filter === "") {
+          filter = `WHERE ec.session_id = $${placeholderNum++}`;
+        } else {
+          filter += ` AND ec.session_id = $${placeholderNum++}`;
+        }
+
+        filterValues.push(value.session_id);
+      }
+
       const { rows } = await client.query(
-        "SELECT form_id FROM enrolled_courses WHERE session_id = $1",
-        [value.session_id]
+        `
+        SELECT 
+         ec.form_id
+        FROM enrolled_courses ec
+        ${filter}
+        `,
+        filterValues
       );
 
       const placeholder = generatePlaceholders(rows.length, 5);

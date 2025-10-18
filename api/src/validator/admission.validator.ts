@@ -52,13 +52,17 @@ export const VUpdateDeclarationStatus = Joi.object({
 
 export const VGetSessionCourseHeadPrice = Joi.object({
   session_id : Joi.number().required(),
-  // course_id : Joi.number().required(),
-  fee_head_id : Joi.number().required()
+  course_id : Joi.number().required(),
+  fee_head_id : Joi.number().required(),
+  batch_id : Joi.number().optional(),
 })
 
 export const VUpdateSessionCourseHeadPrice = Joi.object({
   session_id : Joi.number().required(),
   fee_head_id : Joi.number().required(),
+  course_id : Joi.number().required(),
+  batch_id : Joi.number().optional(),
+
   previous_amount : Joi.number().required(),
   current_amount : Joi.number().required()
 })
