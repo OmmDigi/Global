@@ -13,6 +13,7 @@ import {
 // import { mutate } from "swr";
 import { useEffect, useState } from "react";
 import Pagination from "../../form/Pagination";
+import { Calendar, UsersRound } from "lucide-react";
 
 interface IProps {
   amountList: any;
@@ -51,8 +52,6 @@ export default function BasicTableFeeHead({
   //   }
   // };
 
-  console.log("amountList:", amountList);
-
   const [count, setCount] = useState(1);
   useEffect(() => {
     onSendData(count);
@@ -68,7 +67,7 @@ export default function BasicTableFeeHead({
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Updated Date
+                Course Name
               </TableCell>
               <TableCell
                 isHeader
@@ -115,10 +114,22 @@ export default function BasicTableFeeHead({
                     <div className="block font-medium text-gray-500 text-theme-xs dark:text-gray-400]">
                       {index + 1}
                     </div>
-                    <div>
+                    <div className="space-y-1">
                       <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                        {order.created_at}
+                        {order.course_name ?? "All Course"}
                       </span>
+
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-gray-400 flex items-center gap-1 text-sm">
+                          <UsersRound size={15} />
+                          {order.batch_name ?? "All Batch"}
+                        </span>
+
+                        <span className="text-gray-400 flex items-center gap-1 text-sm">
+                          <Calendar size={15} />
+                          {order.created_at}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </TableCell>
