@@ -564,7 +564,9 @@ export const getAdmissionFeeHeadHistoryList = asyncErrorHandler(
       s.name AS session_name,
       afhah.previous_amount,
       afhah.current_amount,
-      TO_CHAR(afhah.created_at, 'FMDD FMMonth, YYYY') AS created_at
+      TO_CHAR(afhah.created_at, 'FMDD FMMonth, YYYY') AS created_at,
+      b.month_name AS batch_name,
+      c.name AS course_name
      FROM admission_fee_head_amount_history afhah
 
      LEFT JOIN course_fee_head cfh
@@ -572,6 +574,12 @@ export const getAdmissionFeeHeadHistoryList = asyncErrorHandler(
 
      LEFT JOIN session s
      ON s.id = afhah.session_id
+
+     LEFT JOIN course c
+     ON c.id = afhah.course_id
+
+     LEFT JOIN batch b
+     ON b.id = afhah.batch_id
 
      ${filter}
 
