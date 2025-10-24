@@ -52,6 +52,12 @@ export default function CourseDetailsAdmin() {
 
   const [remarksPopup, setRemarksPopup] = useState<any>({}); // store open state per row
   const [remarksText, setRemarksText] = useState<any>({});
+  const [activeRow, setActiveRow] = useState<number | null>(null);
+
+  const select = (id: number) => {
+    setActiveRow(id);
+  };
+
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
     const token = query.get("token");
@@ -206,12 +212,13 @@ export default function CourseDetailsAdmin() {
     e.preventDefault();
     const payload = {
       form_id: id,
-      payment_mode: "Discount",
-      payment_details: "Discount",
+
       fee_structure_info: [
         {
           fee_head_id: formData.fee_head_id,
           custom_min_amount: formData.amount,
+          payment_mode: "Discount",
+          payment_details: "Discount",
         },
       ],
     };
@@ -565,7 +572,12 @@ export default function CourseDetailsAdmin() {
                         return (
                           <div
                             key={item.fee_head_id}
-                            className="flex flex-col "
+                            onClick={() => select(index)}
+                            className={`flex flex-col cursor-pointer ${
+                              activeRow === index
+                                ? "bg-gray-600 rounded-xl pt-2 pb-2"
+                                : ""
+                            }`}
                           >
                             <div className="flex justify-between gap-1">
                               <label className="flex-1">
@@ -692,7 +704,7 @@ export default function CourseDetailsAdmin() {
                                   type="text"
                                   value={enteredBillno[item.fee_head_id] || ""}
                                   onChange={(e) => handleBillnoChange(e, item)}
-                                  className="w-22 px-2 py-0 mt-1 mr-2 border border-blue-400 rounded"
+                                  className="w-24 px-1 text-sm py-1 mt-1 mr-2 border border-blue-400 rounded"
                                   placeholder="Bill-No"
                                 />
                               </div>
