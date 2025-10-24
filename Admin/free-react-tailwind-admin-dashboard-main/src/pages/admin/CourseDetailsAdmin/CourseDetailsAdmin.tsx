@@ -287,7 +287,7 @@ export default function CourseDetailsAdmin() {
         payment_date: selectedDates[item.fee_head_id]
           ? dayjs(selectedDates[item.fee_head_id]).format("YYYY-MM-DD")
           : null,
-        month: month[item.fee_head_id] || null,
+        month: dayjs(month[item.fee_head_id]).format("YYYY-MM") || null,
         payment_details: remarksText[item.fee_head_id] || "",
       },
     ];
@@ -660,7 +660,7 @@ export default function CourseDetailsAdmin() {
                                           [item.fee_head_id]: date,
                                         }));
                                       }}
-                                      dateFormat="MMMM yyyy"
+                                      dateFormat="MM-yyyy"
                                       showMonthYearPicker
                                       className="border w-30  border-gray-300 dark:border-gray-600 dark:text-gray-200 rounded-md px-1 py-1 mr-2 mt-1 text-sm"
                                       autoComplete="off"

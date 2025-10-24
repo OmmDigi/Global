@@ -37,11 +37,11 @@ export default defineConfig(({ mode }) => {
 
   return {
     server: {
-      host: env.VITE_HOST || "192.168.29.174",
+      host: env.VITE_HOST || "192.168.0.214",
       port: parseInt(env.VITE_PORT) || 3000,
     },
     preview: {
-      host: env.VITE_HOST || "192.168.29.174",
+      host: env.VITE_HOST || "192.168.0.214",
       port: parseInt(env.VITE_PORT) || 3000,
     },
 
