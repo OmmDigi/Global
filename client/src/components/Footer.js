@@ -155,14 +155,14 @@ function Footer() {
         <div className="flex justify-center items-center p-3">
           <div >
             {" "}
-            2025 Global Technical Institute, All Rights Reserved. | Developed by{" "}
+            2025 Global Technical Institute, All Rights Reserved.
             <div className="text-center">
-              <Link
+              {/* <Link
                 className="text-lg text-green-300"
                 href="https://ommdigitalsolution.com/"
               >
                 Omm Digital Solution.
-              </Link>{" "}
+              </Link>{" "} */}
             </div>{" "}
           </div>
           {/* <div className="hidden md:flex  w-/12 md:w-1/12 ">
