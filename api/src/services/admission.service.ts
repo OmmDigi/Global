@@ -272,6 +272,8 @@ export const getSingleAdmissionData = async (
           WHERE ffs.form_id = $1 ${student_id ? "AND ff.status = 2" : ""}
   
           GROUP BY cfh.id, ffs.id
+
+          ORDER BY cfh.position
         `,
       [form_id]
     );
