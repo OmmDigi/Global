@@ -121,7 +121,7 @@ export default function AdmissionAdmin() {
   const [changeSession, setChangeSession] = useState<any>(0);
   const [searchData, setSearchData] = useState<any>({});
   const [formSearch, setFormSearch] = useState<any>({});
-  const [pageCount, setPageCount] = useState<number>(1);
+  const [pageCount, setPageCount] = useState<number>(0);
   const [searchParams, setSearchParams] = useSearchParams();
   // get course list
   // const steps = [
@@ -150,10 +150,11 @@ export default function AdmissionAdmin() {
   const handleChildData = (data: any) => {
     setPageCount(data);
   };
-  // get Admission list
 
+  // console.log("pageCountqqq",pageCount);
+  // get Admission list
   const { data: admissionlist, mutate: mutateAdmissionList } = useSWR(
-    `api/v1/admission?page=${pageCount}&${searchParams.toString()}`,
+    `api/v1/admission?${searchParams.toString()}`,
     getFetcher
   );
   // const id = query.get("id");
@@ -168,7 +169,8 @@ export default function AdmissionAdmin() {
   //   }
   // }, [getSession, getCourse, getBatch]);
 
-  const handleSearch = async () => {
+  const handleSearch = () => {
+    console.log("search", pageCount);
     if (changeSession && course && batch) {
       setSearchParams({
         session: changeSession,
@@ -176,28 +178,6 @@ export default function AdmissionAdmin() {
         batch: batch,
       } as any);
       mutateAdmissionList();
-      // const queryParams = new URLSearchParams({
-      //   session: changeSession,
-      //   course : course,
-      //   batch: batch,
-      // });
-      // window.history.pushState({}, "", `?${queryParams}`);
-
-      // const response = await getFetcher(
-      //   `api/v1/admission?session=${changeSession}&course=${course}&batch=${batch}`
-      // );
-      // if (response) {
-      //   messageApi.open({
-      //     type: "success",
-      //     content: response.message,
-      //   });
-      //   setSearchData(response);
-      // }
-      // } else {
-      //   messageApi.open({
-      //     type: "error",
-      //     content: "Please Select all Input Fields",
-      //   });
     }
   };
 
@@ -1907,7 +1887,8 @@ export default function AdmissionAdmin() {
               admissionlist={searchData?.data ? searchData : admissionlist}
               onEdit={handleEdit}
               onActive={handleActive}
-              onSendData={handleChildData}
+              // onSendData={handleChildData}
+              pageMutate={mutateAdmissionList}
             />
           </ComponentCard>
         </div>

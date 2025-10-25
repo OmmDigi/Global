@@ -742,7 +742,7 @@ export default function Home() {
         </section>
 
         {/* google reviews */}
-        <div className="max-w-7xl mx-auto bg-white">
+        {/* <div className="max-w-7xl mx-auto bg-white">
           <div className="text-center mb-10">
             <h4 className="text-2xl md:text-2xl  font-semibold text-blue-800  inline-block pb-2">
               Google Reviews
@@ -784,7 +784,7 @@ export default function Home() {
               </div>
             </div>
           </li>
-        </div>
+        </div> */}
 
         {/* What makes us unique */}
         <section id="about-us" className="w-full py-12 mt-10 bg-[#1a3d97]">

@@ -168,8 +168,8 @@ export default function Navbar() {
           <header className="inset-x-0 top-0 relative ">
             <div
               className={`${
-                isScrolling ? "max-h-0 overflow-hidden" : "max-h-full"
-              } transition-transform duration-300 `}
+                isScrolling ? "max-h-0 overflow-hidden " : "max-h-full transition-transform duration-500"
+              } `}
             >
               <div className="hidden lg:flex justify-between pb-5 pt-3 pl-8 pr-8">
                 {navigation3.map((item, index) => (

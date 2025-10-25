@@ -143,7 +143,7 @@ function Footer() {
                 </Link>
               </li>
               <li>
-                <div className=" flex md:hidden w-auto ml-[240px] justify-end items-end ">
+                <div className=" flex  w-auto   ">
                   <p>Privacy Policy</p>
                 </div>
               </li>
@@ -152,23 +152,23 @@ function Footer() {
         </div>
         <hr className="w=11/12 mt-2" />
 
-        <div className="flex justify-between p-3">
-          <div className="w-12/12 md:w-3/12">
+        <div className="flex justify-center items-center p-3">
+          <div >
             {" "}
-            2024 Global Technical Institute, All Rights Reserved. | Developed by{" "}
-            <span>
+            2025 Global Technical Institute, All Rights Reserved. | Developed by{" "}
+            <div className="text-center">
               <Link
                 className="text-lg text-green-300"
                 href="https://ommdigitalsolution.com/"
               >
                 Omm Digital Solution.
               </Link>{" "}
-            </span>{" "}
+            </div>{" "}
           </div>
-          <div className="hidden md:flex  w-/12 md:w-1/12 ">
+          {/* <div className="hidden md:flex  w-/12 md:w-1/12 ">
             {" "}
             Privacy Policy
-          </div>
+          </div> */}
         </div>
       </footer>
     </div>

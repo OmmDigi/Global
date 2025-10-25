@@ -7,26 +7,29 @@ import {
 } from "../../ui/table";
 
 import Switch from "../../form/switch/Switch";
-import { useNavigate } from "react-router";
-import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router";
+// import { useEffect, useState } from "react";
 import Pagination from "../../form/Pagination";
 
 export default function BasicTableAdmission({
   admissionlist,
   onEdit,
   onActive,
-  onSendData,
-}: any) {
+}: // onSendData,
+any) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  const currentPage = parseInt(searchParams.get("page") || "1");
 
   const handleDetailsClick = (id: number) => {
     navigate(`/courseDetailsAdmin/${id}`);
   };
 
-  const [count, setCount] = useState(1);
-  useEffect(() => {
-    onSendData(count);
-  }, [count, onSendData]);
+  // const [count, setCount] = useState(1);
+  // useEffect(() => {
+  //   onSendData(count);
+  // }, [count, onSendData]);
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
@@ -99,7 +102,9 @@ export default function BasicTableAdmission({
               <TableRow key={index}>
                 <TableCell className="px-5 py-4 sm:px-6 text-start">
                   <div className="flex items-center gap-3">
-                    <div className="text-gray-500">{((count*10)-10 )+ index + 1}</div>
+                    <div className="text-gray-500">
+                      {currentPage * 10 - 10 + index + 1}
+                    </div>
                     <div className="block font-medium text-gray-500 text-theme-xs dark:text-gray-400]">
                       <img
                         src={order.student_image}
@@ -177,8 +182,8 @@ export default function BasicTableAdmission({
 
         <div className="p-8">
           <Pagination
-            count={count}
-            onChange={setCount}
+            // count={count}
+            // onChange={setCount}
             length={
               admissionlist?.data?.length ? admissionlist?.data?.length : 1
             }
