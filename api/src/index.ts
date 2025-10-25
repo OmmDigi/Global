@@ -20,7 +20,6 @@ import { excelRoute } from "./routes/excel.routes";
 import { initCronJobs } from "./cron-jobs";
 import { inventoryRouteV2 } from "./routes/v2/inventory.routes";
 import { settingsRoutes } from "./routes/settings.routes";
-import { Worker } from "worker_threads";
 
 const app: Application = express();
 

@@ -519,3 +519,25 @@ ALTER TABLE admission_fee_head_amount_history
 
 ALTER TABLE admission_fee_head_amount_history 
     ADD COLUMN batch_id BIGINT REFERENCES batch(id) ON DELETE SET NULL;
+
+ALTER TABLE course_fee_head
+    ADD COLUMN position SERIAL;
+
+UPDATE course_fee_head SET position = 1 WHERE id = 3;
+UPDATE course_fee_head SET position = 2 WHERE id = 14;
+UPDATE course_fee_head SET position = 3 WHERE id = 2;
+UPDATE course_fee_head SET position = 4 WHERE id = 12;
+UPDATE course_fee_head SET position = 5 WHERE id = 4;
+UPDATE course_fee_head SET position = 6 WHERE id = 5;
+UPDATE course_fee_head SET position = 7 WHERE id = 6;
+UPDATE course_fee_head SET position = 8 WHERE id = 7;
+UPDATE course_fee_head SET position = 9 WHERE id = 10;
+UPDATE course_fee_head SET position = 10 WHERE id = 11;
+UPDATE course_fee_head SET position = 11 WHERE id = 8;
+UPDATE course_fee_head SET position = 12 WHERE id = 9;
+
+UPDATE course_fee_head SET position = 13 WHERE id = 13;
+UPDATE course_fee_head SET position = 14 WHERE id = 1;
+
+ALTER TABLE fillup_forms
+    ADD COLUMN admission_date DATE;
