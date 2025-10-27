@@ -53,28 +53,28 @@ function page() {
                 <div>
                   <img
                     className="w-full h-auto object-cover rounded-lg"
-                    src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/04/hom-01.jpg"
+                    src="/image/hom-01.jpg"
                     alt="teachers training institute in Kolkata"
                   />
                 </div>
                 <div>
                   <img
                     className="w-full h-auto object-cover rounded-lg"
-                    src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/04/hom-02.jpg"
+                    src="/image/hom-02.jpg"
                     alt="teachers training institute in Kolkata"
                   />
                 </div>
                 <div>
                   <img
                     className="w-full h-auto object-cover rounded-lg"
-                    src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/04/hom-03.jpg"
+                    src="/image/hom-03.jpg"
                     alt="teachers training institute in Kolkata"
                   />
                 </div>
                 <div>
                   <img
                     className="w-full h-auto object-cover rounded-lg"
-                    src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/04/hom-04.jpg"
+                    src="/image/hom-04.jpg"
                     alt="teachers training institute in Kolkata"
                   />
                 </div>

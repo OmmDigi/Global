@@ -44,6 +44,7 @@ function Footer() {
                     <FaPhoneAlt />
                     <span> Phone:</span>
                   </h4>
+                  <p>9231551285, 9230113485, </p>
                   <p>8961008489</p>
                 </div>
               </div>

@@ -121,7 +121,7 @@ export default function AdmissionAdmin() {
   const [changeSession, setChangeSession] = useState<any>(0);
   const [searchData, setSearchData] = useState<any>({});
   const [formSearch, setFormSearch] = useState<any>({});
-  const [pageCount, setPageCount] = useState<number>(0);
+  const [pageCount] = useState<number>(0);
   const [searchParams, setSearchParams] = useSearchParams();
   // get course list
   // const steps = [
@@ -147,9 +147,9 @@ export default function AdmissionAdmin() {
   // if (courseLoading) {
   //   return <div>Loading ...</div>;
   // }
-  const handleChildData = (data: any) => {
-    setPageCount(data);
-  };
+  // const handleChildData = (data: any) => {
+  //   setPageCount(data);
+  // };
 
   // console.log("pageCountqqq",pageCount);
   // get Admission list

@@ -911,7 +911,7 @@ export default function Home() {
                 <div>
                   {" "}
                   <img
-                    src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/1.png"
+                    src="/image/Collaborations/1.png"
                     alt="teachers training institute Kolkata"
                     className="mx-auto h-16 w-16 object-contain"
                   />
@@ -919,7 +919,7 @@ export default function Home() {
                 <div>
                   {" "}
                   <img
-                    src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/2.jpg"
+                    src="/image/Collaborations/2.jpg"
                     alt="teachers training institute Kolkata"
                     className="mx-auto h-24 object-contain"
                   />
@@ -927,21 +927,21 @@ export default function Home() {
                 <div>
                   {" "}
                   <img
-                    src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/3.jpg"
+                    src="/image/Collaborations/3.jpg"
                     alt="teachers training institute Kolkata"
                     className="mx-auto h-24 object-contain"
                   />
                 </div>
                 <div>
                   <img
-                    src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/4.jpg"
+                    src="/image/Collaborations/4.jpg"
                     alt="teachers training institute Kolkata"
                     className="mx-auto h-24 object-contain"
                   />
                 </div>
                 <div>
                   <img
-                    src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/5.jpg"
+                    src="/image/Collaborations/5.jpg"
                     alt="teachers training institute in Kolkata"
                     className="mx-auto h-24 object-contain"
                   />
@@ -949,28 +949,28 @@ export default function Home() {
 
                 <div>
                   <img
-                    src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/6a.jpg"
+                    src="/image/Collaborations/6a.jpg"
                     alt="teachers training institute in Kolkata"
                     className="mx-auto h-24 object-contain"
                   />
                 </div>
                 <div>
                   <img
-                    src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/7.jpg"
+                    src="/image/Collaborations/7.jpg"
                     alt="teachers training institute in Kolkata"
                     className="mx-auto h-24 object-contain"
                   />
                 </div>
                 <div>
                   <img
-                    src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/8a.jpg"
+                    src="/image/Collaborations/8a.jpg"
                     alt="teachers training institute in Kolkata"
                     className="mx-auto h-24 object-contain"
                   />
                 </div>
                 <div>
                   <img
-                    src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/8a.jpg"
+                    src="/image/Collaborations/ias.jpg"
                     alt="teachers training institute in Kolkata"
                     className="mx-auto h-24 object-contain"
                   />
@@ -978,18 +978,12 @@ export default function Home() {
                 <div>
                   {" "}
                   <img
-                    src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/04/yea.jpg"
+                    src="/image/Collaborations/yea.jpg"
                     alt="yea"
                     className="mx-auto h-24 object-contain"
                   />
                 </div>
-                <div>
-                  <img
-                    src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/04/ias.jpg"
-                    alt="ias"
-                    className="mx-auto h-24 object-contain"
-                  />
-                </div>
+               
               </Carousel>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 items-center"></div>
