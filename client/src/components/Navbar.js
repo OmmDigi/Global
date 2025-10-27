@@ -281,6 +281,7 @@ export default function Navbar() {
                   >
                     <div
                       onMouseEnter={toggleDropdown}
+                     
                       className="flex items-center justify-between w-full text-xs font-semibold text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 md:w-auto  md:dark:hover:text-blue-500 dark:focus:text-white dark:border-gray-700 dark:hover:bg-gray-700 md:dark:hover:bg-transparent "
                     >
                       OUR COURSES{" "}
@@ -306,7 +307,7 @@ export default function Navbar() {
                     {/* list of courser  */}
 
                     {isOpen && (
-                      <div className=" absolute z-10 mt-2 font-normal bg-white divide-y divide-gray-100  shadow-sm w-60 dark:bg-gray-700 dark:divide-gray-600">
+                      <div  onMouseLeave={() => setIsOpen(false)} className=" absolute z-10 mt-2 font-normal bg-white divide-y divide-gray-100  shadow-sm w-60 dark:bg-gray-700 dark:divide-gray-600">
                         <div className="py-1">
                           <Link
                             href="/teachers-training-institute-kolkata"
