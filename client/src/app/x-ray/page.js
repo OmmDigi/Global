@@ -40,13 +40,12 @@ function page() {
       <section className="grid grid-cols-1 md:grid-cols-12 gap-6 max-w-6xl mx-auto px-4 py-10 bg-white text-gray-800">
         <div className="md:col-span-5 space-y-6">
           <img
-            src="https://globaltechnicalinstitute.com/wp-content/uploads/2025/04/WhatsApp-Image-2025-02-13-at-2.21.07-PM-1-1.webp"
+            src="/image/x-ray/WhatsApp-Image-2025-02-13-at-2.21.07-PM-1-1-1063x800.webp"
             alt="X-ray training image 1"
             class=" shadow-lg w-full object-cover"
           />
-
           <img
-            src="https://globaltechnicalinstitute.com/wp-content/uploads/2025/04/WhatsApp-Image-2025-02-13-at-2.21.06-PM-1-1536x1156-1.webp"
+            src="/image/x-ray/WhatsApp-Image-2025-02-13-at-2.21.06-PM-1-1536x1156-1-400x300.webp"
             alt="X-ray training image 2"
             class=" shadow-lg w-full object-cover"
           />
@@ -151,7 +150,7 @@ function page() {
 
             <p>
               Our experienced instructors, who are{" "}
-              <span class="font-medium text-green-700">industry experts</span>,
+              <span class="font-medium text-gray-700">industry experts</span>,
               ensure that each student receives personalized attention and
               guidance. State-of-the-art labs and modern equipment prepare
               students for real-world clinical settings. Graduates of our course

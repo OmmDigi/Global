@@ -46,7 +46,9 @@ function page() {
             }
             className="bg-blue-800 text-white px-4 py-3 font-bold text-lg flex cursor-pointer"
           >
-            <div className="pr-4 pt-1">{montessoriTeachers ? <FaMinus /> : <FaPlus />}</div>
+            <div className="pr-4 pt-1">
+              {montessoriTeachers ? <FaMinus /> : <FaPlus />}
+            </div>
             Montessori Teachers Training (Pre Primary & Primary)
           </div>
           {montessoriTeachers && (
@@ -156,15 +158,16 @@ function page() {
             }
             className="bg-blue-800 text-white px-4 py-3 font-bold text-lg flex cursor-pointer"
           >
-             <div className="pr-4 pt-1">{seniorTeachers ? <FaMinus /> : <FaPlus />}</div>
-           
+            <div className="pr-4 pt-1">
+              {seniorTeachers ? <FaMinus /> : <FaPlus />}
+            </div>
             Senior Teachers Training
           </div>
           {seniorTeachers && (
             <section className="grid grid-cols-1 md:grid-cols-12 gap-6 max-w-6xl mx-auto px-4 py-10 bg-white text-gray-800">
               <div className="md:col-span-5 space-y-6">
                 <img
-                  src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/04/sin-teach01.jpg"
+                  src="/image/teachers-training5.jpg"
                   alt="Senior Teacher Training"
                   className="rounded-lg shadow-md w-full max-w-md"
                 />
@@ -302,7 +305,7 @@ function page() {
             Nature of Certificate and Minimum Qualification:
           </h2>
           <img
-            src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/06/Techers-training-institute-in-kolkata-400x300.jpeg"
+            src="/image/Techers-training-institute-in-kolkata-400x300.webp"
             alt="Teachers training institute in Kolkata"
             className="rounded shadow-lg mb-4 w-full max-w-md mx-auto"
           />
@@ -310,7 +313,7 @@ function page() {
             Upon completing our{" "}
             <strong>
               <Link
-                href="https://globaltechnicalinstitute.com/best-teachers-training-institute-in-kolkata/"
+                href="/image/best-teachers-training-institute-in-kolkata-300x300.webp"
                 className="text-blue-600 hover:underline"
               >
                 Primary Teacher’s Training program in Kolkata
@@ -337,7 +340,7 @@ function page() {
             Session Details:
           </h2>
           <img
-            src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/06/best-teachers-training-institute-in-kolkata-300x300.jpeg"
+            src="image/best-teachers-training-institute-in-kolkata-300x300.webp"
             alt="Session"
             className="rounded shadow-lg mb-4 w-72 mx-auto"
           />
