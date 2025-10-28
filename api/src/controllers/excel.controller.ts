@@ -444,7 +444,7 @@ export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
                 text: `${payment_summery_info.bill_numbers}`,
                 font: { bold: false },
               },
-              { text: " DT: ", font: { bold: true } },
+              { text: ", DT: ", font: { bold: true } },
               {
                 text: `${payment_summery_info.payment_dates}`,
                 font: { bold: false },
