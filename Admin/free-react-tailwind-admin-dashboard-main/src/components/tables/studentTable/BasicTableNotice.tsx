@@ -6,7 +6,6 @@ import {
   TableRow,
 } from "../../ui/table";
 
-
 import { useState } from "react";
 
 interface Order {
@@ -206,8 +205,6 @@ export default function BasicTableNotice() {
         </Table>
       </div>
 
-
-
       {showModal && selectedMessage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80">
           <div className="bg-white p-6 rounded-lg max-w-md w-full shadow-lg">
@@ -239,8 +236,6 @@ export default function BasicTableNotice() {
           </div>
         </div>
       )}
-
-
     </div>
   );
 }

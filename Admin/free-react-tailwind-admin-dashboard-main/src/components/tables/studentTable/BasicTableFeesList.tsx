@@ -6,18 +6,18 @@ import {
   TableRow,
 } from "../../ui/table";
 
-import { useNavigate } from "react-router";
+// import { useNavigate } from "react-router";
 
 // Define the table data using the interface
 
-export default function BasicTableCourses({ courseList }: any) {
-  const navigate = useNavigate();
+export default function BasicTableFeesList({ fees_structure_table }: any) {
+  // const navigate = useNavigate();
 
-  const handleDetailsClick = (id: number) => {
-    navigate(`/courseDetails/${id}`);
-  };
+  // const handleDetailsClick = (id: number) => {
+  //   navigate(`/courseDetails/${id}`);
+  // };
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
+    <div className="overflow-hidden rounded-xl border mt-10 border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
       <div className="max-w-full overflow-x-auto">
         <Table>
           {/* Table Header */}
@@ -27,38 +27,44 @@ export default function BasicTableCourses({ courseList }: any) {
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Courses name
+                Fees Head
               </TableCell>
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Batch Name
+                Amount
               </TableCell>
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Course Fee
+                Bill No
               </TableCell>
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Due Amount
+                Month Of Payment
               </TableCell>
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Action
+                Payment Date
+              </TableCell>
+              <TableCell
+                isHeader
+                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+              >
+                Payment Mode
               </TableCell>
             </TableRow>
           </TableHeader>
 
           {/* Table Body */}
           <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-            {courseList?.data?.map((order: any, index: number) => (
+            {fees_structure_table?.map((order: any, index: number) => (
               <TableRow key={order.id}>
                 <TableCell className="px-5 py-4 sm:px-6 text-start">
                   <div className="flex items-center gap-3">
@@ -67,18 +73,27 @@ export default function BasicTableCourses({ courseList }: any) {
                     </div>
                     <div>
                       <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                        {order.course_name}
+                        {order.fee_head_name}
                       </span>
                     </div>
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  {order.batch_name}
+                  {order.amount}
                 </TableCell>
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  <div className="flex -space-x-2">{order.course_fee}</div>
+                  <div className="flex -space-x-2">{order.bill_no}</div>
                 </TableCell>
-                <TableCell
+                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                  {order.month}
+                </TableCell>
+                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                  {order.payment_date}
+                </TableCell>
+                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                  {order.mode}
+                </TableCell>
+                {/* <TableCell
                   className={`px-4 py-3 ${
                     Number(order.due_amount) === 0
                       ? "text-green-500 dark:text-green-400"
@@ -97,7 +112,7 @@ export default function BasicTableCourses({ courseList }: any) {
                       Details
                     </button>
                   </div>
-                </TableCell>
+                </TableCell> */}
               </TableRow>
             ))}
           </TableBody>
