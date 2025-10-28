@@ -205,7 +205,8 @@ export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
         SELECT
           p.form_id,
           p.fee_head_id,
-          SUM(p.amount) AS amount,
+          -- SUM(p.amount) AS amount,
+          STRING_AGG(p.amount::text, ' + ') AS amount,
           COALESCE(SUM(p.amount) FILTER (WHERE p.mode = 'Discount'), 0) AS discount_amount,
           STRING_AGG(DISTINCT(p.bill_no), ' + ') AS bill_number,
           STRING_AGG(DISTINCT(TO_CHAR(p.payment_date, 'DD-MM-YYYY'))::text, ' + ') AS payment_date,
@@ -307,9 +308,11 @@ export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
     pgStream.pause();
 
     if (index === 0) {
-      worksheet.getCell(
-        "A1"
-      ).value = `Admission Report (${data.course_name}) (${data.batch_name}) (${data.session_name}) (Mode : ${value.mode  == "Both" ? "Cash & Online Both" : value.mode})`;
+      worksheet.getCell("A1").value = `Admission Report (${
+        data.course_name
+      }) (${data.batch_name}) (${data.session_name}) (Mode : ${
+        value.mode == "Both" ? "Cash & Online Both" : value.mode
+      })`;
 
       const ROW_NUMBER = 3;
       let currentCol = 9; // Start at column H (9th col)
@@ -434,7 +437,21 @@ export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
         if (item.type === "fee_head") {
           cell.value = payment_summery_info.amounts;
         } else if (item.type === "bill_no_date") {
-          cell.value = `Bill No : ${payment_summery_info.bill_numbers}, DT : ${payment_summery_info.payment_dates}`;
+          cell.value = {
+            richText: [
+              { text: "Bill No: ", font: { bold: true } },
+              {
+                text: `${payment_summery_info.bill_numbers}`,
+                font: { bold: false },
+              },
+              { text: ", DT: ", font: { bold: true } },
+              {
+                text: `${payment_summery_info.payment_dates}`,
+                font: { bold: false },
+              },
+            ],
+          };
+          // cell.value = `Bill No : ${payment_summery_info.bill_numbers}, DT : ${payment_summery_info.payment_dates}`;
         } else if (item.type === "month_name") {
           cell.value = payment_summery_info.months;
         }
@@ -2725,12 +2742,10 @@ export const monthlyPaymentReport = asyncErrorHandler(async (req, res) => {
     //   filter += ` AND DATE(ff.created_at) BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
     // }
     placeholder += 2;
-    
+
     filterValues.push(value.from_date);
     filterValues.push(value.to_date);
   }
-
-
 
   if (value.course) {
     if (filter == "") {
@@ -2917,9 +2932,11 @@ export const monthlyPaymentReport = asyncErrorHandler(async (req, res) => {
     pgStream.pause();
 
     if (index === 0) {
-      worksheet.getCell(
-        "A1"
-      ).value = `Monthly Payment Report (${data.course_name}) (${data.batch_name}) (${data.session_name}) (Mode : ${value.mode  == "Both" ? "Cash & Online Both" : value.mode})`;
+      worksheet.getCell("A1").value = `Monthly Payment Report (${
+        data.course_name
+      }) (${data.batch_name}) (${data.session_name}) (Mode : ${
+        value.mode == "Both" ? "Cash & Online Both" : value.mode
+      })`;
 
       const ROW_NUMBER = 2;
       let currentCol = 7; // Start at column H (9th col)
@@ -3192,8 +3209,8 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
       JSON_AGG(effi) FILTER (WHERE effi.form_id IS NOT NULL) AS fee_info,
       SUM(effi.pending_amount) AS total_due_amount,
       (SELECT JSON_AGG(JSON_BUILD_OBJECT('id', id, 'name', name) ORDER BY id) FROM course_fee_head WHERE id IN (${SHOW_FEE_HEAD_IDS.join(
-      ", "
-    )})) AS fee_head_info
+        ", "
+      )})) AS fee_head_info
     FROM fillup_forms ff
 
     LEFT JOIN users u ON u.id = ff.student_id
@@ -3270,21 +3287,23 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
     colname: string;
     fee_head_id: number;
     type:
-    | "total_fee"
-    | "discount_amount"
-    | "total_monthly_fee_in_this_session"
-    | "actule_fee_after_disc"
-    | "total_fee_collected"
-    | "pending_fee";
+      | "total_fee"
+      | "discount_amount"
+      | "total_monthly_fee_in_this_session"
+      | "actule_fee_after_disc"
+      | "total_fee_collected"
+      | "pending_fee";
   }[] = [];
 
   pgStream.on("data", (data) => {
     pgStream.pause();
 
     if (index === 0) {
-      worksheet.getCell(
-        "A1"
-      ).value = `Fee Summery Report (${data.course_name}) (${data.batch_name}) (${data.session_name}) (Mode : ${value.mode  == "Both" ? "Cash & Online Both" : value.mode})`;
+      worksheet.getCell("A1").value = `Fee Summery Report (${
+        data.course_name
+      }) (${data.batch_name}) (${data.session_name}) (Mode : ${
+        value.mode == "Both" ? "Cash & Online Both" : value.mode
+      })`;
 
       const ROW_NUMBER = 3;
       let currentCol = 9; // Start at column I (9th col)
@@ -3386,7 +3405,7 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
           feesCellBgColor = "f4b084";
         } else if (item.id === -1) {
           // other fee structure
-          feesCellBgColor = "ffe699"
+          feesCellBgColor = "ffe699";
         }
 
         [cell1, cell2, cell3, cell4, cell5, cell6].forEach((cell, index) => {
@@ -3403,7 +3422,7 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
                 pattern: "solid",
                 type: "pattern",
                 fgColor: { argb: feesCellBgColor },
-              }
+              },
             };
           }
         });
@@ -3498,7 +3517,7 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
         feesCellBgColor = "f4b084";
       } else if (item.fee_head_id === -1) {
         // other fee structure
-        feesCellBgColor = "ffe699"
+        feesCellBgColor = "ffe699";
       }
 
       cell.style = {
@@ -3512,7 +3531,7 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
           pattern: "solid",
           type: "pattern",
           fgColor: { argb: feesCellBgColor },
-        }
+        },
       };
 
       if (item.fee_head_id == -1) {

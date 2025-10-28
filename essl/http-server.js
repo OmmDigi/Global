@@ -109,7 +109,7 @@ wss.on("connection", (ws, req) => {
           (err) => {
             if (err) {
               console.log(
-                "Something went wrong while creating attendance-logs.json"
+                `Something went wrong while creating ${fileName}`
               );
               return;
             }

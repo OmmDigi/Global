@@ -14,9 +14,9 @@ type IPaymentProps = {
     amount: number;
     payment_date: string | null;
     month: string | null;
-    bill_no : string | null;
-    payment_mode : string | null;
-    payment_details : string | null;
+    bill_no: string | null;
+    payment_mode: string | null;
+    payment_details: string | null;
   }[];
   client?: PoolClient;
 };
@@ -47,21 +47,21 @@ export const setPayment = async (data: IPaymentProps) => {
     `INSERT INTO payments (form_id, mode, student_id, payment_name_id, order_id, receipt_id, amount, fee_head_id, status, transition_id, remark, payment_date, month, bill_no) VALUES ${placeholder}`,
     data.fee_head_ids_info.flatMap((fee_head_info) => {
       return [
-      data.form_id,
-      fee_head_info.payment_mode ?? data.mode,
-      data.student_id,
-      date.getTime(),
-      data.order_id,
-      receipt_id,
-      fee_head_info.amount,
-      fee_head_info.fee_head_id,
-      data.status,
-      data.transition_id,
-      fee_head_info.payment_details ?? data.payment_details,
-      fee_head_info.payment_date ?? new Date(),
-      fee_head_info.month,
-      fee_head_info.bill_no
-    ]
+        data.form_id,
+        fee_head_info.payment_mode ?? data.mode,
+        data.student_id,
+        date.getTime(),
+        data.order_id,
+        receipt_id,
+        fee_head_info.amount,
+        fee_head_info.fee_head_id,
+        data.status,
+        data.transition_id,
+        fee_head_info.payment_details ?? data.payment_details,
+        fee_head_info.payment_date ?? new Date(),
+        fee_head_info.month,
+        fee_head_info.bill_no,
+      ];
     })
   );
 
