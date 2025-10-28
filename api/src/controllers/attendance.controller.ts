@@ -422,7 +422,7 @@ export const processAttendaceToTheDb = asyncErrorHandler(async (req, res) => {
 
   const workerProcessPath = path.resolve(
     __dirname,
-    "../workers/processAttendance.ts"
+    "../workers/processAttendance.js"
   );
 
   const worker = new Worker(workerProcessPath, {
