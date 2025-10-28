@@ -1,4 +1,3 @@
-import { ifError } from "assert";
 import { pool } from "../config/db";
 import asyncErrorHandler from "../middlewares/asyncErrorHandler";
 import {
