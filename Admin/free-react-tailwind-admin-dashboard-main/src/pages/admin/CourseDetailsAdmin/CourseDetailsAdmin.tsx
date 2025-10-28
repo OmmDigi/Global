@@ -53,7 +53,7 @@ export default function CourseDetailsAdmin() {
   const [remarksPopup, setRemarksPopup] = useState<any>({}); // store open state per row
   const [remarksText, setRemarksText] = useState<any>({});
   const [activeRow, setActiveRow] = useState<number | null>(null);
-  const [editData, setEditData] = useState<any>(null);
+  const [editData] = useState<any>(null);
   const select = (id: number) => {
     setActiveRow(id);
   };

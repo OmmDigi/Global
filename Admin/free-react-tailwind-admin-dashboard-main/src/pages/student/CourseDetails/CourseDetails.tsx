@@ -8,7 +8,8 @@ import Label from "../../../components/form/Label";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 import { getFetcher, patchFetcher, postFetcher } from "../../../api/fatcher";
-import BasicTableCourses from "../../../components/tables/studentTable/BasicTableCourses";
+// import BasicTableCourses from "../../../components/tables/studentTable/BasicTableCourses";
+import BasicTableFeesList from "../../../components/tables/studentTable/BasicTableFeesList";
 // import BasicTableCourseDetailsAdmin from "../../../components/tables/BasicTables/BasicTableCourseDetailsAdmin";
 
 export default function CourseDetails() {
@@ -396,7 +397,7 @@ export default function CourseDetails() {
                 </ComponentCard>
               </div>
             </div>
-            <BasicTableCourses fees_structure_table={fees_structure_table} />
+            <BasicTableFeesList fees_structure_table={fees_structure_table} />
           </div>
         </>
       )}
