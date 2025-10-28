@@ -40,13 +40,13 @@ function page() {
       <section className="grid grid-cols-1 md:grid-cols-12 gap-6 max-w-6xl mx-auto px-4 py-10 bg-white text-gray-800">
         <div className="md:col-span-5 space-y-6">
           <img
-            src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/04/lab-tech01.jpg"
+            src="/image/lab/lab-tech01.jpg"
             alt="lab-tech01"
             className="w-full h-auto  shadow-xl"
           />
 
           <img
-            src="https://globaltechnicalinstitute.com/wp-content/uploads/2025/04/lab.webp"
+            src="/image/lab/lab-768x578.webp"
             alt="lab"
             className="w-full h-auto  shadow-xl"
           />
@@ -186,7 +186,7 @@ function page() {
         <div className="flex justify-start">
           <figure className="text-center">
             <img
-              src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/06/lab-technician-training-institute-in-kolkata-400x300.jpeg"
+              src="/image/lab/lab3.webp"
               alt="lab technician training institute in kolkata"
               className="rounded shadow-md w-full max-w-md"
             />
@@ -204,7 +204,7 @@ function page() {
             Our{" "}
             <strong>
               <Link
-                href="https://globaltechnicalinstitute.com/lab-technician-training-institute-in-kolkata/"
+                href="https://globaltechnicalinstitute.com/lab-technician-training-institute"
                 className="text-blue-600 hover:underline"
               >
                 Medical Lab Technician Training Institute in Kolkata
@@ -245,7 +245,7 @@ function page() {
           <div>
             <figure className="text-center">
               <img
-                src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/06/best-lab-technician-training-institute-in-kolkata-400x300.jpeg"
+                src="/image/lab/lab4.jpeg"
                 alt="lab technician training institute in kolkata"
                 className="rounded shadow-md w-full max-w-md"
               />

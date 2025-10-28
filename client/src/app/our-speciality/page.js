@@ -31,7 +31,7 @@ function page() {
         {/* Background Image Layer */}
         <div
           className="absolute inset-0 bg-cover bg-center opacity-15"
-          style={{ backgroundImage: "url('/image/bg.jpg')" }} // replace with your image path
+          // style={{ backgroundImage: "url('/image/bg.jpg')" }} // replace with your image path
         ></div>
         <div className="flex justify-center text-center text-[#023b81] align-middle items-center  h-30">
           <h1 className="text-5xl font-bold"> Our Speciality</h1>
@@ -59,7 +59,7 @@ function page() {
                 <div className="flex flex-col items-center text-center p-4">
                   <div className="mb-4">
                     <img
-                      src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/Programs-80x80.gif"
+                      src="/image/speciality/Programs-80x80.gif"
                       alt="Industry-Driven Programs"
                       width={80}
                       height={80}
@@ -83,7 +83,7 @@ function page() {
                   {/* Icon */}
                   <div className="mb-4">
                     <img
-                      src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/facility-80x80.webp"
+                      src="/image/speciality/facility-80x80.webp"
                       alt="State-of-the-Art Facilities"
                       width={80}
                       height={80}
@@ -110,7 +110,7 @@ function page() {
                   {/* Icon */}
                   <div className="mb-4">
                     <img
-                      src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/Instructors-80x80.gif"
+                      src="/image/speciality/Instructors-80x80.gif"
                       alt="State-of-the-Art Facilities"
                       width={80}
                       height={80}
@@ -138,7 +138,7 @@ function page() {
                 <div className="flex flex-col items-center text-center p-4">
                   <div className="mb-4">
                     <img
-                      src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/Certifications-80x80.gif"
+                      src="/image/speciality/Certifications-80x80.gif"
                       alt="Industry-Driven Programs"
                       width={80}
                       height={80}
@@ -162,7 +162,7 @@ function page() {
                   {/* Icon */}
                   <div className="mb-4">
                     <img
-                      src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/placement-80x80.gif"
+                      src="/image/speciality/placement-80x80.gif"
                       alt="State-of-the-Art Facilities"
                       width={80}
                       height={80}
@@ -189,7 +189,7 @@ function page() {
                   {/* Icon */}
                   <div className="mb-4">
                     <img
-                      src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/Flexible-80x80.gif"
+                      src="/image/speciality/Flexible-80x80.gif"
                       alt="State-of-the-Art Facilities"
                       width={80}
                       height={80}
@@ -213,6 +213,9 @@ function page() {
               </div>
             </div>
           </div>
+
+
+
         </div>
 
         {/* others facility  */}

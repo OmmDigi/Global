@@ -97,12 +97,14 @@ const BasicTableCourses: React.FC<IProps> = ({
 
           {/* Table Body */}
           <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-            {courseList?.data?.map((order: any) => (
+            {courseList?.data?.map((order: any , index: number) => (
               <TableRow key={order.id}>
                 <TableCell className="px-5 py-4 sm:px-6 text-start">
                   <div className="flex items-center gap-3">
                     <div className="block font-medium text-gray-500 text-theme-xs dark:text-gray-400]">
-                      {order.id}
+                     <div className="text-gray-500">
+                      {count * 10 - 10 + index + 1}
+                    </div>
                     </div>
                     <div>
                       <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">

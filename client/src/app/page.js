@@ -295,7 +295,7 @@ export default function Home() {
                     >
                       <div className="w-full h-full flex items-center justify-center">
                         <div className="slide-inner">
-                          <img
+                          <Image
                             src={slide.image}
                             alt="slide"
                             className={`object-cover md:w-[500px] md:h-[380px] sm:w-[330px] sm:h-[200px] rounded-lg transition-transform duration-1000 ${
@@ -389,10 +389,12 @@ export default function Home() {
                     href="/teachers-training-institute-kolkata"
                     className="min-w-[300px]  bg-white shadow-md hover:shadow-xl cursor-pointer transition"
                   >
-                    <img
+                    <Image
                       src="/image/teach-tra.webp"
                       alt="Teacher Training"
                       className="   w-full h-48 object-cover p-5"
+                      height={48}
+                      width={300}
                     />
                     <div className="p-4 text-center">
                       <h4 className="text-lg font-semibold text-red-500 mb-2">
@@ -403,9 +405,12 @@ export default function Home() {
                       </p>
                       <p className="flex justify-end items-center font-bold text-blue-600">
                         For Detail
-                        <img
+                        <Image
                           src="image/right-arrow.gif"
                           className="  w-10 h-10  object-cover"
+                          alt="Right Arrow"
+                          height={10}
+                          width={300}
                         />
                       </p>
                     </div>
@@ -416,10 +421,12 @@ export default function Home() {
                     href="/nursing-training-in-kolkata"
                     className="min-w-[300px]  gap-10 bg-white shadow-md hover:shadow-xl cursor-pointer transition"
                   >
-                    <img
+                    <Image
                       src="/image/nurse-tra.webp"
                       alt="Nursing Training"
                       className="   w-full h-48 object-cover p-5"
+                      height={48}
+                      width={300}
                     />
                     <div className="p-4 text-center">
                       <h4 className="text-lg  text-red-500 font-semibold mb-2">
@@ -430,9 +437,12 @@ export default function Home() {
                       </p>
                       <p className="flex justify-end items-center font-bold text-blue-600">
                         For Detail
-                        <img
+                        <Image
                           src="image/right-arrow.gif"
                           className="  w-10 h-10  object-cover"
+                          alt="left-arrow"
+                          height={10}
+                          width={300}
                         />
                       </p>
                     </div>
@@ -443,10 +453,12 @@ export default function Home() {
                     href="/lab-technician-training-institute"
                     className="min-w-[300px]  gap-10 bg-white shadow-md hover:shadow-xl cursor-pointer transition"
                   >
-                    <img
+                    <Image
                       src="/image/labtrain.webp"
                       alt="Lab Technician Training"
                       className="   w-full h-48 object-cover p-5"
+                      height={48}
+                          width={300}
                     />
                     <div className="p-4 text-center">
                       <h4 className="text-lg text-red-500 font-semibold mb-2">
@@ -457,9 +469,12 @@ export default function Home() {
                       </p>
                       <p className="flex justify-end items-center font-bold text-blue-600">
                         For Detail
-                        <img
+                        <Image
                           src="image/right-arrow.gif"
                           className="  w-10 h-10  object-cover"
+                           alt="left-arrow"
+                          height={10}
+                          width={300}
                         />
                       </p>
                     </div>
@@ -470,10 +485,12 @@ export default function Home() {
                     href="/ecg-technician-training-kolkata"
                     className="min-w-[300px]  gap-10 bg-white shadow-md hover:shadow-xl cursor-pointer transition"
                   >
-                    <img
+                    <Image
                       src="/image/ecg-train.webp"
                       alt="ECG Technician Training"
                       className="   w-full h-48 object-cover p-5"
+                          height={48}
+                          width={300}
                     />
                     <div className="p-4 text-center">
                       <h4 className="text-lg text-red-500 font-semibold mb-2">
@@ -484,9 +501,12 @@ export default function Home() {
                       </p>
                       <p className="flex justify-end items-center font-bold text-blue-600">
                         For Detail
-                        <img
+                        <Image
                           src="image/right-arrow.gif"
                           className="  w-10 h-10  object-cover"
+                          alt="right-arrow"
+                          height={10}
+                          width={300}
                         />
                       </p>
                     </div>
@@ -497,10 +517,12 @@ export default function Home() {
                     href="/physiotherapy-training-institute-in-kolkata"
                     className="min-w-[300px]  gap-10 bg-white shadow-md hover:shadow-xl cursor-pointer transition"
                   >
-                    <img
+                    <Image
                       src="/image/physio.webp"
                       alt="Physiotherapy Training"
                       className="   w-full h-48 object-cover p-5"
+                      height={48}
+                      width={300}
                     />
                     <div className="p-4 text-center">
                       <h4 className="text-lg text-red-500 font-semibold mb-2">
@@ -511,9 +533,12 @@ export default function Home() {
                       </p>
                       <p className="flex justify-end items-center font-bold text-blue-600">
                         For Detail
-                        <img
+                        <Image
                           src="image/right-arrow.gif"
                           className="  w-10 h-10   object-cover"
+                          alt="right-arrow"
+                          height={10}
+                          width={300}
                         />
                       </p>
                     </div>
@@ -557,31 +582,39 @@ export default function Home() {
                 customRightArrow={<CustomRightArrow />}
               >
                 <div>
-                  <img
+                  <Image
                     className="w-full h-auto object-cover rounded-lg"
                     src="/image/hom-01.jpg"
                     alt="teachers training institute in Kolkata"
+                    height={48}
+                    width={300}
                   />
                 </div>
                 <div>
-                  <img
+                  <Image
                     className="w-full h-auto object-cover rounded-lg"
                     src="/image/hom-02.jpg"
                     alt="teachers training institute in Kolkata"
+                    height={48}
+                    width={300}
                   />
                 </div>
                 <div>
-                  <img
+                  <Image
                     className="w-full h-auto object-cover rounded-lg"
                     src="/image/hom-03.jpg"
                     alt="teachers training institute in Kolkata"
+                    height={48} 
+                    width={300}
                   />
                 </div>
                 <div>
-                  <img
+                  <Image
                     className="w-full h-auto object-cover rounded-lg"
                     src="/image/hom-04.jpg"
                     alt="teachers training institute in Kolkata"
+                    height={48}
+                    width={300}
                   />
                 </div>
               </Carousel>
@@ -659,9 +692,12 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="text-center p-6 border rounded-lg shadow-md bg-gray-50">
                 <div className="flex justify-center mb-4  transition-transform duration-300 hover:scale-105">
-                  <img
+                  <Image
                     src="image/principal-moumita.png"
                     className="w-40 h-40 rounded-full  object-cover"
+                    alt="Mrs. Moumita Roy Chowdhury"
+                    height={48}
+                    width={300}
                   />
                 </div>
                 <div
@@ -698,10 +734,12 @@ export default function Home() {
 
               <div className="text-center p-6 border rounded-lg shadow-md bg-gray-50">
                 <div className="flex justify-center mb-4 transition-transform duration-300 hover:scale-105">
-                  <img
+                  <Image
                     src="image/principal-poulami.png"
                     alt="Mrs. Poulami Chowdhury"
                     className="w-40 h-40 rounded-full object-cover"
+                    height={48}
+                    width={300}
                   />
                 </div>
                 <div
@@ -742,7 +780,7 @@ export default function Home() {
         </section>
 
         {/* google reviews */}
-        <div className="max-w-7xl mx-auto bg-white">
+        {/* <div className="max-w-7xl mx-auto bg-white">
           <div className="text-center mb-10">
             <h4 className="text-2xl md:text-2xl  font-semibold text-blue-800  inline-block pb-2">
               Google Reviews
@@ -751,7 +789,7 @@ export default function Home() {
         </div>
         <div className="flex justify-center bg-white">
           <li className="flex text-center space-x-3">
-            <img
+            <Image
               src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/11/Google-Reviews-1-30x31.png"
               alt="Google Reviews"
               className="w-[60px] h-[60px] object-contain"
@@ -784,7 +822,7 @@ export default function Home() {
               </div>
             </div>
           </li>
-        </div>
+        </div> */}
 
         {/* What makes us unique */}
         <section id="about-us" className="w-full py-12 mt-10 bg-[#1a3d97]">
@@ -910,84 +948,97 @@ export default function Home() {
               >
                 <div>
                   {" "}
-                  <img
-                    src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/1.png"
+                  <Image
+                    src="/image/Collaborations/1.png"
                     alt="teachers training institute Kolkata"
                     className="mx-auto h-16 w-16 object-contain"
+                    height={48}
+                    width={300}
                   />
                 </div>
                 <div>
                   {" "}
-                  <img
-                    src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/2.jpg"
+                  <Image
+                    src="/image/Collaborations/2.jpg"
                     alt="teachers training institute Kolkata"
                     className="mx-auto h-24 object-contain"
+                    height={48}
+                    width={300}
                   />
                 </div>
                 <div>
                   {" "}
-                  <img
-                    src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/3.jpg"
+                  <Image
+                    src="/image/Collaborations/3.jpg"
                     alt="teachers training institute Kolkata"
                     className="mx-auto h-24 object-contain"
+                    height={48}
+                    width={300}
                   />
                 </div>
                 <div>
-                  <img
-                    src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/4.jpg"
+                  <Image
+                    src="/image/Collaborations/4.jpg"
                     alt="teachers training institute Kolkata"
                     className="mx-auto h-24 object-contain"
+                    height={48}
+                    width={300}
                   />
                 </div>
                 <div>
-                  <img
-                    src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/5.jpg"
+                  <Image
+                    src="/image/Collaborations/5.jpg"
                     alt="teachers training institute in Kolkata"
                     className="mx-auto h-24 object-contain"
+                    height={48}
+                    width={300}
                   />
                 </div>
 
                 <div>
-                  <img
-                    src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/6a.jpg"
+                  <Image
+                    src="/image/Collaborations/6a.jpg"
                     alt="teachers training institute in Kolkata"
                     className="mx-auto h-24 object-contain"
+                    height={48}
+                    width={300}
                   />
                 </div>
                 <div>
-                  <img
-                    src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/7.jpg"
+                  <Image
+                    src="/image/Collaborations/7.jpg"
                     alt="teachers training institute in Kolkata"
                     className="mx-auto h-24 object-contain"
+                    height={48} 
+                    width={300}
                   />
                 </div>
                 <div>
-                  <img
-                    src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/8a.jpg"
+                  <Image
+                    src="/image/Collaborations/8a.jpg"
                     alt="teachers training institute in Kolkata"
                     className="mx-auto h-24 object-contain"
+                    height={48}
+                    width={300}
                   />
                 </div>
                 <div>
-                  <img
-                    src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/8a.jpg"
+                  <Image
+                    src="/image/Collaborations/ias.jpg"
                     alt="teachers training institute in Kolkata"
                     className="mx-auto h-24 object-contain"
+                    height={48}
+                    width={300}
                   />
                 </div>
                 <div>
                   {" "}
-                  <img
-                    src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/04/yea.jpg"
+                  <Image
+                    src="/image/Collaborations/yea.jpg"
                     alt="yea"
                     className="mx-auto h-24 object-contain"
-                  />
-                </div>
-                <div>
-                  <img
-                    src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/04/ias.jpg"
-                    alt="ias"
-                    className="mx-auto h-24 object-contain"
+                    height={48}
+                    width={300}
                   />
                 </div>
               </Carousel>

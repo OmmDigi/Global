@@ -40,12 +40,12 @@ function page() {
       <section className="grid grid-cols-1 md:grid-cols-12 gap-6 max-w-6xl mx-auto px-4 py-10 bg-white text-gray-800">
         <div className="md:col-span-5 space-y-6">
           <img
-            src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/07/ot1.jpg"
+            src="/image/ot/ot1.jpg"
             alt="OT Training"
             className=" shadow-lg w-full object-cover"
           />
           <img
-            src="https://globaltechnicalinstitute.com/wp-content/uploads/2025/04/ot_tehnician.webp"
+            src="/image/ot/ot_tehnician-400x300.webp"
             alt="OT Technician"
             className=" shadow-lg w-full object-cover"
           />
@@ -164,14 +164,10 @@ function page() {
               With cutting-edge facilities and immersive simulations, you’ll
               gain practical experience in a supportive learning environment.
               Upon completion, you’ll be equipped to contribute to{" "}
-              <span className="font-semibold text-green-700">
+              <span className="font-semibold text-gray-700">
                 patient safety
               </span>{" "}
-              and
-              <span className="font-semibold text-green-700">
-                surgical success
-              </span>{" "}
-              as a skilled OT technician.
+              and surgical success as a skilled OT technician.
             </p>
 
             <p>

@@ -40,13 +40,13 @@ function page() {
       <section className="grid grid-cols-1 md:grid-cols-12 gap-6 max-w-6xl mx-auto px-4 py-10 bg-white text-gray-800">
         <div className="md:col-span-5 space-y-6">
           <img
-            src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/04/ecg-tra01.jpg"
+            src="/image/ecg/ecg-tra01.jpg"
             alt="ECG Technician Training"
             className=" shadow-md w-full object-cover"
           />
 
           <img
-            src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/03/ecg-train.jpg"
+            src="/image/ecg/ecg-train-400x225.jpg"
             alt="ECG training institute in Kolkata"
             className=" shadow-md w-full object-cover"
           />
@@ -153,7 +153,7 @@ function page() {
               Certificate and Duration
             </h3>
             <img
-              src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/06/best-ECG-technician-training-in-kolkata-400x225.jpeg"
+              src="/image/ecg/best-ECG-technician-training-in-kolkata-400x225.jpeg"
               alt="best ECG technician training in kolkata"
               className="rounded-lg shadow-md w-full max-w-md mx-auto my-4"
             />
@@ -219,7 +219,7 @@ function page() {
               Required Documents
             </h3>
             <img
-              src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/06/ECG-technician-training-in-kolkata-400x300.jpeg"
+              src="/image/ecg/ECG-technician-training-in-kolkata-400x300.jpeg"
               alt="ECG technician training in kolkata"
               className="rounded-lg shadow-md w-full max-w-md mx-auto my-4"
             />

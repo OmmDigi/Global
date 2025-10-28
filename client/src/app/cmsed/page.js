@@ -41,12 +41,12 @@ function page() {
       <section className="grid grid-cols-1 md:grid-cols-12 gap-6 max-w-6xl mx-auto px-4 py-10 bg-white text-gray-800">
         <div className="md:col-span-5 space-y-6">
           <img
-            src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/07/ot1.jpg"
+            src="/image/cmsed/ot1.jpg"
             alt="CMSED Course 1"
             className=" shadow-lg w-full object-cover"
           />
           <img
-            src="https://globaltechnicalinstitute.com/wp-content/uploads/2023/07/ot2.jpg"
+            src="/image/cmsed/ot2-768x432.jpg"
             alt="CMSED Course 2"
             className=" shadow-lg w-full object-cover"
           />

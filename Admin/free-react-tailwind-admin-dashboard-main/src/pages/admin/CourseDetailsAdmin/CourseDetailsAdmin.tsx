@@ -563,11 +563,12 @@ export default function CourseDetailsAdmin() {
                                   Total Selected Amount: ₹{totalAmount}
                                 </div> */}
                     {feesStructure?.data?.fee_structure_info
-                      ?.sort((a: any, b: any) => {
-                        if (a.fee_head_id === 4) return 1;
-                        if (b.fee_head_id === 4) return -1;
-                        return 0;
-                      })
+                      // for monthly fees at bottom 
+                      // ?.sort((a: any, b: any) => {
+                      //   if (a.fee_head_id === 4) return 1;
+                      //   if (b.fee_head_id === 4) return -1;
+                      //   return 0;
+                      // })
                       ?.map((item: any, index: number) => {
                         return (
                           <div

@@ -81,7 +81,7 @@ function page() {
               </email>
               <phone className="flex items-center space-x-2 text-gray-700 mt-2">
                 <icon className="text-green-600">&#9742;</icon>
-                <span>8961008489, 9231551285, 9230113485</span>
+                <span> 9231551285, 9230113485, 8961008489</span>
               </phone>
             </contact-list>
 

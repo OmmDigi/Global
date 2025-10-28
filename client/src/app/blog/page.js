@@ -38,7 +38,7 @@ async function page({ searchParams }) {
 
   // get blog list
   const response = await api.get(
-    `wp-json/custom/v1/blogs?page=${currentPage}&per_page=10`
+    `wp-json/custom/v1/blogs?page=${currentPage}&per_page=12`
   );
   console.log("response", response?.data);
   const total = response?.data?.total_pages;
@@ -57,13 +57,13 @@ async function page({ searchParams }) {
       </div>
 
       {/* blog card  */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 items-center">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 m-2 items-center">
         {response?.data?.posts.map((data, index) => {
           const category = data?.categories?.map((cat) => cat.name).join(", ");
           return (
             <article
               key={index}
-              className="w-full h-160 p-4 mb-10 shadow-md bg-white"
+              className="w-full h-auto p-2 mb-10 shadow-md bg-white"
             >
               <Link
                 href={`${data?.slug}`}
@@ -83,8 +83,8 @@ async function page({ searchParams }) {
                     <span>{data?.date}</span>
                   </div>
                 </figure>
-                <div className="p-4  text-center">
-                  <div className=" flex justify-center">
+                <div className="p-4  text-center flex flex-col justify-between items-center">
+                  <div>
                     <p
                       dangerouslySetInnerHTML={{
                         __html: category,
@@ -92,20 +92,25 @@ async function page({ searchParams }) {
                       className="text-sm p-1 bg-blue-500 text-gray-100"
                     ></p>
                   </div>
-                  <h3
-                    dangerouslySetInnerHTML={{ __html: data?.title }}
-                    className="text-lg font-semibold text-gray-800 hover:text-blue-600"
-                  >
-                    {/* <Link href={`${data?.slug}`}>{data?.title}</Link> */}
-                  </h3>
-
-                  {/* <div className="flex items-center text-sm text-gray-500 mt-2">
-              <span>By admin</span>
-            </div> */}
-                  <p
-                    dangerouslySetInnerHTML={{ __html: data?.short_desc }}
-                    className="text-sm text-gray-600 mt-3"
-                  ></p>
+                  <div>
+                    <h3
+                      dangerouslySetInnerHTML={{
+                        __html: (data?.title.substring(0, 60) || "") + "...",
+                      }}
+                      className="text-lg font-semibold text-gray-800 hover:text-blue-600"
+                    >
+                      {/* <Link href={`${data?.slug}`}>{data?.title}</Link> */}
+                    </h3>
+                  </div>
+                  <div>
+                    <p
+                      className="text-sm text-gray-600 mt-3"
+                      dangerouslySetInnerHTML={{
+                        __html:
+                          (data?.short_desc?.substring(0, 60) || "") + "...",
+                      }}
+                    ></p>
+                  </div>
                   <div className="mt-4">
                     <Link
                       href={`${data?.slug}`}
