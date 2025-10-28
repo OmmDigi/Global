@@ -1,5 +1,5 @@
 import PageMeta from "../../../components/common/PageMeta";
-// import { useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import { useParams } from "react-router-dom";
 import { message } from "antd";
@@ -7,15 +7,15 @@ import ComponentCard from "../../../components/common/ComponentCard";
 import Label from "../../../components/form/Label";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
-import { getFetcher, patchFetcher } from "../../../api/fatcher";
+import { getFetcher, patchFetcher, postFetcher } from "../../../api/fatcher";
 import BasicTableCourses from "../../../components/tables/studentTable/BasicTableCourses";
 // import BasicTableCourseDetailsAdmin from "../../../components/tables/BasicTables/BasicTableCourseDetailsAdmin";
 
 export default function CourseDetails() {
   const [messageApi, contextHolder] = message.useMessage();
-  // const [isPending, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
 
-  // const [enteredAmounts, setEnteredAmounts] = useState<any>({});
+  const [enteredAmounts, setEnteredAmounts] = useState<any>({});
 
   const { id } = useParams();
 
@@ -29,59 +29,59 @@ export default function CourseDetails() {
     "api/v1/admission/accept-declaration-status",
     (url, { arg }) => patchFetcher(url, arg)
   );
-  // const { trigger: create2 } = useSWRMutation(
-  //   "api/v1/payment/create-order",
-  //   (url, { arg }) => postFetcher(url, arg)
-  // );
+  const { trigger: create2 } = useSWRMutation(
+    "api/v1/payment/create-order",
+    (url, { arg }) => postFetcher(url, arg)
+  );
   if (feesStructureLoading) {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }
 
-  // const handleAmountChange = (e: any, item: any) => {
-  //   const value = e.target.value;
-  //   const id = item.fee_head_id;
+  const handleAmountChange = (e: any, item: any) => {
+    const value = e.target.value;
+    const id = item.fee_head_id;
 
-  //   setEnteredAmounts((prev: any) => ({
-  //     ...prev,
-  //     [id]: value,
-  //   }));
-  // };
+    setEnteredAmounts((prev: any) => ({
+      ...prev,
+      [id]: value,
+    }));
+  };
 
   // api/v1/payment/create-order
-  // const handleSubmit2 = async (e: any) => {
-  //   e.preventDefault();
-  //   const fee_structure_info = feesStructure?.data?.fee_structure_info?.map(
-  //     (item: any) => ({
-  //       fee_head_id: item.fee_head_id,
-  //       custom_min_amount: enteredAmounts[item.fee_head_id] || 0,
-  //     })
-  //   );
+  const handleSubmit2 = async (e: any) => {
+    e.preventDefault();
+    const fee_structure_info = feesStructure?.data?.fee_structure_info?.map(
+      (item: any) => ({
+        fee_head_id: item.fee_head_id,
+        custom_min_amount: enteredAmounts[item.fee_head_id] || 0,
+      })
+    );
 
-  //   const finalFormData = {
-  //     form_id: id,
-  //     fee_structure_info,
-  //   };
+    const finalFormData = {
+      form_id: id,
+      fee_structure_info,
+    };
 
-  //   // setFormData2(finalFormData);
-  //   startTransition(async () => {
-  //     try {
-  //       const response = await create2(finalFormData as any);
-  //       messageApi.open({
-  //         type: "success",
-  //         content: response.message,
-  //       });
-  //       refetch();
-  //       window.location.href = response?.data?.payment_page_url;
-  //     } catch (error: any) {
-  //       messageApi.open({
-  //         type: "error",
-  //         content: error?.response?.data?.message
-  //           ? error?.response?.data?.message
-  //           : "Try Again",
-  //       });
-  //     }
-  //   });
-  // };
+    // setFormData2(finalFormData);
+    startTransition(async () => {
+      try {
+        const response = await create2(finalFormData as any);
+        messageApi.open({
+          type: "success",
+          content: response.message,
+        });
+        refetch();
+        window.location.href = response?.data?.payment_page_url;
+      } catch (error: any) {
+        messageApi.open({
+          type: "error",
+          content: error?.response?.data?.message
+            ? error?.response?.data?.message
+            : "Try Again",
+        });
+      }
+    });
+  };
 
   // const mutateClick = () => {
   //   mutate();
@@ -308,13 +308,12 @@ export default function CourseDetails() {
                   </div>
                 </ComponentCard>
               </div>
-              {/* <div className="space-y-6 ">
+              <div className="space-y-6 ">
                 <ComponentCard title="Fees head">
                   <div className="space-y-6">
                     <form onSubmit={handleSubmit2} className="space-y-6">
                       <div className="p-4 bg-gray-100 dark:bg-gray-800 dark:text-gray-200 rounded-lg shadow-sm  ">
                         <div className="space-y-6">
-                        
                           {feesStructure?.data?.fee_structure_info?.map(
                             (item: any, index: number) => {
                               return (
@@ -370,7 +369,6 @@ export default function CourseDetails() {
                               );
                             }
                           )}
-                          
                         </div>
                       </div>
 
@@ -396,7 +394,7 @@ export default function CourseDetails() {
                     </form>
                   </div>
                 </ComponentCard>
-              </div> */}
+              </div>
             </div>
             <BasicTableCourses fees_structure_table={fees_structure_table} />
           </div>

@@ -15,9 +15,9 @@ import { message } from "antd";
 interface IProps {
   // batchList: any;
   fees_structure_table: any;
-  refetch:any;
-  formId:any;
-  //   onEdit: (id: number) => void;
+  refetch: any;
+  formId: any;
+  onEdit: (id: any) => void;
 }
 
 // Define the table data using the interface
@@ -25,7 +25,8 @@ interface IProps {
 export default function BasicTableCourseDetailsAdmin({
   fees_structure_table,
   refetch,
-  formId
+  formId,
+  onEdit,
 }: IProps) {
   const { trigger: deleteUser } = useSWRMutation(
     "api/v1/payment",
@@ -37,7 +38,7 @@ export default function BasicTableCourseDetailsAdmin({
     try {
       await deleteUser(id);
       message.success("User deleted successfully");
-      refetch()
+      refetch();
     } catch (error) {
       console.error("Delete failed:", error);
       message.error("Failed to delete user");
@@ -129,9 +130,7 @@ export default function BasicTableCourseDetailsAdmin({
                     <div className="flex items-center gap-3">
                       <div>
                         <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                          {order.remark
-                            ? order.remark
-                            : "--"}
+                          {order.remark ? order.remark : "--"}
                         </span>
                       </div>
                     </div>
@@ -189,12 +188,12 @@ export default function BasicTableCourseDetailsAdmin({
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                     <div className="flex items-center gap-2">
-                      {/* <button
-                      onClick={() => onEdit(order.id)}
-                      className="text-blue-500 hover:underline"
-                    >
-                      Edit
-                    </button> */}
+                      <button
+                        onClick={() => onEdit(order)}
+                        className="text-blue-500 hover:underline"
+                      >
+                        Edit
+                      </button>
                       <button
                         onClick={() => handleDelete(order.id)}
                         className="text-red-500 hover:underline"

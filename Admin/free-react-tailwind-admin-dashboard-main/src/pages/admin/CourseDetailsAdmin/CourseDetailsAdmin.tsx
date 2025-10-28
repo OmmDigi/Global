@@ -45,7 +45,7 @@ export default function CourseDetailsAdmin() {
     amount: "",
   });
 
-  console.log("addFormData", addFormData);
+  // console.log("addFormData", addFormData);
 
   const { id } = useParams();
   const [formId, setFormId] = useState(id);
@@ -53,7 +53,7 @@ export default function CourseDetailsAdmin() {
   const [remarksPopup, setRemarksPopup] = useState<any>({}); // store open state per row
   const [remarksText, setRemarksText] = useState<any>({});
   const [activeRow, setActiveRow] = useState<number | null>(null);
-
+  const [editData, setEditData] = useState<any>(null);
   const select = (id: number) => {
     setActiveRow(id);
   };
@@ -313,6 +313,53 @@ export default function CourseDetailsAdmin() {
     });
   };
 
+  const handleEdit = (fee: any) => {
+    const feeList =
+      feesStructure?.data?.fee_structure_info || feesStructure || [];
+
+    // find the matching record by fee_head_id
+    const existingFee = feeList.find(
+      (item: any) => Number(item.fee_head_id) === Number(fee.fee_head_id)
+    );
+
+    if (!existingFee) {
+      console.warn("No matching fee head found");
+      return;
+    }
+
+    // Set state for this specific fee row (populate all inputs)
+    setEnteredAmounts((prev: any) => ({
+      ...prev,
+      [fee.fee_head_id]: fee.amount || "",
+    }));
+
+    setEnteredBillno((prev: any) => ({
+      ...prev,
+      [fee.fee_head_id]: fee.bill_no || "",
+    }));
+
+    setPaymentMode((prev: any) => ({
+      ...prev,
+      [fee.fee_head_id]: fee.mode || "",
+    }));
+
+    setSelectedDates((prev: any) => ({
+      ...prev,
+      [fee.fee_head_id]: fee.payment_date ? new Date(fee.payment_date) : null,
+    }));
+
+    // for Monthly fees only — set month picker
+    if (Number(fee.fee_head_id) === 4 && fee.month) {
+      const parsedMonth = new Date(Date.parse(fee.month.replace(",", "")));
+      setMonth((prev: any) => ({
+        ...prev,
+        [fee.fee_head_id]: parsedMonth,
+      }));
+    }
+  };
+
+  console.log("editData11", editData);
+
   const fees_structure_table = feesStructure?.data?.payments_history;
   return (
     <>
@@ -563,7 +610,7 @@ export default function CourseDetailsAdmin() {
                                   Total Selected Amount: ₹{totalAmount}
                                 </div> */}
                     {feesStructure?.data?.fee_structure_info
-                      // for monthly fees at bottom 
+                      // for monthly fees at bottom
                       // ?.sort((a: any, b: any) => {
                       //   if (a.fee_head_id === 4) return 1;
                       //   if (b.fee_head_id === 4) return -1;
@@ -613,7 +660,13 @@ export default function CourseDetailsAdmin() {
                               <div className=" mr-1">
                                 <select
                                   name="payment_mode"
-                                  value={paymentMode[item.fee_head_id] || ""}
+                                  value={
+                                    paymentMode[item.fee_head_id] || ""
+                                    // (item.fee_head_id ==
+                                    // Number(editData?.fee_head_id)
+                                    //   ? editData?.mode
+                                    //   : "")
+                                  }
                                   onChange={(e) => handlePaymentType(e, item)}
                                   className="w-full px-3 py-2  bg-gray-100  pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
                                 >
@@ -713,7 +766,10 @@ export default function CourseDetailsAdmin() {
                                 <input
                                   type="number"
                                   max={item?.due_amount}
-                                  value={enteredAmounts[item.fee_head_id] || ""}
+                                  value={
+                                    enteredAmounts[item.fee_head_id] ||
+                                    enteredAmounts
+                                  }
                                   onChange={(e) => handleAmountChange(e, item)}
                                   className="w-22 px-2 py-1 border border-amber-400 rounded"
                                   placeholder="Amount"
@@ -842,6 +898,7 @@ export default function CourseDetailsAdmin() {
         fees_structure_table={fees_structure_table}
         refetch={refetch}
         formId={id}
+        onEdit={handleEdit}
       />
     </>
   );
