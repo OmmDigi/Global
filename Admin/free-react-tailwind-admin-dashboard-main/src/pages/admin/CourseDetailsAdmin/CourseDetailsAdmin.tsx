@@ -1,5 +1,5 @@
 import PageMeta from "../../../components/common/PageMeta";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import { useParams } from "react-router-dom";
 import ComponentCard from "../../../components/common/ComponentCard";
@@ -14,6 +14,8 @@ import dayjs from "dayjs";
 import DatePicker from "react-datepicker";
 import { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
+// import { ReceiptIndianRupee } from "lucide-react";
+// import { log } from "console";
 
 export default function CourseDetailsAdmin() {
   const navigate = useNavigate();
@@ -53,7 +55,11 @@ export default function CourseDetailsAdmin() {
   const [remarksPopup, setRemarksPopup] = useState<any>({}); // store open state per row
   const [remarksText, setRemarksText] = useState<any>({});
   const [activeRow, setActiveRow] = useState<number | null>(null);
-  const [editData] = useState<any>(null);
+  // const [editData] = useState<any>(null);
+  const [editId, setEditId] = useState<[number, number] | null>(null);
+
+  const feeHeadRef = useRef<HTMLDivElement>(null);
+
   const select = (id: number) => {
     setActiveRow(id);
   };
@@ -92,6 +98,7 @@ export default function CourseDetailsAdmin() {
     `api/v1/admission/fee-head`,
     (url, { arg }) => postFetcher(url, arg)
   );
+  //
   if (feesStructureLoading) {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }
@@ -299,8 +306,8 @@ export default function CourseDetailsAdmin() {
       },
     ];
 
-    console.log("Saving row payload:", fee_structure_info);
     const finalFormData = {
+      type: "add",
       form_id: id,
       // payment_mode: paymentMode,
       // payment_details: paymentDetails ? paymentDetails : null,
@@ -314,6 +321,8 @@ export default function CourseDetailsAdmin() {
   };
 
   const handleEdit = (fee: any) => {
+    feeHeadRef.current?.scrollIntoView({ behavior: "smooth" });
+    setEditId([fee?.id, fee?.fee_head_id]);
     const feeList =
       feesStructure?.data?.fee_structure_info || feesStructure || [];
 
@@ -326,7 +335,7 @@ export default function CourseDetailsAdmin() {
       console.warn("No matching fee head found");
       return;
     }
-
+    console.log("existingFee", fee);
     // Set state for this specific fee row (populate all inputs)
     setEnteredAmounts((prev: any) => ({
       ...prev,
@@ -358,7 +367,55 @@ export default function CourseDetailsAdmin() {
     }
   };
 
-  console.log("editData11", editData);
+  const handleUpdate = async (item: any) => {
+    const fee_structure_info = [
+      {
+        id: editId?.[0],
+        fee_head_id: item.fee_head_id,
+        payment_mode: paymentMode[item.fee_head_id] || "",
+        bill_no: enteredBillno[item.fee_head_id] || "",
+        custom_min_amount: enteredAmounts[item.fee_head_id] || "",
+        payment_date: selectedDates[item.fee_head_id]
+          ? dayjs(selectedDates[item.fee_head_id]).format("YYYY-MM-DD")
+          : null,
+        month: dayjs(month[item.fee_head_id]).format("YYYY-MM") || null,
+        payment_details: remarksText[item.fee_head_id] || "",
+      },
+    ];
+
+    const finalFormData = {
+      type: "update",
+      form_id: id,
+      // payment_mode: paymentMode,
+      // payment_details: paymentDetails ? paymentDetails : null,
+      fee_structure_info,
+    };
+
+    // try {
+    //   const response = await update(finalFormData as any);
+    //   refetch();
+    //   messageApi.open({
+    //     type: "success",
+    //     content: response.message,
+    //   });
+
+    //   setEnteredAmounts("");
+    //   setEnteredBillno("");
+    //   setPaymentMode("");
+    //   setEditId(null);
+    // } catch (error: any) {
+    //   messageApi.open({
+    //     type: "error",
+    //     content: error.response?.data?.message,
+    //   });
+    // }
+
+    setRemarksPopup((prev: any) => ({ ...prev, [item.fee_head_id]: false }));
+
+    startTransition(async () => {
+      await doPayment(finalFormData as any);
+    });
+  };
 
   const fees_structure_table = feesStructure?.data?.payments_history;
   return (
@@ -601,10 +658,10 @@ export default function CourseDetailsAdmin() {
 
       <div className="grid grid-cols-1 mt-2 gap-6 xl:grid-cols-1">
         <div className="space-y-6 ">
-          <ComponentCard title="Fees head">
-            <div className="space-y-1">
+          <ComponentCard title="Fees head" childClassName="!p-0 sm:!p-0">
+            <div ref={feeHeadRef} className="space-y-1">
               <form onSubmit={handleSubmit2} className="space-y-6">
-                <div className="p-2 bg-gray-100 dark:bg-gray-800 dark:text-gray-200 rounded-lg shadow-sm  ">
+                <div className="p-2 dark:text-gray-200  shadow-sm  ">
                   <div className="space-y-6">
                     {/* <div className="text-lg font-bold">
                                   Total Selected Amount: ₹{totalAmount}
@@ -621,40 +678,42 @@ export default function CourseDetailsAdmin() {
                           <div
                             key={item.fee_head_id}
                             onClick={() => select(index)}
-                            className={`flex flex-col cursor-pointer ${
+                            className={`flex flex-col cursor-pointer px-6 ${
                               activeRow === index
-                                ? "bg-gray-600 rounded-xl pt-2 pb-2"
+                                ? "bg-gray-600  pt-2 pb-2"
                                 : ""
                             }`}
                           >
                             <div className="flex justify-between gap-1">
-                              <label className="flex-1">
-                                {index + 1}. {item.fee_head_name}
-                              </label>
-                              <div
-                                className={`flex-1 flex-col ${
-                                  item.fee_head_id == 4 ? " ml-30 " : ""
-                                } `}
-                              >
-                                <div className="flex gap-12 justify-items-center">
-                                  <span className="items-start">Fees :</span>
-                                  <span className="items-end">
-                                    ₹ {item.price}
-                                  </span>
-                                </div>
-                                <div className="flex gap-5 justify-items-center">
-                                  <span className="items-start">
-                                    Due Fees :
-                                  </span>
-                                  <span
-                                    className={
-                                      Number(item?.due_amount) === 0
-                                        ? "text-green-500 items-end"
-                                        : "text-red-500 items-end"
-                                    }
-                                  >
-                                    ₹ {item.due_amount}
-                                  </span>
+                              <div className="flex flex-col w-full gap-1">
+                                <label className="flex-1 text-xl">
+                                  {index + 1}. {item.fee_head_name}
+                                </label>
+                                <div className={`flex gap-5  `}>
+                                  <div className="flex gap-2 text-sm justify-items-center text-gray-400">
+                                    <span className="items-start flex">
+                                      {" "}
+                                      {/* <ReceiptIndianRupee size={16} /> */}
+                                      Fees :
+                                    </span>
+                                    <span className="items-end">
+                                      ₹ {item.price}
+                                    </span>
+                                  </div>
+                                  <div className="flex gap-5 text-sm justify-items-center">
+                                    <span className="items-start text-gray-400">
+                                      Due Fees :
+                                    </span>
+                                    <span
+                                      className={
+                                        Number(item?.due_amount) === 0
+                                          ? "text-green-500 items-end"
+                                          : "text-red-500 items-end"
+                                      }
+                                    >
+                                      ₹ {item.due_amount}
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
                               <div className=" mr-1">
@@ -668,7 +727,7 @@ export default function CourseDetailsAdmin() {
                                     //   : "")
                                   }
                                   onChange={(e) => handlePaymentType(e, item)}
-                                  className="w-full px-3 py-2  bg-gray-100  pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                                  className="w-25 px-2 py-2  bg-gray-100  pr-2 text-sm border-gray-300   hover:border-gray-200   dark:hover:border-gray-800    dark:border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
                                 >
                                   <option value="">Mode</option>
                                   <option value="Online">Online</option>
@@ -676,7 +735,8 @@ export default function CourseDetailsAdmin() {
                                   <option value="Cheque">Cheque</option>
                                 </select>
                               </div>
-                              {item.fee_head_id == 4 ? (
+                              {item.fee_head_id == 4 ||
+                              item.fee_head_id == 5 ? (
                                 ""
                               ) : (
                                 <div className=" mr-2 text-gray-500 flex flex-col dark:text-gray-400">
@@ -697,26 +757,9 @@ export default function CourseDetailsAdmin() {
                                 </div>
                               )}
                               <div>
-                                {item.fee_head_id == 4 ? (
+                                {item.fee_head_id == 4 ||
+                                item.fee_head_id == 5 ? (
                                   <div className="flex ">
-                                    {/* <select
-                                      name="fee_head_id"
-                                      onChange={(e) =>
-                                        handleMonthChange(e, item)
-                                      }
-                                      className="w-auto px-3 py-3 mr-2 bg-gray-100 pl-2.5 pr-2 text-sm 
-                                          hover:border-gray-200 dark:hover:border-gray-800 
-                                           border-gray-600 rounded-md dark:bg-gray-900 
-                                           focus:outline-none focus:ring-2 focus:ring-blue-500 
-                                          dark:text-gray-300 text-gray-700"
-                                    >
-                                      <option value="">Choose</option>
-                                      {options?.map((opt: any, i: number) => (
-                                        <option key={i} value={opt.name}>
-                                          {opt.name}
-                                        </option>
-                                      ))}
-                                    </select> */}
                                     <DatePicker
                                       name="fee_head_id"
                                       selected={month[item.fee_head_id] || null}
@@ -728,7 +771,7 @@ export default function CourseDetailsAdmin() {
                                       }}
                                       dateFormat="MM-yyyy"
                                       showMonthYearPicker
-                                      className="border w-30  border-gray-300 dark:border-gray-600 dark:text-gray-200 rounded-md px-1 py-1 mr-2 mt-1 text-sm"
+                                      className="border w-30  border-gray-300 dark:border-gray-300 dark:text-gray-200 rounded-md px-1 py-1 mr-2 mt-1 text-sm"
                                       autoComplete="off"
                                       placeholderText="Select Month"
                                     />
@@ -793,19 +836,27 @@ export default function CourseDetailsAdmin() {
                                 </button>
                               </div>
                               <div>
-                                <button
-                                  type="button"
-                                  disabled={isPending}
-                                  //
-                                  onClick={() => handleRowSave(item)}
-                                  className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
-                                >
-                                  {isPending ? (
-                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                  ) : (
-                                    " Save "
-                                  )}
-                                </button>
+                                {editId?.[1] == item.fee_head_id ? (
+                                  <div
+                                    onClick={() => handleUpdate(item)}
+                                    className="px-2 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition cursor-pointer"
+                                  >
+                                    Update
+                                  </div>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    disabled={isPending}
+                                    onClick={() => handleRowSave(item)}
+                                    className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
+                                  >
+                                    {isPending ? (
+                                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    ) : (
+                                      "Save"
+                                    )}
+                                  </button>
+                                )}
                               </div>
                             </div>
 

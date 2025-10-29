@@ -109,44 +109,71 @@ function Footer() {
             </div>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/about" className="hover:underline">
+                <Link
+                  href="/about"
+                  className="hover:underline hover:ml-3 transition-all duration-300"
+                >
                   About us
                 </Link>
               </li>
               <li>
-                <Link href="/our-speciality" className="hover:underline">
+                <Link
+                  href="/our-speciality"
+                  className="hover:underline hover:ml-3 transition-all duration-300"
+                >
                   Our Speciality
                 </Link>
               </li>
               <li>
-                <Link href=" /placement" className="hover:underline">
+                <Link
+                  href=" /placement"
+                  className="hover:underline hover:ml-3 transition-all duration-300"
+                >
                   Our Placements
                 </Link>
               </li>
               <li>
-                <Link href=" /blog" className="hover:underline">
+                <Link
+                  href=" /blog"
+                  className="hover:underline hover:ml-3 transition-all duration-300"
+                >
                   Our Blog
                 </Link>
               </li>
               <li>
-                <Link href=" /ourGallery" className="hover:underline">
+                <Link
+                  href=" /ourGallery"
+                  className="hover:underline hover:ml-3 transition-all duration-300"
+                >
                   Gallery
                 </Link>
               </li>
               <li>
-                <Link href="/news-events" className="hover:underline">
+                <Link
+                  href="/news-events"
+                  className="hover:underline hover:ml-3 transition-all duration-300"
+                >
                   News & Events
                 </Link>
               </li>
               <li>
-                <Link href=" /contact-us" className="hover:underline">
+                <Link
+                  href="/contact-us"
+                  className="hover:underline hover:ml-3 transition-all duration-300"
+                >
                   Contact us
                 </Link>
               </li>
               <li>
-                <div className=" flex  w-auto   ">
+                <Link
+                  href="/privacy-policy"
+                  className="hover:underline hover:ml-3 transition-all duration-300"
+                >
+                  Privacy Policy
+                </Link>
+                {/* <div className=" flex  w-auto   ">
                   <p>Privacy Policy</p>
-                </div>
+                </div> */}
               </li>
             </ul>
           </div>
@@ -154,7 +181,7 @@ function Footer() {
         <hr className="w=11/12 mt-2" />
 
         <div className="flex justify-center items-center p-3">
-          <div >
+          <div>
             {" "}
             2025 Global Technical Institute, All Rights Reserved.
             <div className="text-center">

@@ -57,7 +57,7 @@ export default function Batch() {
   );
 
   //   get batch list
-  const { data: batchList } = useSWR(
+  const { data: batchList, mutate: mutateBatchList } = useSWR(
     `api/v1/course/batch?page=${pageCount}`,
     getFetcher
   );
@@ -147,10 +147,7 @@ export default function Batch() {
     e.preventDefault();
     try {
       const response = await create(formData as any);
-      //   mutate(
-      //     (currentData: any) => [...(currentData || []), response.data],
-      //     false
-      //   );
+      mutateBatchList();
       messageApi.open({
         type: "success",
         content: response.message,
@@ -264,6 +261,7 @@ export default function Batch() {
               // onEdit={handleEdit}
               onActive={handleActive}
               onSendData={handleChildData}
+              mutateBatchList={mutateBatchList}
             />
           </ComponentCard>
         </div>

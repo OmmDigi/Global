@@ -7,21 +7,6 @@ import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import { FaMinus, FaPlus } from "react-icons/fa";
 
-const responsive2 = {
-  desktop: {
-    breakpoint: { max: 3000, min: 1024 },
-    items: 1,
-  },
-  tablet: {
-    breakpoint: { max: 1024, min: 464 },
-    items: 1,
-  },
-  mobile: {
-    breakpoint: { max: 464, min: 0 },
-    items: 1,
-  },
-};
-
 function page() {
   const [montessoriTeachers, setMontessoriTeachers] = useState(true);
   const [seniorTeachers, setSeniorTeachers] = useState(false);
@@ -91,7 +76,7 @@ function page() {
                     <tr className="bg-orange-100">
                       <td className="px-4 py-2 font-semibold">CERTIFICATE:</td>
                       <td className="px-4 py-2">
-                        	1) Certificate in Physiotherapy
+                        1) Certificate in Physiotherapy
                         <br />
                         2) Diploma in Physiotherapy
                       </td>
@@ -100,24 +85,24 @@ function page() {
                       <td className="px-4 py-2 font-semibold">
                         COURSE DURATION:
                       </td>
-                      <td className="px-4 py-2">	1 or 2 Years</td>
+                      <td className="px-4 py-2"> 1 or 2 Years</td>
                     </tr>
                     <tr className="bg-orange-100">
                       <td className="px-4 py-2 font-semibold">
                         BOARD AND RECOGNITION:
                       </td>
                       <td className="px-4 py-2">
-                       1) BSS Promoted by Govt. of India
+                        1) BSS Promoted by Govt. of India
                         <br />
-                       2) ISO Certified Global Technical Institute
-                       <br/>
-                       3) Affiliated Partner NSDC
+                        2) ISO Certified Global Technical Institute
+                        <br />
+                        3) Affiliated Partner NSDC
                       </td>
                     </tr>
                     <tr className="bg-blue-100">
                       <td className="px-4 py-2 font-semibold">SESSION:</td>
                       <td className="px-4 py-2">
-                      3 Sessions (March, July, November)
+                        3 Sessions (March, July, November)
                       </td>
                     </tr>
                     <tr className="bg-orange-100">
@@ -126,7 +111,7 @@ function page() {
                       </td>
                       <td className="px-4 py-2">2 Classes per week</td>
                     </tr>
-                   
+
                     <tr className="bg-blue-100">
                       <td className="px-4 py-2 font-semibold">
                         MINIMUM QUALIFICATION:
@@ -145,7 +130,6 @@ function page() {
                         3) Madhyamik Admit Card
                         <br />
                         4) Any Photo ID Proof
-                        
                       </td>
                     </tr>
                   </tbody>
@@ -184,7 +168,7 @@ function page() {
                   alt="Senior Teacher Training"
                   className="rounded-lg shadow-md w-full max-w-md"
                 />
-                 <img
+                <img
                   src="/image/physiotherapy/WhatsApp-Image-2024-11-10-at-2.08.14-PM-1-1063x800.jpeg"
                   alt="Senior Teacher Training"
                   className="rounded-lg shadow-md w-full max-w-md"
@@ -196,14 +180,15 @@ function page() {
                   <tbody>
                     <tr className="bg-blue-100">
                       <td className="px-4 py-2 font-semibold">COURSE NAME:</td>
-                      <td className="px-4 py-2">Васhelor in Physiotherapy (BPT)</td>
+                      <td className="px-4 py-2">
+                        Васhelor in Physiotherapy (BPT)
+                      </td>
                     </tr>
                     <tr className="bg-orange-100">
                       <td className="px-4 py-2 font-semibold">CERTIFICATE:</td>
                       <td className="px-4 py-2">
-                         Bachelor in Physiotherapy
+                        Bachelor in Physiotherapy
                         <br />
-                        
                       </td>
                     </tr>
                     <tr className="bg-blue-100">
@@ -217,17 +202,14 @@ function page() {
                         BOARD AND RECOGNITION:
                       </td>
                       <td className="px-4 py-2">
-                        1)  ISO Certified Global Technical Institute
+                        1) ISO Certified Global Technical Institute
                         <br />
-                        2)  UGC Approved Universities
-                       
+                        2) UGC Approved Universities
                       </td>
                     </tr>
                     <tr className="bg-blue-100">
                       <td className="px-4 py-2 font-semibold">SESSION:</td>
-                      <td className="px-4 py-2">
-                       1 Session (Aug-Sept)
-                      </td>
+                      <td className="px-4 py-2">1 Session (Aug-Sept)</td>
                     </tr>
                     <tr className="bg-orange-100">
                       <td className="px-4 py-2 font-semibold">
@@ -235,7 +217,7 @@ function page() {
                       </td>
                       <td className="px-4 py-2">4 classes per weeks</td>
                     </tr>
-                   
+
                     <tr className="bg-blue-100">
                       <td className="px-4 py-2 font-semibold">
                         MINIMUM QUALIFICATION:
@@ -254,7 +236,7 @@ function page() {
                         3) Madhyamik Admit Card
                         <br />
                         4) Any Photo ID Proof
-                        <br/>
+                        <br />
                         5) Migration Certificate (Original)
                       </td>
                     </tr>
@@ -273,96 +255,97 @@ function page() {
         </div>
       </div>
 
+      <section
+        id="physiotherapy-training"
+        className="bg-gray-50 py-12 px-4 text-gray-800"
+      >
+        <div className="max-w-5xl mx-auto space-y-6">
+          <p>
+            Welcome to <strong>Global Technical Institute</strong>, the best{" "}
+            <a
+              href="https://globaltechnicalinstitute.com/"
+              className="text-blue-600 hover:underline"
+            >
+              Physiotherapy Training Institute in Kolkata
+            </a>
+            ! We are dedicated to providing comprehensive and high-quality
+            training in physiotherapy. The Government of India recognizes and
+            promotes our courses through the Board of Secondary Education
+            Society (BSS). Additionally, we are proud to hold an ISO
+            certification, ensuring our commitment to global standards, and we
+            are affiliated with the National Skill Development Corporation
+            (NSDC).
+          </p>
 
+          <h2 className="text-xl font-semibold text-gray-900">
+            Our Physiotherapy Training Institute In Kolkata program offers two
+            levels of certification:
+          </h2>
 
-       <section id="physiotherapy-training" className="bg-gray-50 py-12 px-4 text-gray-800">
-      <div className="max-w-5xl mx-auto space-y-6">
-        <p>
-          Welcome to <strong>Global Technical Institute</strong>, the best{" "}
-          <a
-            href="https://globaltechnicalinstitute.com/"
-            className="text-blue-600 hover:underline"
-          >
-            Physiotherapy Training Institute in Kolkata
-          </a>
-          ! We are dedicated to providing comprehensive and high-quality training
-          in physiotherapy. The Government of India recognizes and promotes our
-          courses through the Board of Secondary Education Society (BSS).
-          Additionally, we are proud to hold an ISO certification, ensuring our
-          commitment to global standards, and we are affiliated with the
-          National Skill Development Corporation (NSDC).
-        </p>
+          <p>
+            <strong>Certificate in Physiotherapy</strong> and{" "}
+            <strong>Diploma in Physiotherapy</strong>. The duration of the
+            course can be completed within 1 or 2 years, depending on your
+            preference and availability. We offer three sessions throughout the
+            year, starting in
+            <strong> March, July, and November</strong>, allowing you the
+            flexibility to choose the best time to begin your training.
+          </p>
 
-        <h2 className="text-xl font-semibold text-gray-900">
-          Our Physiotherapy Training Institute In Kolkata program offers two levels of
-          certification:
-        </h2>
+          <p>
+            Classes are held twice a week to accommodate your schedule,
+            providing a balance between theory and practical sessions. Our
+            experienced faculty members ensure a comprehensive learning
+            experience covering all physiotherapy aspects, from fundamental
+            principles to advanced techniques.
+          </p>
 
-        <p>
-          <strong>Certificate in Physiotherapy</strong> and{" "}
-          <strong>Diploma in Physiotherapy</strong>. The duration of the course can
-          be completed within 1 or 2 years, depending on your preference and
-          availability. We offer three sessions throughout the year, starting in
-          <strong> March, July, and November</strong>, allowing you the flexibility to
-          choose the best time to begin your training.
-        </p>
+          <p>
+            To enroll in our{" "}
+            <a
+              href="https://globaltechnicalinstitute.com/physiotherapy-training-institute-in-kolkata"
+              className="text-blue-600 hover:underline"
+            >
+              Physiotherapy Training Institute in Kolkata
+            </a>
+            , the minimum qualification required is <strong>Madhyamik</strong>.
+            We require a few documents for the admission process, including six
+            copies of your recent photograph, attested copies of your last
+            pass-out mark sheet, Madhyamik’s admit card, and any valid photo
+            identification proof.
+          </p>
 
-        <p>
-          Classes are held twice a week to accommodate your schedule, providing a
-          balance between theory and practical sessions. Our experienced faculty
-          members ensure a comprehensive learning experience covering all
-          physiotherapy aspects, from fundamental principles to advanced
-          techniques.
-        </p>
-
-        <p>
-          To enroll in our{" "}
-          <a
-            href="https://globaltechnicalinstitute.com/physiotherapy-training-institute-in-kolkata"
-            className="text-blue-600 hover:underline"
-          >
-            Physiotherapy Training Institute in Kolkata
-          </a>
-          , the minimum qualification required is <strong>Madhyamik</strong>. We require
-          a few documents for the admission process, including six copies of your
-          recent photograph, attested copies of your last pass-out mark sheet,
-          Madhyamik’s admit card, and any valid photo identification proof.
-        </p>
-
-        <div className="flex justify-center">
-          <img
-            src="/image/physiotherapy/phy2-400x300.jpg"
-            alt="Physiotherapy training session"
-            className="rounded-lg shadow-md w-full max-w-md"
-            loading="lazy"
-          />
-        </div>
-
-        <p>
-          At Global Technical Institute, we believe in holistic development, so we
-          offer special modules for skill development. Our{" "}
-          <strong>Personality Development and Grooming</strong> sessions aim to enhance
-          your interpersonal skills, communication abilities, and overall
-          professional demeanor. These sessions will equip you with the necessary
-          skills to excel in your career as a physiotherapist.
-        </p>
-
-        <p>
-          By choosing <strong>Global Technical Institute</strong> for your{" "}
-          <div
-           
-            className="text-gray-600"
-          >
-            Physiotherapy Training Institute in Kolkata
+          <div className="flex justify-center">
+            <img
+              src="/image/physiotherapy/phy2-400x300.jpg"
+              alt="Physiotherapy training session"
+              className="rounded-lg shadow-md w-full max-w-md"
+              loading="lazy"
+            />
           </div>
-          , you are making a wise decision to receive quality education and
-          training from a reputable institution. Join us today and embark on a
-          rewarding journey towards a successful career in physiotherapy. Contact
-          us now to learn more about our courses and admission process and to
-          book your seat in the upcoming session.
-        </p>
-      </div>
-    </section>
+
+          <p>
+            At Global Technical Institute, we believe in holistic development,
+            so we offer special modules for skill development. Our{" "}
+            <strong>Personality Development and Grooming</strong> sessions aim
+            to enhance your interpersonal skills, communication abilities, and
+            overall professional demeanor. These sessions will equip you with
+            the necessary skills to excel in your career as a physiotherapist.
+          </p>
+
+          <p>
+            By choosing <strong>Global Technical Institute</strong> for your{" "}
+            <div className="text-gray-600">
+              Physiotherapy Training Institute in Kolkata
+            </div>
+            , you are making a wise decision to receive quality education and
+            training from a reputable institution. Join us today and embark on a
+            rewarding journey towards a successful career in physiotherapy.
+            Contact us now to learn more about our courses and admission process
+            and to book your seat in the upcoming session.
+          </p>
+        </div>
+      </section>
 
       <Footer />
       <BackToTopButton />

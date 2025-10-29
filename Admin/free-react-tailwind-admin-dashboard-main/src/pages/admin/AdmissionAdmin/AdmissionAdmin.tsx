@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import PageMeta from "../../../components/common/PageMeta";
 import ComponentCard from "../../../components/common/ComponentCard";
@@ -123,51 +123,43 @@ export default function AdmissionAdmin() {
   const [formSearch, setFormSearch] = useState<any>({});
   const [pageCount] = useState<number>(0);
   const [searchParams, setSearchParams] = useSearchParams();
-  // get course list
-  // const steps = [
-  //   {
-  //     title: "First",
-  //     content: "First-content",
-  //   },
-  //   {
-  //     title: "Second",
-  //     content: "Second-content",
-  //   },
-  //   {
-  //     title: "Last",
-  //     content: "Last-content",
-  //   },
-  // ]
+
+  const [selectedCourseId, setSelectedCourseId] = useState(null);
+
+  const [formDataParams, setFormDataParams] = useState({
+    courseName: "",
+    sessionName: "",
+    batchName: "",
+  });
+
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    const sessionParams = query.get("session");
+    const courseParams = query.get("course");
+    const batchParams = query.get("batch");
+
+    console.log("Session:", sessionParams);
+    console.log("Course:", courseParams);
+    console.log("Batch:", batchParams);
+
+    // Set values in form state from params (if available)
+    setFormDataParams({
+      courseName: courseParams || "",
+      sessionName: sessionParams || "",
+      batchName: batchParams || "",
+    });
+    setSelectedCourseId(courseParams as any);
+  }, []);
 
   // get Course list
-  const {
-    data: courseList,
-    // isLoading: courseLoading,
-  } = useSWR(`api/v1/course/dropdown`, getFetcher);
-  // if (courseLoading) {
-  //   return <div>Loading ...</div>;
-  // }
-  // const handleChildData = (data: any) => {
-  //   setPageCount(data);
-  // };
+  const { data: courseList } = useSWR(`api/v1/course/dropdown`, getFetcher);
 
-  // console.log("pageCountqqq",pageCount);
-  // get Admission list
+  console.log("courseListcourseList", courseList);
+
   const { data: admissionlist, mutate: mutateAdmissionList } = useSWR(
     `api/v1/admission?${searchParams.toString()}`,
     getFetcher
   );
-  // const id = query.get("id");
-
-  // useEffect(() => {
-  //    const response =  getFetcher(
-  //     `api/v1/admission?session=${ getSession}&course=${ getCourse}&batch=${ getBatch}`
-  //   );
-  //   if (response) {
-
-  //     setSearchData(response);
-  //   }
-  // }, [getSession, getCourse, getBatch]);
 
   const handleSearch = () => {
     console.log("search", pageCount);
@@ -478,7 +470,6 @@ export default function AdmissionAdmin() {
     border: `1px dashed ${token.colorBorder}`,
     marginTop: 16,
   };
-  const [selectedCourseId, setSelectedCourseId] = useState(null);
 
   const handleCourseChange = (e: any) => {
     const { name, value } = e.target;
@@ -488,6 +479,7 @@ export default function AdmissionAdmin() {
       [name]: value,
     }));
     const courseId = parseInt(e.target.value);
+    console.log("handleCourseChangehandleCourseChange", courseId);
 
     setSelectedCourseId(courseId as any);
   };
@@ -503,6 +495,7 @@ export default function AdmissionAdmin() {
   const selectedCourse = Array.isArray(courseList?.data)
     ? courseList?.data?.find((course: any) => course.id == selectedCourseId)
     : null;
+  console.log("selectedCourseselectedCourse", selectedCourse);
 
   return (
     <div>
@@ -535,6 +528,7 @@ export default function AdmissionAdmin() {
                 </div>
               )}
             </div>
+
             {montessoriTeachers && (
               <div>
                 <div className="p-7 pl-30 pr-30  flex items-center sticky top-20 bg-gray-100  dark:bg-gray-800 dark:text-gray-100   text-gray-800  z-20 justify-center">
@@ -1745,6 +1739,7 @@ export default function AdmissionAdmin() {
                 </div>
               </div>
             )}
+
             <div className="flex flex-col gap-6">
               <h3 className="text-gray-500 dark:text-gray-400 ">
                 Admission List
@@ -1752,24 +1747,6 @@ export default function AdmissionAdmin() {
             </div>
 
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-4">
-              {/* <div>
-                <label className="block text-sm font-bold text-gray-500 mb-1">
-                  Select date range
-                </label>
-                <DatePicker
-                  selectsRange={true}
-                  startDate={startDate}
-                  endDate={endDate}
-                  onChange={(update) => {
-                    setDateRange(update);
-                  }}
-                  isClearable={true}
-                  dateFormat="dd/MM/yyyy"
-                  placeholderText="dd/MM/yyyy - dd/MM/yyyy"
-                  className="border rounded-md px-3 py-2 text-sm dark:bg-gray-800 dark:text-white"
-                  calendarClassName="!bg-white dark:!bg-gray-200"
-                />
-              </div> */}
               <div className="  mb-4">
                 <label className="block text-sm font-bold text-gray-500 mb-1">
                   Choose your Courses
@@ -1778,8 +1755,12 @@ export default function AdmissionAdmin() {
                   key={editedFormId + "courseName"}
                   name="courseName"
                   disabled={id ? true : false}
-                  defaultValue={formData.courseName}
-                  // value={formData.courseName}
+                  // defaultValue={formData.courseName}
+                  value={
+                    formData.courseName
+                      ? formData.courseName
+                      : formDataParams.courseName
+                  }
                   onChange={handleCourseChange}
                   className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 "
                 >
@@ -1799,7 +1780,11 @@ export default function AdmissionAdmin() {
                   key={editedFormId + "sessionName"}
                   name="sessionName"
                   disabled={id ? true : false}
-                  defaultValue={formData.sessionName}
+                  defaultValue={
+                    formData.sessionName
+                      ? formData.sessionName
+                      : formDataParams.sessionName
+                  }
                   onChange={handleSessionChange}
                   className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
@@ -1823,14 +1808,20 @@ export default function AdmissionAdmin() {
                   key={editedFormId + "batchName"}
                   name="batchName"
                   disabled={id ? true : false}
-                  defaultValue={formData.batchName}
+                  defaultValue={
+                    formData.batchName
+                      ? formData.batchName
+                      : formDataParams.batchName
+                  }
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Option</option>
                   {selectedCourse?.batch
                     ?.filter(
-                      (batch: any) => batch.session_id == formData.sessionName
+                      (batch: any) =>
+                        batch.session_id == formData.sessionName ||
+                        batch.session_id == formDataParams.sessionName
                     )
                     .map((batch: any, index: number) => (
                       <option key={index} value={`${batch.batch_id}`}>

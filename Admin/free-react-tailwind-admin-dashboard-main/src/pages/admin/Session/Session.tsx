@@ -10,10 +10,15 @@ import { getFetcher, postFetcher, putFetcher } from "../../../api/fatcher";
 import { message } from "antd";
 import useSWR, { mutate } from "swr";
 
+type FormDataType = {
+  id?: number; // optional (if sometimes missing)
+  name: string;
+};
+
 export default function Session() {
   const [messageApi, contextHolder] = message.useMessage();
   const [id, setId] = useState<number>(0);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormDataType>({
     name: "",
   });
 
@@ -23,14 +28,12 @@ export default function Session() {
     (url, { arg }) => postFetcher(url, arg)
   );
 
-
   //   get session list
   const { data: sessionList, isLoading: sessionLoading } = useSWR(
     "api/v1/course/session",
     getFetcher
   );
 
-  
   const { trigger: update } = useSWRMutation(
     "api/v1/course/session",
     (url, { arg }) => putFetcher(url, arg)
@@ -45,6 +48,7 @@ export default function Session() {
       const response = await getFetcher(`api/v1/course/session/${id}`);
       const userData = response.data;
       setFormData({
+        id: userData?.id,
         name: userData?.name,
       });
     } catch (error) {
