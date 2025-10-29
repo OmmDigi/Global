@@ -138,7 +138,7 @@ wss.on("connection", (ws, req) => {
         );
       }
 
-      console.log(`📨 Message from ${deviceId}:`, data);
+      console.log(`📨 Message from ${deviceId}:`);
     } catch (error) {
       console.error("Error parsing message:", error.message);
     }
