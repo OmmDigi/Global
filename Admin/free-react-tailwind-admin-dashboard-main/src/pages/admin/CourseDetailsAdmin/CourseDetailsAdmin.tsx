@@ -1,11 +1,11 @@
 import PageMeta from "../../../components/common/PageMeta";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import { useParams } from "react-router-dom";
 import ComponentCard from "../../../components/common/ComponentCard";
 import Label from "../../../components/form/Label";
 import { message } from "antd";
-import { getFetcher, postFetcher, putFetcher } from "../../../api/fatcher";
+import { getFetcher, postFetcher } from "../../../api/fatcher";
 import useSWRMutation from "swr/mutation";
 import useSWR from "swr";
 import BasicTableCourseDetailsAdmin from "../../../components/tables/BasicTables/BasicTableCourseDetailsAdmin";
@@ -14,8 +14,8 @@ import dayjs from "dayjs";
 import DatePicker from "react-datepicker";
 import { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
-import { ReceiptIndianRupee } from "lucide-react";
-import { log } from "console";
+// import { ReceiptIndianRupee } from "lucide-react";
+// import { log } from "console";
 
 export default function CourseDetailsAdmin() {
   const navigate = useNavigate();
@@ -58,6 +58,8 @@ export default function CourseDetailsAdmin() {
   // const [editData] = useState<any>(null);
   const [editId, setEditId] = useState<[number, number] | null>(null);
 
+  const feeHeadRef = useRef<HTMLDivElement>(null);
+
   const select = (id: number) => {
     setActiveRow(id);
   };
@@ -96,10 +98,7 @@ export default function CourseDetailsAdmin() {
     `api/v1/admission/fee-head`,
     (url, { arg }) => postFetcher(url, arg)
   );
-  const { trigger: update } = useSWRMutation(
-    "api/v1/payment/add",
-    (url, { arg }) => putFetcher(url, arg)
-  );
+  //
   if (feesStructureLoading) {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }
@@ -307,7 +306,6 @@ export default function CourseDetailsAdmin() {
       },
     ];
 
-    console.log("Saving row payload:", fee_structure_info);
     const finalFormData = {
       type: "add",
       form_id: id,
@@ -323,6 +321,7 @@ export default function CourseDetailsAdmin() {
   };
 
   const handleEdit = (fee: any) => {
+    feeHeadRef.current?.scrollIntoView({ behavior: "smooth" });
     setEditId([fee?.id, fee?.fee_head_id]);
     const feeList =
       feesStructure?.data?.fee_structure_info || feesStructure || [];
@@ -410,6 +409,9 @@ export default function CourseDetailsAdmin() {
     //     content: error.response?.data?.message,
     //   });
     // }
+
+    setRemarksPopup((prev: any) => ({ ...prev, [item.fee_head_id]: false }));
+
     startTransition(async () => {
       await doPayment(finalFormData as any);
     });
@@ -657,7 +659,7 @@ export default function CourseDetailsAdmin() {
       <div className="grid grid-cols-1 mt-2 gap-6 xl:grid-cols-1">
         <div className="space-y-6 ">
           <ComponentCard title="Fees head" childClassName="!p-0 sm:!p-0">
-            <div className="space-y-1">
+            <div ref={feeHeadRef} className="space-y-1">
               <form onSubmit={handleSubmit2} className="space-y-6">
                 <div className="p-2 dark:text-gray-200  shadow-sm  ">
                   <div className="space-y-6">
