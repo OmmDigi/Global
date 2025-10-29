@@ -1,5 +1,6 @@
 import { PoolClient } from "pg";
 import { pool } from "../config/db";
+import { generatePlaceholders } from "../utils/generatePlaceholders";
 
 type IPaymentProps = {
   form_id: number;
@@ -68,4 +69,53 @@ export const setPayment = async (data: IPaymentProps) => {
   return {
     receipt_id,
   };
+};
+
+interface IDeletePaymentProps {
+  ids: (number | null)[];
+  form_id: number;
+  user_id: number;
+  client: PoolClient;
+}
+export const deletePaymentService = async (value: IDeletePaymentProps) => {
+  const client = value.client;
+
+  let placeholder = "";
+  let placeholdernum = 1;
+  const valueToStore: any[] = [];
+
+  for (const id of value.ids) {
+    if (id !== null) {
+      if (placeholder === "") {
+        placeholder += `$${placeholdernum}`;
+      } else {
+        placeholder += `, $${placeholdernum}`;
+      }
+      valueToStore.push(id);
+      placeholdernum++;
+    }
+  }
+
+  valueToStore.push(value.form_id);
+
+  const { rows, rowCount } = await client.query(
+    `DELETE FROM payments WHERE id IN (${placeholder}) AND form_id = $${placeholdernum} RETURNING *`,
+    valueToStore
+  );
+
+  if (rowCount === 0) {
+    return { success: false, message: "No admission form found" };
+  }
+
+  const insertPlaceholder = generatePlaceholders(rows.length, 4);
+
+  await client.query(
+    `INSERT INTO deleted_payments (payment_row_id, payment_info, form_id, user_id) VALUES ${insertPlaceholder}`,
+    rows.flatMap((item) => {
+      const paymentInfoJson = JSON.stringify(item);
+      return [item.id, paymentInfoJson, item.form_id, value.user_id];
+    })
+  );
+
+  return true;
 };

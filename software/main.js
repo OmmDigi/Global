@@ -6,6 +6,9 @@ require("./bridge.js");
 let mainWindow;
 let browserView;
 
+app.commandLine.appendSwitch('ignore-certificate-errors');
+app.commandLine.appendSwitch('allow-insecure-localhost', 'true');
+
 function createWindow() {
   // Create the browser window
   mainWindow = new BrowserWindow({

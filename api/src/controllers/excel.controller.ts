@@ -63,6 +63,312 @@ export const generateUrl = asyncErrorHandler(async (req, res) => {
   res.status(201).json(new ApiResponse(201, "Signed Url Created", reportUrl));
 });
 
+// new admision excel report
+export const newAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
+  const { error, value } = VGetNewAdmissionReport.validate(req.query);
+  if (error) throw new ErrorHandler(400, error.message);
+
+  // Set response headers for streaming
+  res.setHeader(
+    "Content-Disposition",
+    'attachment; filename="Admission_Report.xlsx"'
+  );
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
+
+  let filter = "";
+  const filterValues: string[] = [];
+  let placeholder = 1;
+
+  if (value.course) {
+    if (filter == "") {
+      filter = `WHERE ec.course_id = $${placeholder++}`;
+    } else {
+      filter += ` AND ec.course_id = $${placeholder++}`;
+    }
+    filterValues.push(value.course);
+  }
+
+  if (value.batch) {
+    if (filter == "") {
+      filter = `WHERE ec.batch_id = $${placeholder++}`;
+    } else {
+      filter += ` AND ec.batch_id = $${placeholder++}`;
+    }
+    filterValues.push(value.batch);
+  }
+
+  if (value.session) {
+    if (filter == "") {
+      filter = `WHERE ec.session_id = $${placeholder++}`;
+    } else {
+      filter += ` AND ec.session_id = $${placeholder++}`;
+    }
+    filterValues.push(value.session);
+  }
+
+  let paymentFilter = "";
+  if (value.mode && value.mode !== "Both") {
+    if (paymentFilter == "") {
+      paymentFilter = `WHERE p.mode = $${placeholder++} OR p.mode = 'Discount'`;
+    } else {
+      paymentFilter += ` (AND p.mode = $${placeholder++} OR p.mode = 'Discount')`;
+    }
+    filterValues.push(value.mode);
+  }
+
+  const mainQuery = `
+   WITH payment_summery AS (
+      SELECT
+        p.form_id,
+        p.payment_date,
+        p.mode,
+        p.bill_no,
+        p.amount,
+        p.fee_head_id,
+        p.month
+      FROM payments p
+
+      ${paymentFilter}
+    ),
+
+    total_payments AS (
+      SELECT
+        p.form_id,
+        SUM(p.amount) AS total_payment
+      FROM payments p
+       ${paymentFilter}
+      GROUP BY p.form_id
+    ),
+
+    fee_head_counts AS (
+      SELECT
+        form_id,
+        fee_head_id,
+        COUNT(*) AS payment_count
+      FROM payments p
+      ${paymentFilter}
+      GROUP BY form_id, fee_head_id
+    )
+
+    SELECT
+      row_number() OVER () AS sr_no,
+      u.name as student_name,
+      b.month_name AS batch_name,
+      c.name AS course_name,
+      TO_CHAR(COALESCE(ff.admission_date, ff.created_at), 'DD-MM-YYYY') AS admission_date,
+      s.name AS session_name,
+      JSON_AGG(ps) FILTER (WHERE ps.form_id IS NOT NULL) AS payment_summery,
+      COALESCE(MAX(tp.total_payment), 0.00) AS total_payment,
+      (SELECT MAX(payment_count) FROM fee_head_counts) AS max_payment_count
+    FROM fillup_forms ff
+
+    LEFT JOIN users u
+    ON u.id = ff.student_id
+
+    LEFT JOIN enrolled_courses ec
+    ON ec.form_id = ff.id
+
+    LEFT JOIN course c
+    ON c.id = ec.course_id
+
+    LEFT JOIN batch b
+    ON b.id = ec.batch_id
+
+    LEFT JOIN session s
+    ON s.id = ec.session_id
+
+    LEFT JOIN payment_summery ps
+    ON ps.form_id = ff.id
+
+    LEFT JOIN total_payments tp
+    ON tp.form_id = ff.id
+
+    ${filter}
+
+    GROUP BY ff.id, u.id, s.id, b.id, c.id
+  `;
+
+  const monthRangeQuery = `
+   SELECT 
+    generate_series(
+      DATE_TRUNC('month', '2025-04-01'::DATE),
+      DATE_TRUNC('month', '2026-03-29'::DATE),
+      interval '1 month'
+    )::date AS month_date
+  `;
+
+  const feeStructureQuery = `
+   SELECT
+    id AS fee_head_id,
+    name AS fee_head_name
+   FROM course_fee_head
+   ORDER BY position
+  `;
+
+  const workbook = new ExcelJS.stream.xlsx.WorkbookWriter({
+    stream: res,
+    useStyles: true,
+  });
+  const worksheet = workbook.addWorksheet("Admission Report");
+
+  worksheet.getCell("A1").font = {
+    size: 20,
+    bold: true,
+    color: { argb: "000000" },
+  };
+  worksheet.getCell("A1").fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "FFFF00" },
+  };
+  worksheet.getRow(1).height = 30;
+  worksheet.getCell("A1").alignment = {
+    horizontal: "left",
+    vertical: "middle",
+  };
+
+  worksheet.addRow([
+    "Sr Number",
+    "Student Name",
+    "Date Of Admission",
+    "Session",
+  ]);
+
+  // this is the main header marge
+  worksheet.mergeCells("A1:N1");
+
+  // Row styling (header row)
+  const ROWS = [worksheet.getRow(2), worksheet.getRow(3)];
+  ROWS.forEach((item) => {
+    item.eachCell((cell) => {
+      cell.style = {
+        font: { bold: true, size: 12, color: { argb: "000000" } },
+        alignment: { horizontal: "center", vertical: "middle", wrapText : false },
+        fill: {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "F4A460" },
+        },
+        border: {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          right: { style: "thin" },
+          bottom: { style: "thin" },
+        },
+      };
+    });
+  });
+
+  const client = await pool.connect();
+  const query = new QueryStream(mainQuery, filterValues, { batchSize: 10 });
+
+  const { rows: monthRange } = await client.query<{ month_date: string }>(
+    monthRangeQuery
+  );
+  const { rows: allFeeStructure } = await client.query<{
+    fee_head_id: number;
+    fee_head_name: string;
+  }>(feeStructureQuery);
+
+  const pgStream = client.query(query);
+
+  let index = 0;
+  pgStream.on("data", (data) => {
+    pgStream.pause();
+
+    if (index === 0) {
+      // set the header
+      worksheet.getCell("A1").value = `Admission Report (${
+        data.course_name
+      }) (${data.batch_name}) (${data.session_name}) (Mode : ${
+        value.mode == "Both" ? "Cash & Online Both" : value.mode
+      })`;
+
+      // const MARGE_ROW_NUMBER = parseInt(data.max_payment_count) + 1;
+
+      const MARGE_ROW_NUMBER = 3;
+
+      worksheet.mergeCells(`A2:A${MARGE_ROW_NUMBER}`);
+      worksheet.mergeCells(`B2:B${MARGE_ROW_NUMBER}`);
+      worksheet.mergeCells(`C2:C${MARGE_ROW_NUMBER}`);
+      worksheet.mergeCells(`D2:D${MARGE_ROW_NUMBER}`);
+
+      let currentCol = 5;
+
+      allFeeStructure.forEach((feeStructure) => {
+        const colName1 = getExcelColumnName(currentCol);
+        const mergeRange = `${colName1}2:${colName1}${MARGE_ROW_NUMBER}`;
+
+        const cell1 = worksheet.getCell(mergeRange);
+        cell1.value = `${feeStructure.fee_head_name}`;
+
+        cell1.style = {
+          font: { bold: true, size: 12, color: { argb: "000000" } },
+          alignment: {
+            horizontal: "center",
+            vertical: "middle",
+            wrapText: false
+          },
+          fill: {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "F4A460" },
+          },
+          border: {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            right: { style: "thin" },
+            bottom: { style: "thin" },
+          },
+        };
+
+        worksheet.mergeCells(mergeRange);
+
+        currentCol += 1;
+      });
+
+      index++;
+    }
+
+    const currentRow = worksheet.addRow([
+      data.sr_no,
+      data.student_name,
+      data.admission_date,
+      data.session_name,
+    ]);
+
+    currentRow.eachCell((cell) => {
+      cell.style = {
+        font: {
+          size: 12,
+        },
+        alignment: { horizontal: "center" },
+        border: {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          right: { style: "thin" },
+          bottom: { style: "thin" },
+        },
+      };
+    });
+    pgStream.resume();
+  });
+
+  pgStream.on("end", () => {
+    workbook.commit();
+    client.release(); // Release the client when done
+  });
+
+  pgStream.on("error", (err) => {
+    client.release();
+    workbook.commit();
+    console.error(err);
+  });
+});
+
 //admission excel report
 export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
   const { error, value } = VGetNewAdmissionReport.validate(req.query);

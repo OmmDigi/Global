@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createEmployeeSalarySheet, createInventoryReport, generatePaymentExcelReport, generateUrl, getAdmissionExcelReport, monthlyPaymentReport, studetnFeeSummaryReport } from "../controllers/excel.controller";
+import { createEmployeeSalarySheet, createInventoryReport, generatePaymentExcelReport, generateUrl, getAdmissionExcelReport, monthlyPaymentReport, newAdmissionExcelReport, studetnFeeSummaryReport } from "../controllers/excel.controller";
 import { isAuthorized } from "../middlewares/isAuthorized";
 import { verifySignedUrl } from "../middlewares/verifySignedUrl";
 

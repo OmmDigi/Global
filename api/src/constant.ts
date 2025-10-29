@@ -41,3 +41,4 @@ avilable_permissions.set("10", "Maintenance Record");
 avilable_permissions.set("11", "Stuff Attandance");
 
 export const MONTHLY_PAYMENT_HEAD_ID = 4
+export const LATE_FINE_FEE_HEAD_ID = 5;
