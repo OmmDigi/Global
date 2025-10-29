@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import BackToTopButton from "@/components/BackToTopButton";
 import Footer from "@/components/Footer";

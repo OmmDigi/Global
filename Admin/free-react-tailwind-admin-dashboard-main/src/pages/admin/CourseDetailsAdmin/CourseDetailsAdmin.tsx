@@ -392,24 +392,27 @@ export default function CourseDetailsAdmin() {
       fee_structure_info,
     };
 
-    try {
-      const response = await update(finalFormData as any);
-      refetch();
-      messageApi.open({
-        type: "success",
-        content: response.message,
-      });
+    // try {
+    //   const response = await update(finalFormData as any);
+    //   refetch();
+    //   messageApi.open({
+    //     type: "success",
+    //     content: response.message,
+    //   });
 
-      setEnteredAmounts("");
-      setEnteredBillno("");
-      setPaymentMode("");
-      setEditId(null);
-    } catch (error: any) {
-      messageApi.open({
-        type: "error",
-        content: error.response?.data?.message,
-      });
-    }
+    //   setEnteredAmounts("");
+    //   setEnteredBillno("");
+    //   setPaymentMode("");
+    //   setEditId(null);
+    // } catch (error: any) {
+    //   messageApi.open({
+    //     type: "error",
+    //     content: error.response?.data?.message,
+    //   });
+    // }
+    startTransition(async () => {
+      await doPayment(finalFormData as any);
+    });
   };
 
   const fees_structure_table = feesStructure?.data?.payments_history;
