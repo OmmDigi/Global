@@ -211,7 +211,7 @@ export const addPayment = asyncErrorHandler(async (req: CustomRequest, res) => {
 
   const client_fee_structure_info = (
     value.fee_structure_info as {
-      id : number | null,
+      id: number | null;
       fee_head_id: number;
       custom_min_amount: number;
       month?: string;
@@ -332,10 +332,9 @@ export const addPayment = asyncErrorHandler(async (req: CustomRequest, res) => {
     await client.query("BEGIN");
 
     if (value.type === "update") {
-
       await deletePaymentService({
         form_id,
-        ids: client_fee_structure_info.map(item => item.id),
+        ids: client_fee_structure_info.map((item) => item.id),
         user_id: value.user_id,
         client,
       });
@@ -355,17 +354,21 @@ export const addPayment = asyncErrorHandler(async (req: CustomRequest, res) => {
 
     await client.query("COMMIT");
 
+    if (value.type === "add") {
+      return res
+        .status(200)
+        .json(new ApiResponse(200, "Payment info successfully removed"));
+    }
+
     res
       .status(200)
-      .json(new ApiResponse(200, "Payment info successfully removed"));
+      .json(new ApiResponse(200, "Payment info successfully updated"));
   } catch (error: any) {
     await client.query("ROLLBACK");
     throw new ErrorHandler(400, error.message);
   } finally {
     client.release();
   }
-
-  res.status(200).json(new ApiResponse(200, "New payment details added"));
 });
 
 export const deletePayment = asyncErrorHandler(
