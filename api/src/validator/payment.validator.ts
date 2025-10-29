@@ -15,12 +15,13 @@ export const VCreateOrderValidator = Joi.object({
 
 export const VAddPayment = Joi.object({
   form_id: Joi.number().required(),
-  // payment_mode: Joi.string().required(),
-  // payment_details : Joi.string().optional().allow(null),
   do_continue : Joi.boolean().optional().default(false),
+  type : Joi.string().required().valid("add", "update"),
+  user_id : Joi.number().required(),
   fee_structure_info: Joi.array()
     .items(
       Joi.object({
+        id : Joi.number().optional().allow(null),
         fee_head_id: Joi.number().required(),
         custom_min_amount: Joi.number().required(),
         month: Joi.string().optional().allow(null),

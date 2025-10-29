@@ -1,8 +1,8 @@
 import { pool } from "../config/db";
 import { phonePe } from "../config/phonePe";
-import { MONTHLY_PAYMENT_HEAD_ID } from "../constant";
+import { LATE_FINE_FEE_HEAD_ID, MONTHLY_PAYMENT_HEAD_ID } from "../constant";
 import asyncErrorHandler from "../middlewares/asyncErrorHandler";
-import { setPayment } from "../services/payment.service";
+import { deletePaymentService, setPayment } from "../services/payment.service";
 import { CustomRequest } from "../types";
 import { ApiResponse } from "../utils/ApiResponse";
 import { ErrorHandler } from "../utils/ErrorHandler";
@@ -32,7 +32,8 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
       }[]
     ).filter((item) => item.custom_min_amount != 0);
 
-    if (fee_structure_info.length === 0) throw new ErrorHandler(400, "Nothing to pay")
+    if (fee_structure_info.length === 0)
+      throw new ErrorHandler(400, "Nothing to pay");
 
     const placeholder = fee_structure_info
       .map((_, index) => `$${index + 2}`)
@@ -79,7 +80,7 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
       payment_date: string | null;
       bill_no: string | null;
       payment_mode: string | null;
-      payment_details : string | null
+      payment_details: string | null;
     }[] = [];
 
     const payment_date_str = new Date().toUTCString();
@@ -106,7 +107,7 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
           payment_date: payment_date_str,
           bill_no: null,
           payment_mode: null,
-          payment_details : null
+          payment_details: null,
         });
       }
     });
@@ -200,20 +201,23 @@ export const verifyPayment = asyncErrorHandler(async (req, res) => {
 });
 
 // this is from admin panel only
-export const addPayment = asyncErrorHandler(async (req, res) => {
-  const { error, value } = VAddPayment.validate(req.body ?? {});
+export const addPayment = asyncErrorHandler(async (req: CustomRequest, res) => {
+  const { error, value } = VAddPayment.validate(
+    req.body ? { ...req.body, user_id: req.user_info?.id } : {}
+  );
   if (error) throw new ErrorHandler(400, error.message);
 
   const form_id = value.form_id;
 
   const client_fee_structure_info = (
     value.fee_structure_info as {
+      id : number | null,
       fee_head_id: number;
       custom_min_amount: number;
       month?: string;
       payment_date?: string;
       payment_mode: string;
-      payment_details : string | null;
+      payment_details: string | null;
       bill_no: string;
     }[]
   ).filter((item) => item.custom_min_amount != 0);
@@ -276,7 +280,11 @@ export const addPayment = asyncErrorHandler(async (req, res) => {
   let monthlyPaymentMonthStartDate: string | null = null;
   const fee_head_ids_info = client_fee_structure_info.map((item) => {
     let monthFirstDateToStore: string | null = null;
-    if (item.month && item.fee_head_id === MONTHLY_PAYMENT_HEAD_ID) {
+    if (
+      item.month &&
+      (item.fee_head_id === MONTHLY_PAYMENT_HEAD_ID ||
+        item.fee_head_id === LATE_FINE_FEE_HEAD_ID)
+    ) {
       if (!/^\d{4}-\d{2}$/.test(item.month)) {
         throw new ErrorHandler(
           400,
@@ -301,7 +309,7 @@ export const addPayment = asyncErrorHandler(async (req, res) => {
       payment_date: item.payment_date ?? null,
       bill_no: item.bill_no,
       payment_mode: item.payment_mode,
-      payment_details : item.payment_details
+      payment_details: item.payment_details,
     };
   });
 
@@ -318,46 +326,77 @@ export const addPayment = asyncErrorHandler(async (req, res) => {
       );
   }
 
-  await setPayment({
-    fee_head_ids_info,
-    form_id,
-    mode: null,
-    student_id: rows[0].student_id,
-    // transition_id: value.payment_details,
-    status: 2,
-    // payment_details: value.payment_details ?? null,
-    payment_details : null
-  });
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    if (value.type === "update") {
+
+      await deletePaymentService({
+        form_id,
+        ids: client_fee_structure_info.map(item => item.id),
+        user_id: value.user_id,
+        client,
+      });
+    }
+
+    await setPayment({
+      fee_head_ids_info,
+      form_id,
+      mode: null,
+      student_id: rows[0].student_id,
+      // transition_id: value.payment_details,
+      status: 2,
+      // payment_details: value.payment_details ?? null,
+      payment_details: null,
+      client,
+    });
+
+    await client.query("COMMIT");
+
+    res
+      .status(200)
+      .json(new ApiResponse(200, "Payment info successfully removed"));
+  } catch (error: any) {
+    await client.query("ROLLBACK");
+    throw new ErrorHandler(400, error.message);
+  } finally {
+    client.release();
+  }
 
   res.status(200).json(new ApiResponse(200, "New payment details added"));
 });
 
-export const deletePayment = asyncErrorHandler(async (req: CustomRequest, res) => {
-  const { error, value } = VDeletePayment.validate(req.params ? { ...req.params, user_id: req.user_info?.id } : {});
-  if (error) throw new ErrorHandler(400, error.message);
+export const deletePayment = asyncErrorHandler(
+  async (req: CustomRequest, res) => {
+    const { error, value } = VDeletePayment.validate(
+      req.params ? { ...req.params, user_id: req.user_info?.id } : {}
+    );
+    if (error) throw new ErrorHandler(400, error.message);
 
-  const client = await pool.connect();
+    const client = await pool.connect();
 
-  try {
-    await client.query('BEGIN')
+    try {
+      await client.query("BEGIN");
 
-    const { rows, rowCount } = await client.query('DELETE FROM payments WHERE id = $1 AND form_id = $2 RETURNING *', [value.id, value.form_id]);
+      await deletePaymentService({
+        form_id: value.form_id,
+        ids: [value.id],
+        user_id: value.user_id,
+        client,
+      });
 
-    if (rowCount === 0) {
-      throw new ErrorHandler(404, "No admission form found")
+      await client.query("COMMIT");
+
+      res
+        .status(200)
+        .json(new ApiResponse(200, "Payment info successfully removed"));
+    } catch (error: any) {
+      await client.query("ROLLBACK");
+      throw new ErrorHandler(400, error.message);
+    } finally {
+      client.release();
     }
-
-    const paymentInfoJson = JSON.stringify(rows[0]);
-
-    await client.query("INSERT INTO deleted_payments (payment_row_id, payment_info, form_id, user_id) VALUES ($1, $2, $3, $4)", [rows[0].id, paymentInfoJson, rows[0].form_id, value.user_id])
-
-    await client.query('COMMIT');
-
-    res.status(200).json(new ApiResponse(200, "Payment info successfully removed"))
-  } catch (error: any) {
-    await client.query('ROLLBACK');
-    throw new ErrorHandler(400, error.message)
-  } finally {
-    client.release()
   }
-});
+);
