@@ -10,6 +10,7 @@ import Switch from "../../form/switch/Switch";
 import { useNavigate, useSearchParams } from "react-router";
 // import { useEffect, useState } from "react";
 import Pagination from "../../form/Pagination";
+import { Calendar, IdCard } from "lucide-react";
 
 export default function BasicTableAdmission({
   admissionlist,
@@ -50,18 +51,7 @@ any) {
               >
                 Course name
               </TableCell>
-              <TableCell
-                isHeader
-                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >
-                Batch
-              </TableCell>
-              <TableCell
-                isHeader
-                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >
-                Form No
-              </TableCell>
+
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
@@ -112,23 +102,31 @@ any) {
                         className="h-8 w-8 rounded-full"
                       />
                     </div>
-                    <div>
-                      <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                        {order.student_name}
-                      </span>
+                    <div className="flex flex-col ">
+                      <div>
+                        <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                          {order.student_name}
+                        </span>
+                      </div>
+                      <div className="flex gap-5">
+                        <span className="text-gray-400 flex items-center gap-1 text-sm">
+                          <Calendar size={15} />
+                          {order.batch_name ?? "All Batch"}
+                        </span>
+
+                        <span className="text-gray-400 flex items-center gap-1 text-sm">
+                          <IdCard size={15} />
+
+                          {order.form_name}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   {order.course_name}
                 </TableCell>
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  {order.batch_name}
-                </TableCell>
 
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  {order.form_name}
-                </TableCell>
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   {order.course_fee}
                 </TableCell>

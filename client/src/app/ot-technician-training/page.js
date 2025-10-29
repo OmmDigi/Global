@@ -1,4 +1,3 @@
-"use client";
 import React from "react";
 import BackToTopButton from "@/components/BackToTopButton";
 import Footer from "@/components/Footer";
@@ -6,21 +5,6 @@ import Navbar from "@/components/Navbar";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import Link from "next/link";
-
-const responsive2 = {
-  desktop: {
-    breakpoint: { max: 3000, min: 1024 },
-    items: 1,
-  },
-  tablet: {
-    breakpoint: { max: 1024, min: 464 },
-    items: 1,
-  },
-  mobile: {
-    breakpoint: { max: 464, min: 0 },
-    items: 1,
-  },
-};
 
 function page() {
   return (

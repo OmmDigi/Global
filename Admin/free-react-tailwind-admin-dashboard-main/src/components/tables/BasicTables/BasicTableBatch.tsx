@@ -14,13 +14,12 @@ import { mutate } from "swr";
 import { useEffect, useState } from "react";
 import Pagination from "../../form/Pagination";
 
-
 interface IProps {
   batchList: any;
-//   onEdit: (id: number) => void;
+  //   onEdit: (id: number) => void;
   onActive: (checked: boolean, id: number) => void;
-  onSendData:any;
-
+  onSendData: any;
+  mutateBatchList: any;
 }
 
 // Define the table data using the interface
@@ -28,9 +27,9 @@ interface IProps {
 export default function BasicTableSession({
   batchList,
   onActive,
-  onSendData
+  onSendData,
+  mutateBatchList,
 }: IProps) {
-
   // const onShowSizeChange: PaginationProps["onShowSizeChange"] = (
   //   current,
   //   pageSize
@@ -42,18 +41,18 @@ export default function BasicTableSession({
     (url, { arg }: { arg: number }) => deleteFetcher(`${url}/${arg}`) // arg contains the id
   );
   const handleDelete = async (id: number) => {
-        if(!confirm("Are you want to delete")) return;
+    if (!confirm("Are you want to delete")) return;
 
     try {
       await deleteUser(id);
       message.success("User deleted successfully");
-      mutate("api/v1/course/batch");
+      mutateBatchList();
     } catch (error) {
       console.error("Delete failed:", error);
       message.error("Failed to delete user");
     }
   };
-const [count, setCount] = useState(1);
+  const [count, setCount] = useState(1);
   useEffect(() => {
     onSendData(count);
   }, [count, onSendData]);
@@ -108,12 +107,12 @@ const [count, setCount] = useState(1);
             "session_name": "2026 - 2027",
             "course_name": " CMS & ED Training" */}
           <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-            {batchList?.data?.map((order: any,index:any) => (
+            {batchList?.data?.map((order: any, index: any) => (
               <TableRow key={order.id}>
                 <TableCell className="px-5 py-4 sm:px-6 text-start">
                   <div className="flex items-center gap-3">
                     <div className="block font-medium text-gray-500 text-theme-xs dark:text-gray-400]">
-                      {index + 1 }
+                      {index + 1}
                     </div>
                     <div>
                       <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
@@ -183,4 +182,3 @@ const [count, setCount] = useState(1);
     </div>
   );
 }
-

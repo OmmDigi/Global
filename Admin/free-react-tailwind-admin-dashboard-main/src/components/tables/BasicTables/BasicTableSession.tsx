@@ -8,7 +8,6 @@ import {
 
 import Switch from "../../form/switch/Switch";
 
-
 interface IProps {
   sessionList: any;
   onEdit: (id: number) => void;

@@ -3,6 +3,7 @@ interface ComponentCardProps {
   children: React.ReactNode;
   className?: string; // Additional custom classes for styling
   desc?: string; // Description text
+  childClassName?: string; // Additional custom classes for child styling
 }
 
 const ComponentCard: React.FC<ComponentCardProps> = ({
@@ -10,6 +11,7 @@ const ComponentCard: React.FC<ComponentCardProps> = ({
   children,
   className = "",
   desc = "",
+  childClassName = "",
 }) => {
   return (
     <div
@@ -28,7 +30,9 @@ const ComponentCard: React.FC<ComponentCardProps> = ({
       </div>
 
       {/* Card Body */}
-      <div className="p-4 border-t border-gray-100 dark:border-gray-800 sm:p-6">
+      <div
+        className={`${childClassName} p-4 border-t border-gray-100 dark:border-gray-800 sm:p-6`}
+      >
         <div className="space-y-6">{children}</div>
       </div>
     </div>
