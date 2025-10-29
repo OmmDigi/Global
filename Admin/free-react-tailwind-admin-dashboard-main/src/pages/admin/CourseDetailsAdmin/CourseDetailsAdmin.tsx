@@ -59,6 +59,7 @@ export default function CourseDetailsAdmin() {
   const [editId, setEditId] = useState<[number, number] | null>(null);
 
   const feeHeadRef = useRef<HTMLDivElement>(null);
+  const currentEditFeeHeadId = useRef<number>(0);
 
   const select = (id: number) => {
     setActiveRow(id);
@@ -322,6 +323,7 @@ export default function CourseDetailsAdmin() {
 
   const handleEdit = (fee: any) => {
     feeHeadRef.current?.scrollIntoView({ behavior: "smooth" });
+    currentEditFeeHeadId.current = fee.fee_head_id;
     setEditId([fee?.id, fee?.fee_head_id]);
     const feeList =
       feesStructure?.data?.fee_structure_info || feesStructure || [];
@@ -656,10 +658,13 @@ export default function CourseDetailsAdmin() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 mt-2 gap-6 xl:grid-cols-1">
+      <div
+        ref={feeHeadRef}
+        className="grid grid-cols-1 mt-2 gap-6 xl:grid-cols-1"
+      >
         <div className="space-y-6 ">
           <ComponentCard title="Fees head" childClassName="!p-0 sm:!p-0">
-            <div ref={feeHeadRef} className="space-y-1">
+            <div className="space-y-1">
               <form onSubmit={handleSubmit2} className="space-y-6">
                 <div className="p-2 dark:text-gray-200  shadow-sm  ">
                   <div className="space-y-6">
@@ -679,8 +684,9 @@ export default function CourseDetailsAdmin() {
                             key={item.fee_head_id}
                             onClick={() => select(index)}
                             className={`flex flex-col cursor-pointer px-6 ${
-                              activeRow === index
-                                ? "bg-gray-600  pt-2 pb-2"
+                              activeRow === index ||
+                              currentEditFeeHeadId.current == item.fee_head_id
+                                ? "bg-gray-700  pt-2 pb-2"
                                 : ""
                             }`}
                           >
@@ -879,13 +885,27 @@ export default function CourseDetailsAdmin() {
                                   placeholder="Enter remarks..."
                                 />
                                 <div className="mt-2 flex gap-3">
-                                  <button
-                                    type="button"
-                                    onClick={() => handleRowSave(item)}
-                                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded"
-                                  >
-                                    Confirm Save
-                                  </button>
+                                  {editId?.[1] == item.fee_head_id ? (
+                                    <div
+                                      onClick={() => handleUpdate(item)}
+                                      className="px-2 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition cursor-pointer"
+                                    >
+                                      Update
+                                    </div>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      disabled={isPending}
+                                      onClick={() => handleRowSave(item)}
+                                      className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
+                                    >
+                                      {isPending ? (
+                                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                      ) : (
+                                        "Save"
+                                      )}
+                                    </button>
+                                  )}
                                   <button
                                     type="button"
                                     onClick={() =>
