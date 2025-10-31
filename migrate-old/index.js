@@ -218,6 +218,7 @@ async function main() {
       if (!FEE_HEAD_ID) continue;
 
       finalDataToInsert.push({
+        admission_date : currentRowInfo.dateOfAdmission,
         student_name: studentName,
         form_id: row.form_id,
         mode: value.online != "" ? "Online" : "Cash",
@@ -251,6 +252,7 @@ async function main() {
         form_id: data.form_id,
         fee_head_id: data.fee_head_id,
         amount: parseFloat(data.amount),
+        admission_date : data.admission_date
       }) - 1;
       existFeeStructure[key] = index;
       continue;
@@ -278,17 +280,31 @@ async function main() {
 
     //store the form fee structure also
 
-    const placeholder = generatePlaceholders(form_fee_structure_table.length, 5)
+    // console.log(form_fee_structure_table.filter(item => item.admission_date !== undefined).length)
 
-    await pool.query(
+    await client.query(
+      `
+      UPDATE fillup_forms AS ff
+      SET admission_date = v.admission_date::DATE
+      FROM (
+        VALUES
+          ${form_fee_structure_table.filter(item => item.admission_date !== undefined).map(item => `(${item.form_id}, TO_CHAR(TO_DATE('${item.admission_date}', 'DD-MM-YYYY'), 'YYYY-MM-DD'))`).join(", ")}
+      ) AS v(form_id, admission_date)
+      WHERE ff.id = v.form_id::BIGINT;
+      `
+    )
+
+    const placeholder = generatePlaceholders(form_fee_structure_table.length, 5);
+    await client.query(
       `
       INSERT INTO form_fee_structure 
         (form_id, fee_head_id, amount, min_amount, required) 
       VALUES 
         ${placeholder}
-      ON CONFLICT (form_id, fee_head_id) DO UPDATE
-        SET amount = EXCLUDED.amount,
-            min_amount = EXCLUDED.amount
+      --ON CONFLICT (form_id, fee_head_id) DO UPDATE
+      --  SET amount = EXCLUDED.amount,
+      --      min_amount = EXCLUDED.amount
+      ON CONFLICT DO NOTHING
     `,
       form_fee_structure_table.flatMap((item) => [
         item.form_id,
@@ -300,13 +316,13 @@ async function main() {
     );
 
     //delete any old payments
-    await pool.query(
+    await client.query(
       `DELETE FROM payments WHERE form_id IN (${finalDataToInsert
         .map((item) => item.form_id)
         .join(", ")})`
     );
 
-    await pool.query(
+    await client.query(
       `
      INSERT INTO payments (form_id, mode, student_id, payment_name_id, order_id, receipt_id, amount, fee_head_id, status, transition_id, remark, payment_date, month, bill_no) VALUES
      ${placeholders}

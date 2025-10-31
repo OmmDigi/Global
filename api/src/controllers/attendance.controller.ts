@@ -118,6 +118,17 @@ export const storeAttendance = asyncErrorHandler(async (req, res) => {
 });
 
 export const getAttendanceList = asyncErrorHandler(async (req, res) => {
+
+  let placeholder = 1;
+  const filterValues : string[] = [];
+
+  let date = "CURRENT_DATE";
+
+  if(req.query.date) {
+    date = `$${placeholder++}::DATE`
+    filterValues.push(req.query.date.toString())
+  }
+
   const { rows } = await pool.query(
     `
     SELECT
@@ -129,21 +140,22 @@ export const getAttendanceList = asyncErrorHandler(async (req, res) => {
         TO_CHAR(a.out_time, 'HH12:MI:SS am') AS out_time,
     CASE
         WHEN h.date IS NOT NULL THEN 'Holiday'
-        WHEN EXTRACT(DOW FROM CURRENT_DATE) = 0 THEN 'Sunday'
+        WHEN EXTRACT(DOW FROM ${date}) = 0 THEN 'Sunday'
         ELSE a.status
     END AS status
     FROM users u
 
     LEFT JOIN attendance a
-    ON a.employee_id = u.id AND a.date = CURRENT_DATE
+    ON a.employee_id = u.id AND a.date = ${date}
 
     LEFT JOIN holiday h
-    ON h.date = CURRENT_DATE
+    ON h.date = ${date}
 
     WHERE u.category != 'Student' AND u.category != 'Admin'
 
     ORDER BY u.id DESC
-    `
+    `,
+    filterValues
   );
 
   res.status(200).json(new ApiResponse(200, "Daily Attendance List", rows));

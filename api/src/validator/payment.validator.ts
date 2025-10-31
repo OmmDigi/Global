@@ -16,7 +16,7 @@ export const VCreateOrderValidator = Joi.object({
 export const VAddPayment = Joi.object({
   form_id: Joi.number().required(),
   do_continue : Joi.boolean().optional().default(false),
-  type : Joi.string().required().valid("add", "update"),
+  type : Joi.string().optional().valid("add", "update").default("add"),
   user_id : Joi.number().required(),
   fee_structure_info: Joi.array()
     .items(

@@ -8,7 +8,7 @@ export const excelRoute = Router();
 excelRoute
     .post("/url", isAuthorized([13, 15, 6, 11, 8]), generateUrl)
     .get("/payment-report", verifySignedUrl, generatePaymentExcelReport)
-    .get("/admission-report", verifySignedUrl, getAdmissionExcelReport)
+    .get("/admission-report", verifySignedUrl, newAdmissionExcelReport)
     .get("/monthly-payment-report", verifySignedUrl, monthlyPaymentReport)
     .get("/salary-sheet", verifySignedUrl, createEmployeeSalarySheet)
     .get("/fee-summery", verifySignedUrl, studetnFeeSummaryReport)

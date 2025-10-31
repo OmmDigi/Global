@@ -15,6 +15,14 @@ import { ApiResponse } from "../utils/ApiResponse";
 import { createToken } from "../services/jwt";
 import { VCreateEmployeeSalarySheet } from "../validator/users.validator";
 import { getExcelColumnName } from "../utils/getExcelColumnName";
+import {
+  ADMISSION_FEE_HEAD_ID,
+  LATE_FINE_FEE_HEAD_ID,
+  MONTHLY_PAYMENT_HEAD_ID,
+} from "../constant";
+import { TAdmissionReportData } from "../types";
+import { addMergedCellStyle } from "../utils/addMergedCellStyle";
+import { mergeVerticallyWithStyle } from "../utils/add";
 
 const urls = new Map<string, { url: string; route_id: number }>();
 const HOST_URL = process.env.API_HOST_URL;
@@ -68,16 +76,6 @@ export const newAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
   const { error, value } = VGetNewAdmissionReport.validate(req.query);
   if (error) throw new ErrorHandler(400, error.message);
 
-  // Set response headers for streaming
-  res.setHeader(
-    "Content-Disposition",
-    'attachment; filename="Admission_Report.xlsx"'
-  );
-  res.setHeader(
-    "Content-Type",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-  );
-
   let filter = "";
   const filterValues: string[] = [];
   let placeholder = 1;
@@ -112,9 +110,9 @@ export const newAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
   let paymentFilter = "";
   if (value.mode && value.mode !== "Both") {
     if (paymentFilter == "") {
-      paymentFilter = `WHERE p.mode = $${placeholder++} OR p.mode = 'Discount'`;
+      paymentFilter = `WHERE p.status = 2 AND p.mode = $${placeholder++} OR p.mode = 'Discount'`;
     } else {
-      paymentFilter += ` (AND p.mode = $${placeholder++} OR p.mode = 'Discount')`;
+      paymentFilter += ` (AND p.status = 2 AND p.mode = $${placeholder++} OR p.mode = 'Discount')`;
     }
     filterValues.push(value.mode);
   }
@@ -123,12 +121,12 @@ export const newAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
    WITH payment_summery AS (
       SELECT
         p.form_id,
-        p.payment_date,
+        TO_CHAR(p.payment_date, 'FMDD FMMonth, YYYY') AS payment_date,
         p.mode,
         p.bill_no,
         p.amount,
         p.fee_head_id,
-        p.month
+        TO_CHAR(p.month, 'FMMonth, YYYY') AS month
       FROM payments p
 
       ${paymentFilter}
@@ -151,6 +149,24 @@ export const newAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
       FROM payments p
       ${paymentFilter}
       GROUP BY form_id, fee_head_id
+    ),
+
+    form_fee_head_amounts AS (
+      SELECT
+        ffs.form_id,
+        ffs.fee_head_id,
+        ffs.amount - COALESCE(SUM(p.amount), 0) AS fee
+      FROM form_fee_structure ffs
+
+      LEFT JOIN course_fee_head cfh
+      ON cfh.id = ffs.fee_head_id
+
+      LEFT JOIN payments p
+      ON p.form_id = ffs.form_id AND p.fee_head_id = ffs.fee_head_id AND p.mode = 'Discount'
+
+      GROUP BY ffs.id, cfh.id
+
+      ORDER BY cfh.position
     )
 
     SELECT
@@ -158,11 +174,18 @@ export const newAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
       u.name as student_name,
       b.month_name AS batch_name,
       c.name AS course_name,
+      c.duration,
       TO_CHAR(COALESCE(ff.admission_date, ff.created_at), 'DD-MM-YYYY') AS admission_date,
       s.name AS session_name,
-      JSON_AGG(ps) FILTER (WHERE ps.form_id IS NOT NULL) AS payment_summery,
+      COALESCE(JSON_AGG(ps) FILTER (WHERE ps.form_id IS NOT NULL), '[]'::json) AS payment_summery,
       COALESCE(MAX(tp.total_payment), 0.00) AS total_payment,
-      (SELECT MAX(payment_count) FROM fee_head_counts) AS max_payment_count
+      SUM(tp.total_payment) final_payment_result,
+      (SELECT COALESCE(MAX(payment_count), 0) FROM fee_head_counts WHERE form_id = ff.id) AS max_payment_count,
+      (
+        SELECT JSON_AGG(ROW_TO_JSON(ffa))
+        FROM form_fee_head_amounts ffa
+        WHERE ffa.form_id = ff.id
+      ) AS form_fee_head_amounts
     FROM fillup_forms ff
 
     LEFT JOIN users u
@@ -205,14 +228,32 @@ export const newAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
     id AS fee_head_id,
     name AS fee_head_name
    FROM course_fee_head
-   ORDER BY position
+   ORDER BY 
+      CASE
+        WHEN id = ${ADMISSION_FEE_HEAD_ID} THEN 1
+        WHEN id = ${MONTHLY_PAYMENT_HEAD_ID} THEN 2
+        WHEN id = ${LATE_FINE_FEE_HEAD_ID} THEN 3
+        ELSE 4
+      END,
+    position;
   `;
 
   const workbook = new ExcelJS.stream.xlsx.WorkbookWriter({
     stream: res,
     useStyles: true,
   });
+
   const worksheet = workbook.addWorksheet("Admission Report");
+
+  // Set response headers for streaming
+  res.setHeader(
+    "Content-Disposition",
+    'attachment; filename="Admission_Report.xlsx"'
+  );
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
 
   worksheet.getCell("A1").font = {
     size: 20,
@@ -237,6 +278,10 @@ export const newAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
     "Session",
   ]);
 
+  // worksheet.views = [
+  //   { state: "frozen", ySplit: 2 } // Freeze top 2 rows
+  // ];
+
   // this is the main header marge
   worksheet.mergeCells("A1:N1");
 
@@ -246,7 +291,11 @@ export const newAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
     item.eachCell((cell) => {
       cell.style = {
         font: { bold: true, size: 12, color: { argb: "000000" } },
-        alignment: { horizontal: "center", vertical: "middle", wrapText : false },
+        alignment: {
+          horizontal: "center",
+          vertical: "middle",
+          wrapText: false,
+        },
         fill: {
           type: "pattern",
           pattern: "solid",
@@ -265,9 +314,9 @@ export const newAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
   const client = await pool.connect();
   const query = new QueryStream(mainQuery, filterValues, { batchSize: 10 });
 
-  const { rows: monthRange } = await client.query<{ month_date: string }>(
-    monthRangeQuery
-  );
+  // const { rows: monthRange } = await client.query<{ month_date: string }>(
+  //   monthRangeQuery
+  // );
   const { rows: allFeeStructure } = await client.query<{
     fee_head_id: number;
     fee_head_name: string;
@@ -276,61 +325,99 @@ export const newAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
   const pgStream = client.query(query);
 
   let index = 0;
-  pgStream.on("data", (data) => {
+  let completedMargeRow = 3;
+  let endCell: { r: number, c: number } = { r: 0, c: 0 };
+  let finalTotalAmount = 0;
+
+  pgStream.on("data", (data: TAdmissionReportData) => {
     pgStream.pause();
+
+    finalTotalAmount = data.final_payment_result;
 
     if (index === 0) {
       // set the header
-      worksheet.getCell("A1").value = `Admission Report (${
-        data.course_name
-      }) (${data.batch_name}) (${data.session_name}) (Mode : ${
-        value.mode == "Both" ? "Cash & Online Both" : value.mode
-      })`;
+      worksheet.getCell("A1").value = `Admission Report (${data.course_name
+        }) (${data.batch_name}) (${data.session_name}) (Mode : ${value.mode == "Both" ? "Cash & Online Both" : value.mode
+        })`;
 
-      // const MARGE_ROW_NUMBER = parseInt(data.max_payment_count) + 1;
+      worksheet.mergeCells(`A2:A3`);
+      worksheet.mergeCells(`B2:B3`);
+      worksheet.mergeCells(`C2:C3`);
+      worksheet.mergeCells(`D2:D3`);
 
-      const MARGE_ROW_NUMBER = 3;
-
-      worksheet.mergeCells(`A2:A${MARGE_ROW_NUMBER}`);
-      worksheet.mergeCells(`B2:B${MARGE_ROW_NUMBER}`);
-      worksheet.mergeCells(`C2:C${MARGE_ROW_NUMBER}`);
-      worksheet.mergeCells(`D2:D${MARGE_ROW_NUMBER}`);
-
-      let currentCol = 5;
-
-      allFeeStructure.forEach((feeStructure) => {
-        const colName1 = getExcelColumnName(currentCol);
-        const mergeRange = `${colName1}2:${colName1}${MARGE_ROW_NUMBER}`;
-
-        const cell1 = worksheet.getCell(mergeRange);
-        cell1.value = `${feeStructure.fee_head_name}`;
-
-        cell1.style = {
-          font: { bold: true, size: 12, color: { argb: "000000" } },
-          alignment: {
-            horizontal: "center",
-            vertical: "middle",
-            wrapText: false
-          },
-          fill: {
-            type: "pattern",
-            pattern: "solid",
-            fgColor: { argb: "F4A460" },
-          },
-          border: {
-            top: { style: "thin" },
-            left: { style: "thin" },
-            right: { style: "thin" },
-            bottom: { style: "thin" },
-          },
-        };
-
-        worksheet.mergeCells(mergeRange);
-
-        currentCol += 1;
+      allFeeStructure.push({
+        //add some extra col name
+        fee_head_id: -1,
+        fee_head_name:
+          "Total Fees Collected  (Monthly/Late Fess  /Admission/Other Fees )",
       });
 
-      index++;
+      let currentColStart = 5;
+
+      allFeeStructure.forEach((feeStructure) => {
+        const cellListToStyle: ExcelJS.Cell[] = [];
+
+        //modify the heads
+
+        // if (feeStructure.fee_head_id === ADMISSION_FEE_HEAD_ID) {
+        // only for testing
+
+        const startRow = 2;
+        const startCol = currentColStart;
+        const endRow = 3;
+        let endCol = currentColStart;
+
+        if (feeStructure.fee_head_id === MONTHLY_PAYMENT_HEAD_ID) {
+          // if monthly go 6 time
+          endCol += 6;
+          currentColStart += 7;
+        } else if (feeStructure.fee_head_id === -1) {
+          // if -1 go 0 time
+          endCol += 0;
+          currentColStart += 1;
+        } else {
+          // if other go 5 time
+          endCol += 5;
+          currentColStart += 6;
+        }
+
+        const cell = worksheet.getCell(startRow, endCol);
+        worksheet.mergeCells(startRow, startCol, endRow, endCol);
+
+        cell.value = feeStructure.fee_head_name;
+
+        cellListToStyle.push(cell);
+        // }
+
+        //end
+
+        cellListToStyle.forEach((cell) => {
+          cell.style.font = { size: 12, bold: true, color: { argb: "000000" } };
+          cell.style.alignment = {
+            horizontal: "center",
+            vertical: "middle",
+            wrapText: false,
+          };
+          (cell.style.fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: {
+              argb:
+                feeStructure.fee_head_id === MONTHLY_PAYMENT_HEAD_ID
+                  ? "a9d08e"
+                  : "F4A460",
+            },
+          }),
+            (cell.style.border = {
+              top: { style: "thin" },
+              left: { style: "thin" },
+              right: { style: "thin" },
+              bottom: { style: "thin" },
+            });
+        });
+
+        // currentColStart += (feeStructure.fee_head_id === MONTHLY_PAYMENT_HEAD_ID ? 7 : 6);
+      });
     }
 
     const currentRow = worksheet.addRow([
@@ -340,24 +427,249 @@ export const newAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
       data.session_name,
     ]);
 
-    currentRow.eachCell((cell) => {
-      cell.style = {
-        font: {
-          size: 12,
-        },
-        alignment: { horizontal: "center" },
-        border: {
-          top: { style: "thin" },
-          left: { style: "thin" },
-          right: { style: "thin" },
-          bottom: { style: "thin" },
-        },
-      };
-    });
+    const maxRow = parseInt(data.max_payment_count.toString()) + 1;
+
+    const startRow = currentRow.number;
+    // const startCol = 1; // Mean A
+    const endRow = completedMargeRow + maxRow;
+
+    completedMargeRow += maxRow;
+    // const endCol = 4; // Mean D
+
+    const style = {
+      font: { size: 12, bold: false },
+      alignment: { horizontal: "center", vertical: "middle" },
+      border: {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        right: { style: "thin" },
+        bottom: { style: "thin" },
+      },
+    };
+
+    mergeVerticallyWithStyle(worksheet, startRow, endRow, 4, style);
+
+    if (data.max_payment_count != 0) {
+      // mean some payment are there
+      const childHeads = [
+        "Total Fee",
+        "Date",
+        "Bill No",
+        "Mode",
+        "Amount",
+        "Month",
+        "Actutal Paid",
+      ];
+      let headColNum = 5;
+
+      allFeeStructure.forEach((feeStructure) => {
+        if (feeStructure.fee_head_id === -1) {
+          worksheet.mergeCells(startRow, headColNum, endRow, headColNum);
+          const cell = worksheet.getCell(startRow, headColNum);
+          cell.style = {
+            font: { size: 12, bold: true },
+            alignment: { horizontal: "center", vertical: "middle" },
+            border: {
+              top: { style: "thin" },
+              left: { style: "thin" },
+              right: { style: "thin" },
+              bottom: { style: "thin" },
+            },
+          };
+
+          cell.value = data.total_payment;
+
+          endCell = {
+            r: parseInt(data.max_payment_count.toString()) + startRow + 1,
+            c: headColNum
+          }
+
+          return;
+        }
+
+        childHeads.forEach((head, cHeadIndex) => {
+          if (
+            feeStructure.fee_head_id != MONTHLY_PAYMENT_HEAD_ID &&
+            head === "Month"
+          )
+            return;
+
+          const cell = worksheet.getCell(currentRow.number, headColNum);
+
+          if (
+            feeStructure.fee_head_id == MONTHLY_PAYMENT_HEAD_ID &&
+            cHeadIndex === 0
+          ) {
+            cell.value = "Per Month Fee";
+          } else if (
+            feeStructure.fee_head_id == MONTHLY_PAYMENT_HEAD_ID &&
+            head === "Actutal Paid"
+          ) {
+            cell.value = "Total Monthly Fees Collect";
+          } else {
+            cell.value = head;
+          }
+
+          const isStartOrEndPosition =
+            cHeadIndex === 0 || head === "Actutal Paid";
+
+          cell.style = {
+            font: {
+              size: 12,
+              bold:
+                isStartOrEndPosition ||
+                (feeStructure.fee_head_id === MONTHLY_PAYMENT_HEAD_ID &&
+                  head === "Month"),
+            },
+            alignment: { horizontal: "center", vertical: "middle" },
+            border: {
+              top: { style: "thin" },
+              left: { style: "thin" },
+              right: { style: "thin" },
+              bottom: { style: "thin" },
+            },
+            fill: {
+              type: "pattern",
+              pattern: "solid",
+              fgColor: {
+                argb:
+                  feeStructure.fee_head_id === MONTHLY_PAYMENT_HEAD_ID
+                    ? "a9d08e"
+                    : "",
+              },
+            },
+          };
+
+          const currentPaymentSummery = data.payment_summery.filter(
+            (item) => item.fee_head_id === feeStructure.fee_head_id
+          );
+          if (isStartOrEndPosition) {
+            worksheet.mergeCells(
+              currentRow.number + 1,
+              headColNum,
+              endRow,
+              headColNum
+            );
+            addMergedCellStyle(
+              worksheet,
+              startRow,
+              endRow,
+              headColNum,
+              cell.style
+            );
+
+            // add the actule fee
+            const cellToAddValue = worksheet.getCell(
+              currentRow.number + 1,
+              headColNum
+            );
+            if (cHeadIndex === 0) {
+              const totalFee = data.form_fee_head_amounts.find(
+                (item) => item.fee_head_id === feeStructure.fee_head_id
+              );
+              if (totalFee) {
+                if (feeStructure.fee_head_id === MONTHLY_PAYMENT_HEAD_ID) {
+                  cellToAddValue.value = totalFee.fee / parseInt(data.duration);
+                } else {
+                  cellToAddValue.value = totalFee.fee;
+                }
+              }
+            }
+
+            // add the fee paid
+            if (head === "Actutal Paid") {
+              const actulePaid = currentPaymentSummery.reduce(
+                (prev, current) => prev + parseFloat(current.amount),
+                0.0
+              );
+              cellToAddValue.value = actulePaid;
+            }
+          }
+
+          if (!isStartOrEndPosition) {
+            currentPaymentSummery.forEach((payment, index) => {
+              const cellToAddRealValue = worksheet.getCell(
+                currentRow.number + (index + 1),
+                headColNum
+              );
+
+              if (cHeadIndex === 1) {
+                // this is for the payment date
+                cellToAddRealValue.value = payment.payment_date;
+              }
+
+              if (cHeadIndex === 2) {
+                // bill number
+                cellToAddRealValue.value = payment.bill_no;
+              }
+
+              if (cHeadIndex === 3) {
+                // payment mode
+                cellToAddRealValue.value = payment.mode;
+              }
+
+              if (cHeadIndex === 4) {
+                // paid amount
+                cellToAddRealValue.value = payment.amount;
+              }
+
+              // month name
+              if (
+                feeStructure.fee_head_id === MONTHLY_PAYMENT_HEAD_ID &&
+                cHeadIndex === 5
+              ) {
+                cellToAddRealValue.value = payment.month;
+              }
+
+              const isDiscount = cHeadIndex === 3 && payment.mode === "Discount";
+
+              cellToAddRealValue.style = {
+                alignment: { horizontal: "center", vertical: "middle" },
+                border: {
+                  top: { style: "thin" },
+                  left: { style: "thin" },
+                  right: { style: "thin" },
+                  bottom: { style: "thin" },
+                },
+                font : {color : { argb : isDiscount ?  "fd853a" : ""}, bold : isDiscount},
+                fill: {
+                  type: "pattern",
+                  pattern: "solid",
+                  fgColor: {
+                    argb:
+                      feeStructure.fee_head_id === MONTHLY_PAYMENT_HEAD_ID
+                        ? "a9d08e"
+                        : "",
+                  },
+                },
+              };
+            });
+          }
+
+          headColNum++;
+        });
+      });
+    }
+
+    index++;
+
     pgStream.resume();
   });
 
   pgStream.on("end", () => {
+    const cell = worksheet.getCell(endCell.r, endCell.c);
+    cell.style = {
+      font: { size: 12, bold: true },
+      alignment: { horizontal: "center", vertical: "middle" },
+      border: {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        right: { style: "thin" },
+        bottom: { style: "thin" },
+      },
+    };
+
+    cell.value = `Total : ${finalTotalAmount}`;
     workbook.commit();
     client.release(); // Release the client when done
   });
@@ -614,11 +926,9 @@ export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
     pgStream.pause();
 
     if (index === 0) {
-      worksheet.getCell("A1").value = `Admission Report (${
-        data.course_name
-      }) (${data.batch_name}) (${data.session_name}) (Mode : ${
-        value.mode == "Both" ? "Cash & Online Both" : value.mode
-      })`;
+      worksheet.getCell("A1").value = `Admission Report (${data.course_name
+        }) (${data.batch_name}) (${data.session_name}) (Mode : ${value.mode == "Both" ? "Cash & Online Both" : value.mode
+        })`;
 
       const ROW_NUMBER = 3;
       let currentCol = 9; // Start at column H (9th col)
@@ -3238,11 +3548,9 @@ export const monthlyPaymentReport = asyncErrorHandler(async (req, res) => {
     pgStream.pause();
 
     if (index === 0) {
-      worksheet.getCell("A1").value = `Monthly Payment Report (${
-        data.course_name
-      }) (${data.batch_name}) (${data.session_name}) (Mode : ${
-        value.mode == "Both" ? "Cash & Online Both" : value.mode
-      })`;
+      worksheet.getCell("A1").value = `Monthly Payment Report (${data.course_name
+        }) (${data.batch_name}) (${data.session_name}) (Mode : ${value.mode == "Both" ? "Cash & Online Both" : value.mode
+        })`;
 
       const ROW_NUMBER = 2;
       let currentCol = 7; // Start at column H (9th col)
@@ -3515,8 +3823,8 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
       JSON_AGG(effi) FILTER (WHERE effi.form_id IS NOT NULL) AS fee_info,
       SUM(effi.pending_amount) AS total_due_amount,
       (SELECT JSON_AGG(JSON_BUILD_OBJECT('id', id, 'name', name) ORDER BY id) FROM course_fee_head WHERE id IN (${SHOW_FEE_HEAD_IDS.join(
-        ", "
-      )})) AS fee_head_info
+      ", "
+    )})) AS fee_head_info
     FROM fillup_forms ff
 
     LEFT JOIN users u ON u.id = ff.student_id
@@ -3593,23 +3901,21 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
     colname: string;
     fee_head_id: number;
     type:
-      | "total_fee"
-      | "discount_amount"
-      | "total_monthly_fee_in_this_session"
-      | "actule_fee_after_disc"
-      | "total_fee_collected"
-      | "pending_fee";
+    | "total_fee"
+    | "discount_amount"
+    | "total_monthly_fee_in_this_session"
+    | "actule_fee_after_disc"
+    | "total_fee_collected"
+    | "pending_fee";
   }[] = [];
 
   pgStream.on("data", (data) => {
     pgStream.pause();
 
     if (index === 0) {
-      worksheet.getCell("A1").value = `Fee Summery Report (${
-        data.course_name
-      }) (${data.batch_name}) (${data.session_name}) (Mode : ${
-        value.mode == "Both" ? "Cash & Online Both" : value.mode
-      })`;
+      worksheet.getCell("A1").value = `Fee Summery Report (${data.course_name
+        }) (${data.batch_name}) (${data.session_name}) (Mode : ${value.mode == "Both" ? "Cash & Online Both" : value.mode
+        })`;
 
       const ROW_NUMBER = 3;
       let currentCol = 9; // Start at column I (9th col)

@@ -57,3 +57,34 @@ export type TFinalPunch = {
   status: string;
   date: string;
 };
+
+export type TAdmissionPaymentSummery = {
+  form_id : number;
+  payment_date : string;
+  mode : string;
+  bill_no : string;
+  amount : string;
+  fee_head_id : number;
+  month : string;
+}
+
+export type TFormFeeHeadAmount = {
+  form_id : number;
+  fee_head_id : number;
+  fee : number;
+}
+
+export type TAdmissionReportData = {
+  sr_no : number;
+  student_name : string;
+  batch_name : string;
+  course_name : string;
+  admission_date : string;
+  session_name : string;
+  payment_summery : TAdmissionPaymentSummery[];
+  form_fee_head_amounts : TFormFeeHeadAmount[];
+  total_payment : number;
+  final_payment_result : number;
+  duration : string;
+  max_payment_count : number;
+}
