@@ -94,8 +94,14 @@ export const getPerDayAttendance = asyncErrorHandler(async (req, res) => {
   if (error) throw new ErrorHandler(400, error.message);
 
   let currentDate = '';
-  if(value.date) {
-    currentDate = value.date;
+  if (value.date) {
+    if (value.date && !isNaN(new Date(value.date).getTime())) {
+      currentDate = value.date;
+    } else {
+       const date = new Date();
+       currentDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+    }
+    
   } else {
     const date = new Date();
     currentDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
