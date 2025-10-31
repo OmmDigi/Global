@@ -40,7 +40,6 @@ async function page({ searchParams }) {
   const response = await api.get(
     `wp-json/custom/v1/blogs?page=${currentPage}&per_page=12`
   );
-  console.log("response", response?.data);
   const total = response?.data?.total_pages;
   return (
     <>

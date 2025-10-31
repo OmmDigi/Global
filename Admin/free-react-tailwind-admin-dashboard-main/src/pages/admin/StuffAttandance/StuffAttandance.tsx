@@ -6,19 +6,24 @@ import BasicTableAttandance from "../../../components/tables/BasicTables/BasicTa
 import useSWR from "swr";
 import { getFetcher, postFetcher } from "../../../api/fatcher";
 import dayjs from "dayjs";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { message } from "antd";
+import DatePicker from "react-datepicker";
+// import "react-datepicker/dist/react-datepicker.css";
 
 export default function StuffAttandance() {
   const [isPending, startTransition] = useTransition();
   const [messageApi, contextHolder] = message.useMessage();
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   const { data: attandancelist, mutate: attandanceMutate } = useSWR(
-    "api/v1/attendance?limit=-1",
+    `api/v1/attendance?limit=-1&date=${dayjs(selectedDate).format(
+      "YYYY-MM-DD"
+    )}`,
     getFetcher
   );
 
-  const today = new Date();
+  // const today = new Date();
 
   const syncAttendance = () => {
     startTransition(async () => {
@@ -35,6 +40,8 @@ export default function StuffAttandance() {
       }
     });
   };
+
+  console.log("selectedDate", selectedDate);
 
   return (
     <div>
@@ -60,8 +67,21 @@ export default function StuffAttandance() {
                 </button>
               </div>
 
-              <div className="text-gray-500 text-3xl font-bold">
+              {/* <div className="text-gray-500 text-3xl font-bold">
                 {dayjs(today).format("DD-MM-YYYY")}
+              </div> */}
+
+              <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                <DatePicker
+                  selected={selectedDate}
+                  onChange={(date) => setSelectedDate(date as any)}
+                  dateFormat="dd-MM-YYY"
+                  className="border rounded-md px-2 py-3 text-sm dark:bg-gray-800 dark:text-white"
+                  calendarClassName="!bg-white dark:!bg-gray-200"
+                />
+                {/* <span className="text-sm text-gray-500">
+                  {dayjs(selectedDate).format("dddd")}
+                </span> */}
               </div>
             </div>
             <BasicTableAttandance attandancelist={attandancelist} />
