@@ -11,6 +11,12 @@ export const VGetUserList = Joi.object({
   category: Joi.string().optional().valid("Teacher", "Stuff")
 });
 
+export const VChangePassword = Joi.object({
+  username: Joi.string().required().label("User name"),
+  password: Joi.string().required().label("Old Password"),
+  new_password: Joi.string().required().label("New Password"),
+});
+
 export const VLoginUser = Joi.object({
   username: Joi.string().required().label("User name"),
   password: Joi.string().required(),

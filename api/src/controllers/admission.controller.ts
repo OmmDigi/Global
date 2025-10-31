@@ -57,6 +57,8 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
     username: null,
   };
 
+  let admissionDate : string | null = null;
+
   try {
     await client.query("BEGIN");
 
@@ -97,6 +99,7 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
       const password = admission_data?.password;
       const profileImage = admission_data?.image;
       const email = admission_data?.email;
+      admissionDate = admission_data?.date;
 
       if (!password)
         throw new ErrorHandler(400, "Account password is required", [
@@ -176,6 +179,7 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
       course_id: value.course_id,
       batch_id: value.batch_id,
       fee_structure,
+      admissionDate,
       session_id: value.session_id,
       declaration_status: value?.declaration_status,
     });

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import axios from "../../lib/axios";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 function page() {
   const [formData, setFormData] = useState({
@@ -283,6 +284,8 @@ function page() {
                     "Sign In"
                   )}
                 </button>
+
+                <Link className="text-center block underline text-blue-900" href={`${process.env.NEXT_PUBLIC_API_BASE_URL}api/v1/users/change-password`} target="__blank">Reset Password</Link>
               </form>
             </div>
 

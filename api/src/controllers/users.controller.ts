@@ -8,6 +8,7 @@ import { ErrorHandler } from "../utils/ErrorHandler";
 import { parsePagination } from "../utils/parsePagination";
 import {
   VAddLoanOrAdvancePayment,
+  VChangePassword,
   VCreateUser,
   VGeneratePayslip,
   VGetPayslip,
@@ -33,6 +34,39 @@ import { essl } from "../config/essl";
 import QueryStream from "pg-query-stream";
 import { generateTeacherPayslipQuery } from "../utils/generateTeacherPayslipQuery";
 import { numberToWords } from "../utils/numberToWords";
+
+export const getChangePasswordPage = asyncErrorHandler(async (req, res) => {
+  res.render("reset-password", {
+    frontend_url : process.env.FRONTEND_HOST_URL
+  });
+})
+
+export const changePassword = asyncErrorHandler(
+  async (req: CustomRequest, res) => {
+    const { error, value } = VChangePassword.validate(req.body ?? {});
+    if (error) throw new ErrorHandler(400, error.message);
+
+    // if (!req.user_info?.id) {
+    //   throw new ErrorHandler(401, "Please login first");
+    // }
+
+    const { id } = await verifyUser({
+      password: value.password,
+      username: value.username,
+    });
+
+    const encrypt_pass = encrypt(value.new_password);
+
+    const { rowCount } = await pool.query(
+      "UPDATE users SET password = $1 WHERE id = $2 AND category != 'Admin' RETURNING id",
+      [encrypt_pass, id]
+    );
+    if (rowCount === 0)
+      throw new ErrorHandler(400, "Unable to find your account");
+
+    res.status(200).json(new ApiResponse(200, "Password successfully changed"));
+  }
+);
 
 export const loginUser = asyncErrorHandler(async (req, res) => {
   const { error, value } = VLoginUser.validate(req.body ?? {});
@@ -159,8 +193,8 @@ export const createUser = asyncErrorHandler(async (req, res) => {
           amount: value.p_tax,
           class_per_month: null,
           course_id: null,
-          salary_type: 'P_tax'
-        })
+          salary_type: "P_tax",
+        });
       }
 
       await client.query(
@@ -191,7 +225,7 @@ export const createUser = asyncErrorHandler(async (req, res) => {
           null,
           item.fee_head,
           item.amount,
-          item.amount_type
+          item.amount_type,
         ])
       );
     }
@@ -256,8 +290,12 @@ export const getOneUser = asyncErrorHandler(async (req, res) => {
       [user_id]
     );
 
-    rows[0].fee_structure_teacher = feeStructrueTeacher.filter((item : any) => item.type != "P_tax");
-    rows[0].p_tax = feeStructrueTeacher.find((item : any) => item.type == "P_tax")?.amount ?? 0;
+    rows[0].fee_structure_teacher = feeStructrueTeacher.filter(
+      (item: any) => item.type != "P_tax"
+    );
+    rows[0].p_tax =
+      feeStructrueTeacher.find((item: any) => item.type == "P_tax")?.amount ??
+      0;
     rows[0].fee_structure_stuff = [];
   } else {
     const { rows: feeStructrueStaff } = await pool.query(
@@ -415,14 +453,13 @@ export const updateUser = asyncErrorHandler(async (req, res) => {
         });
       });
 
-
       if (value.p_tax) {
         valueToStore.push({
           amount: value.p_tax,
           class_per_month: null,
           course_id: null,
-          salary_type: 'P_tax'
-        })
+          salary_type: "P_tax",
+        });
       }
 
       await client.query(
@@ -453,7 +490,7 @@ export const updateUser = asyncErrorHandler(async (req, res) => {
           null,
           item.fee_head,
           item.amount,
-          item.amount_type
+          item.amount_type,
         ])
       );
     }
@@ -508,7 +545,7 @@ export const deleteUser = asyncErrorHandler(async (req, res) => {
       uid: userId,
       userid: userId,
       name: rows[0].name,
-      password: decrypted
+      password: decrypted,
     });
 
     res.status(200).json(new ApiResponse(200, "User Deleted"));
@@ -726,7 +763,10 @@ export const generatePayslip = asyncErrorHandler(async (req, res, next) => {
 
   // Expect "YYYY-MM"
   if (!/^\d{4}-\d{2}$/.test(value.month)) {
-    throw new ErrorHandler(400, "Invalid month format. Use 'YYYY-MM' (e.g., 2025-08).");
+    throw new ErrorHandler(
+      400,
+      "Invalid month format. Use 'YYYY-MM' (e.g., 2025-08)."
+    );
   }
   const monthStart = `${value.month}-01`;
   const monthDate = new Date(monthStart);
@@ -770,7 +810,9 @@ export const generatePayslip = asyncErrorHandler(async (req, res, next) => {
 
     // Wrap streaming in a promise
     await new Promise<void>((resolve, reject) => {
-      const stream = new QueryStream(sql, [...employeeIds, monthStart], { batchSize: MAX_BATCH });
+      const stream = new QueryStream(sql, [...employeeIds, monthStart], {
+        batchSize: MAX_BATCH,
+      });
       const pgStream = client.query(stream);
 
       pgStream.on("data", async (row: any) => {
@@ -811,7 +853,7 @@ export const generatePayslip = asyncErrorHandler(async (req, res, next) => {
       processed: totalProcessed,
     });
   } catch (err) {
-    await client.query("ROLLBACK").catch(() => { });
+    await client.query("ROLLBACK").catch(() => {});
     next(err); // Pass properly to error middleware
   } finally {
     client.release();
@@ -819,11 +861,17 @@ export const generatePayslip = asyncErrorHandler(async (req, res, next) => {
 });
 
 export const getPayslip = asyncErrorHandler(async (req: CustomRequest, res) => {
-  const { error, value } = VGetPayslip.validate({ ...req.params, ...req.query });
+  const { error, value } = VGetPayslip.validate({
+    ...req.params,
+    ...req.query,
+  });
   if (error) throw new ErrorHandler(400, error.message);
 
   if (!/^\d{4}-\d{2}$/.test(value.month)) {
-    throw new ErrorHandler(400, "Invalid month format. Use 'YYYY-MM' (e.g., 2025-08).");
+    throw new ErrorHandler(
+      400,
+      "Invalid month format. Use 'YYYY-MM' (e.g., 2025-08)."
+    );
   }
   const monthStart = `${value.month}-01`;
   const monthDate = new Date(monthStart);
@@ -841,9 +889,10 @@ export const getPayslip = asyncErrorHandler(async (req: CustomRequest, res) => {
     WHERE user_id = $1 AND month = $2
     `,
     [value.id, monthStart]
-  )
+  );
 
-  if (rowCount === 0) throw new ErrorHandler(404, "No payslip found please generate it first")
+  if (rowCount === 0)
+    throw new ErrorHandler(404, "No payslip found please generate it first");
 
   const rowParseData = JSON.parse(rows[0].payslip_data);
   const onHandSalary = parseFloat(rowParseData.net_amount);
@@ -938,7 +987,10 @@ export const getPayslipList = asyncErrorHandler(async (req, res) => {
   }
 
   if (!/^\d{4}-\d{2}$/.test(value.month)) {
-    throw new ErrorHandler(400, "Invalid month format. Use 'YYYY-MM' (e.g., 2025-08).");
+    throw new ErrorHandler(
+      400,
+      "Invalid month format. Use 'YYYY-MM' (e.g., 2025-08)."
+    );
   }
   const monthStart = `${value.month}-01`;
   const monthDate = new Date(monthStart);
@@ -966,20 +1018,23 @@ export const getPayslipList = asyncErrorHandler(async (req, res) => {
      ${filter}
     `,
     filterValues
-  )
+  );
 
-  res.status(200).json(new ApiResponse(200, "", rows))
-})
+  res.status(200).json(new ApiResponse(200, "", rows));
+});
 
 // Loan
 export const addLoanOrAdvancePayment = asyncErrorHandler(async (req, res) => {
   const { error, value } = VAddLoanOrAdvancePayment.validate(req.body ?? {});
   if (error) throw new ErrorHandler(400, error.message);
 
-  await pool.query(`INSERT INTO employee_loan_or_advance_payment (user_id, total_amount, monthly_return_amount) VALUES ($1, $2, $3)`, [value.user_id, value.total_amount, value.monthly_return_amount]);
+  await pool.query(
+    `INSERT INTO employee_loan_or_advance_payment (user_id, total_amount, monthly_return_amount) VALUES ($1, $2, $3)`,
+    [value.user_id, value.total_amount, value.monthly_return_amount]
+  );
 
-  res.status(201).json(new ApiResponse(201, "Information successfully saved"))
-})
+  res.status(201).json(new ApiResponse(201, "Information successfully saved"));
+});
 
 export const getLoanList = asyncErrorHandler(async (req, res) => {
   let filter = "";
@@ -988,10 +1043,11 @@ export const getLoanList = asyncErrorHandler(async (req, res) => {
 
   if (req.query.category) {
     filter = `WHERE u.category = $${placeholder++}`;
-    filterValues.push(req.query.category.toString())
+    filterValues.push(req.query.category.toString());
   }
 
-  const { rows } = await pool.query(`
+  const { rows } = await pool.query(
+    `
     SELECT
      elap.id,
      u.id AS user_id,
@@ -1005,27 +1061,37 @@ export const getLoanList = asyncErrorHandler(async (req, res) => {
     ON u.id = elap.user_id
 
     ${filter}
-  `, filterValues)
+  `,
+    filterValues
+  );
 
-  res.status(200).json(new ApiResponse(200, "", rows))
-})
+  res.status(200).json(new ApiResponse(200, "", rows));
+});
 
 export const getSingleLoanInfo = asyncErrorHandler(async (req, res) => {
-  const { error, value } = VSingleLoan.validate(req.params ?? {})
+  const { error, value } = VSingleLoan.validate(req.params ?? {});
   if (error) throw new ErrorHandler(400, error.message);
 
-  const { rows, rowCount } = await pool.query("SELECT * FROM employee_loan_or_advance_payment WHERE id = $1", [value.id]);
+  const { rows, rowCount } = await pool.query(
+    "SELECT * FROM employee_loan_or_advance_payment WHERE id = $1",
+    [value.id]
+  );
 
   if (rowCount === 0) throw new ErrorHandler(400, "No row found");
 
-  res.status(200).json(new ApiResponse(200, "", rows[0]))
-})
+  res.status(200).json(new ApiResponse(200, "", rows[0]));
+});
 
 export const updateLoadnInfo = asyncErrorHandler(async (req, res) => {
-  const { error, value } = VUpdateLoanOrAdvancePayment.validate(req.body ?? {})
+  const { error, value } = VUpdateLoanOrAdvancePayment.validate(req.body ?? {});
   if (error) throw new ErrorHandler(400, error.message);
 
-  await pool.query("UPDATE employee_loan_or_advance_payment SET total_amount = $1, user_id = $2, monthly_return_amount = $3 WHERE id = $4", [value.total_amount, value.user_id, value.monthly_return_amount, value.id]);
+  await pool.query(
+    "UPDATE employee_loan_or_advance_payment SET total_amount = $1, user_id = $2, monthly_return_amount = $3 WHERE id = $4",
+    [value.total_amount, value.user_id, value.monthly_return_amount, value.id]
+  );
 
-  res.status(200).json(new ApiResponse(200, "Information successfully updated"));
-})
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Information successfully updated"));
+});

@@ -17,6 +17,7 @@ type IFillUpForm = {
     required: boolean;
   }[];
   admission_data?: string;
+  admissionDate:string | null
   client?: PoolClient;
   declaration_status?: number;
 };
@@ -28,23 +29,24 @@ export const doAdmission = async (data: IFillUpForm) => {
   const pgClient = data.client ?? pool;
 
   const date = new Date();
+  const ADMISSION_DATE_TO_STORE = data.admissionDate === "" || data.admissionDate == null ? date.toISOString().split('T')[0] : data.admissionDate; //YYYY-MM-DD
 
   const customFormIdPrefix = `GTI/FORM/${date.getFullYear()}/`;
   const fillup_form_seq_constant_key = "fillup_form_seq";
 
   const { rows } = await pgClient.query(
     `
-     INSERT INTO fillup_forms (form_name, student_id ${
+     INSERT INTO fillup_forms (form_name, student_id, admission_date ${
        data.declaration_status !== undefined ? ",declaration_status" : ""
      })
-     VALUES ($1 || nextval('${fillup_form_seq_constant_key}')::TEXT, $2 ${
-      data.declaration_status !== undefined ? ",$3" : ""
+     VALUES ($1 || nextval('${fillup_form_seq_constant_key}')::TEXT, $2, TO_CHAR($3::date, 'YYYY-MM-DD')::date ${
+      data.declaration_status !== undefined ? ",$4" : ""
     })
      RETURNING form_name, id
     `,
     data.declaration_status !== undefined
-      ? [customFormIdPrefix, data.student_id, data.declaration_status]
-      : [customFormIdPrefix, data.student_id]
+      ? [customFormIdPrefix, data.student_id, ADMISSION_DATE_TO_STORE, data.declaration_status]
+      : [customFormIdPrefix, data.student_id, ADMISSION_DATE_TO_STORE]
   );
 
   const form_name = rows[0].form_name as string;

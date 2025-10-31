@@ -1,9 +1,11 @@
 import { Router } from "express";
 import {
   addLoanOrAdvancePayment,
+  changePassword,
   createUser,
   deleteUser,
   generatePayslip,
+  getChangePasswordPage,
   getLoanList,
   getOneUser,
   getPayslip,
@@ -30,6 +32,8 @@ usersRoutes
   .get("/is-login", isAuthenticated, asyncErrorHandler(async (_, res) => {
     res.status(200).json(new ApiResponse(200, "Login successfull", true))
   }))
+  .get("/change-password", getChangePasswordPage)
+  .post("/change-password", changePassword)
   .post("/login", loginUser)
   .post("/create", isAuthorized(7), createUser)
   .get("/course", isAuthenticated, getUserEnrolledCourseList)

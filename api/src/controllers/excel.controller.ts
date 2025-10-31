@@ -631,7 +631,7 @@ export const newAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
                   right: { style: "thin" },
                   bottom: { style: "thin" },
                 },
-                font : {color : { argb : isDiscount ?  "fd853a" : ""}, bold : isDiscount},
+                font: { color: { argb: isDiscount ? "fd853a" : "" }, bold: isDiscount },
                 fill: {
                   type: "pattern",
                   pattern: "solid",
@@ -657,19 +657,21 @@ export const newAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
   });
 
   pgStream.on("end", () => {
-    const cell = worksheet.getCell(endCell.r, endCell.c);
-    cell.style = {
-      font: { size: 12, bold: true },
-      alignment: { horizontal: "center", vertical: "middle" },
-      border: {
-        top: { style: "thin" },
-        left: { style: "thin" },
-        right: { style: "thin" },
-        bottom: { style: "thin" },
-      },
-    };
+    if (endCell.r !== 0 && endCell.c !== 0) {
+      const cell = worksheet.getCell(endCell.r, endCell.c);
+      cell.style = {
+        font: { size: 12, bold: true },
+        alignment: { horizontal: "center", vertical: "middle" },
+        border: {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          right: { style: "thin" },
+          bottom: { style: "thin" },
+        },
+      };
 
-    cell.value = `Total : ${finalTotalAmount}`;
+      cell.value = `Total : ${finalTotalAmount}`;
+    }
     workbook.commit();
     client.release(); // Release the client when done
   });
