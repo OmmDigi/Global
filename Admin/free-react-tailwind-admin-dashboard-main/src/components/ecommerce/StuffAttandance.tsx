@@ -7,14 +7,16 @@ import { getFetcher } from "../../api/fatcher";
 import dayjs from "dayjs";
 
 export default function StuffAttandance() {
+  
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   const { data: attendance, isLoading: attandanceLoading } = useSWR(
     `api/v1/dashboard/attendance?date=${dayjs(selectedDate).format(
-      "YYYY-MM-DD"
+      "dd-MM-yyyy"
     )}`,
     getFetcher
   );
+
   if (attandanceLoading) {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }
