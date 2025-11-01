@@ -83,6 +83,8 @@ async function main() {
   //   (item) => rows.find((row) => row.student_name == item.name) === undefined
   // );
 
+  // console.log(studentNotRegister.map(item => item.name))
+
   // // student not registerd than register tham first
   // for (const notregister of studentNotRegister) {
 

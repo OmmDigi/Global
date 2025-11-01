@@ -33,12 +33,12 @@ export const getYearlyAdmission = asyncErrorHandler(async (req, res) => {
     FROM months m
     LEFT JOIN (
         SELECT
-            EXTRACT(MONTH FROM created_at) AS month_num,
+            EXTRACT(MONTH FROM admission_date) AS month_num,
             COUNT(*) AS admission
         FROM fillup_forms
         WHERE status = 2
-        AND EXTRACT(YEAR FROM created_at) = $1
-        GROUP BY EXTRACT(MONTH FROM created_at)
+        AND EXTRACT(YEAR FROM admission_date) = $1
+        GROUP BY EXTRACT(MONTH FROM admission_date)
     ) f ON m.month_num = f.month_num
     ORDER BY m.month_num;
     `,
@@ -79,7 +79,7 @@ export const getMonthlyIncome = asyncErrorHandler(async (req, res) => {
                 SUM(amount) AS income
             FROM payments
             WHERE status = 2
-            AND created_at::date BETWEEN $1::date AND $2::date
+            AND payment_date::date BETWEEN $1::date AND $2::date
             GROUP BY mode
         ) p ON m.mode = p.mode;
   `,
@@ -101,7 +101,6 @@ export const getPerDayAttendance = asyncErrorHandler(async (req, res) => {
        const date = new Date();
        currentDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
     }
-    
   } else {
     const date = new Date();
     currentDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`

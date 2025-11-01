@@ -2,7 +2,7 @@
 import { Chart } from "react-google-charts";
 import useSWR from "swr";
 import { getFetcher } from "../../api/fatcher";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import dayjs from "dayjs";
 
@@ -12,16 +12,20 @@ export default function MonthlyIncome() {
     null,
   ]);
   const [startDate, endDate] = dateRange;
-  // get course list
+  const [filter, setFilter] = useState("");
+
+  useEffect(() => {
+    if (dateRange[0] !== null && dateRange[1] !== null) {
+      setFilter(
+        `from_date=${dayjs(dateRange[0]).format("YYYY-MM-DD")}&to_date=${dayjs(
+          dateRange[1]
+        ).format("YYYY-MM-DD")}`
+      );
+    }
+  }, [dateRange]);
 
   const { data: income, isLoading: incomeLoading } = useSWR(
-    `api/v1/dashboard/income${
-      dateRange[0]
-        ? `?from_date=${dayjs(dateRange[0]).format(
-            "YYYY-MM-DD"
-          )}&to_date=${dayjs(dateRange[1]).format("YYYY-MM-DD")}`
-        : ""
-    }`,
+    `api/v1/dashboard/income?${filter}`,
     getFetcher
   );
   if (incomeLoading) {

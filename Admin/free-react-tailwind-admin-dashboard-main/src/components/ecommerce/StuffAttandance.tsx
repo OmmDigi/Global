@@ -12,7 +12,7 @@ export default function StuffAttandance() {
 
   const { data: attendance, isLoading: attandanceLoading } = useSWR(
     `api/v1/dashboard/attendance?date=${dayjs(selectedDate).format(
-      "dd-MM-yyyy"
+      "YYYY-MM-DD"
     )}`,
     getFetcher
   );
