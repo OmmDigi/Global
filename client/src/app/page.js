@@ -191,7 +191,7 @@ export default function Home() {
           {/* Background Image Layer */}
           <div
             className="absolute inset-0 bg-cover bg-center opacity-12 md:opacity-20 "
-            style={{ backgroundImage: "url('/image/bg.jpg')" }}
+            style={{ backgroundImage: "url('/image/bg.webp')" }}
           ></div>
 
           <div className="bg-gray-100 ">
@@ -458,7 +458,7 @@ export default function Home() {
                       alt="Lab Technician Training"
                       className="   w-full h-48 object-cover p-5"
                       height={48}
-                          width={300}
+                      width={300}
                     />
                     <div className="p-4 text-center">
                       <h4 className="text-lg text-red-500 font-semibold mb-2">
@@ -472,7 +472,7 @@ export default function Home() {
                         <Image
                           src="image/right-arrow.gif"
                           className="  w-10 h-10  object-cover"
-                           alt="left-arrow"
+                          alt="left-arrow"
                           height={10}
                           width={300}
                         />
@@ -489,8 +489,8 @@ export default function Home() {
                       src="/image/ecg-train.webp"
                       alt="ECG Technician Training"
                       className="   w-full h-48 object-cover p-5"
-                          height={48}
-                          width={300}
+                      height={48}
+                      width={300}
                     />
                     <div className="p-4 text-center">
                       <h4 className="text-lg text-red-500 font-semibold mb-2">
@@ -604,7 +604,7 @@ export default function Home() {
                     className="w-full h-auto object-cover rounded-lg"
                     src="/image/hom-03.jpg"
                     alt="teachers training institute in Kolkata"
-                    height={48} 
+                    height={48}
                     width={300}
                   />
                 </div>
@@ -1009,7 +1009,7 @@ export default function Home() {
                     src="/image/Collaborations/7.jpg"
                     alt="teachers training institute in Kolkata"
                     className="mx-auto h-24 object-contain"
-                    height={48} 
+                    height={48}
                     width={300}
                   />
                 </div>

@@ -7,7 +7,6 @@ import { getFetcher } from "../../api/fatcher";
 import dayjs from "dayjs";
 
 export default function StuffAttandance() {
-  
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   const { data: attendance, isLoading: attandanceLoading } = useSWR(
