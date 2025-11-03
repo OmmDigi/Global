@@ -6,6 +6,8 @@ import Navbar from "@/components/Navbar";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import Link from "next/link";
+import useSWRMutation from "swr/mutation";
+import { postFetcher } from "@/lib/fetcher";
 
 const responsive2 = {
   desktop: {
@@ -25,11 +27,83 @@ const responsive2 = {
 function page() {
   const [n1, setN1] = useState(0);
   const [n2, setN2] = useState(0);
-
+  const [captcha, setCaptcha] = useState(0);
   useEffect(() => {
     setN1(Math.floor(Math.random() * 9) + 1); // 1–9
     setN2(Math.floor(Math.random() * 9) + 1);
   }, []);
+
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    message: "",
+  });
+
+  // Handle input change
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const { trigger: create } = useSWRMutation(
+    "api/v1/users/enquiry",
+    (url, { arg }) => postFetcher(url, arg)
+  );
+  // Handle form submit
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Validate captcha
+    const correctAnswer = n1 * n2;
+
+    if (parseInt(captcha) !== correctAnswer) {
+      alert("❌ Incorrect captcha. Please try again!");
+      return;
+    }
+
+    try {
+      const response = await create(formData);
+      mutateBatchList();
+      messageApi.open({
+        type: "success",
+        content: response.message,
+      });
+
+      setFormData({
+        name: "",
+        phone: "",
+        email: "",
+        message: "",
+      });
+      setCaptcha();
+    } catch (error) {
+      messageApi.open({
+        type: "error",
+        content: error.response?.data?.message
+          ? error.response?.data?.message
+          : " try again ",
+      });
+    }
+
+    // ✅ Form submission logic
+
+    // You can replace this with API POST call, e.g.:
+    // fetch("/contact-us", { method: "POST", body: JSON.stringify(formData) });
+
+    alert("✅ Form submitted successfully!");
+    setFormData({
+      name: "",
+      phone: "",
+      email: "",
+      message: "",
+      captcha: "",
+    });
+  };
+
   return (
     <>
       <Navbar />
@@ -87,26 +161,6 @@ function page() {
 
             <hr className="my-6 border-t-2 border-gray-400 w-11/12" />
 
-            {/* <info-box className="flex items-start space-x-4 mb-4">
-              <div>
-                <img
-                  src="/image/map.png"
-                  alt="Location Icon"
-                  className="w-10 h-10"
-                />
-              </div>
-              <div>
-                <div className="text-lg text-[#023b81] font-semibold">
-                  Garia Branch
-                </div>
-                <div className="text-gray-700">
-                  251/A/6 N.S.C Bose Road, Naktala, Kolkata-700047
-                  <br />
-                  Near: Geetanjali metro station and Naktala Sib Mandir.
-                </div>
-              </div>
-            </info-box> */}
-
             <contact-list>
               <phone className="flex items-center space-x-2 text-sm text-gray-700">
                 {/* <icon className="text-green-600"></icon> */}
@@ -140,63 +194,70 @@ function page() {
               </h4>
             </header>
 
-            <form action="/contact-us" method="post" className="space-y-4">
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-4 max-w-lg mx-auto bg-white p-6 rounded-lg shadow-lg"
+            >
               <input
                 type="text"
                 name="name"
-                label="Name"
                 placeholder="Name:"
-                required={true}
-                className="w-full border border-gray-300 px-4 py-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+                value={formData.name}
+                onChange={handleChange}
+                className="w-full border border-gray-300 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
 
               <input
                 type="tel"
                 name="phone"
-                required={true}
                 placeholder="Phone:"
+                required
+                value={formData.phone}
+                onChange={handleChange}
                 className="w-full border border-gray-300 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+
               <input
                 type="email"
                 name="email"
-                placeholder="Email ID"
-                required={true}
+                placeholder="Email ID:"
+                required
+                value={formData.email}
+                onChange={handleChange}
                 className="w-full border border-gray-300 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
 
               <textarea
                 name="message"
                 placeholder="If any query, please write to us:"
+                value={formData.message}
+                onChange={handleChange}
                 className="w-full border border-gray-300 px-4 py-2 rounded h-24 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
               ></textarea>
 
-              <captcha className="flex flex-row gap-5">
-                <label className="text-sm font-medium text-gray-700 mb-1">
-                  Captcha:
-                </label>
-                <label className="text-lg font-bold text-gray-700 mb-1">
-                  {`${n1} × ${n2} =`}
+              {/* Captcha Section */}
+              <div className="flex items-center gap-3">
+                <label className="text-sm font-medium text-gray-700">
+                  Captcha:{" "}
+                  <span className="text-lg font-bold">{`${n1} × ${n2} =`}</span>
                 </label>
                 <input
                   type="text"
                   name="captcha"
-                  required={true}
+                  required
+                  // value={setCaptcha}
+                  onChange={(e) => setCaptcha(e.target.value)}
                   className="w-1/4 border border-gray-300 px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <input type="hidden" name="n1" value="6" />
-                <input type="hidden" name="n2" value="3" />
-                <input type="hidden" name="operator" value="*" />
-              </captcha>
+              </div>
 
-              <submit>
-                <button
-                  type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded transition duration-200"
-                >
-                  Submit
-                </button>
-              </submit>
+              <button
+                type="submit"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded transition duration-200"
+              >
+                Submit
+              </button>
             </form>
           </div>
         </contactSection>
