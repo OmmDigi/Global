@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Inquiry - Global Technical Institute</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+        .header {
+            background-color: #1e3a8a;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .logo {
+            max-width: 120px;
+            height: auto;
+        }
+        .header-title {
+            color: #ffffff;
+            font-size: 24px;
+            margin: 15px 0 0 0;
+            font-weight: bold;
+        }
+        .content {
+            padding: 30px 20px;
+        }
+        .greeting {
+            font-size: 16px;
+            color: #333333;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .info-section {
+            background-color: #f8fafc;
+            border-left: 4px solid #1e3a8a;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #1e3a8a;
+            font-size: 14px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .info-value {
+            color: #333333;
+            font-size: 16px;
+            margin-bottom: 15px;
+            word-wrap: break-word;
+        }
+        .message-box {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .footer {
+            background-color: #1e3a8a;
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+        .footer-info {
+            margin: 5px 0;
+            line-height: 1.6;
+        }
+        .footer-link {
+            color: #ffffff;
+            text-decoration: none;
+        }
+        .divider {
+            height: 1px;
+            background-color: #e5e7eb;
+            margin: 20px 0;
+        }
+        
+        @media only screen and (max-width: 600px) {
+            .content {
+                padding: 20px 15px;
+            }
+            .header {
+                padding: 20px 15px;
+            }
+            .header-title {
+                font-size: 20px;
+            }
+            .info-section {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-title">NEW INQUIRY RECEIVED</div>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <p class="greeting">
+                Hello,<br>
+                You have received a new inquiry from your website. Here are the details:
+            </p>
+            
+            <!-- Student Information -->
+            <div class="info-section">
+                <div class="info-label">Full Name</div>
+                <div class="info-value"><%= name %></div>
+                
+                <div class="info-label">Email Address</div>
+                <div class="info-value"><%= email %></div>
+                
+                <div class="info-label">Phone Number</div>
+                <div class="info-value"><%= phone %></div>
+                
+                <% if (course) { %>
+                <div class="info-label">Course Interested In</div>
+                <div class="info-value"><%= course %></div>
+                <% } %>
+            </div>
+            
+            <!-- Message -->
+            <% if (message) { %>
+            <div class="info-label">Message</div>
+            <div class="message-box">
+                <%= message %>
+            </div>
+            <% } %>
+            
+            <div class="divider"></div>
+            
+            <p class="greeting">
+                Please respond to this inquiry at your earliest convenience.
+            </p>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-info">
+                <strong>GLOBAL TECHNICAL INSTITUTE</strong>
+            </div>
+            <div class="footer-info">
+                Beliaghata 17A, Haramohan Ghosh Lane, Kolkata 700085
+            </div>
+            <div class="footer-info">
+                Near Surah Kanya Vidyalaya
+            </div>
+            <div class="footer-info">
+                Phone: 9231551285 | 9230113485 | 8961008489
+            </div>
+            <div class="footer-info">
+                Email: <a href="mailto:global.technical8.institute@gmail.com" class="footer-link">global.technical8.institute@gmail.com</a>
+            </div>
+            <div class="footer-info" style="margin-top: 15px; font-size: 12px; opacity: 0.8;">
+                ISO 9001:2015 Certified Organisation | Affiliated to BSS | Code: WB6764
+            </div>
+        </div>
+    </div>
+</body>
+</html>

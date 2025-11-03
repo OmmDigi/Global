@@ -38,7 +38,7 @@ export const VCreateUser = Joi.object({
   password: Joi.string().required(),
   permissions: Joi.array().items(Joi.number()).required(),
 
-  p_tax : Joi.number().optional(),
+  p_tax: Joi.number().optional(),
 
   fee_structure_teacher: Joi.array().items(Joi.object({
     course_id: Joi.number().required(),
@@ -72,7 +72,7 @@ export const VUpdateUser = Joi.object({
   password: Joi.string().required(),
   permissions: Joi.array().items(Joi.number()).required(),
 
-  p_tax : Joi.number().optional(),
+  p_tax: Joi.number().optional(),
 
   fee_structure_teacher: Joi.array().items(Joi.object({
     course_id: Joi.number().required(),
@@ -142,5 +142,12 @@ export const VCreateEmployeeSalarySheet = Joi.object({
   month: Joi.string().required(),
   // staff_id: Joi.array().items(Joi.number()).required().min(1),
   role: Joi.string().required().valid("Stuff", "Teacher"),
-  token : Joi.string().optional()
+  token: Joi.string().optional()
+})
+
+export const VAddEnquiry = Joi.object({
+  name: Joi.string().required().label("Your name"),
+  phone : Joi.string().required().label("Your mobile number"),
+  email : Joi.string().optional().allow("").label("Your email"),
+  message : Joi.string().optional().allow("").label("Your enquiry")
 })

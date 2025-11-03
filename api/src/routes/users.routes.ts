@@ -4,6 +4,7 @@ import {
   changePassword,
   createUser,
   deleteUser,
+  doEnquiry,
   generatePayslip,
   getChangePasswordPage,
   getLoanList,
@@ -32,6 +33,7 @@ usersRoutes
   .get("/is-login", isAuthenticated, asyncErrorHandler(async (_, res) => {
     res.status(200).json(new ApiResponse(200, "Login successfull", true))
   }))
+  .post("/enquiry", doEnquiry)
   .get("/change-password", getChangePasswordPage)
   .post("/change-password", changePassword)
   .post("/login", loginUser)
