@@ -170,7 +170,7 @@ export const newAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
     )
 
     SELECT
-      row_number() OVER (ORDER BY ff.id) AS sr_no,
+      row_number() OVER () AS sr_no,
       u.name as student_name,
       b.month_name AS batch_name,
       c.name AS course_name,
@@ -212,8 +212,6 @@ export const newAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
     ${filter}
 
     GROUP BY ff.id, u.id, s.id, b.id, c.id
-
-    ORDER BY ff.id
   `;
 
   // const monthRangeQuery = `
