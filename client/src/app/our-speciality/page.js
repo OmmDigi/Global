@@ -7,6 +7,7 @@ import Navbar from "@/components/Navbar";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import Link from "next/link";
+import Image from "next/image";
 
 const responsive2 = {
   desktop: {
@@ -213,9 +214,6 @@ function page() {
               </div>
             </div>
           </div>
-
-
-
         </div>
 
         {/* others facility  */}
@@ -236,7 +234,7 @@ function page() {
                 <li>Special facility for working candidates</li>
                 <li>100% job oriented training</li>
               </ul>
-  
+
               {/* Column 2 */}
               <ul className="list-disc list-inside text-gray-700 space-y-1">
                 <li>Smart className (Digital className)</li>
@@ -290,12 +288,12 @@ function page() {
             </p>
           </div>
         </section>
-       
+
         <div>
           <div className="group relative m-0 flex h-full w-full  shadow-xl   ">
             <div className="z-10   overflow-hidden  border border-gray-200 opacity-80 transition duration-300 ease-in-out group-hover:opacity-100 dark:opacity-70 w-full h-full flex justify-center items-center">
-              <img
-                src="/image/bg.jpg"
+              <Image
+                src="/image/bg.webp"
                 className="animate-fade-in block  scale-100 transform object-cover object-center opacity-100 transition duration-300 group-hover:scale-110"
                 alt="State-of-the-Art Facilities"
                 width={1000}
