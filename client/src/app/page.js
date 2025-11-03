@@ -204,14 +204,14 @@ export default function Home() {
                   <h5 className="font-bold text-[#1174f7]">
                     Where education meets innovation.
                   </h5>
-                  <h1 className="font-bold text-[#b50000] text-2xl  md:text-4xl mt-2  md:mt-5">
+                  <h1 className="font-bold text-[#b50000] text-2xl text-center  md:text-4xl mt-2  md:mt-5">
                     Unlock Your Potential with{" "}
                     <span className="hidden md:flex mt-2">
                       {" "}
                       Global Technical Institute
                     </span>
                   </h1>
-                  <h1 className="font-bold text-[#b50000] text-3xl md:hidden  md:text-4xl  md:mt-5">
+                  <h1 className="font-bold text-[#b50000] text-3xl md:hidden text-center  md:text-4xl  md:mt-5">
                     Global Technical Institute
                   </h1>
                   <div
