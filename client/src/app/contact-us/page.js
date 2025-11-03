@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useTransition } from "react";
 import BackToTopButton from "@/components/BackToTopButton";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
@@ -8,6 +8,7 @@ import "react-multi-carousel/lib/styles.css";
 import Link from "next/link";
 import useSWRMutation from "swr/mutation";
 import { postFetcher } from "@/lib/fetcher";
+import { message } from "antd";
 
 const responsive2 = {
   desktop: {
@@ -25,6 +26,9 @@ const responsive2 = {
 };
 
 function page() {
+  const [messageApi, contextHolder] = message.useMessage();
+  const [isPending, startTransition] = useTransition();
+
   const [n1, setN1] = useState(0);
   const [n2, setN2] = useState(0);
   const [captcha, setCaptcha] = useState(0);
@@ -65,47 +69,41 @@ function page() {
       return;
     }
 
-    try {
-      const response = await create(formData);
-      mutateBatchList();
-      messageApi.open({
-        type: "success",
-        content: response.message,
-      });
+    startTransition(async () => {
+      try {
+        const response = await create(formData);
+        messageApi.open({
+          type: "success",
+          content: response.message,
+        });
 
-      setFormData({
-        name: "",
-        phone: "",
-        email: "",
-        message: "",
-      });
-      setCaptcha();
-    } catch (error) {
-      messageApi.open({
-        type: "error",
-        content: error.response?.data?.message
-          ? error.response?.data?.message
-          : " try again ",
-      });
-    }
+        setFormData({
+          name: "",
+          phone: "",
+          email: "",
+          message: "",
+        });
+        setCaptcha(0);
+        alert("✅ Form submitted successfully!");
+      } catch (error) {
+        messageApi.open({
+          type: "error",
+          content: error.response?.data?.message
+            ? error.response?.data?.message
+            : " try again ",
+        });
+      }
+    });
 
     // ✅ Form submission logic
 
     // You can replace this with API POST call, e.g.:
     // fetch("/contact-us", { method: "POST", body: JSON.stringify(formData) });
-
-    alert("✅ Form submitted successfully!");
-    setFormData({
-      name: "",
-      phone: "",
-      email: "",
-      message: "",
-      captcha: "",
-    });
   };
 
   return (
     <>
+      {contextHolder}
       <Navbar />
       <div className="relative bg-gray-300 overflow-hidden top-0 z-0">
         {/* Background Image Layer */}
@@ -160,7 +158,6 @@ function page() {
             </contact-list>
 
             <hr className="my-6 border-t-2 border-gray-400 w-11/12" />
-
             <contact-list>
               <phone className="flex items-center space-x-2 text-sm text-gray-700">
                 {/* <icon className="text-green-600"></icon> */}
@@ -254,9 +251,14 @@ function page() {
 
               <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded transition duration-200"
+                disabled={isPending}
+                className="w-auto flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                Submit
+                {isPending ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  "Submit"
+                )}
               </button>
             </form>
           </div>
