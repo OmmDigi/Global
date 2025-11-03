@@ -72,8 +72,8 @@ function HomeCarousal() {
                     className={`object-cover md:w-[500px] md:h-[380px] sm:w-[330px] sm:h-[200px] rounded-lg transition-transform duration-1000 ${
                       index === current ? "scale-105" : "scale-100"
                     }`}
-                    width={100}
-                    height={100}
+                    width={1280}
+                    height={1280}
                   />
                 </div>
               </div>

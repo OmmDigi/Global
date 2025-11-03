@@ -32,6 +32,10 @@ export default function RootLayout({ children }) {
             })(window,document,'script','dataLayer','GTM-M85SNQWT');
           `}
         </Script>
+        <meta
+          name="google-site-verification"
+          content="pOga9ZeGLQZuF7oJ-X0lnUxbHMoibKkMvWuEO3kcNtc"
+        />
       </head>
 
       <body
