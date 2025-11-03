@@ -62,6 +62,9 @@ export const storeAttendanceDataToDb = async (finalPunches: TFinalPunch[]) => {
       if (index == -1 && employeeExistIndex != -1) {
         // than no record avilable insert a new row in attendace table
         dataToInsert.push(punch);
+        if(punch.inTime != punch.outTime) {
+          dataToUpdate.push(punch);
+        }
       } else {
         // update the outtime
         dataToUpdate.push(punch);
