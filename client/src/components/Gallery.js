@@ -7,6 +7,7 @@ import lgHash from "lightgallery/plugins/hash";
 import "lightgallery/css/lightgallery.css";
 import "lightgallery/css/lg-zoom.css";
 import "lightgallery/css/lg-share.css";
+import Image from "next/image";
 
 export const Gallery = () => {
   const [activeGallery, setActiveGallery] = useState("annual");
@@ -56,10 +57,12 @@ export const Gallery = () => {
             data-sub-html={html}
             className=" md:w-[200px] md:h-[220px] w-[150px] h-[160px] overflow-hidden  shadow-md   hover:shadow-lg "
           >
-            <img
+            <Image
               src={src}
               alt={`Gallery Image ${i + 1}`}
               className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+              width={100}
+              height={100}
             />
           </a>
         ))}
