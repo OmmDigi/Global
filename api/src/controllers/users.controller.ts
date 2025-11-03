@@ -7,6 +7,7 @@ import { ApiResponse } from "../utils/ApiResponse";
 import { ErrorHandler } from "../utils/ErrorHandler";
 import { parsePagination } from "../utils/parsePagination";
 import {
+  VAddEnquiry,
   VAddLoanOrAdvancePayment,
   VChangePassword,
   VCreateUser,
@@ -34,12 +35,43 @@ import { essl } from "../config/essl";
 import QueryStream from "pg-query-stream";
 import { generateTeacherPayslipQuery } from "../utils/generateTeacherPayslipQuery";
 import { numberToWords } from "../utils/numberToWords";
+import { sendEmail } from "../utils/sendEmail";
+
+export const doEnquiry = asyncErrorHandler(async (req, res) => {
+  const { error, value } = VAddEnquiry.validate(req.body ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
+
+  const emails = process.env.ENQUIRY_EMAIL?.split(",") ?? [];
+  if (emails.length === 0) throw new ErrorHandler(400, "No email found");
+
+  await sendEmail(emails, "ENQUIRY_EMAIL", {
+    name: value.name,
+    email: value?.email,
+    phone: value.phone,
+    course : undefined,
+    message: value?.message,
+  });
+
+  await pool.query(
+    "INSERT INTO enquiry (name, email, phone, message) VALUES ($1, $2, $3, $4)",
+    [value.name, value.email ?? null, value.phone, value.message ?? null]
+  );
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        "Enquiry successfully submitted. We will get back to you soon"
+      )
+    );
+});
 
 export const getChangePasswordPage = asyncErrorHandler(async (req, res) => {
   res.render("reset-password", {
-    frontend_url : process.env.FRONTEND_HOST_URL
+    frontend_url: process.env.FRONTEND_HOST_URL,
   });
-})
+});
 
 export const changePassword = asyncErrorHandler(
   async (req: CustomRequest, res) => {

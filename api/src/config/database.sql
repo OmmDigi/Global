@@ -541,3 +541,12 @@ UPDATE course_fee_head SET position = 14 WHERE id = 1;
 
 ALTER TABLE fillup_forms
     ADD COLUMN admission_date DATE;
+
+CREATE TABLE IF NOT EXISTS enquiry (
+    id SERIAL PRIMARY KEY,
+
+    name VARCHAR(255),
+    email VARCHAR(255),
+    phone VARCHAR(20),
+    message TEXT
+);

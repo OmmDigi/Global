@@ -2,7 +2,7 @@ import SMTPTransport from "nodemailer/lib/smtp-transport";
 import { generateEmailTemplate } from "./generateEmailTemplate";
 import { email } from "../config/email";
 
-export type EmailType = "AMC_ALERT";
+export type EmailType = "AMC_ALERT" | "ENQUIRY_EMAIL";
 
 export const sendEmail = async (
   to: string[] | string,
@@ -22,6 +22,17 @@ export const sendEmail = async (
       from: `"AMC Alert Notification From CRM" <${sendForm}>`, // Sender address
       to, // List of recipients
       subject: "AMC Alert Notification From CRM", // Subject line
+      html,
+    };
+  } else if (type === "ENQUIRY_EMAIL") {
+    const html = await generateEmailTemplate(
+      templateData ?? {},
+      "enquiry.html"
+    );
+    mailOptions = {
+      from: `"Enquiry Notification From Website" <${sendForm}>`, // Sender address
+      to, // List of recipients
+      subject: "Enquiry Notification From Website", // Subject line
       html,
     };
   }
