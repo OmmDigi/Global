@@ -30,9 +30,7 @@ export default async function PostDetails({ params }) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BLOG}wp-json/custom/v1/blog/${params?.slug}/related`
   );
-  console.log(res.url);
   const response = await res.json();
-  console.log("response11122", response);
 
   return (
     <>
