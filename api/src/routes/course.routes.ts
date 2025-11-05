@@ -52,7 +52,7 @@ courseRoutes
   .put("/batch", isAuthorized(5), updateBatch)
 
   .post("/", isAuthorized(5), createCourse)
-  .get("/", isAuthorized(5), getCourseList)
+  .get("/", getCourseList) //isAuthorized(5)
   .get("/dropdown", getCourseWithBatchSession)
   .get("/:id", isAuthorized(5), getSingleCourse)
   .delete("/:id", isAuthorized(5), deleteSingleCourse)

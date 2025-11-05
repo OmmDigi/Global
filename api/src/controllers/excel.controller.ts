@@ -170,7 +170,7 @@ export const newAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
     )
 
     SELECT
-      row_number() OVER () AS sr_no,
+      row_number() OVER (ORDER BY ff.id) AS sr_no,
       u.name as student_name,
       b.month_name AS batch_name,
       c.name AS course_name,
@@ -179,7 +179,7 @@ export const newAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
       s.name AS session_name,
       COALESCE(JSON_AGG(ps) FILTER (WHERE ps.form_id IS NOT NULL), '[]'::json) AS payment_summery,
       COALESCE(MAX(tp.total_payment), 0.00) AS total_payment,
-      SUM(tp.total_payment) final_payment_result,
+      -- SUM(tp.total_payment) final_payment_result,
       (SELECT COALESCE(MAX(payment_count), 0) FROM fee_head_counts WHERE form_id = ff.id) AS max_payment_count,
       (
         SELECT JSON_AGG(ROW_TO_JSON(ffa))
@@ -212,6 +212,8 @@ export const newAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
     ${filter}
 
     GROUP BY ff.id, u.id, s.id, b.id, c.id
+
+    ORDER BY ff.id
   `;
 
   // const monthRangeQuery = `
@@ -327,12 +329,12 @@ export const newAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
   let index = 0;
   let completedMargeRow = 3;
   let endCell: { r: number, c: number } = { r: 0, c: 0 };
-  let finalTotalAmount = 0;
+  let finalTotalAmount = 0.00;
 
   pgStream.on("data", (data: TAdmissionReportData) => {
     pgStream.pause();
 
-    finalTotalAmount = data.final_payment_result;
+    finalTotalAmount += parseFloat(data.total_payment.toString());
 
     if (index === 0) {
       // set the header

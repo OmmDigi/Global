@@ -1,31 +1,22 @@
 "use client";
+
 import React, { useState, useTransition } from "react";
 import BackToTopButton from "@/components/BackToTopButton";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
-import { Button, message, Space } from "antd";
+import { message } from "antd";
 
-import {
-  Eye,
-  EyeOff,
-  Mail,
-  Lock,
-  Sparkles,
-  ArrowRight,
-  User,
-} from "lucide-react";
-import axios from "../../lib/axios";
+import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import axios from "axios";
 
-function page() {
+function LoginPage() {
   const [formData, setFormData] = useState({
     username: "",
     password: "",
     category: "Student",
-    // remember: false,
   });
   const [showPassword, setShowPassword] = useState(false);
   const [color, setColor] = useState("bg-blue-100");
@@ -56,9 +47,8 @@ function page() {
   const handleSubmit = (e) => {
     e.preventDefault();
     startTransition(async () => {
-      // await new Promise( (resolve) => setTimeout(resolve,5000))
       try {
-        const response = await axios.post("api/v1/users/login", formData);
+        const response = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}api/v1/users/login`, formData);
         messageApi.open({
           type: "success",
           content: response.data?.message,
@@ -165,7 +155,13 @@ function page() {
             <contact-list>
               <phone className="flex items-center space-x-2 text-sm text-gray-700">
                 {/* <icon className="text-green-600"></icon> */}
-                <span className="text-green-800 text-xl">All <span className="text-blue-800 text-xl font-bold">courses</span> under one roof. We have no branches.</span>
+                <span className="text-green-800 text-xl">
+                  All{" "}
+                  <span className="text-blue-800 text-xl font-bold">
+                    courses
+                  </span>{" "}
+                  under one roof. We have no branches.
+                </span>
               </phone>
             </contact-list>
           </branch>
@@ -285,7 +281,13 @@ function page() {
                   )}
                 </button>
 
-                <Link className="text-center block underline text-blue-900" href={`${process.env.NEXT_PUBLIC_API_BASE_URL}api/v1/users/change-password`} target="__blank">Reset Password</Link>
+                <Link
+                  className="text-center block underline text-blue-900"
+                  href={`${process.env.NEXT_PUBLIC_API_BASE_URL}api/v1/users/change-password`}
+                  target="__blank"
+                >
+                  Reset Password
+                </Link>
               </form>
             </div>
 
@@ -306,4 +308,4 @@ function page() {
   );
 }
 
-export default page;
+export default LoginPage;

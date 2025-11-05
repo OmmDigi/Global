@@ -1,26 +1,23 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import BackToTopButton from "@/components/BackToTopButton";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import { Button, message, Steps, theme } from "antd";
 import { Upload, X } from "lucide-react";
-import { useScrollChecker } from "@/components/useScrollChecker";
 import { ToWords } from "to-words";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 
-import { fetcher, getFetcher, postFetcher } from "@/lib/fetcher";
+import {  getFetcher, postFetcher } from "@/lib/fetcher";
 import { uploadFiles } from "@/utils/uploadFile";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 const toWords = new ToWords();
 
 let words = toWords.convert(123);
-console.log("Words:", words);
 
 const steps = [
   {
@@ -42,10 +39,12 @@ const steps = [
 ];
 
 const uploadUrl = process.env.NEXT_PUBLIC_UPLOAD_API_BASE_URL;
-console.log("uploadUrl333", uploadUrl);
 
-function page() {
+function AdmissionPage() {
   const route = useRouter();
+
+  const searchParams = useSearchParams();
+  const courseId = searchParams.get("course_id");
 
   const [messageApi, contextHolder] = message.useMessage();
   const { token } = theme.useToken();
@@ -391,7 +390,14 @@ function page() {
     marginTop: 16,
   };
 
-  const [selectedCourseId, setSelectedCourseId] = useState(null);
+  const [selectedCourseId, setSelectedCourseId] = useState(courseId ? parseInt(courseId) : null);
+
+  useEffect(() => {
+    if(courseId) {
+      setFormData(prev => ({...prev, courseName : parseInt(courseId)}))
+    }
+  }, [courseId])
+
   const handleCourseChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -405,8 +411,6 @@ function page() {
   const selectedCourse = Array.isArray(courseList?.data)
     ? courseList?.data?.find((course) => course.id === selectedCourseId)
     : null;
-
-  console.log("feesStructure", feesStructure);
 
   return (
     <>
@@ -545,13 +549,12 @@ function page() {
                   </label>
                   <select
                     name="courseName"
-                    // value={formData.courseName}
                     onChange={handleCourseChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Option</option>
                     {courseList?.data?.map((data, index) => (
-                      <option key={index} value={`${data?.id}`}>
+                      <option selected = {courseId == data.id} key={index} value={`${data?.id}`}>
                         {data?.course_name}
                       </option>
                     ))}
@@ -1658,4 +1661,4 @@ function page() {
   );
 }
 
-export default page;
+export default AdmissionPage;

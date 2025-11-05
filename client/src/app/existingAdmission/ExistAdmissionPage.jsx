@@ -12,12 +12,11 @@ import { getFetcher, postFetcher } from "@/lib/fetcher";
 import useSWRMutation from "swr/mutation";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const toWords = new ToWords();
 
 let words = toWords.convert(123);
-console.log("Words:", words);
 
 const steps = [
   {
@@ -39,9 +38,8 @@ const steps = [
 ];
 
 const uploadUrl = process.env.NEXT_PUBLIC_UPLOAD_API_BASE_URL;
-console.log("uploadUrl333", uploadUrl);
 
-function page() {
+function ExistAdmissionPage() {
   const route = useRouter();
   const [messageApi, contextHolder] = message.useMessage();
   const [isadmissionPopup, setIsadmissionPopup] = useState(false);
@@ -53,10 +51,13 @@ function page() {
     fee_structure_info: [],
   });
 
+  const searchParams = useSearchParams();
+  const courseId = searchParams.get("course_id");
+
   const { token } = theme.useToken();
 
   const [formData, setFormData] = useState({
-    course_id: "",
+    course_id: courseId ? parseInt(courseId) : "",
     session_id: "",
     batch_id: "",
   });
@@ -133,8 +134,6 @@ function page() {
       console.log("Upload Error:", error);
     }
   };
-
- 
 
   const handleAmountChange = (e, item) => {
     const value = Number(e.target.value);
@@ -215,11 +214,12 @@ function page() {
   } = useSWR("api/v1/course/dropdown", getFetcher);
   if (courseLoading) {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
-    console.log("leaveList", leaveList);
   }
-  console.log("courseList", courseList);
 
-  const [selectedCourseId, setSelectedCourseId] = useState(null);
+  const [selectedCourseId, setSelectedCourseId] = useState(
+    courseId ? parseInt(courseId) : null
+  );
+
   const handleCourseChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -434,4 +434,4 @@ function page() {
   );
 }
 
-export default page;
+export default ExistAdmissionPage;

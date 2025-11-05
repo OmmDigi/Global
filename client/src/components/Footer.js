@@ -171,9 +171,24 @@ function Footer() {
                 >
                   Privacy Policy
                 </Link>
-                {/* <div className=" flex  w-auto   ">
-                  <p>Privacy Policy</p>
-                </div> */}
+              </li>
+
+              <li>
+                <Link
+                  href="/terms-and-conditions"
+                  className="hover:underline hover:ml-3 transition-all duration-300"
+                >
+                  Terms & Conditions
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  href="/refund-policy"
+                  className="hover:underline hover:ml-3 transition-all duration-300"
+                >
+                  Refund Policy
+                </Link>
               </li>
             </ul>
           </div>

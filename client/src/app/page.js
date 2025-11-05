@@ -673,12 +673,12 @@ export default function Home() {
         </section>
 
         {/* gallery  */}
-        <div className="text-center flex flex-col items-center  bg-[#e8f0ff]  text-[#0e3481] ">
+        {/* <div className="text-center flex flex-col items-center  bg-[#e8f0ff]  text-[#0e3481] ">
           <h1 className="text-xl md:text-2xl font-semibold mt-4 mb-0">
             Gallery
           </h1>
         </div>
-        <Gallery />
+        <Gallery /> */}
 
         {/* Principal message  */}
         <section className="w-full py-12 px-4 bg-white">
