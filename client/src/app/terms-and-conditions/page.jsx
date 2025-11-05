@@ -38,77 +38,12 @@ function TermsAndConditions() {
         </div>
 
         {/* Privacy Policy Content */}
-        <div className="space-y-4 leading-relaxed">
-          <h2 className="text-2xl font-bold">Privacy Policy</h2>
-          <p className="text-sm">
-            <strong>Effective Date:</strong> Oct 30, 2025
-          </p>
-
-          <p className="text-sm">
-            At <strong>EduVerse Training Institute</strong>, we value your
-            privacy. This Privacy Policy explains how we collect, use, and
-            protect your information when you interact with our website, online
-            courses, or training programs.
-          </p>
-
-          <h3 className="text-lg font-semibold">1. Information We Collect</h3>
-          <ul className="list-disc pl-6 text-sm space-y-1">
-            <li>Your name, email address, phone number, and contact details</li>
-            <li>Course preferences and enrollment history</li>
-            <li>Payment details (securely processed by trusted partners)</li>
-            <li>Feedback, assessments, and attendance data</li>
-          </ul>
-
-          <h3 className="text-lg font-semibold">
-            2. How We Use Your Information
-          </h3>
-          <ul className="list-disc pl-6 text-sm space-y-1">
-            <li>To manage your course registration and progress</li>
-            <li>To communicate important updates or announcements</li>
-            <li>To personalize learning experiences</li>
-            <li>To improve our curriculum and teaching methods</li>
-          </ul>
-
-          <h3 className="text-lg font-semibold">3. Data Protection</h3>
-          <ul className="list-disc pl-6 text-sm space-y-1">
-            <li>
-              Your data is stored securely and accessed only by authorized
-              staff.
-            </li>
-            <li>
-              We do not sell or share your information with third parties except
-              for educational or payment processing purposes.
-            </li>
-          </ul>
-
-          <h3 className="text-lg font-semibold">4. Cookies & Website Usage</h3>
-          <ul className="list-disc pl-6 text-sm space-y-1">
-            <li>We may use cookies to enhance your browsing experience.</li>
-            <li>You can control cookie settings through your browser.</li>
-          </ul>
-
-          <h3 className="text-lg font-semibold">5. Third-Party Services</h3>
-          <p className="text-sm">
-            Our website may include links or integrations with third-party
-            platforms (like payment gateways or video platforms). We are not
-            responsible for their privacy practices.
-          </p>
-
-          <h3 className="text-lg font-semibold">6. Your Rights</h3>
-          <ul className="list-disc pl-6 text-sm space-y-1">
-            <li>
-              You can request access to, correction of, or deletion of your
-              personal data by contacting us at{" "}
-              <strong>global.technical8.institute@gmail.com</strong>.
-            </li>
-          </ul>
-
-          <p className="text-sm">
-            For any questions or concerns regarding this policy, please contact
-            our Privacy Officer at{" "}
-            <strong>global.technical8.institute@gmail.com</strong>.
-          </p>
-        </div>
+        <div
+          dangerouslySetInnerHTML={{
+            __html: `<h2 data-start="398" data-end="423"> <strong data-start="401" data-end="423">Terms &amp; Conditions</strong></h2><p data-start="425" data-end="658"> <strong data-start="425" data-end="467">Welcome to Global Technical Institute.</strong><br> By enrolling in any of our courses, training programs, or related educational services, you agree to the following <strong data-start="585" data-end="609">Terms and Conditions</strong>. Please read them carefully before registration.</p><hr data-start="660" data-end="663"><h3 data-start="665" data-end="701"> <strong data-start="669" data-end="701">1. Enrollment &amp; Confirmation</strong></h3><ul data-start="703" data-end="1009"> <li data-list-item-id="ee71b5bb5903ca61590b3729a6ff2c587" data-start="703" data-end="776"> <p data-start="705" data-end="776"> All enrollments must be confirmed through email, phone, or in person. </p> </li> <li data-list-item-id="e285d29890bcc44abaca70f43ac53e6d3" data-start="777" data-end="878"> <p data-start="779" data-end="878"> A minimum registration fee (as specified during enrollment) is required to secure your admission. </p> </li> <li data-list-item-id="ebfffad6d18f2b8f23250acd77d768545" data-start="879" data-end="1009"> <p data-start="881" data-end="1009"> The remaining balance of the course fee must be paid before the commencement of classes or as per the agreed payment schedule. </p> </li></ul><hr data-start="1011" data-end="1014"><h3 data-start="1016" data-end="1050"> <strong data-start="1020" data-end="1050">2. Cancellations &amp; Refunds</strong></h3><ul data-start="1052" data-end="1534"> <li data-list-item-id="e22ae7e55331512c204261e027399c46a" data-start="1052" data-end="1162"> <p data-start="1054" data-end="1162"> Cancellation requests must be submitted in writing via email to <a class="decorated-link cursor-pointer" data-start="1120" data-end="1157" rel="noopener"><strong data-start="1118" data-end="1159">global.technical8.institute@gmail.com</strong><span class="ms-0.5 inline-block align-middle leading-none" aria-hidden="true"><strong data-start="1118" data-end="1159"><svg class="block h-[0.75em] w-[0.75em] stroke-current stroke-[0.75]" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" data-rtl-flip=""><path d="M14.3349 13.3301V6.60645L5.47065 15.4707C5.21095 15.7304 4.78895 15.7304 4.52925 15.4707C4.26955 15.211 4.26955 14.789 4.52925 14.5293L13.3935 5.66504H6.66011C6.29284 5.66504 5.99507 5.36727 5.99507 5C5.99507 4.63273 6.29284 4.33496 6.66011 4.33496H14.9999L15.1337 4.34863C15.4369 4.41057 15.665 4.67857 15.665 5V13.3301C15.6649 13.6973 15.3672 13.9951 14.9999 13.9951C14.6327 13.9951 14.335 13.6973 14.3349 13.3301Z"></path></svg></strong></span></a>. </p> </li> <li data-list-item-id="e679f73bf38a26ba32a56b551a6e5e057" data-start="1163" data-end="1403"> <p data-start="1165" data-end="1220"> Refunds will be processed as per the following terms: </p> <ul data-start="1223" data-end="1403"> <li data-list-item-id="e1d81da18136763c4e9ceffc763bbe83e" data-start="1223" data-end="1277"> <p data-start="1225" data-end="1277"> <strong data-start="1225" data-end="1264">30 days before course commencement:</strong> 80% refund </p> </li> <li data-list-item-id="e7af9f9a34a99acbcb948133e710741f9" data-start="1280" data-end="1337"> <p data-start="1282" data-end="1337"> <strong data-start="1282" data-end="1324">15–29 days before course commencement:</strong> 50% refund </p> </li> <li data-list-item-id="eea299e5043eff88a365a8b42d19bb367" data-start="1340" data-end="1403"> <p data-start="1342" data-end="1403"> <strong data-start="1342" data-end="1391">Less than 15 days before course commencement:</strong> No refund </p> </li> </ul> </li> <li data-list-item-id="e752cf5ee97340b4d96cf8d5fd709a5bf" data-start="1404" data-end="1534"> <p data-start="1406" data-end="1534"> No refund will be granted for <strong data-start="1436" data-end="1454">non-attendance</strong>, <strong data-start="1456" data-end="1476">early withdrawal</strong>, or <strong data-start="1481" data-end="1507">course discontinuation</strong> once classes have begun. </p> </li></ul><hr data-start="1536" data-end="1539"><h3 data-start="1541" data-end="1572"> <strong data-start="1545" data-end="1572">3. Liability Disclaimer</strong></h3><ul data-start="1574" data-end="1980"> <li data-list-item-id="e274940c3867e008066a82bdb5fdc270e" data-start="1574" data-end="1680"> <p data-start="1576" data-end="1680"> Students must ensure they are medically fit to participate in practical training or clinical sessions. </p> </li> <li data-list-item-id="e3a022469027f437150c454c0b3ad7399" data-start="1681" data-end="1857"> <p data-start="1683" data-end="1857"> <strong data-start="1683" data-end="1713">Global Technical Institute</strong> is not responsible for any personal injury, loss, or damage to belongings occurring within the premises or during off-site training sessions. </p> </li> <li data-list-item-id="e481475db90bf693462abd580c7d0a5eb" data-start="1858" data-end="1980"> <p data-start="1860" data-end="1980"> It is recommended that students have adequate <strong data-start="1906" data-end="1948">health and accident insurance coverage</strong> during their training period. </p> </li></ul><hr data-start="1982" data-end="1985"><h3 data-start="1987" data-end="2038"> <strong data-start="1991" data-end="2038">4. Changes or Cancellation by the Institute</strong></h3><ul data-start="2040" data-end="2388"> <li data-list-item-id="e53825ae4395cd70f4eb5009f0f0937d5" data-start="2040" data-end="2274"> <p data-start="2042" data-end="2274"> In certain unavoidable circumstances (e.g., faculty unavailability, administrative reasons, government regulations, or natural calamities), the institute reserves the right to <strong data-start="2218" data-end="2251">reschedule, modify, or cancel</strong> any course or batch. </p> </li> <li data-list-item-id="edbd51a3d2725d5d6ef9ee265ffa5f756" data-start="2275" data-end="2388"> <p data-start="2277" data-end="2388"> In such cases, the institute will offer an <strong data-start="2320" data-end="2341">alternative batch</strong> or a <strong data-start="2347" data-end="2357">refund</strong>, depending on the situation. </p> </li></ul><hr data-start="2390" data-end="2393"><h3 data-start="2395" data-end="2429"> <strong data-start="2399" data-end="2429">5. Documents &amp; Eligibility</strong></h3><ul data-start="2431" data-end="2776"> <li data-list-item-id="e75049def6d98fcdacb3d8e3d35d51d0a" data-start="2431" data-end="2554"> <p data-start="2433" data-end="2554"> Students must provide valid <strong data-start="2461" data-end="2473">ID proof</strong>, <strong data-start="2475" data-end="2500">academic certificates</strong>, and any other required documents during admission. </p> </li> <li data-list-item-id="e453f5af4c1afecea5f8b0071ff7fe1be" data-start="2555" data-end="2680"> <p data-start="2557" data-end="2680"> The institute reserves the right to verify documents and cancel admission if false or misleading information is provided. </p> </li> <li data-list-item-id="e70ad016916bae477f7d2c6bcd4c00dcf" data-start="2681" data-end="2776"> <p data-start="2683" data-end="2776"> Foreign students must hold valid <strong data-start="2716" data-end="2736">passports, visas</strong>, and necessary permissions to enroll. </p> </li></ul><hr data-start="2778" data-end="2781"><h3 data-start="2783" data-end="2809"> <strong data-start="2787" data-end="2809">6. Code of Conduct</strong></h3><ul data-start="2811" data-end="3169"> <li data-list-item-id="e51e3ef28f2f0f2cad509368d4b56eec8" data-start="2811" data-end="2941"> <p data-start="2813" data-end="2941"> Students are expected to maintain <strong data-start="2847" data-end="2888">discipline, respect faculty and staff</strong>, and follow the institute’s rules and regulations. </p> </li> <li data-list-item-id="eb7e5fda484feffb79d02a5f742d6b3c3" data-start="2942" data-end="3076"> <p data-start="2944" data-end="3076"> Any form of <strong data-start="2956" data-end="3020">misconduct, disrespectful behavior, or violation of policies</strong> may result in suspension or expulsion without refund. </p> </li> <li data-list-item-id="eb09733fe7dfac6787775d80c403acf87" data-start="3077" data-end="3169"> <p data-start="3079" data-end="3169"> Respect for <strong data-start="3091" data-end="3153">fellow students, instructors, and the learning environment</strong> is mandatory. </p> </li></ul><hr data-start="3171" data-end="3174"><h3 data-start="3176" data-end="3200"> <strong data-start="3180" data-end="3200">7. Governing Law</strong></h3><ul data-start="3202" data-end="3373"> <li data-list-item-id="e1d1b5d5d799be5cf7780c22f1d6f1080" data-start="3202" data-end="3264"> <p data-start="3204" data-end="3264"> These Terms and Conditions are governed by <strong data-start="3247" data-end="3261">Indian Law</strong>. </p> </li> <li data-list-item-id="e816984382de598e626c85521fad6862e" data-start="3265" data-end="3373"> <p data-start="3267" data-end="3373"> Any disputes or legal matters shall fall under the jurisdiction of the <strong data-start="3338" data-end="3370">courts in West Sikkim, India</strong>. </p> </li></ul><hr data-start="3375" data-end="3378"><p data-start="3380" data-end="3516"> 📧 <strong data-start="3383" data-end="3419">For any queries, please contact:</strong><br> <strong data-start="3422" data-end="3432">Email:</strong> <a class="decorated-link cursor-pointer" data-start="3433" data-end="3470" rel="noopener">global.technical8.institute@gmail.com<span class="ms-0.5 inline-block align-middle leading-none" aria-hidden="true"><svg class="block h-[0.75em] w-[0.75em] stroke-current stroke-[0.75]" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" data-rtl-flip=""><path d="M14.3349 13.3301V6.60645L5.47065 15.4707C5.21095 15.7304 4.78895 15.7304 4.52925 15.4707C4.26955 15.211 4.26955 14.789 4.52925 14.5293L13.3935 5.66504H6.66011C6.29284 5.66504 5.99507 5.36727 5.99507 5C5.99507 4.63273 6.29284 4.33496 6.66011 4.33496H14.9999L15.1337 4.34863C15.4369 4.41057 15.665 4.67857 15.665 5V13.3301C15.6649 13.6973 15.3672 13.9951 14.9999 13.9951C14.6327 13.9951 14.335 13.6973 14.3349 13.3301Z"></path></svg></span></a><br> <strong data-start="3473" data-end="3487">Institute:</strong> Global Technical Institute</p>`,
+          }}
+          className="space-y-4"
+        ></div>
       </section>
 
       <Footer />
