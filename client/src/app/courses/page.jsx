@@ -56,7 +56,7 @@ export default async function OurCoursesList() {
                     Duration
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">
-                    Admission Fee
+                    Admission Fees
                   </th>
                   <th className="px-6 py-4 text-center text-sm font-semibold uppercase tracking-wider">
                     Action
@@ -112,7 +112,7 @@ export default async function OurCoursesList() {
                   </div>
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-gray-600 font-medium">
-                      Admission Fee:
+                      Admission Fees:
                     </span>
                     <span className="text-gray-900 font-bold text-lg">
                       {course.fee}

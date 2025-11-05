@@ -140,14 +140,14 @@ function Footer() {
                   Our Blog
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link
                   href=" /ourGallery"
                   className="hover:underline hover:ml-3 transition-all duration-300"
                 >
                   Gallery
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <Link
                   href="/news-events"
