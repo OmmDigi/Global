@@ -739,6 +739,7 @@ export default function CourseDetailsAdmin() {
                                   <option value="Online">Online</option>
                                   <option value="Cash">Cash</option>
                                   <option value="Cheque">Cheque</option>
+                                  <option value="Discount">Discount</option>
                                 </select>
                               </div>
                               {item.fee_head_id == 4 ||
