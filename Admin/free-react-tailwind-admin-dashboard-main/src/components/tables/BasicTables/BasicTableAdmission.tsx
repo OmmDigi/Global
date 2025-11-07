@@ -65,24 +65,30 @@ any) {
                 Due Amount
               </TableCell>
 
-              <TableCell
+              {/* <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
                 Status
-              </TableCell>
+              </TableCell> */}
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Action
+                Collection
               </TableCell>
               <TableCell
+                isHeader
+                className="px-5 py-3 text-center font-medium text-gray-500 text-theme-xs dark:text-gray-400"
+              >
+                Action
+              </TableCell>
+              {/* <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
                 Details
-              </TableCell>
+              </TableCell> */}
             </TableRow>
           </TableHeader>
 
@@ -140,7 +146,7 @@ any) {
                   {order.due_amount}
                 </TableCell>
 
-                <TableCell>
+                {/* <TableCell>
                   <div className="pl-4">
                     <Switch
                       label=""
@@ -150,21 +156,32 @@ any) {
                       }
                     />
                   </div>
+                </TableCell> */}
+
+                <TableCell>
+                  <span className="font-semibold text-green-700 block text-center">
+                    {parseFloat(order.course_fee) -
+                      parseFloat(order.due_amount)}
+                  </span>
                 </TableCell>
 
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3.5">
+                    <Switch
+                      label=""
+                      defaultChecked={order.form_status}
+                      onChange={(defaultChecked) =>
+                        onActive(defaultChecked, order.form_id)
+                      }
+                    />
+
                     <button
                       onClick={() => onEdit(order.form_id)}
                       className="text-blue-500 hover:underline"
                     >
                       Edit
                     </button>
-                  </div>
-                </TableCell>
 
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleDetailsClick(order.form_id)}
                       className="text-blue-500 hover:underline"
@@ -173,6 +190,17 @@ any) {
                     </button>
                   </div>
                 </TableCell>
+
+                {/* <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleDetailsClick(order.form_id)}
+                      className="text-blue-500 hover:underline"
+                    >
+                      Details
+                    </button>
+                  </div>
+                </TableCell> */}
               </TableRow>
             ))}
           </TableBody>

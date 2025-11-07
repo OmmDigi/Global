@@ -1,5 +1,5 @@
 import PageMeta from "../../../components/common/PageMeta";
-import { useEffect, useRef, useState, useTransition } from "react";
+import React, { useEffect, useRef, useState, useTransition } from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import { useParams } from "react-router-dom";
 import ComponentCard from "../../../components/common/ComponentCard";
@@ -50,7 +50,11 @@ export default function CourseDetailsAdmin() {
   // console.log("addFormData", addFormData);
 
   const { id } = useParams();
-  const [formId, setFormId] = useState(id);
+  // const [formId, setFormId] = useState(id);
+  // const [searchBy, setSearchBy] = useState({
+  //   type: "name",
+  //   value: "",
+  // });
 
   const [remarksPopup, setRemarksPopup] = useState<any>({}); // store open state per row
   const [remarksText, setRemarksText] = useState<any>({});
@@ -81,7 +85,6 @@ export default function CourseDetailsAdmin() {
   } = useSWR(`api/v1/admission/${id}`, getFetcher);
 
   const { data: feeHeadList } = useSWR("api/v1/course/fee-head", getFetcher);
-  console.log("feeHeadList", feeHeadList);
 
   //  if(!feesStructure?.data?.student_name){
   //     messageApi.open({
@@ -135,17 +138,33 @@ export default function CourseDetailsAdmin() {
   // const onChange = (e: any) => {
   //   setPaymentMode(e.target.value);
   // };
-  const FormSearch = (e: any) => {
-    const { value } = e.target;
-    const split1 = value.split("/");
-    const split_value = split1[split1.length - 1];
-    setFormId(split_value);
-  };
+  // const FormSearch = (e: any) => {
+  //   const { value } = e.target;
+  //   const split1 = value.split("/");
+  //   const split_value = split1[split1.length - 1];
+  //   setFormId(split_value);
+  // };
 
-  const handleFormSearch = () => {
-    navigate(`/courseDetailsAdmin/${formId}`);
-    refetch(`api/v1/admission/${formId}`);
-    console.log("formSearch", formId);
+  // const handleFormSearch = () => {
+  //   // navigate(`/courseDetailsAdmin/${formId}`);
+  //   // refetch(`api/v1/admission/${formId}`);
+  //   // console.log("formSearch", formId);
+  // };
+
+  const handleSearchByForm = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
+    const searchBy = formData.get("search_by");
+    const searchByValue = formData.get("search_by_value")?.toString();
+
+    if(!searchByValue || searchByValue.trim() == "") {
+      return alert("Enter a form id to search")
+    }
+
+    if(searchBy?.toString() === "form_id") {
+      navigate(`/courseDetailsAdmin/${searchByValue?.toString()}`);
+    }
   };
 
   const doPayment = async (dataToSend: any) => {
@@ -434,28 +453,41 @@ export default function CourseDetailsAdmin() {
         ← Back
       </button>
 
-      <div className="flex justify-center items-center gap-5 ">
+      <form
+        onSubmit={handleSearchByForm}
+        className="flex justify-center items-center gap-5 "
+      >
         <div>
           <label className="block text-sm text-start text-gray-500 mb-1">
-            Search by Form ID
+            Search By
+          </label>
+          <select name="search_by" className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md">
+            <option value="form_id">Form Id</option>
+            {/* <option value="name">Name</option> */}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm text-start text-gray-500 mb-1">
+            Value
           </label>
           <input
             type="text"
-            name="value"
-            onChange={FormSearch}
-            placeholder=" Form ID"
+            name="search_by_value"
+            // onChange={FormSearch}
+            placeholder="Value"
             className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md"
           />
         </div>
         <div className="flex py-1 justify-end mt-5">
           <button
             className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg shadow-md transition"
-            onClick={handleFormSearch}
+            // onClick={handleFormSearch}
+            type="submit"
           >
             Search
           </button>
         </div>
-      </div>
+      </form>
       <PageBreadcrumb pageTitle="Course Details" link="admissionAdmin" />
       <h1 className="text-gray-800 dark:text-amber-50 text-3xl mb-15">
         {feesStructure?.data?.form_name}
