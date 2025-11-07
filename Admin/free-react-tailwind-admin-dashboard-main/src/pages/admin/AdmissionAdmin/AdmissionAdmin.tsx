@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import PageMeta from "../../../components/common/PageMeta";
 import ComponentCard from "../../../components/common/ComponentCard";
@@ -124,12 +124,24 @@ export default function AdmissionAdmin() {
   const [pageCount] = useState<number>(0);
   const [searchParams, setSearchParams] = useSearchParams();
 
+  useEffect(() => {
+    if(course && batch && changeSession && pageCount) {
+    console.log("true")
+  }
+  }, [])
+
+  const filterFormRef = useRef<HTMLFormElement>(null);
+
   const [selectedCourseId, setSelectedCourseId] = useState(null);
 
-  const [formDataParams, setFormDataParams] = useState({
-    courseName: "",
-    sessionName: "",
-    batchName: "",
+  const [formDataParams, setFormDataParams] = useState<{
+    courseName: string | null;
+    sessionName: string | null;
+    batchName: string | null;
+  }>({
+    courseName: null,
+    sessionName: null,
+    batchName: null,
   });
 
   useEffect(() => {
@@ -138,23 +150,17 @@ export default function AdmissionAdmin() {
     const courseParams = query.get("course");
     const batchParams = query.get("batch");
 
-    console.log("Session:", sessionParams);
-    console.log("Course:", courseParams);
-    console.log("Batch:", batchParams);
-
     // Set values in form state from params (if available)
     setFormDataParams({
-      courseName: courseParams || "",
-      sessionName: sessionParams || "",
-      batchName: batchParams || "",
+      courseName: courseParams,
+      sessionName: sessionParams,
+      batchName: batchParams,
     });
     setSelectedCourseId(courseParams as any);
-  }, []);
+  }, [window.location.search]);
 
   // get Course list
   const { data: courseList } = useSWR(`api/v1/course/dropdown`, getFetcher);
-
-  console.log("courseListcourseList", courseList);
 
   const { data: admissionlist, mutate: mutateAdmissionList } = useSWR(
     `api/v1/admission?${searchParams.toString()}`,
@@ -162,20 +168,12 @@ export default function AdmissionAdmin() {
   );
 
   const handleSearch = () => {
-    console.log("search", pageCount);
-    if (changeSession && course && batch) {
-      setSearchParams({
-        session: changeSession,
-        course: course,
-        batch: batch,
-      } as any);
-      mutateAdmissionList();
+    if (filterFormRef.current) {
+      filterFormRef.current.requestSubmit();
     }
   };
 
   const handleFormSearch = async () => {
-    console.log("formSearch", formSearch);
-
     if (formSearch) {
       const response = await getFetcher(
         `api/v1/admission?${formSearch.type}=${formSearch.value}`
@@ -193,6 +191,19 @@ export default function AdmissionAdmin() {
         content: "Please Select all Input Fields",
       });
     }
+  };
+
+  const handleFilterSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.currentTarget);
+
+    setSearchParams((prev) => {
+      prev.set("course", formData.get("course")?.toString() ?? "");
+      prev.set("session", formData.get("session")?.toString() ?? "");
+      prev.set("batch", formData.get("batch")?.toString() ?? "");
+      return prev;
+    });
   };
 
   const { trigger: create } = useSWRMutation(
@@ -233,14 +244,6 @@ export default function AdmissionAdmin() {
 
   const handleFileChange = (e: any, name: string) => {
     const files = e.target.files;
-
-    // Array.from(files).forEach((files) => {
-    //   const reader = new FileReader();
-    //   reader.onload = (event) => {
-    //   };
-    //   reader.readAsDataURL(files);
-    // });
-    // setFiles(Array.from(files).map(item => ({})));
     uploadFiles({
       url: `${uploadUrl}api/v1/upload/multiple`,
       files: Array.from(files),
@@ -255,7 +258,6 @@ export default function AdmissionAdmin() {
           ...prev,
           [name]: response,
         }));
-        // setFiles(response as any);
       },
       onError(error) {
         console.log("file error", error);
@@ -479,7 +481,6 @@ export default function AdmissionAdmin() {
       [name]: value,
     }));
     const courseId = parseInt(e.target.value);
-    console.log("handleCourseChangehandleCourseChange", courseId);
 
     setSelectedCourseId(courseId as any);
   };
@@ -495,7 +496,6 @@ export default function AdmissionAdmin() {
   const selectedCourse = Array.isArray(courseList?.data)
     ? courseList?.data?.find((course: any) => course.id == selectedCourseId)
     : null;
-  console.log("selectedCourseselectedCourse", selectedCourse);
 
   return (
     <div>
@@ -583,7 +583,10 @@ export default function AdmissionAdmin() {
                                 key={editedFormId + "sessionName"}
                                 name="sessionName"
                                 disabled={id ? true : false}
-                                defaultValue={formData.sessionName}
+                                defaultValue={
+                                  formDataParams.sessionName ??
+                                  formData.sessionName
+                                }
                                 onChange={handleSessionChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                               >
@@ -593,6 +596,7 @@ export default function AdmissionAdmin() {
                                   (session: any, index: number) => (
                                     <option
                                       key={index}
+                                      // selected = {session.session_id}
                                       value={`${session?.session_id}`}
                                     >
                                       {session.session_name}
@@ -1746,21 +1750,18 @@ export default function AdmissionAdmin() {
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-4">
+            {/* <div className="grid grid-cols-1 gap-6 xl:grid-cols-4">
               <div className="  mb-4">
                 <label className="block text-sm font-bold text-gray-500 mb-1">
                   Choose your Courses
                 </label>
                 <select
-                  key={editedFormId + "courseName"}
+                  // key={editedFormId + "courseName"}
+                  key={formDataParams.courseName ?? formData.courseName}
                   name="courseName"
                   disabled={id ? true : false}
                   // defaultValue={formData.courseName}
-                  value={
-                    formData.courseName
-                      ? formData.courseName
-                      : formDataParams.courseName
-                  }
+                  defaultValue={formDataParams.courseName ?? formData.courseName}
                   onChange={handleCourseChange}
                   className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 "
                 >
@@ -1774,16 +1775,15 @@ export default function AdmissionAdmin() {
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-500 mb-1">
-                  Choose your Session
+                  Choose your Session Here
                 </label>
                 <select
-                  key={editedFormId + "sessionName"}
+                  // key={editedFormId + "sessionName"}
+                  key={formDataParams.sessionName ?? formData.sessionName}
                   name="sessionName"
                   disabled={id ? true : false}
                   defaultValue={
-                    formData.sessionName
-                      ? formData.sessionName
-                      : formDataParams.sessionName
+                    formDataParams.sessionName ?? formData.sessionName
                   }
                   onChange={handleSessionChange}
                   className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -1805,14 +1805,10 @@ export default function AdmissionAdmin() {
                   Choose your Batch
                 </label>
                 <select
-                  key={editedFormId + "batchName"}
+                  key={formDataParams.sessionName ?? formData.sessionName}
                   name="batchName"
                   disabled={id ? true : false}
-                  defaultValue={
-                    formData.batchName
-                      ? formData.batchName
-                      : formDataParams.batchName
-                  }
+                  defaultValue={formDataParams.batchName ?? formData.batchName}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
@@ -1835,7 +1831,96 @@ export default function AdmissionAdmin() {
                   Search
                 </Button>
               </div>
-            </div>
+            </div> */}
+
+            <form
+              ref={filterFormRef}
+              onSubmit={handleFilterSubmit}
+              className="grid grid-cols-1 gap-6 xl:grid-cols-4"
+            >
+              <div className="mb-4">
+                <label className="block text-sm font-bold text-gray-500 mb-1">
+                  Choose your Courses
+                </label>
+                <select
+                  // key={editedFormId + "courseName"}
+                  key={formDataParams.courseName ?? formData.courseName}
+                  name="course"
+                  disabled={id ? true : false}
+                  // defaultValue={formData.courseName}
+                  defaultValue={
+                    formDataParams.courseName ?? formData.courseName
+                  }
+                  onChange={handleCourseChange}
+                  className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 "
+                >
+                  <option value="">Option</option>
+                  {courseList?.data?.map((data: any, index: number) => (
+                    <option key={index} value={`${data?.id}`}>
+                      {data?.course_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-500 mb-1">
+                  Choose your Session Here
+                </label>
+                <select
+                  // key={editedFormId + "sessionName"}
+                  key={formDataParams.sessionName ?? formData.sessionName}
+                  name="session"
+                  disabled={id ? true : false}
+                  defaultValue={
+                    formDataParams.sessionName ?? formData.sessionName
+                  }
+                  onChange={handleSessionChange}
+                  className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Option</option>
+
+                  {selectedCourse?.session?.map(
+                    (session: any, index: number) => (
+                      <option key={index} value={`${session?.session_id}`}>
+                        {session.session_name}
+                      </option>
+                    )
+                  )}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-500 mb-1">
+                  Choose your Batch
+                </label>
+                <select
+                  key={formDataParams.sessionName ?? formData.sessionName}
+                  name="batch"
+                  disabled={id ? true : false}
+                  defaultValue={formDataParams.batchName ?? formData.batchName}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Option</option>
+                  {selectedCourse?.batch
+                    ?.filter(
+                      (batch: any) =>
+                        batch.session_id == formData.sessionName ||
+                        batch.session_id == formDataParams.sessionName
+                    )
+                    .map((batch: any, index: number) => (
+                      <option key={index} value={`${batch.batch_id}`}>
+                        {batch.month_name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+              <div className="flex justify-end mt-5">
+                <Button type="primary" onClick={handleSearch}>
+                  Search
+                </Button>
+              </div>
+            </form>
 
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
               <div>

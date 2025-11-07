@@ -1,5 +1,5 @@
 // const { data } = require("./public/mar-apr-2025");
-const { data } = require("./public/TeacherTranning_Apr_March_converted");
+const { data } = require("./public/teacher_tranning_mtt_mar.js");
 const dotenv = require("dotenv");
 const { Pool } = require("pg");
 const { generatePlaceholders, formatDateSafe } = require("./utils");
