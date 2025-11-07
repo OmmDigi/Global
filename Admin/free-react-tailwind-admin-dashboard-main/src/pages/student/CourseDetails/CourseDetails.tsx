@@ -287,6 +287,21 @@ export default function CourseDetails() {
                           </span>{" "}
                         </Label>
                       </div>
+
+                      <div>
+                        <Label htmlFor="inputTwo">
+                          Total Paid Fee :{" "}
+                          <span className="font-semibold text-green-500">
+                            {parseFloat(
+                              feesStructure?.data?.course_fee ?? "0.00"
+                            ) -
+                              parseFloat(
+                                feesStructure?.data?.due_amount ?? "0.00"
+                              )}
+                          </span>
+                        </Label>
+                      </div>
+
                       {feesStructure?.data?.total_discount > 0 ? (
                         <div>
                           <Label

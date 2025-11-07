@@ -524,6 +524,15 @@ export default function CourseDetailsAdmin() {
               </div>
               <div>
                 <Label htmlFor="inputTwo">
+                  Total Collected Fee :{" "}
+                  <span className="font-semibold text-green-500">
+                    {parseFloat(feesStructure?.data?.course_fee ?? "0.00") -
+                      parseFloat(feesStructure?.data?.due_amount ?? "0.00")}
+                  </span>
+                </Label>
+              </div>
+              <div>
+                <Label htmlFor="inputTwo">
                   Total Course Duration : {feesStructure?.data?.duration}
                 </Label>
               </div>
