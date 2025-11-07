@@ -61,7 +61,6 @@ export class PhonePe {
     this.PHONEPE_MERCHANT_BASE_URL = merchant_base_url;
     this.ENV_TYPE =
       process.env.NODE_ENV === "development" ? Env.SANDBOX : Env.PRODUCTION;
-    console.log(this.ENV_TYPE);
   }
 
   createOrder = async (
