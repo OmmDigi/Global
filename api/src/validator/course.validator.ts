@@ -90,8 +90,8 @@ export const VUpdateCourse = Joi.object({
   // payment_mode: Joi.string()
   //   .valid("UPI", "Cash", "Cash/UPI", "Cheque")
   //   .optional(),
-  duration: Joi.number().required(),
-  duration_name: Joi.string().valid("month", "year").required(),
+  duration: Joi.number().optional(),
+  duration_name: Joi.string().valid("month", "year").optional(),
   // price: Joi.number().optional(),
   description: Joi.string().optional().allow(""),
   is_active: Joi.bool().optional(),
