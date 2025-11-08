@@ -126,7 +126,6 @@ export default function AdmissionAdmin() {
 
   useEffect(() => {
     if (course && batch && changeSession && pageCount && formSearch) {
-      
     }
   }, []);
 
@@ -216,6 +215,20 @@ export default function AdmissionAdmin() {
     const value = formData.get("value")?.toString() ?? "";
 
     setSearchParams((prev) => {
+      for (const [currentKey] of prev) {
+        if (currentKey === "name") {
+          prev.delete("name");
+        }
+        if (currentKey === "email") {
+          prev.delete("email");
+        }
+        if (currentKey === "ph_no") {
+          prev.delete("ph_no");
+        }
+        if (currentKey === "form_no") {
+          prev.delete("form_no");
+        }
+      }
       prev.set(key, value);
       return prev;
     });
@@ -512,14 +525,26 @@ export default function AdmissionAdmin() {
     ? courseList?.data?.find((course: any) => course.id == selectedCourseId)
     : null;
 
-  //   console.log(formData)
-  // // console.log(selectedCourse?.batch.filter((item : any) => item.session_id == formDataParams.sessionName || item.session_id == formData.sessionName))
-  // console.log(selectedCourse?.batch
-  //   ?.filter(
-  //     (batch: any) =>
-  //       batch.session_id == formData.sessionName ||
-  //       batch.session_id == formDataParams.sessionName
-  //   ))
+  const [searchBy, setSearchBy] = useState({
+    type: "",
+    value: "",
+  });
+
+  useEffect(() => {
+    searchParams.forEach((value, key) => {
+      if (
+        key === "name" ||
+        key === "email" ||
+        key === "ph_no" ||
+        key === "form_no"
+      ) {
+        setSearchBy({
+          type: key,
+          value: value,
+        });
+      }
+    });
+  }, []);
 
   return (
     <div>
@@ -1958,10 +1983,11 @@ export default function AdmissionAdmin() {
                     Search Type
                   </label>
                   <select
-                    key={editedFormId + "batchName"}
+                    key={editedFormId + "batchName" + searchBy.type}
                     name="type"
                     disabled={id ? true : false}
                     // defaultValue={formData.batchName}
+                    defaultValue={searchBy.type}
                     onChange={FormSearch}
                     className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
@@ -1977,8 +2003,10 @@ export default function AdmissionAdmin() {
                     Search by
                   </label>
                   <input
+                    key={searchBy.value}
                     type="text"
                     name="value"
+                    defaultValue={searchBy.value}
                     // onChange={FormSearch}
                     className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md"
                   />
@@ -1987,7 +2015,7 @@ export default function AdmissionAdmin() {
                   className="mb-2"
                   type="primary"
                   onClick={() => {
-                    if(searchByfilterFormRef.current) {
+                    if (searchByfilterFormRef.current) {
                       searchByfilterFormRef.current.requestSubmit();
                     }
                   }}
