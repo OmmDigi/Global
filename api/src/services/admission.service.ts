@@ -138,7 +138,7 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
 
   if (value.session) {
     if (filter === "") {
-      filter += `WHERE ec.session_id = $${placeholder++}`;
+      filter = `WHERE ec.session_id = $${placeholder++}`;
     } else {
       filter += ` AND ec.session_id = $${placeholder++}`;
     }
@@ -147,22 +147,38 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
   }
 
   if (value.form_no) {
-    filter = `WHERE ff.form_name = $${placeholder++}`;
+    if(filter === "") {
+      filter = `WHERE ff.form_name = $${placeholder++}`;
+    } else {
+      filter += ` AND ff.form_name = $${placeholder++}`;
+    }
     filterValues.push(value.form_no);
   }
 
   if (value.ph_no) {
-    filter = `WHERE u.ph_no = $${placeholder++}`;
+    if(filter === "") {
+      filter = `WHERE u.ph_no = $${placeholder++}`;
+    } else {
+      filter += ` AND u.ph_no = $${placeholder++}`;
+    }
     filterValues.push(value.ph_no);
   }
 
   if (value.name) {
-    filter = `WHERE u.name = $${placeholder++}`;
+    if(filter === "") {
+      filter = `WHERE u.name = $${placeholder++}`;
+    } else {
+      filter += ` AND u.name = $${placeholder++}`;
+    }
     filterValues.push(value.name);
   }
 
   if (value.email) {
-    filter = `WHERE u.email = $${placeholder++}`;
+    if(filter === "") {
+      filter = `WHERE u.email = $${placeholder++}`;
+    } else {
+      filter += ` AND u.email = $${placeholder++}`;
+    }
     filterValues.push(value.email);
   }
 

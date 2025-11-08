@@ -119,18 +119,19 @@ export default function AdmissionAdmin() {
   const [course, setCourse] = useState<number>(0);
   const [batch, setBatch] = useState<any>(0);
   const [changeSession, setChangeSession] = useState<any>(0);
-  const [searchData, setSearchData] = useState<any>({});
+  const [searchData] = useState<any>({});
   const [formSearch, setFormSearch] = useState<any>({});
   const [pageCount] = useState<number>(0);
   const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
-    if (course && batch && changeSession && pageCount) {
-      console.log("true");
+    if (course && batch && changeSession && pageCount && formSearch) {
+      
     }
   }, []);
 
   const filterFormRef = useRef<HTMLFormElement>(null);
+  const searchByfilterFormRef = useRef<HTMLFormElement>(null);
 
   const [selectedCourseId, setSelectedCourseId] = useState(null);
 
@@ -173,25 +174,25 @@ export default function AdmissionAdmin() {
     }
   };
 
-  const handleFormSearch = async () => {
-    if (formSearch) {
-      const response = await getFetcher(
-        `api/v1/admission?${formSearch.type}=${formSearch.value}`
-      );
-      if (response) {
-        messageApi.open({
-          type: "success",
-          content: response.message,
-        });
-        setSearchData(response);
-      }
-    } else {
-      messageApi.open({
-        type: "error",
-        content: "Please Select all Input Fields",
-      });
-    }
-  };
+  // const handleFormSearch = async () => {
+  //   if (formSearch) {
+  //     const response = await getFetcher(
+  //       `api/v1/admission?${formSearch.type}=${formSearch.value}`
+  //     );
+  //     if (response) {
+  //       messageApi.open({
+  //         type: "success",
+  //         content: response.message,
+  //       });
+  //       setSearchData(response);
+  //     }
+  //   } else {
+  //     messageApi.open({
+  //       type: "error",
+  //       content: "Please Select all Input Fields",
+  //     });
+  //   }
+  // };
 
   const handleFilterSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -202,6 +203,20 @@ export default function AdmissionAdmin() {
       prev.set("course", formData.get("courseName")?.toString() ?? "");
       prev.set("session", formData.get("sessionName")?.toString() ?? "");
       prev.set("batch", formData.get("batchName")?.toString() ?? "");
+      return prev;
+    });
+  };
+
+  const handleSearchBySubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.currentTarget);
+
+    const key = formData.get("type")?.toString() ?? "";
+    const value = formData.get("value")?.toString() ?? "";
+
+    setSearchParams((prev) => {
+      prev.set(key, value);
       return prev;
     });
   };
@@ -1845,9 +1860,9 @@ export default function AdmissionAdmin() {
             <form
               ref={filterFormRef}
               onSubmit={handleFilterSubmit}
-              className="grid grid-cols-1 gap-6 xl:grid-cols-4"
+              className="flex items-end justify-center gap-2.5"
             >
-              <div className="mb-4">
+              <div className="flex-1">
                 <label className="block text-sm font-bold text-gray-500 mb-1">
                   Choose your Courses
                 </label>
@@ -1873,7 +1888,7 @@ export default function AdmissionAdmin() {
                   ))}
                 </select>
               </div>
-              <div>
+              <div className="flex-1">
                 <label className="block text-sm font-bold text-gray-500 mb-1">
                   Choose your Session Here
                 </label>
@@ -1901,8 +1916,7 @@ export default function AdmissionAdmin() {
                   )}
                 </select>
               </div>
-
-              <div>
+              <div className="flex-1">
                 <label className="block text-sm font-bold text-gray-500 mb-1">
                   Choose your Batch
                 </label>
@@ -1930,50 +1944,59 @@ export default function AdmissionAdmin() {
                     ))}
                 </select>
               </div>
-              <div className="flex justify-end mt-5">
+              <div className="flex justify-end mb-2">
                 <Button type="primary" onClick={handleSearch}>
                   Search
                 </Button>
               </div>
             </form>
 
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-              <div>
-                <label className="block text-sm font-bold text-gray-500 mb-1">
-                  Search Type
-                </label>
-                <select
-                  key={editedFormId + "batchName"}
-                  name="type"
-                  disabled={id ? true : false}
-                  // defaultValue={formData.batchName}
-                  onChange={FormSearch}
-                  className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            <form ref={searchByfilterFormRef} onSubmit={handleSearchBySubmit}>
+              <div className="flex items-end justify-center gap-2.5">
+                <div className="flex-1">
+                  <label className="block text-sm font-bold text-gray-500 mb-1">
+                    Search Type
+                  </label>
+                  <select
+                    key={editedFormId + "batchName"}
+                    name="type"
+                    disabled={id ? true : false}
+                    // defaultValue={formData.batchName}
+                    onChange={FormSearch}
+                    className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Option</option>
+                    <option value="form_no">Form No</option>
+                    <option value="name">Name</option>
+                    <option value="email">Email</option>
+                    <option value="ph_no">Ph No</option>
+                  </select>
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm text-start text-gray-500 mb-1">
+                    Search by
+                  </label>
+                  <input
+                    type="text"
+                    name="value"
+                    // onChange={FormSearch}
+                    className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md"
+                  />
+                </div>
+                <Button
+                  className="mb-2"
+                  type="primary"
+                  onClick={() => {
+                    if(searchByfilterFormRef.current) {
+                      searchByfilterFormRef.current.requestSubmit();
+                    }
+                  }}
+                  // onClick={handleFormSearch}
                 >
-                  <option value="">Option</option>
-                  <option value="form_no">Form No</option>
-                  <option value="name">Name</option>
-                  <option value="email">Email</option>
-                  <option value="ph_no">Ph No</option>
-                </select>
+                  Search
+                </Button>
               </div>
-              <div>
-                <label className="block text-sm text-start text-gray-500 mb-1">
-                  Search by
-                </label>
-                <input
-                  type="text"
-                  name="value"
-                  onChange={FormSearch}
-                  className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md"
-                />
-              </div>
-            </div>
-            <div className="flex justify-end mt-5">
-              <Button type="primary" onClick={handleFormSearch}>
-                Search
-              </Button>
-            </div>
+            </form>
             <BasicTableAdmission
               admissionlist={searchData?.data ? searchData : admissionlist}
               onEdit={handleEdit}

@@ -62,21 +62,20 @@ any) {
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
+                Collection
+              </TableCell>
+              <TableCell
+                isHeader
+                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+              >
                 Due Amount
               </TableCell>
-
               {/* <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
                 Status
               </TableCell> */}
-              <TableCell
-                isHeader
-                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >
-                Collection
-              </TableCell>
               <TableCell
                 isHeader
                 className="px-5 py-3 text-center font-medium text-gray-500 text-theme-xs dark:text-gray-400"
@@ -136,6 +135,14 @@ any) {
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   {order.course_fee}
                 </TableCell>
+                
+                <TableCell>
+                  <span className="font-semibold text-green-700 block text-center">
+                    {parseFloat(order.course_fee) -
+                      parseFloat(order.due_amount)}
+                  </span>
+                </TableCell>
+
                 <TableCell
                   className={`px-4 py-3 ${
                     Number(order.due_amount) === 0
@@ -157,13 +164,6 @@ any) {
                     />
                   </div>
                 </TableCell> */}
-
-                <TableCell>
-                  <span className="font-semibold text-green-700 block text-center">
-                    {parseFloat(order.course_fee) -
-                      parseFloat(order.due_amount)}
-                  </span>
-                </TableCell>
 
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   <div className="flex items-center gap-3.5">
