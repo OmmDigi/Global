@@ -162,8 +162,11 @@ export default function CourseDetailsAdmin() {
       return alert("Enter a form id to search")
     }
 
+    const split1 = searchByValue.split("/");
+    const split_value = split1[split1.length - 1];
+
     if(searchBy?.toString() === "form_id") {
-      navigate(`/courseDetailsAdmin/${searchByValue?.toString()}`);
+      navigate(`/courseDetailsAdmin/${split_value}`);
     }
   };
 
