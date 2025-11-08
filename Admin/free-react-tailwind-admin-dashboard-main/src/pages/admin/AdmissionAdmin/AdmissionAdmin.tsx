@@ -125,10 +125,10 @@ export default function AdmissionAdmin() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
-    if(course && batch && changeSession && pageCount) {
-    console.log("true")
-  }
-  }, [])
+    if (course && batch && changeSession && pageCount) {
+      console.log("true");
+    }
+  }, []);
 
   const filterFormRef = useRef<HTMLFormElement>(null);
 
@@ -199,9 +199,9 @@ export default function AdmissionAdmin() {
     const formData = new FormData(e.currentTarget);
 
     setSearchParams((prev) => {
-      prev.set("course", formData.get("course")?.toString() ?? "");
-      prev.set("session", formData.get("session")?.toString() ?? "");
-      prev.set("batch", formData.get("batch")?.toString() ?? "");
+      prev.set("course", formData.get("courseName")?.toString() ?? "");
+      prev.set("session", formData.get("sessionName")?.toString() ?? "");
+      prev.set("batch", formData.get("batchName")?.toString() ?? "");
       return prev;
     });
   };
@@ -496,6 +496,15 @@ export default function AdmissionAdmin() {
   const selectedCourse = Array.isArray(courseList?.data)
     ? courseList?.data?.find((course: any) => course.id == selectedCourseId)
     : null;
+
+  //   console.log(formData)
+  // // console.log(selectedCourse?.batch.filter((item : any) => item.session_id == formDataParams.sessionName || item.session_id == formData.sessionName))
+  // console.log(selectedCourse?.batch
+  //   ?.filter(
+  //     (batch: any) =>
+  //       batch.session_id == formData.sessionName ||
+  //       batch.session_id == formDataParams.sessionName
+  //   ))
 
   return (
     <div>
@@ -1844,8 +1853,10 @@ export default function AdmissionAdmin() {
                 </label>
                 <select
                   // key={editedFormId + "courseName"}
-                  key={formDataParams.courseName ?? formData.courseName}
-                  name="course"
+                  key={`CourseDropDown ${
+                    formDataParams.courseName ?? formData.courseName
+                  }`}
+                  name="courseName"
                   disabled={id ? true : false}
                   // defaultValue={formData.courseName}
                   defaultValue={
@@ -1868,8 +1879,10 @@ export default function AdmissionAdmin() {
                 </label>
                 <select
                   // key={editedFormId + "sessionName"}
-                  key={formDataParams.sessionName ?? formData.sessionName}
-                  name="session"
+                  key={`sessionDropdown ${
+                    formDataParams.sessionName ?? formData.sessionName
+                  }`}
+                  name="sessionName"
                   disabled={id ? true : false}
                   defaultValue={
                     formDataParams.sessionName ?? formData.sessionName
@@ -1894,8 +1907,10 @@ export default function AdmissionAdmin() {
                   Choose your Batch
                 </label>
                 <select
-                  key={formDataParams.sessionName ?? formData.sessionName}
-                  name="batch"
+                  key={`batchdropdowm ${
+                    formDataParams.batchName ?? formData.batchName
+                  }`}
+                  name="batchName"
                   disabled={id ? true : false}
                   defaultValue={formDataParams.batchName ?? formData.batchName}
                   onChange={handleInputChange}
