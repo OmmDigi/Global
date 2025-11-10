@@ -744,9 +744,9 @@ export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
   let paymentFilter = "";
   if (value.mode && value.mode !== "Both") {
     if (paymentFilter == "") {
-      paymentFilter = `WHERE p.mode = $${placeholder++} OR p.mode = 'Discount'`;
+      paymentFilter = `WHERE p.status = 2 AND p.mode = $${placeholder++} OR p.mode = 'Discount'`;
     } else {
-      paymentFilter += ` (AND p.mode = $${placeholder++} OR p.mode = 'Discount')`;
+      paymentFilter += ` (AND p.status = 2 AND p.mode = $${placeholder++} OR p.mode = 'Discount')`;
     }
     filterValues.push(value.mode);
   }
@@ -1136,9 +1136,9 @@ export const generatePaymentExcelReport = asyncErrorHandler(
 
     if (value.from_date && value.to_date) {
       if (filter == "") {
-        filter = `WHERE p.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
+        filter = `WHERE p.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date AND p.status = 2`;
       } else {
-        filter += ` AND p.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
+        filter += ` AND p.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date AND p.status = 2`;
       }
       filterValues.push(value.from_date);
       filterValues.push(value.to_date);
@@ -3397,9 +3397,9 @@ export const monthlyPaymentReport = asyncErrorHandler(async (req, res) => {
   let paymentFilter = "WHERE p.fee_head_id = 4";
   if (value.mode && value.mode !== "Both") {
     if (paymentFilter == "") {
-      paymentFilter = `WHERE p.mode = $${placeholder++} OR p.mode = 'Discount'`;
+      paymentFilter = `WHERE p.status = 2 AND p.mode = $${placeholder++} OR p.mode = 'Discount'`;
     } else {
-      paymentFilter += ` (AND p.mode = $${placeholder++} OR p.mode = 'Discount')`;
+      paymentFilter += ` (AND p.status = 2 AND p.mode = $${placeholder++} OR p.mode = 'Discount')`;
     }
     filterValues.push(value.mode);
   }

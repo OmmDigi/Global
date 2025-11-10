@@ -198,7 +198,7 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
         
         (
           COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id ${feeHeadIdFilter}), 0.00) - 
-          COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND mode = 'Discount' ${feeHeadIdFilter}), 0.00)
+          COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND mode = 'Discount' AND status = 2 ${feeHeadIdFilter}), 0.00)
         ) AS course_fee,
 
         COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id ${feeHeadIdFilter}), 0.00) - COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND status = 2 ${feeHeadIdFilter}), 0.00) AS due_amount,
