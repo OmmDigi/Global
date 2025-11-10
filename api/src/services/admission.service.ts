@@ -274,7 +274,7 @@ export const getSingleAdmissionData = async (
             cfh.name AS fee_head_name,
             cfh.id AS fee_head_id,
             COALESCE(ffs.min_amount, 0.00) AS min_amount,
-            COALESCE(ffs.amount, 0.00) AS price,
+            COALESCE(ffs.amount, 0.00) - COALESCE(SUM(p.amount) FILTER (WHERE p.mode = 'Discount'), 0.00) AS price,
             COALESCE(ffs.amount, 0.00) - COALESCE(SUM(p.amount), 0.00) AS due_amount
           FROM form_fee_structure ffs
   
