@@ -182,6 +182,12 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
     filterValues.push(value.email);
   }
 
+  let feeHeadIdFilter = "";
+  if(value.fee_head_id) {
+    feeHeadIdFilter += `AND fee_head_id = $${placeholder++}`;
+    filterValues.push(value.fee_head_id);
+  }
+
   const query = `
       SELECT
         ff.id AS form_id,
@@ -189,8 +195,13 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
         u.name AS student_name,
         u.image AS student_image,
         c.name AS course_name,
-        (SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id) AS course_fee,
-        COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id), 0.00) - COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND status = 2), 0.00) AS due_amount,
+        
+        (
+          COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id ${feeHeadIdFilter}), 0.00) - 
+          COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND mode = 'Discount' ${feeHeadIdFilter}), 0.00)
+        ) AS course_fee,
+
+        COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id ${feeHeadIdFilter}), 0.00) - COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND status = 2 ${feeHeadIdFilter}), 0.00) AS due_amount,
         b.month_name AS batch_name,
         CASE WHEN ff.status = 2 THEN true ELSE false END AS form_status
         -- JSON_AGG(JSON_BUILD_OBJECT('batch_id', b.id, 'batch_name', b.month_name)) AS batches

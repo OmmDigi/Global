@@ -138,10 +138,12 @@ export default function AdmissionAdmin() {
     courseName: string | null;
     sessionName: string | null;
     batchName: string | null;
+    feeHeadId: string | null;
   }>({
     courseName: null,
     sessionName: null,
     batchName: null,
+    feeHeadId: null,
   });
 
   useEffect(() => {
@@ -149,18 +151,22 @@ export default function AdmissionAdmin() {
     const sessionParams = query.get("session");
     const courseParams = query.get("course");
     const batchParams = query.get("batch");
+    const feeHeadIdParams = query.get("fee_head_id");
 
     // Set values in form state from params (if available)
     setFormDataParams({
       courseName: courseParams,
       sessionName: sessionParams,
       batchName: batchParams,
+      feeHeadId: feeHeadIdParams,
     });
     setSelectedCourseId(courseParams as any);
   }, [window.location.search]);
 
   // get Course list
   const { data: courseList } = useSWR(`api/v1/course/dropdown`, getFetcher);
+
+  const { data: feeHeadList } = useSWR(`api/v1/course/fee-head`, getFetcher);
 
   const { data: admissionlist, mutate: mutateAdmissionList } = useSWR(
     `api/v1/admission?${searchParams.toString()}`,
@@ -202,6 +208,14 @@ export default function AdmissionAdmin() {
       prev.set("course", formData.get("courseName")?.toString() ?? "");
       prev.set("session", formData.get("sessionName")?.toString() ?? "");
       prev.set("batch", formData.get("batchName")?.toString() ?? "");
+      const feeHeadId = formData.get("feeHeadId")?.toString();
+      if (feeHeadId) {
+        if (feeHeadId === "All") {
+          prev.delete("fee_head_id");
+        } else {
+          prev.set("fee_head_id", formData.get("feeHeadId")?.toString() ?? "");
+        }
+      }
       return prev;
     });
   };
@@ -1967,6 +1981,27 @@ export default function AdmissionAdmin() {
                         {batch.month_name}
                       </option>
                     ))}
+                </select>
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-bold text-gray-500 mb-1">
+                  Fee Heads
+                </label>
+                <select
+                  key={`feeHeadId ${formDataParams.feeHeadId}`}
+                  name="feeHeadId"
+                  disabled={id ? true : false}
+                  defaultValue={
+                    formDataParams.feeHeadId ?? "All"
+                  }
+                  className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="All">All</option>
+                  {feeHeadList?.data?.map((feehead: any, index: number) => (
+                    <option key={index} value={`${feehead.id}`}>
+                      {feehead.name}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="flex justify-end mb-2">
