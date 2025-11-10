@@ -1,4 +1,5 @@
 import Joi from "joi";
+import { LATE_FINE_FEE_HEAD_ID, MONTHLY_PAYMENT_HEAD_ID } from "../constant";
 
 export const VCreateOrderValidator = Joi.object({
   form_id: Joi.number().required(),
@@ -7,6 +8,11 @@ export const VCreateOrderValidator = Joi.object({
       Joi.object({
         fee_head_id: Joi.number().required(),
         custom_min_amount: Joi.number().required(),
+        month: Joi.when("fee_head_id", {
+          is : Joi.valid(MONTHLY_PAYMENT_HEAD_ID, LATE_FINE_FEE_HEAD_ID),
+          then : Joi.required(),
+          otherwise : Joi.optional().allow(null)
+        })
       })
     )
     .min(1)

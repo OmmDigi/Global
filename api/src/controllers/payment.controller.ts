@@ -29,6 +29,7 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
       value.fee_structure_info as {
         fee_head_id: number;
         custom_min_amount: number;
+        month : string | null
       }[]
     ).filter((item) => item.custom_min_amount != 0);
 
@@ -87,9 +88,8 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
 
     rows.forEach((item) => {
       // const db_min_amount = parseFloat(item.min_amount);
-      const custom_amount =
-        fee_structure_info.find((fs) => fs.fee_head_id == item.fee_head_id)
-          ?.custom_min_amount ?? 0;
+      const singleFeeStructure = fee_structure_info.find((fs) => fs.fee_head_id == item.fee_head_id);
+      const custom_amount = singleFeeStructure?.custom_min_amount ?? 0;
 
       amountToPaid += custom_amount;
 
@@ -103,7 +103,7 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
         fee_head_ids_info.push({
           fee_head_id: item.fee_head_id,
           amount: custom_amount,
-          month: null,
+          month: singleFeeStructure?.month ? `${singleFeeStructure.month}-01` : null,
           payment_date: payment_date_str,
           bill_no: null,
           payment_mode: null,
@@ -166,7 +166,7 @@ export const verifyPayment = asyncErrorHandler(async (req, res) => {
     COMPLETED: 2,
     FAILED: 3,
   };
-
+  
   await pool.query(
     "UPDATE payments SET payment_name_id = $1, status = $2, transition_id = $3, order_id = $4, payment_date = $5, remark = $6 WHERE order_id = $7",
     [
