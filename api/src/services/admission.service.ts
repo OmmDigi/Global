@@ -366,7 +366,7 @@ export const getSingleAdmissionData = async (
 
         ${paymentListFilter}
           
-        ORDER BY p.id DESC
+        ORDER BY cfh.position
       `,
       paymentListValues
     );
