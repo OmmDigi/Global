@@ -1,7 +1,7 @@
 import PageMeta from "../../../components/common/PageMeta";
 import React, { useEffect, useRef, useState, useTransition } from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import ComponentCard from "../../../components/common/ComponentCard";
 import Label from "../../../components/form/Label";
 import { message } from "antd";
@@ -21,6 +21,8 @@ export default function CourseDetailsAdmin() {
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
   const [isPending, startTransition] = useTransition();
+
+  const [searchParams] = useSearchParams();
 
   // const [feesStructure, setFeesStructure] = useState("");
   const [month, setMonth] = useState<{
@@ -77,14 +79,14 @@ export default function CourseDetailsAdmin() {
     if (category) localStorage.setItem("category", category);
   }, []);
 
-  //   get Fees head
+  // get Fees head
   const {
     data: feesStructure,
     isLoading: feesStructureLoading,
     mutate: refetch,
-  } = useSWR(`api/v1/admission/${id}`, getFetcher);
+  } = useSWR(`api/v1/admission/${id}?${searchParams.toString()}`, getFetcher);
 
-  const { data: feeHeadList } = useSWR("api/v1/course/fee-head", getFetcher);
+  const { data: feeHeadList } = useSWR(`api/v1/course/fee-head?${searchParams.toString()}`, getFetcher);
 
   //  if(!feesStructure?.data?.student_name){
   //     messageApi.open({

@@ -24,6 +24,11 @@ any) {
   const currentPage = parseInt(searchParams.get("page") || "1");
 
   const handleDetailsClick = (id: number) => {
+    const feeHeadId = searchParams.get("fee_head_id");
+    if(feeHeadId) {
+      navigate(`/courseDetailsAdmin/${id}?fee_head_id=${feeHeadId}`);
+      return;
+    }
     navigate(`/courseDetailsAdmin/${id}`);
   };
 
