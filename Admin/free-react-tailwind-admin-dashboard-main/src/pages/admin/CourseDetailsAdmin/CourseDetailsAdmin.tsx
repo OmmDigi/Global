@@ -340,6 +340,8 @@ export default function CourseDetailsAdmin() {
     };
 
     setRemarksPopup((prev: any) => ({ ...prev, [item.fee_head_id]: false }));
+    setRemarksText((prev: any) => ({ ...prev, [item.fee_head_id]: null }));
+
     startTransition(async () => {
       await doPayment(finalFormData as any);
     });
@@ -383,8 +385,10 @@ export default function CourseDetailsAdmin() {
       [fee.fee_head_id]: fee.payment_date ? new Date(fee.payment_date) : null,
     }));
 
+    setRemarksText((prev : any) => ({...prev, [fee.fee_head_id]: fee.remark}))
+
     // for Monthly fees only — set month picker
-    if (Number(fee.fee_head_id) === 4 && fee.month) {
+    if ((fee.fee_head_id == 4 || fee.fee_head_id == 5) && fee.month) {
       const parsedMonth = new Date(Date.parse(fee.month.replace(",", "")));
       setMonth((prev: any) => ({
         ...prev,
@@ -437,6 +441,7 @@ export default function CourseDetailsAdmin() {
     // }
 
     setRemarksPopup((prev: any) => ({ ...prev, [item.fee_head_id]: false }));
+    setRemarksText((prev: any) => ({ ...prev, [item.fee_head_id]: null }));
 
     startTransition(async () => {
       await doPayment(finalFormData as any);
