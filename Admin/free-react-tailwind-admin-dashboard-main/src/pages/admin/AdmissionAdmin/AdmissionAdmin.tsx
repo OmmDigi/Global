@@ -620,7 +620,7 @@ export default function AdmissionAdmin() {
                               key={editedFormId + "courseName"}
                               name="courseName"
                               disabled={id ? true : false}
-                              defaultValue={formData?.courseName}
+                              defaultValue={formDataParams.courseName ?? formData?.courseName}
                               // value={formData.courseName}
                               onChange={handleCourseChange}
                               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -647,7 +647,7 @@ export default function AdmissionAdmin() {
                                 name="sessionName"
                                 disabled={id ? true : false}
                                 defaultValue={
-                                  // formDataParams.sessionName ??
+                                  formDataParams.sessionName ??
                                   formData.sessionName
                                 }
                                 onChange={handleSessionChange}
@@ -677,7 +677,7 @@ export default function AdmissionAdmin() {
                                 key={editedFormId + "batchName"}
                                 name="batchName"
                                 disabled={id ? true : false}
-                                defaultValue={formData.batchName}
+                                defaultValue={formDataParams.batchName ?? formData.batchName}
                                 onChange={handleInputChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                               >
@@ -685,7 +685,7 @@ export default function AdmissionAdmin() {
                                 {selectedCourse?.batch
                                   ?.filter(
                                     (batch: any) =>
-                                      batch.session_id == formData.sessionName
+                                      batch.session_id == (formDataParams.sessionName ?? formData.sessionName)
                                   )
                                   .map((batch: any, index: number) => (
                                     <option
