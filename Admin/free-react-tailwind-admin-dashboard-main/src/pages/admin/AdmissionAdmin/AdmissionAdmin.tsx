@@ -647,7 +647,7 @@ export default function AdmissionAdmin() {
                                 name="sessionName"
                                 disabled={id ? true : false}
                                 defaultValue={
-                                  formDataParams.sessionName ??
+                                  // formDataParams.sessionName ??
                                   formData.sessionName
                                 }
                                 onChange={handleSessionChange}
@@ -710,6 +710,7 @@ export default function AdmissionAdmin() {
                               />
                             </div>
                           </div>
+
 
                           {/* Personal Details */}
                           <div className=" border-gray-300 p-4">
