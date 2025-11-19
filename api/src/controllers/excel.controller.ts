@@ -179,7 +179,7 @@ export const newAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
       s.name AS session_name,
       COALESCE(JSON_AGG(ps) FILTER (WHERE ps.form_id IS NOT NULL), '[]'::json) AS payment_summery,
       COALESCE(MAX(tp.total_payment), 0.00) AS total_payment,
-      SUM(tp.total_payment) final_payment_result,
+      -- SUM(tp.total_payment) final_payment_result,
       (SELECT COALESCE(MAX(payment_count), 0) FROM fee_head_counts WHERE form_id = ff.id) AS max_payment_count,
       (
         SELECT JSON_AGG(ROW_TO_JSON(ffa))
@@ -329,12 +329,12 @@ export const newAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
   let index = 0;
   let completedMargeRow = 3;
   let endCell: { r: number, c: number } = { r: 0, c: 0 };
-  let finalTotalAmount = 0;
+  let finalTotalAmount = 0.00;
 
   pgStream.on("data", (data: TAdmissionReportData) => {
     pgStream.pause();
 
-    finalTotalAmount = data.final_payment_result;
+    finalTotalAmount += parseFloat(data.total_payment.toString());
 
     if (index === 0) {
       // set the header
@@ -744,9 +744,9 @@ export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
   let paymentFilter = "";
   if (value.mode && value.mode !== "Both") {
     if (paymentFilter == "") {
-      paymentFilter = `WHERE p.mode = $${placeholder++} OR p.mode = 'Discount'`;
+      paymentFilter = `WHERE p.status = 2 AND p.mode = $${placeholder++} OR p.mode = 'Discount'`;
     } else {
-      paymentFilter += ` (AND p.mode = $${placeholder++} OR p.mode = 'Discount')`;
+      paymentFilter += ` (AND p.status = 2 AND p.mode = $${placeholder++} OR p.mode = 'Discount')`;
     }
     filterValues.push(value.mode);
   }
@@ -1136,9 +1136,9 @@ export const generatePaymentExcelReport = asyncErrorHandler(
 
     if (value.from_date && value.to_date) {
       if (filter == "") {
-        filter = `WHERE p.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
+        filter = `WHERE p.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date AND p.status = 2`;
       } else {
-        filter += ` AND p.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
+        filter += ` AND p.created_at BETWEEN $${placeholder++}::date AND $${placeholder++}::date AND p.status = 2`;
       }
       filterValues.push(value.from_date);
       filterValues.push(value.to_date);
@@ -3397,9 +3397,9 @@ export const monthlyPaymentReport = asyncErrorHandler(async (req, res) => {
   let paymentFilter = "WHERE p.fee_head_id = 4";
   if (value.mode && value.mode !== "Both") {
     if (paymentFilter == "") {
-      paymentFilter = `WHERE p.mode = $${placeholder++} OR p.mode = 'Discount'`;
+      paymentFilter = `WHERE p.status = 2 AND p.mode = $${placeholder++} OR p.mode = 'Discount'`;
     } else {
-      paymentFilter += ` (AND p.mode = $${placeholder++} OR p.mode = 'Discount')`;
+      paymentFilter += ` (AND p.status = 2 AND p.mode = $${placeholder++} OR p.mode = 'Discount')`;
     }
     filterValues.push(value.mode);
   }

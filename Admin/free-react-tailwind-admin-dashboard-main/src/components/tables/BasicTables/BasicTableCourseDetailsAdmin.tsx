@@ -116,6 +116,7 @@ export default function BasicTableCourseDetailsAdmin({
                 <TableRow key={order.id}>
                   <TableCell className="px-5 py-4 sm:px-6 text-start">
                     <div className="flex items-center gap-3">
+                      <input type="checkbox" className="cursor-pointer size-4"/>
                       <div className="block font-medium text-gray-500 text-theme-xs dark:text-gray-400]">
                         {index + 1}
                       </div>

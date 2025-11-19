@@ -10,11 +10,30 @@ import useSWRMutation from "swr/mutation";
 import { getFetcher, patchFetcher, postFetcher } from "../../../api/fatcher";
 // import BasicTableCourses from "../../../components/tables/studentTable/BasicTableCourses";
 import BasicTableFeesList from "../../../components/tables/studentTable/BasicTableFeesList";
+import DatePicker from "react-datepicker";
+import dayjs from "dayjs";
+// import DatePicker from "react-datepicker";
 // import BasicTableCourseDetailsAdmin from "../../../components/tables/BasicTables/BasicTableCourseDetailsAdmin";
 
 export default function CourseDetails() {
   const [messageApi, contextHolder] = message.useMessage();
   const [isPending, startTransition] = useTransition();
+
+  const [month, setMonth] = useState<{
+    [key: number]: Date | null;
+  }>({});
+
+  // const months = useRef<{
+  //   monthly_fee_month: string | null;
+  //   late_fine_fee_month: string | null;
+  // }>({
+  //   monthly_fee_month: null,
+  //   late_fine_fee_month: null,
+  // });
+
+  // const [needToSelectMonth, setNeedSelectMonth] = useState<
+  //   "monthly" | "late-fine" | null
+  // >("monthly");
 
   const [enteredAmounts, setEnteredAmounts] = useState<any>({});
 
@@ -55,6 +74,9 @@ export default function CourseDetails() {
       (item: any) => ({
         fee_head_id: item.fee_head_id,
         custom_min_amount: enteredAmounts[item.fee_head_id] || 0,
+        month: month[item.fee_head_id]
+          ? dayjs(month[item.fee_head_id]).format("YYYY-MM")
+          : null,
       })
     );
 
@@ -63,7 +85,6 @@ export default function CourseDetails() {
       fee_structure_info,
     };
 
-    // setFormData2(finalFormData);
     startTransition(async () => {
       try {
         const response = await create2(finalFormData as any);
@@ -116,6 +137,10 @@ export default function CourseDetails() {
       });
     }
   };
+
+  // const handleMonthPickerSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  // };
 
   return (
     <>
@@ -287,6 +312,21 @@ export default function CourseDetails() {
                           </span>{" "}
                         </Label>
                       </div>
+
+                      <div>
+                        <Label htmlFor="inputTwo">
+                          Total Paid Fee :{" "}
+                          <span className="font-semibold text-green-500">
+                            {parseFloat(
+                              feesStructure?.data?.course_fee ?? "0.00"
+                            ) -
+                              parseFloat(
+                                feesStructure?.data?.due_amount ?? "0.00"
+                              )}
+                          </span>
+                        </Label>
+                      </div>
+
                       {feesStructure?.data?.total_discount > 0 ? (
                         <div>
                           <Label
@@ -320,50 +360,75 @@ export default function CourseDetails() {
                               return (
                                 <div
                                   key={item.fee_head_id}
-                                  className="flex flex-col "
+                                  className="flex flex-col"
                                 >
-                                  <div className="flex justify-between gap-1">
-                                    <label className="flex-1">
-                                      {index + 1}. {item.fee_head_name}
-                                    </label>
-                                    <label className="flex-1">
-                                      Fees : ₹ {item.price}
-                                    </label>{" "}
-                                    <label className="flex-1">
-                                      Due Fees : ₹{" "}
-                                      <span
-                                        className={`${
-                                          Number(item?.due_amount) === 0
-                                            ? "text-green-500"
-                                            : "text-red-500"
-                                        }`}
-                                      >
-                                        {item.due_amount}
-                                      </span>
-                                    </label>
-                                    <div>
-                                      <input
-                                        disabled={
-                                          Number(item?.due_amount) === 0
-                                            ? true
-                                            : false
-                                        }
-                                        type="number"
-                                        min={1}
-                                        max={item?.price}
-                                        // value={formData2.fee_structure_info.fee_head_id}
-                                        onChange={(e) =>
-                                          handleAmountChange(e, item)
-                                        }
-                                        className="w-32 px-2 py-1 border rounded"
-                                      />
-                                      {item?.min_amount > 0 &&
-                                      item?.due_amount > 0 ? (
-                                        <p className="text-xs text-red-300">
-                                          {" "}
-                                          Minimum to pay {item?.min_amount}
+                                  <div className="flex flex-wrap md:flex-nowrap gap-2.5">
+                                    <div className="flex-1">
+                                      <p className="flex-1">
+                                        {index + 1}. {item.fee_head_name}
+                                      </p>
+                                      <div className="flex items-center gap-3.5 text-sm text-gray-400">
+                                        <p>Fees : ₹ {item.price}</p>{" "}
+                                        <p>
+                                          Due Fees : ₹{" "}
+                                          <span
+                                            className={`${
+                                              Number(item?.due_amount) === 0
+                                                ? "text-green-500"
+                                                : "text-red-500"
+                                            }`}
+                                          >
+                                            {item.due_amount}
+                                          </span>
                                         </p>
+                                      </div>
+                                    </div>
+                                    <div className="w-full md:w-auto flex items-center gap-2.5">
+                                      {item.fee_head_id == 4 ||
+                                      item.fee_head_id == 5 ? (
+                                        <DatePicker
+                                          name="fee_head_id"
+                                          selected={
+                                            month[item.fee_head_id] || null
+                                          }
+                                          onChange={(date: Date | null) => {
+                                            setMonth((prev) => ({
+                                              ...prev,
+                                              [item.fee_head_id]: date,
+                                            }));
+                                          }}
+                                          dateFormat="MM-yyyy"
+                                          showMonthYearPicker
+                                          className="border w-30 border-gray-300 dark:border-gray-300 dark:text-gray-200 rounded-md px-1 py-1 mr-2 mt-1 text-sm"
+                                          autoComplete="off"
+                                          placeholderText="Select Month"
+                                        />
                                       ) : null}
+                                      <div className="flex-1">
+                                        <input
+                                          disabled={
+                                            Number(item?.due_amount) === 0
+                                              ? true
+                                              : false
+                                          }
+                                          type="number"
+                                          min={1}
+                                          max={item?.price}
+                                          // value={formData2.fee_structure_info.fee_head_id}
+                                          onChange={(e) =>
+                                            handleAmountChange(e, item)
+                                          }
+                                          placeholder="Amount"
+                                          className="px-2 py-1 border rounded"
+                                        />
+                                        {/* {item?.min_amount > 0 &&
+                                        item?.due_amount > 0 ? (
+                                          <p className="text-xs text-red-300">
+                                            {" "}
+                                            Minimum to pay {item?.min_amount}
+                                          </p>
+                                        ) : null} */}
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
@@ -385,7 +450,7 @@ export default function CourseDetails() {
                                 {isPending ? (
                                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                                 ) : (
-                                  " Click For Payment"
+                                  "Click For Payment"
                                 )}
                               </button>
                             </div>

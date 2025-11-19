@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import PageMeta from "../../../components/common/PageMeta";
 import ComponentCard from "../../../components/common/ComponentCard";
@@ -119,17 +119,31 @@ export default function AdmissionAdmin() {
   const [course, setCourse] = useState<number>(0);
   const [batch, setBatch] = useState<any>(0);
   const [changeSession, setChangeSession] = useState<any>(0);
-  const [searchData, setSearchData] = useState<any>({});
+  const [searchData] = useState<any>({});
   const [formSearch, setFormSearch] = useState<any>({});
   const [pageCount] = useState<number>(0);
   const [searchParams, setSearchParams] = useSearchParams();
 
+  useEffect(() => {
+    if (course && batch && changeSession && pageCount && formSearch) {
+    }
+  }, []);
+
+  const filterFormRef = useRef<HTMLFormElement>(null);
+  const searchByfilterFormRef = useRef<HTMLFormElement>(null);
+
   const [selectedCourseId, setSelectedCourseId] = useState(null);
 
-  const [formDataParams, setFormDataParams] = useState({
-    courseName: "",
-    sessionName: "",
-    batchName: "",
+  const [formDataParams, setFormDataParams] = useState<{
+    courseName: string | null;
+    sessionName: string | null;
+    batchName: string | null;
+    feeHeadId: string | null;
+  }>({
+    courseName: null,
+    sessionName: null,
+    batchName: null,
+    feeHeadId: null,
   });
 
   useEffect(() => {
@@ -137,24 +151,22 @@ export default function AdmissionAdmin() {
     const sessionParams = query.get("session");
     const courseParams = query.get("course");
     const batchParams = query.get("batch");
-
-    console.log("Session:", sessionParams);
-    console.log("Course:", courseParams);
-    console.log("Batch:", batchParams);
+    const feeHeadIdParams = query.get("fee_head_id");
 
     // Set values in form state from params (if available)
     setFormDataParams({
-      courseName: courseParams || "",
-      sessionName: sessionParams || "",
-      batchName: batchParams || "",
+      courseName: courseParams,
+      sessionName: sessionParams,
+      batchName: batchParams,
+      feeHeadId: feeHeadIdParams,
     });
     setSelectedCourseId(courseParams as any);
-  }, []);
+  }, [window.location.search]);
 
   // get Course list
   const { data: courseList } = useSWR(`api/v1/course/dropdown`, getFetcher);
 
-  console.log("courseListcourseList", courseList);
+  const { data: feeHeadList } = useSWR(`api/v1/course/fee-head`, getFetcher);
 
   const { data: admissionlist, mutate: mutateAdmissionList } = useSWR(
     `api/v1/admission?${searchParams.toString()}`,
@@ -162,37 +174,78 @@ export default function AdmissionAdmin() {
   );
 
   const handleSearch = () => {
-    console.log("search", pageCount);
-    if (changeSession && course && batch) {
-      setSearchParams({
-        session: changeSession,
-        course: course,
-        batch: batch,
-      } as any);
-      mutateAdmissionList();
+    if (filterFormRef.current) {
+      filterFormRef.current.requestSubmit();
     }
   };
 
-  const handleFormSearch = async () => {
-    console.log("formSearch", formSearch);
+  // const handleFormSearch = async () => {
+  //   if (formSearch) {
+  //     const response = await getFetcher(
+  //       `api/v1/admission?${formSearch.type}=${formSearch.value}`
+  //     );
+  //     if (response) {
+  //       messageApi.open({
+  //         type: "success",
+  //         content: response.message,
+  //       });
+  //       setSearchData(response);
+  //     }
+  //   } else {
+  //     messageApi.open({
+  //       type: "error",
+  //       content: "Please Select all Input Fields",
+  //     });
+  //   }
+  // };
 
-    if (formSearch) {
-      const response = await getFetcher(
-        `api/v1/admission?${formSearch.type}=${formSearch.value}`
-      );
-      if (response) {
-        messageApi.open({
-          type: "success",
-          content: response.message,
-        });
-        setSearchData(response);
+  const handleFilterSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.currentTarget);
+
+    setSearchParams((prev) => {
+      prev.set("course", formData.get("courseName")?.toString() ?? "");
+      prev.set("session", formData.get("sessionName")?.toString() ?? "");
+      prev.set("batch", formData.get("batchName")?.toString() ?? "");
+      const feeHeadId = formData.get("feeHeadId")?.toString();
+      if (feeHeadId) {
+        if (feeHeadId === "All") {
+          prev.delete("fee_head_id");
+        } else {
+          prev.set("fee_head_id", formData.get("feeHeadId")?.toString() ?? "");
+        }
       }
-    } else {
-      messageApi.open({
-        type: "error",
-        content: "Please Select all Input Fields",
-      });
-    }
+      return prev;
+    });
+  };
+
+  const handleSearchBySubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.currentTarget);
+
+    const key = formData.get("type")?.toString() ?? "";
+    const value = formData.get("value")?.toString() ?? "";
+
+    setSearchParams((prev) => {
+      for (const [currentKey] of prev) {
+        if (currentKey === "name") {
+          prev.delete("name");
+        }
+        if (currentKey === "email") {
+          prev.delete("email");
+        }
+        if (currentKey === "ph_no") {
+          prev.delete("ph_no");
+        }
+        if (currentKey === "form_no") {
+          prev.delete("form_no");
+        }
+      }
+      prev.set(key, value);
+      return prev;
+    });
   };
 
   const { trigger: create } = useSWRMutation(
@@ -233,14 +286,6 @@ export default function AdmissionAdmin() {
 
   const handleFileChange = (e: any, name: string) => {
     const files = e.target.files;
-
-    // Array.from(files).forEach((files) => {
-    //   const reader = new FileReader();
-    //   reader.onload = (event) => {
-    //   };
-    //   reader.readAsDataURL(files);
-    // });
-    // setFiles(Array.from(files).map(item => ({})));
     uploadFiles({
       url: `${uploadUrl}api/v1/upload/multiple`,
       files: Array.from(files),
@@ -255,7 +300,6 @@ export default function AdmissionAdmin() {
           ...prev,
           [name]: response,
         }));
-        // setFiles(response as any);
       },
       onError(error) {
         console.log("file error", error);
@@ -479,7 +523,6 @@ export default function AdmissionAdmin() {
       [name]: value,
     }));
     const courseId = parseInt(e.target.value);
-    console.log("handleCourseChangehandleCourseChange", courseId);
 
     setSelectedCourseId(courseId as any);
   };
@@ -495,7 +538,27 @@ export default function AdmissionAdmin() {
   const selectedCourse = Array.isArray(courseList?.data)
     ? courseList?.data?.find((course: any) => course.id == selectedCourseId)
     : null;
-  console.log("selectedCourseselectedCourse", selectedCourse);
+
+  const [searchBy, setSearchBy] = useState({
+    type: "",
+    value: "",
+  });
+
+  useEffect(() => {
+    searchParams.forEach((value, key) => {
+      if (
+        key === "name" ||
+        key === "email" ||
+        key === "ph_no" ||
+        key === "form_no"
+      ) {
+        setSearchBy({
+          type: key,
+          value: value,
+        });
+      }
+    });
+  }, []);
 
   return (
     <div>
@@ -557,7 +620,7 @@ export default function AdmissionAdmin() {
                               key={editedFormId + "courseName"}
                               name="courseName"
                               disabled={id ? true : false}
-                              defaultValue={formData?.courseName}
+                              defaultValue={formDataParams.courseName ?? formData?.courseName}
                               // value={formData.courseName}
                               onChange={handleCourseChange}
                               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -583,7 +646,10 @@ export default function AdmissionAdmin() {
                                 key={editedFormId + "sessionName"}
                                 name="sessionName"
                                 disabled={id ? true : false}
-                                defaultValue={formData.sessionName}
+                                defaultValue={
+                                  formDataParams.sessionName ??
+                                  formData.sessionName
+                                }
                                 onChange={handleSessionChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                               >
@@ -593,6 +659,7 @@ export default function AdmissionAdmin() {
                                   (session: any, index: number) => (
                                     <option
                                       key={index}
+                                      // selected = {session.session_id}
                                       value={`${session?.session_id}`}
                                     >
                                       {session.session_name}
@@ -610,7 +677,7 @@ export default function AdmissionAdmin() {
                                 key={editedFormId + "batchName"}
                                 name="batchName"
                                 disabled={id ? true : false}
-                                defaultValue={formData.batchName}
+                                defaultValue={formDataParams.batchName ?? formData.batchName}
                                 onChange={handleInputChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                               >
@@ -618,7 +685,7 @@ export default function AdmissionAdmin() {
                                 {selectedCourse?.batch
                                   ?.filter(
                                     (batch: any) =>
-                                      batch.session_id == formData.sessionName
+                                      batch.session_id == (formDataParams.sessionName ?? formData.sessionName)
                                   )
                                   .map((batch: any, index: number) => (
                                     <option
@@ -643,6 +710,7 @@ export default function AdmissionAdmin() {
                               />
                             </div>
                           </div>
+
 
                           {/* Personal Details */}
                           <div className=" border-gray-300 p-4">
@@ -1746,21 +1814,18 @@ export default function AdmissionAdmin() {
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-4">
+            {/* <div className="grid grid-cols-1 gap-6 xl:grid-cols-4">
               <div className="  mb-4">
                 <label className="block text-sm font-bold text-gray-500 mb-1">
                   Choose your Courses
                 </label>
                 <select
-                  key={editedFormId + "courseName"}
+                  // key={editedFormId + "courseName"}
+                  key={formDataParams.courseName ?? formData.courseName}
                   name="courseName"
                   disabled={id ? true : false}
                   // defaultValue={formData.courseName}
-                  value={
-                    formData.courseName
-                      ? formData.courseName
-                      : formDataParams.courseName
-                  }
+                  defaultValue={formDataParams.courseName ?? formData.courseName}
                   onChange={handleCourseChange}
                   className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 "
                 >
@@ -1774,16 +1839,15 @@ export default function AdmissionAdmin() {
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-500 mb-1">
-                  Choose your Session
+                  Choose your Session Here
                 </label>
                 <select
-                  key={editedFormId + "sessionName"}
+                  // key={editedFormId + "sessionName"}
+                  key={formDataParams.sessionName ?? formData.sessionName}
                   name="sessionName"
                   disabled={id ? true : false}
                   defaultValue={
-                    formData.sessionName
-                      ? formData.sessionName
-                      : formDataParams.sessionName
+                    formDataParams.sessionName ?? formData.sessionName
                   }
                   onChange={handleSessionChange}
                   className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -1805,14 +1869,10 @@ export default function AdmissionAdmin() {
                   Choose your Batch
                 </label>
                 <select
-                  key={editedFormId + "batchName"}
+                  key={formDataParams.sessionName ?? formData.sessionName}
                   name="batchName"
                   disabled={id ? true : false}
-                  defaultValue={
-                    formData.batchName
-                      ? formData.batchName
-                      : formDataParams.batchName
-                  }
+                  defaultValue={formDataParams.batchName ?? formData.batchName}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
@@ -1835,45 +1895,172 @@ export default function AdmissionAdmin() {
                   Search
                 </Button>
               </div>
-            </div>
+            </div> */}
 
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-              <div>
+            <form
+              ref={filterFormRef}
+              onSubmit={handleFilterSubmit}
+              className="flex items-end justify-center gap-2.5"
+            >
+              <div className="flex-1">
                 <label className="block text-sm font-bold text-gray-500 mb-1">
-                  Search Type
+                  Choose your Courses
                 </label>
                 <select
-                  key={editedFormId + "batchName"}
-                  name="type"
+                  // key={editedFormId + "courseName"}
+                  key={`CourseDropDown ${
+                    formDataParams.courseName ?? formData.courseName
+                  }`}
+                  name="courseName"
                   disabled={id ? true : false}
-                  // defaultValue={formData.batchName}
-                  onChange={FormSearch}
+                  // defaultValue={formData.courseName}
+                  defaultValue={
+                    formDataParams.courseName ?? formData.courseName
+                  }
+                  onChange={handleCourseChange}
+                  className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 "
+                >
+                  <option value="">Option</option>
+                  {courseList?.data?.map((data: any, index: number) => (
+                    <option key={index} value={`${data?.id}`}>
+                      {data?.course_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-bold text-gray-500 mb-1">
+                  Choose your Session Here
+                </label>
+                <select
+                  // key={editedFormId + "sessionName"}
+                  key={`sessionDropdown ${
+                    formDataParams.sessionName ?? formData.sessionName
+                  }`}
+                  name="sessionName"
+                  disabled={id ? true : false}
+                  defaultValue={
+                    formDataParams.sessionName ?? formData.sessionName
+                  }
+                  onChange={handleSessionChange}
                   className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Option</option>
-                  <option value="form_no">Form No</option>
-                  <option value="name">Name</option>
-                  <option value="email">Email</option>
-                  <option value="ph_no">Ph No</option>
+
+                  {selectedCourse?.session?.map(
+                    (session: any, index: number) => (
+                      <option key={index} value={`${session?.session_id}`}>
+                        {session.session_name}
+                      </option>
+                    )
+                  )}
                 </select>
               </div>
-              <div>
-                <label className="block text-sm text-start text-gray-500 mb-1">
-                  Search by
+              <div className="flex-1">
+                <label className="block text-sm font-bold text-gray-500 mb-1">
+                  Choose your Batch
                 </label>
-                <input
-                  type="text"
-                  name="value"
-                  onChange={FormSearch}
-                  className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md"
-                />
+                <select
+                  key={`batchdropdowm ${
+                    formDataParams.batchName ?? formData.batchName
+                  }`}
+                  name="batchName"
+                  disabled={id ? true : false}
+                  defaultValue={formDataParams.batchName ?? formData.batchName}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Option</option>
+                  {selectedCourse?.batch
+                    ?.filter(
+                      (batch: any) =>
+                        batch.session_id == formData.sessionName ||
+                        batch.session_id == formDataParams.sessionName
+                    )
+                    .map((batch: any, index: number) => (
+                      <option key={index} value={`${batch.batch_id}`}>
+                        {batch.month_name}
+                      </option>
+                    ))}
+                </select>
               </div>
-            </div>
-            <div className="flex justify-end mt-5">
-              <Button type="primary" onClick={handleFormSearch}>
-                Search
-              </Button>
-            </div>
+              <div className="flex-1">
+                <label className="block text-sm font-bold text-gray-500 mb-1">
+                  Fee Heads
+                </label>
+                <select
+                  key={`feeHeadId ${formDataParams.feeHeadId}`}
+                  name="feeHeadId"
+                  disabled={id ? true : false}
+                  defaultValue={
+                    formDataParams.feeHeadId ?? "All"
+                  }
+                  className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="All">All</option>
+                  {feeHeadList?.data?.map((feehead: any, index: number) => (
+                    <option key={index} value={`${feehead.id}`}>
+                      {feehead.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex justify-end mb-2">
+                <Button type="primary" onClick={handleSearch}>
+                  Search
+                </Button>
+              </div>
+            </form>
+
+            <form ref={searchByfilterFormRef} onSubmit={handleSearchBySubmit}>
+              <div className="flex items-end justify-center gap-2.5">
+                <div className="flex-1">
+                  <label className="block text-sm font-bold text-gray-500 mb-1">
+                    Search Type
+                  </label>
+                  <select
+                    key={editedFormId + "batchName" + searchBy.type}
+                    name="type"
+                    disabled={id ? true : false}
+                    // defaultValue={formData.batchName}
+                    defaultValue={searchBy.type}
+                    onChange={FormSearch}
+                    className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Option</option>
+                    <option value="form_no">Form No</option>
+                    <option value="name">Name</option>
+                    <option value="email">Email</option>
+                    <option value="ph_no">Ph No</option>
+                  </select>
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm text-start text-gray-500 mb-1">
+                    Search by
+                  </label>
+                  <input
+                    key={searchBy.value}
+                    type="text"
+                    name="value"
+                    defaultValue={searchBy.value}
+                    // onChange={FormSearch}
+                    className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md"
+                  />
+                </div>
+                <Button
+                  className="mb-2"
+                  type="primary"
+                  onClick={() => {
+                    if (searchByfilterFormRef.current) {
+                      searchByfilterFormRef.current.requestSubmit();
+                    }
+                  }}
+                  // onClick={handleFormSearch}
+                >
+                  Search
+                </Button>
+              </div>
+            </form>
             <BasicTableAdmission
               admissionlist={searchData?.data ? searchData : admissionlist}
               onEdit={handleEdit}

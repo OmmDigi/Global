@@ -40,7 +40,7 @@ export default function Batch() {
 
   //   get Course list
   const { data: courseList } = useSWR(
-    "api/v1/course?is_active=true",
+    "api/v1/course?is_active=true&limit=-1",
     getFetcher
   );
 

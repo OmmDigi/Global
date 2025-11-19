@@ -138,7 +138,7 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
 
   if (value.session) {
     if (filter === "") {
-      filter += `WHERE ec.session_id = $${placeholder++}`;
+      filter = `WHERE ec.session_id = $${placeholder++}`;
     } else {
       filter += ` AND ec.session_id = $${placeholder++}`;
     }
@@ -147,23 +147,45 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
   }
 
   if (value.form_no) {
-    filter = `WHERE ff.form_name = $${placeholder++}`;
+    if(filter === "") {
+      filter = `WHERE ff.form_name = $${placeholder++}`;
+    } else {
+      filter += ` AND ff.form_name = $${placeholder++}`;
+    }
     filterValues.push(value.form_no);
   }
 
   if (value.ph_no) {
-    filter = `WHERE u.ph_no = $${placeholder++}`;
+    if(filter === "") {
+      filter = `WHERE u.ph_no = $${placeholder++}`;
+    } else {
+      filter += ` AND u.ph_no = $${placeholder++}`;
+    }
     filterValues.push(value.ph_no);
   }
 
   if (value.name) {
-    filter = `WHERE u.name = $${placeholder++}`;
+    if(filter === "") {
+      filter = `WHERE u.name = $${placeholder++}`;
+    } else {
+      filter += ` AND u.name = $${placeholder++}`;
+    }
     filterValues.push(value.name);
   }
 
   if (value.email) {
-    filter = `WHERE u.email = $${placeholder++}`;
+    if(filter === "") {
+      filter = `WHERE u.email = $${placeholder++}`;
+    } else {
+      filter += ` AND u.email = $${placeholder++}`;
+    }
     filterValues.push(value.email);
+  }
+
+  let feeHeadIdFilter = "";
+  if(value.fee_head_id) {
+    feeHeadIdFilter += `AND fee_head_id = $${placeholder++}`;
+    filterValues.push(value.fee_head_id);
   }
 
   const query = `
@@ -173,8 +195,13 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
         u.name AS student_name,
         u.image AS student_image,
         c.name AS course_name,
-        (SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id) AS course_fee,
-        COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id), 0.00) - COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND status = 2), 0.00) AS due_amount,
+        
+        (
+          COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id ${feeHeadIdFilter}), 0.00) - 
+          COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND mode = 'Discount' AND status = 2 ${feeHeadIdFilter}), 0.00)
+        ) AS course_fee,
+
+        COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id ${feeHeadIdFilter}), 0.00) - COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND status = 2 ${feeHeadIdFilter}), 0.00) AS due_amount,
         b.month_name AS batch_name,
         CASE WHEN ff.status = 2 THEN true ELSE false END AS form_status
         -- JSON_AGG(JSON_BUILD_OBJECT('batch_id', b.id, 'batch_name', b.month_name)) AS batches
@@ -205,12 +232,29 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
 export const getSingleAdmissionData = async (
   form_id: number,
   student_id?: number,
-  request_user_id?: number
+  request_user_id?: number,
+  fee_head_id?:number
 ) => {
   const client = await pool.connect();
 
   try {
     await client.query("BEGIN");
+
+    let basicQueryFilter = "WHERE ff.id = $1";
+    let basicQueryFilterPlaceNum = 2;
+    const basicQueryFilterValues : any[] = [form_id];
+
+    if(student_id) {
+      basicQueryFilter += ` AND ff.student_id = $${basicQueryFilterPlaceNum++} AND ff.status = 2`;
+      basicQueryFilterValues.push(student_id);
+    }
+
+    let feeHeadIdFilter = "";
+    if(fee_head_id) {
+      feeHeadIdFilter += ` AND fee_head_id = $${basicQueryFilterPlaceNum++}`;
+      basicQueryFilterValues.push(fee_head_id);
+    }
+    
     const { rows: basicInfo } = await client.query(
       `
          SELECT
@@ -225,9 +269,9 @@ export const getSingleAdmissionData = async (
             (c.duration || ' ' || c.duration_name) AS duration,
             b.month_name AS batch_name,
             s.name AS session_name,
-            COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id), 0.00) AS course_fee,
-            COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id), 0.00) - COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND status = 2), 0.00) AS due_amount,
-            COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND status = 2 AND mode = 'Discount'), 0.00) AS total_discount
+            COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id ${feeHeadIdFilter}), 0.00) AS course_fee,
+            COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id ${feeHeadIdFilter}), 0.00) - COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND status = 2 ${feeHeadIdFilter}), 0.00) AS due_amount,
+            COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND status = 2 AND mode = 'Discount' ${feeHeadIdFilter}), 0.00) AS total_discount
           FROM fillup_forms ff
   
           LEFT JOIN users u
@@ -245,12 +289,19 @@ export const getSingleAdmissionData = async (
           LEFT JOIN session s
           ON s.id = ec.session_id
   
-          WHERE ff.id = $1 ${
-            student_id ? " AND ff.student_id = $2 AND ff.status = 2" : ""
-          }
+          ${basicQueryFilter}
         `,
-      student_id ? [form_id, student_id] : [form_id]
+      basicQueryFilterValues
     );
+
+    let feeStructureInfoFilter = "WHERE ffs.form_id = $1";
+    let feeStructureInfoFilterNum = 2;
+    const feeStrucInfoFilterValues : any[] = [form_id];
+
+    if(fee_head_id) {
+      feeStructureInfoFilter += ` AND ffs.fee_head_id = $${feeStructureInfoFilterNum++}`
+      feeStrucInfoFilterValues.push(fee_head_id)
+    }
 
     const { rows: feeStructureInfo } = await client.query(
       `
@@ -258,7 +309,7 @@ export const getSingleAdmissionData = async (
             cfh.name AS fee_head_name,
             cfh.id AS fee_head_id,
             COALESCE(ffs.min_amount, 0.00) AS min_amount,
-            COALESCE(ffs.amount, 0.00) AS price,
+            COALESCE(ffs.amount, 0.00) - COALESCE(SUM(p.amount) FILTER (WHERE p.mode = 'Discount'), 0.00) AS price,
             COALESCE(ffs.amount, 0.00) - COALESCE(SUM(p.amount), 0.00) AS due_amount
           FROM form_fee_structure ffs
   
@@ -270,15 +321,25 @@ export const getSingleAdmissionData = async (
   
           LEFT JOIN payments p
           ON p.form_id = $1 AND cfh.id = p.fee_head_id AND p.status = 2
-  
-          WHERE ffs.form_id = $1 ${student_id ? "AND ff.status = 2" : ""}
+
+          ${feeStructureInfoFilter}
   
           GROUP BY cfh.id, ffs.id
 
           ORDER BY cfh.position
         `,
-      [form_id]
+      feeStrucInfoFilterValues
     );
+
+
+    let paymentListFilter = "WHERE p.form_id = $2 AND p.status = 2";
+    let paymentListPlaceholerNum = 3;
+    let paymentListValues : any[] = [request_user_id, form_id];
+
+    if(fee_head_id) {
+      paymentListFilter += ` AND p.fee_head_id = $${paymentListPlaceholerNum++}`;
+      paymentListValues.push(fee_head_id)
+    }
 
     const { rows: admissionFormPayments } = await client.query(
       `
@@ -303,12 +364,13 @@ export const getSingleAdmissionData = async (
         LEFT JOIN users u
         ON u.id = $1
 
-        WHERE p.form_id = $2 AND p.status = 2
+        ${paymentListFilter}
           
-        ORDER BY p.id DESC
+        ORDER BY p.payment_date, cfh.position ASC
       `,
-      [request_user_id, form_id]
+      paymentListValues
     );
+
     await client.query("COMMIT");
 
     return {

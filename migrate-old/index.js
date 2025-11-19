@@ -1,5 +1,5 @@
 // const { data } = require("./public/mar-apr-2025");
-const { data } = require("./public/TeacherTranning_Apr_March_converted");
+const { data } = require("./public/teacher_tranning_mtt_mar.js");
 const dotenv = require("dotenv");
 const { Pool } = require("pg");
 const { generatePlaceholders, formatDateSafe } = require("./utils");
@@ -106,6 +106,7 @@ async function main() {
     let paymentDate = "";
     let billNumber = "";
     let amount = "";
+    let admissionPaymentMode = "Cash";
 
     admissionData.forEach((item, index) => {
       if (index % 3 === 0) {
@@ -114,6 +115,11 @@ async function main() {
       } else if (index % 3 === 1) {
         // this is for bill number
         billNumber = item;
+        if(billNumber.includes("OP")) {
+          admissionPaymentMode = "Online";
+        } else {
+          admissionPaymentMode = "Cash";
+        }
       } else if (index % 3 === 2) {
         // this is for amount
         amount = item;
@@ -124,7 +130,7 @@ async function main() {
       finalDataToInsert.push({
         student_name: studentName,
         form_id: row.form_id,
-        mode: "Cash",
+        mode: admissionPaymentMode,
         student_id: row.student_id,
         payment_name_id: null,
         order_id: null,
@@ -305,9 +311,9 @@ async function main() {
       VALUES 
         ${placeholder}
       --ON CONFLICT (form_id, fee_head_id) DO UPDATE
-      --  SET amount = EXCLUDED.amount,
-      --      min_amount = EXCLUDED.amount
-      ON CONFLICT DO NOTHING
+      --SET amount = EXCLUDED.amount,
+      --min_amount = EXCLUDED.amount
+      ON CONFLICT (form_id, fee_head_id) DO NOTHING
     `,
       form_fee_structure_table.flatMap((item) => [
         item.form_id,

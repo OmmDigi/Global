@@ -304,7 +304,8 @@ export const getSingleAdmission = asyncErrorHandler(
     const response = await getSingleAdmissionData(
       value.form_id,
       undefined,
-      req.user_info?.id
+      req.user_info?.id,
+      req.query?.fee_head_id as any
     );
 
     res.status(200).json(new ApiResponse(200, "Fee Info", response));

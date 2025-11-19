@@ -1,7 +1,7 @@
 import PageMeta from "../../../components/common/PageMeta";
-import { useEffect, useRef, useState, useTransition } from "react";
+import React, { useEffect, useRef, useState, useTransition } from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import ComponentCard from "../../../components/common/ComponentCard";
 import Label from "../../../components/form/Label";
 import { message } from "antd";
@@ -21,6 +21,8 @@ export default function CourseDetailsAdmin() {
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
   const [isPending, startTransition] = useTransition();
+
+  const [searchParams] = useSearchParams();
 
   // const [feesStructure, setFeesStructure] = useState("");
   const [month, setMonth] = useState<{
@@ -50,7 +52,11 @@ export default function CourseDetailsAdmin() {
   // console.log("addFormData", addFormData);
 
   const { id } = useParams();
-  const [formId, setFormId] = useState(id);
+  // const [formId, setFormId] = useState(id);
+  // const [searchBy, setSearchBy] = useState({
+  //   type: "name",
+  //   value: "",
+  // });
 
   const [remarksPopup, setRemarksPopup] = useState<any>({}); // store open state per row
   const [remarksText, setRemarksText] = useState<any>({});
@@ -73,15 +79,14 @@ export default function CourseDetailsAdmin() {
     if (category) localStorage.setItem("category", category);
   }, []);
 
-  //   get Fees head
+  // get Fees head
   const {
     data: feesStructure,
     isLoading: feesStructureLoading,
     mutate: refetch,
-  } = useSWR(`api/v1/admission/${id}`, getFetcher);
+  } = useSWR(`api/v1/admission/${id}?${searchParams.toString()}`, getFetcher);
 
-  const { data: feeHeadList } = useSWR("api/v1/course/fee-head", getFetcher);
-  console.log("feeHeadList", feeHeadList);
+  const { data: feeHeadList } = useSWR(`api/v1/course/fee-head?${searchParams.toString()}`, getFetcher);
 
   //  if(!feesStructure?.data?.student_name){
   //     messageApi.open({
@@ -135,17 +140,36 @@ export default function CourseDetailsAdmin() {
   // const onChange = (e: any) => {
   //   setPaymentMode(e.target.value);
   // };
-  const FormSearch = (e: any) => {
-    const { value } = e.target;
-    const split1 = value.split("/");
-    const split_value = split1[split1.length - 1];
-    setFormId(split_value);
-  };
+  // const FormSearch = (e: any) => {
+  //   const { value } = e.target;
+  //   const split1 = value.split("/");
+  //   const split_value = split1[split1.length - 1];
+  //   setFormId(split_value);
+  // };
 
-  const handleFormSearch = () => {
-    navigate(`/courseDetailsAdmin/${formId}`);
-    refetch(`api/v1/admission/${formId}`);
-    console.log("formSearch", formId);
+  // const handleFormSearch = () => {
+  //   // navigate(`/courseDetailsAdmin/${formId}`);
+  //   // refetch(`api/v1/admission/${formId}`);
+  //   // console.log("formSearch", formId);
+  // };
+
+  const handleSearchByForm = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
+    const searchBy = formData.get("search_by");
+    const searchByValue = formData.get("search_by_value")?.toString();
+
+    if(!searchByValue || searchByValue.trim() == "") {
+      return alert("Enter a form id to search")
+    }
+
+    const split1 = searchByValue.split("/");
+    const split_value = split1[split1.length - 1];
+
+    if(searchBy?.toString() === "form_id") {
+      navigate(`/courseDetailsAdmin/${split_value}`);
+    }
   };
 
   const doPayment = async (dataToSend: any) => {
@@ -317,6 +341,8 @@ export default function CourseDetailsAdmin() {
     };
 
     setRemarksPopup((prev: any) => ({ ...prev, [item.fee_head_id]: false }));
+    setRemarksText((prev: any) => ({ ...prev, [item.fee_head_id]: null }));
+
     startTransition(async () => {
       await doPayment(finalFormData as any);
     });
@@ -360,8 +386,10 @@ export default function CourseDetailsAdmin() {
       [fee.fee_head_id]: fee.payment_date ? new Date(fee.payment_date) : null,
     }));
 
+    setRemarksText((prev : any) => ({...prev, [fee.fee_head_id]: fee.remark}))
+
     // for Monthly fees only — set month picker
-    if (Number(fee.fee_head_id) === 4 && fee.month) {
+    if ((fee.fee_head_id == 4 || fee.fee_head_id == 5) && fee.month) {
       const parsedMonth = new Date(Date.parse(fee.month.replace(",", "")));
       setMonth((prev: any) => ({
         ...prev,
@@ -414,6 +442,7 @@ export default function CourseDetailsAdmin() {
     // }
 
     setRemarksPopup((prev: any) => ({ ...prev, [item.fee_head_id]: false }));
+    setRemarksText((prev: any) => ({ ...prev, [item.fee_head_id]: null }));
 
     startTransition(async () => {
       await doPayment(finalFormData as any);
@@ -435,28 +464,41 @@ export default function CourseDetailsAdmin() {
         ← Back
       </button>
 
-      <div className="flex justify-center items-center gap-5 ">
+      <form
+        onSubmit={handleSearchByForm}
+        className="flex justify-center items-center gap-5 "
+      >
         <div>
           <label className="block text-sm text-start text-gray-500 mb-1">
-            Search by Form ID
+            Search By
+          </label>
+          <select name="search_by" className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md">
+            <option value="form_id">Form Id</option>
+            {/* <option value="name">Name</option> */}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm text-start text-gray-500 mb-1">
+            Value
           </label>
           <input
             type="text"
-            name="value"
-            onChange={FormSearch}
-            placeholder=" Form ID"
+            name="search_by_value"
+            // onChange={FormSearch}
+            placeholder="Value"
             className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md"
           />
         </div>
         <div className="flex py-1 justify-end mt-5">
           <button
             className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg shadow-md transition"
-            onClick={handleFormSearch}
+            // onClick={handleFormSearch}
+            type="submit"
           >
             Search
           </button>
         </div>
-      </div>
+      </form>
       <PageBreadcrumb pageTitle="Course Details" link="admissionAdmin" />
       <h1 className="text-gray-800 dark:text-amber-50 text-3xl mb-15">
         {feesStructure?.data?.form_name}
@@ -521,6 +563,15 @@ export default function CourseDetailsAdmin() {
                   >
                     {feesStructure?.data?.due_amount}
                   </span>{" "}
+                </Label>
+              </div>
+              <div>
+                <Label htmlFor="inputTwo">
+                  Total Collected Fee :{" "}
+                  <span className="font-semibold text-green-500">
+                    {parseFloat(feesStructure?.data?.course_fee ?? "0.00") -
+                      parseFloat(feesStructure?.data?.due_amount ?? "0.00")}
+                  </span>
                 </Label>
               </div>
               <div>
@@ -740,6 +791,7 @@ export default function CourseDetailsAdmin() {
                                   <option value="Online">Online</option>
                                   <option value="Cash">Cash</option>
                                   <option value="Cheque">Cheque</option>
+                                  <option value="Discount">Discount</option>
                                 </select>
                               </div>
                               {item.fee_head_id == 4 ||
