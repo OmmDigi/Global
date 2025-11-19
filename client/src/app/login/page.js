@@ -165,7 +165,13 @@ function page() {
             <contact-list>
               <phone className="flex items-center space-x-2 text-sm text-gray-700">
                 {/* <icon className="text-green-600"></icon> */}
-                <span className="text-green-800 text-xl">All <span className="text-blue-800 text-xl font-bold">courses</span> under one roof. We have no branches.</span>
+                <span className="text-green-800 text-xl">
+                  All{" "}
+                  <span className="text-blue-800 text-xl font-bold">
+                    courses
+                  </span>{" "}
+                  under one roof. We have no branches.
+                </span>
               </phone>
             </contact-list>
           </branch>
@@ -285,7 +291,13 @@ function page() {
                   )}
                 </button>
 
-                <Link className="text-center block underline text-blue-900" href={`${process.env.NEXT_PUBLIC_API_BASE_URL}api/v1/users/change-password`} target="__blank">Reset Password</Link>
+                <Link
+                  className="text-center block underline text-blue-900"
+                  href={`${process.env.NEXT_PUBLIC_API_BASE_URL}api/v1/users/change-password`}
+                  target="__blank"
+                >
+                  Reset Password
+                </Link>
               </form>
             </div>
 
