@@ -76,7 +76,7 @@ export const newAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
   const { error, value } = VGetNewAdmissionReport.validate(req.query);
   if (error) throw new ErrorHandler(400, error.message);
 
-  let filter = "";
+  let filter = "WHERE ff.status = 2";
   const filterValues: string[] = [];
   let placeholder = 1;
 
@@ -700,7 +700,7 @@ export const getAdmissionExcelReport = asyncErrorHandler(async (req, res) => {
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
   );
 
-  let filter = "";
+  let filter = "WHERE ff.status = 2";
   const filterValues: string[] = [];
   let placeholder = 1;
 
@@ -3351,7 +3351,7 @@ export const monthlyPaymentReport = asyncErrorHandler(async (req, res) => {
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
   );
 
-  let filter = "";
+  let filter = "WHERE ff.status = 2";
   const filterValues: string[] = [];
   let placeholder = 1;
 
@@ -3694,7 +3694,7 @@ export const studetnFeeSummaryReport = asyncErrorHandler(async (req, res) => {
   const { error, value } = VFeeSummaryReport.validate(req.query ?? {});
   if (error) throw new ErrorHandler(400, error.message);
 
-  let filter = "";
+  let filter = "WHERE ff.status = 2";
   const filterValues: string[] = [];
   let placeholder = 1;
 
