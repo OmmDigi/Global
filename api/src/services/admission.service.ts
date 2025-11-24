@@ -192,25 +192,25 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
   const query = `
 
       WITH total_payment_info AS (
-          SELECT
-            p.form_id,
-            SUM(p.amount) FILTER (WHERE p.mode != 'Discount' AND p.fee_head_id != ${LATE_FINE_FEE_HEAD_ID}) AS total_collection_without_late_fee,
-            SUM(p.amount) FILTER (WHERE p.mode != 'Discount') AS total_collection_with_late_fee,
-            SUM(p.amount) FILTER (WHERE p.mode = 'Discount') AS total_discount
-          FROM payments p
+        SELECT
+          p.form_id,
+          COALESCE(SUM(p.amount) FILTER (WHERE p.mode != 'Discount' AND p.fee_head_id != ${LATE_FINE_FEE_HEAD_ID}), 0) AS total_collection_without_late_fee,
+          COALESCE(SUM(p.amount) FILTER (WHERE p.mode != 'Discount'), 0) AS total_collection_with_late_fee,
+          COALESCE(SUM(p.amount) FILTER (WHERE p.mode = 'Discount'), 0) AS total_discount
+        FROM payments p
 
-          WHERE p.status = 2
+        WHERE p.status = 2
 
-          GROUP BY p.form_id
-         ),
+        GROUP BY p.form_id
+      ),
 
       total_fee_calcluction AS (
         SELECT
           ffs.form_id,
-          SUM(ffs.amount) AS course_fee,
-          SUM(ffs.amount) - MAX(tpi.total_collection_without_late_fee) AS due_amount,
-          MAX(tpi.total_discount) AS total_discount,
-          MAX(tpi.total_collection_with_late_fee) AS total_collection
+          COALESCE(SUM(ffs.amount), 0.00) AS course_fee,
+          COALESCE(SUM(ffs.amount), 0) - COALESCE(MAX(tpi.total_collection_without_late_fee), 0.00) AS due_amount,
+          COALESCE(MAX(tpi.total_discount), 0.00) AS total_discount,
+          COALESCE(MAX(tpi.total_collection_with_late_fee), 0.00) AS total_collection
         FROM form_fee_structure ffs
 
         LEFT JOIN total_payment_info tpi
@@ -299,9 +299,9 @@ export const getSingleAdmissionData = async (
          WITH total_payment_info AS (
           SELECT
             p.form_id,
-            SUM(p.amount) FILTER (WHERE p.mode != 'Discount' AND p.fee_head_id != ${LATE_FINE_FEE_HEAD_ID}) AS total_collection_without_late_fee,
-            SUM(p.amount) FILTER (WHERE p.mode != 'Discount') AS total_collection_with_late_fee,
-            SUM(p.amount) FILTER (WHERE p.mode = 'Discount') AS total_discount
+            COALESCE(SUM(p.amount) FILTER (WHERE p.mode != 'Discount' AND p.fee_head_id != ${LATE_FINE_FEE_HEAD_ID}), 0) AS total_collection_without_late_fee,
+            COALESCE(SUM(p.amount) FILTER (WHERE p.mode != 'Discount'), 0) AS total_collection_with_late_fee,
+            COALESCE(SUM(p.amount) FILTER (WHERE p.mode = 'Discount'), 0) AS total_discount
           FROM payments p
 
           WHERE p.status = 2
@@ -312,10 +312,10 @@ export const getSingleAdmissionData = async (
          total_fee_calcluction AS (
            SELECT
             ffs.form_id,
-            SUM(ffs.amount) AS course_fee,
-            SUM(ffs.amount) - MAX(tpi.total_collection_without_late_fee) AS due_amount,
-            MAX(tpi.total_discount) AS total_discount,
-            MAX(tpi.total_collection_with_late_fee) AS total_collection
+            COALESCE(SUM(ffs.amount), 0.00) AS course_fee,
+            COALESCE(SUM(ffs.amount), 0) - COALESCE(MAX(tpi.total_collection_without_late_fee), 0.00) AS due_amount,
+            COALESCE(MAX(tpi.total_discount), 0.00) AS total_discount,
+            COALESCE(MAX(tpi.total_collection_with_late_fee), 0.00) AS total_collection
            FROM form_fee_structure ffs
 
            LEFT JOIN total_payment_info tpi
