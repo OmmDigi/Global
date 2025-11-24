@@ -25,7 +25,7 @@ any) {
 
   const handleDetailsClick = (id: number) => {
     const feeHeadId = searchParams.get("fee_head_id");
-    if(feeHeadId) {
+    if (feeHeadId) {
       navigate(`/courseDetailsAdmin/${id}?fee_head_id=${feeHeadId}`);
       return;
     }
@@ -140,11 +140,12 @@ any) {
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   {order.course_fee}
                 </TableCell>
-                
+
                 <TableCell>
                   <span className="font-semibold text-green-700 block text-center">
-                    {parseFloat(order.course_fee) -
-                      parseFloat(order.due_amount)}
+                    {/* {parseFloat(order.course_fee) -
+                      parseFloat(order.due_amount)} */}
+                    {order.total_collection}
                   </span>
                 </TableCell>
 

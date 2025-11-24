@@ -616,8 +616,9 @@ export default function CourseDetailsAdmin() {
                 <Label htmlFor="inputTwo">
                   Total Collected Fee :{" "}
                   <span className="font-semibold text-green-500">
-                    {parseFloat(feesStructure?.data?.course_fee ?? "0.00") -
-                      parseFloat(feesStructure?.data?.due_amount ?? "0.00")}
+                    {/* {parseFloat(feesStructure?.data?.course_fee ?? "0.00") -
+                      parseFloat(feesStructure?.data?.due_amount ?? "0.00")} */}
+                      {feesStructure?.data?.total_collection}
                   </span>
                 </Label>
               </div>
@@ -642,6 +643,11 @@ export default function CourseDetailsAdmin() {
               ) : (
                 ""
               )}
+              <div>
+                <Label htmlFor="inputTwo">
+                  Admission Date : {feesStructure?.data?.admission_date}
+                </Label>
+              </div>
             </div>
             <div className="flex flex-wrap justify-center items-center gap-6"></div>
           </div>
@@ -804,7 +810,7 @@ export default function CourseDetailsAdmin() {
                                   item.fee_head_id && isMutating ? (
                                   <Loader className="animate-spin" />
                                 ) : (
-                                  <Trash2 />
+                                  <Trash2 className="text-red-500" size={20} />
                                 )}
                               </button>
 

@@ -348,6 +348,11 @@ export default function CourseDetails() {
                         ""
                       )}
                     </div>
+                     <div>
+                        <Label htmlFor="inputTwo">
+                          Admission Date : {feesStructure?.data?.admission_date}
+                        </Label>
+                      </div>
                     <div className="flex flex-wrap justify-center items-center gap-6"></div>
                   </div>
                 </ComponentCard>
