@@ -35,12 +35,12 @@ export default function BasicTableFeesList({ fees_structure_table }: any) {
               >
                 Amount
               </TableCell>
-              <TableCell
+              {/* <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
                 Bill No
-              </TableCell>
+              </TableCell> */}
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
@@ -53,12 +53,12 @@ export default function BasicTableFeesList({ fees_structure_table }: any) {
               >
                 Payment Date
               </TableCell>
-              <TableCell
+              {/* <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
                 Payment Mode
-              </TableCell>
+              </TableCell> */}
             </TableRow>
           </TableHeader>
 
@@ -81,18 +81,18 @@ export default function BasicTableFeesList({ fees_structure_table }: any) {
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   {order.amount}
                 </TableCell>
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                {/* <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   <div className="flex -space-x-2">{order.bill_no}</div>
-                </TableCell>
+                </TableCell> */}
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   {order.month}
                 </TableCell>
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   {order.payment_date}
                 </TableCell>
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                {/* <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   {order.mode}
-                </TableCell>
+                </TableCell> */}
                 {/* <TableCell
                   className={`px-4 py-3 ${
                     Number(order.due_amount) === 0

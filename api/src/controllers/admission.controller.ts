@@ -10,16 +10,20 @@ import { verifyToken } from "../services/jwt";
 import { createNewUser } from "../services/user.service";
 import { CustomRequest, IUserToken } from "../types";
 import { ApiResponse } from "../utils/ApiResponse";
+import { doTransition } from "../utils/doTransition";
 import { ErrorHandler } from "../utils/ErrorHandler";
 import { generatePlaceholders } from "../utils/generatePlaceholders";
 import { getAuthToken } from "../utils/getAuthToken";
+import { logFeeHeadDelete } from "../utils/logFeeHeadDelete";
 import { parsePagination } from "../utils/parsePagination";
 import {
   VCreateAdmission,
+  VDeleteSingleAdmission,
   VGetSessionCourseHeadPrice,
   VGetSingleAdmission,
   VGetSingleAdmissionForm,
   VModifyAdmissionFeeHead,
+  VPromotAdmisson,
   VUpdateAdmission,
   VUpdateAdmissionStatus,
   VUpdateDeclarationStatus,
@@ -57,7 +61,7 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
     username: null,
   };
 
-  let admissionDate : string | null = null;
+  let admissionDate: string | null = null;
 
   try {
     await client.query("BEGIN");
@@ -443,7 +447,7 @@ export const updateAdmissionFeeHeadAmount = asyncErrorHandler(
       req.body ?? {}
     );
     if (error) throw new ErrorHandler(400, error.message);
-    
+
     const client = await pool.connect();
 
     try {
@@ -620,3 +624,109 @@ export const modifyFeeHeadOfAdmission = asyncErrorHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, "Admission Fee Head Successfully Modified"));
 });
+
+export const promotAdmission = asyncErrorHandler(async (req, res) => {
+  const { error, value } = VPromotAdmisson.validate(req.body ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
+
+  const client = await pool.connect();
+
+  try {
+    // get the coures info with course_fee_structure
+    const courseInfo = await client.query(
+      `
+      SELECT 
+        c.*,
+        COALESCE(
+            (
+                SELECT JSON_AGG(
+                    JSON_BUILD_OBJECT(
+                        'fee_head_id', cfs.fee_head_id,
+                        'fee_head_name', cfh.name,
+                        'amount', cfs.amount,
+                        'min_amount', cfs.min_amount,
+                        'required', cfs.required
+                    )
+                    ORDER BY cfs.id
+                )
+                FROM course_fee_structure cfs
+                LEFT JOIN course_fee_head cfh ON cfs.fee_head_id = cfh.id
+                  WHERE cfs.course_id = c.id
+              ),
+              '[]'::json
+          ) AS fee_structures
+      FROM course c
+      WHERE c.id = $1
+      GROUP BY c.id;
+       `,
+      [value.course_id]
+    );
+
+    if (courseInfo.rowCount === 0)
+      throw new ErrorHandler(404, "No course found");
+
+    const fee_structure = courseInfo.rows[0].fee_structures as {
+      fee_head_id: number;
+      fee_head_name: string;
+      amount: number;
+      min_amount: number;
+      required: boolean;
+    }[];
+
+    for (const id of value.student_ids) {
+      // do the admission
+      await doAdmission({
+        student_id: id,
+        client,
+        admission_data: value.admission_data,
+        course_id: value.course_id,
+        batch_id: value.batch_id,
+        fee_structure,
+        admissionDate: null,
+        session_id: value.session_id,
+        declaration_status: value?.declaration_status,
+      });
+    }
+
+    res
+      .status(201)
+      .json(new ApiResponse(201, "Admission info successfully saved"));
+  } catch (error: any) {
+    await client.query("ROLLBACK");
+    throw new ErrorHandler(400, error.message);
+  } finally {
+    client.release();
+  }
+});
+
+export const deleteSingleFeeHeadFromSingleAdmisson = asyncErrorHandler(
+  async (req : CustomRequest, res) => {
+    const { error, value } = VDeleteSingleAdmission.validate(req.params ?? {});
+    if (error) throw new ErrorHandler(400, error.message);
+
+    await doTransition(async (client) => {
+      const form_fee_structure = await client.query(
+        "DELETE FROM form_fee_structure WHERE form_id = $1 AND fee_head_id = $2 RETURNING *",
+        [value.form_id, value.fee_head_id]
+      );
+
+      const payments = await client.query(
+        "DELETE FROM payments WHERE form_id = $1 AND fee_head_id = $2 RETURNING *",
+        [value.form_id, value.fee_head_id]
+      );
+
+      await logFeeHeadDelete({
+        formId : value.form_id,
+        feeHeadId : value.fee_head_id,
+        deletedById : req.user_info?.id as any,
+        data : {
+          form_fee_structure : form_fee_structure.rows,
+          payments : payments.rows
+        }
+      })
+
+    });
+
+    res.status(200).json(new ApiResponse(200, "Successfully removed"));
+  }
+);

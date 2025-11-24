@@ -5,3 +5,4 @@ dist
 .env.local
 uploads/
 backup.controller.ts
+deleted_row_info/*

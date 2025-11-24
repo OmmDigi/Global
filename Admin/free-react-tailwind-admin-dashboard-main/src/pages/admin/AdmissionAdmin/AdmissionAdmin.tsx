@@ -20,6 +20,9 @@ import { uploadFiles } from "../../../utils/uploadFile";
 // import dayjs from "dayjs";
 // import DatePicker from "react-datepicker";
 import { useSearchParams } from "react-router-dom";
+
+const year = new Date().getFullYear();
+
 const initialFormData = {
   courseName: "",
   sessionName: "",
@@ -49,7 +52,7 @@ const initialFormData = {
   },
   place: "",
   name: "",
-  date: "",
+  date: `${year}-01-01`,
 
   // Next page
   selfAttestedLastResult: [],
@@ -499,6 +502,12 @@ export default function AdmissionAdmin() {
   const next = () => {
     // jumpToTop();
 
+    if (
+      formData.date === `${year}-01-01` &&
+      !confirm("Have you changed the admission date ?")
+    )
+      return;
+
     setCurrent(current + 1);
   };
   const prev = () => {
@@ -620,7 +629,10 @@ export default function AdmissionAdmin() {
                               key={editedFormId + "courseName"}
                               name="courseName"
                               disabled={id ? true : false}
-                              defaultValue={formDataParams.courseName ?? formData?.courseName}
+                              defaultValue={
+                                formDataParams.courseName ??
+                                formData?.courseName
+                              }
                               // value={formData.courseName}
                               onChange={handleCourseChange}
                               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -677,7 +689,9 @@ export default function AdmissionAdmin() {
                                 key={editedFormId + "batchName"}
                                 name="batchName"
                                 disabled={id ? true : false}
-                                defaultValue={formDataParams.batchName ?? formData.batchName}
+                                defaultValue={
+                                  formDataParams.batchName ?? formData.batchName
+                                }
                                 onChange={handleInputChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                               >
@@ -685,7 +699,9 @@ export default function AdmissionAdmin() {
                                 {selectedCourse?.batch
                                   ?.filter(
                                     (batch: any) =>
-                                      batch.session_id == (formDataParams.sessionName ?? formData.sessionName)
+                                      batch.session_id ==
+                                      (formDataParams.sessionName ??
+                                        formData.sessionName)
                                   )
                                   .map((batch: any, index: number) => (
                                     <option
@@ -710,7 +726,6 @@ export default function AdmissionAdmin() {
                               />
                             </div>
                           </div>
-
 
                           {/* Personal Details */}
                           <div className=" border-gray-300 p-4">
@@ -1992,9 +2007,7 @@ export default function AdmissionAdmin() {
                   key={`feeHeadId ${formDataParams.feeHeadId}`}
                   name="feeHeadId"
                   disabled={id ? true : false}
-                  defaultValue={
-                    formDataParams.feeHeadId ?? "All"
-                  }
+                  defaultValue={formDataParams.feeHeadId ?? "All"}
                   className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="All">All</option>
