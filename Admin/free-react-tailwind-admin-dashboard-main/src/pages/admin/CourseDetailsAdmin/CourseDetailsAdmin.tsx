@@ -198,6 +198,7 @@ export default function CourseDetailsAdmin() {
       setEnteredAmounts("");
       setEnteredBillno("");
       setPaymentMode("");
+      setEditId(null);
       // setPaymentDetails("");
       // refatch(`api/v1/admission/${id}`, undefined, { revalidate: true });
       // const response = await getFetcher(`{api/v1/admission/${id}}`);
