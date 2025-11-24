@@ -4,7 +4,7 @@ import { ErrorHandler } from "../utils/ErrorHandler";
 import { parsePagination } from "../utils/parsePagination";
 import { Request } from "express";
 import { VGetAdmissionList } from "../validator/admission.validator";
-import { LATE_FINE_FEE_HEAD_ID } from "../constant";
+import { ADMISSION_FEE_HEAD_ID, BSS_FEE_HEAD_ID, LATE_FINE_FEE_HEAD_ID, MONTHLY_PAYMENT_HEAD_ID } from "../constant";
 
 type IFillUpForm = {
   student_id: number;
@@ -444,7 +444,20 @@ export const getSingleAdmissionData = async (
 
         ${paymentListFilter}
           
-        ORDER BY p.payment_date, cfh.position ASC
+        --ORDER BY p.payment_date, cfh.position ASC
+        ORDER BY
+        CASE
+          WHEN cfh.id = ${ADMISSION_FEE_HEAD_ID} THEN 1
+          WHEN cfh.id IN (${MONTHLY_PAYMENT_HEAD_ID}, ${LATE_FINE_FEE_HEAD_ID}) THEN 2
+          WHEN cfh.id = ${BSS_FEE_HEAD_ID} THEN 3
+          ELSE 4
+        END,
+        CASE
+          WHEN cfh.id IN (${MONTHLY_PAYMENT_HEAD_ID}, ${LATE_FINE_FEE_HEAD_ID}) THEN p.month
+          ELSE NULL
+        END,
+        --p.payment_date,
+        cfh.position ASC;
       `,
       paymentListValues
     );

@@ -43,3 +43,4 @@ avilable_permissions.set("11", "Stuff Attandance");
 export const MONTHLY_PAYMENT_HEAD_ID = 4
 export const LATE_FINE_FEE_HEAD_ID = 5;
 export const ADMISSION_FEE_HEAD_ID = 3;
+export const BSS_FEE_HEAD_ID = 3;
