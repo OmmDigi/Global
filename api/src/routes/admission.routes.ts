@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   acceptDeclarationStatus,
+  changeStudentAdmisionCourse,
   createAdmission,
   deleteSingleFeeHeadFromSingleAdmisson,
   getAdmissionFeeHeadHistoryList,
@@ -24,6 +25,7 @@ export const admissionRoute = Router();
 admissionRoute
   .post("/create", createAdmission)
   .post("/promot", isAuthorized(6), promotAdmission)
+  .put("/change-course", isAuthorized(6), changeStudentAdmisionCourse)
   .get("/", isAuthorized(6), getAdmissionList)
   // .get("/excel", isAuthorized(6), getAdmissionExcelReport)
   .patch("/", isAuthorized(6), updateAdmissionStatus)

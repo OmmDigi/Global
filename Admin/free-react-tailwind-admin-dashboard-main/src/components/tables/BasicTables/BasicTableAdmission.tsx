@@ -11,6 +11,7 @@ import { useNavigate, useSearchParams } from "react-router";
 // import { useEffect, useState } from "react";
 import Pagination from "../../form/Pagination";
 import { Calendar, IdCard } from "lucide-react";
+import { useSelectedFormIds } from "../../../zustand/useSelectedFormIds";
 
 export default function BasicTableAdmission({
   admissionlist,
@@ -20,6 +21,9 @@ export default function BasicTableAdmission({
 any) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const isSelectedAll = (searchParams.get("select-all") ?? "false") == "true";
+
+  const { addNewFormid, removeFormid } = useSelectedFormIds();
 
   const currentPage = parseInt(searchParams.get("page") || "1");
 
@@ -36,6 +40,14 @@ any) {
   // useEffect(() => {
   //   onSendData(count);
   // }, [count, onSendData]);
+
+  const onCheckBoxChanged = (checked: boolean, formid: number) => {
+    if (checked) {
+      addNewFormid(formid);
+    } else {
+      removeFormid(formid);
+    }
+  };
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
@@ -99,9 +111,20 @@ any) {
           {/* Table Body */}
           <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
             {admissionlist?.data?.map((order: any, index: number) => (
-              <TableRow key={index}>
+              <TableRow key={order.form_id}>
                 <TableCell className="px-5 py-4 sm:px-6 text-start">
                   <div className="flex items-center gap-3">
+                    <input
+                      key={`${isSelectedAll}`}
+                      onChange={(e) =>
+                        onCheckBoxChanged(
+                          e.currentTarget.checked,
+                          order.form_id
+                        )
+                      }
+                      defaultChecked={isSelectedAll}
+                      type="checkbox"
+                    />
                     <div className="text-gray-500">
                       {currentPage * 10 - 10 + index + 1}
                     </div>

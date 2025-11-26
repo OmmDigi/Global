@@ -20,6 +20,7 @@ import { uploadFiles } from "../../../utils/uploadFile";
 // import dayjs from "dayjs";
 // import DatePicker from "react-datepicker";
 import { useSearchParams } from "react-router-dom";
+import SelectMultipleStudent from "../../../components/SelectMultipleStudent";
 
 const year = new Date().getFullYear();
 
@@ -570,7 +571,7 @@ export default function AdmissionAdmin() {
   }, []);
 
   return (
-    <div>
+    <>
       <div className="z-50 fixed top-50">{contextHolder}</div>
       <PageMeta
         title=" Dashboard Form Elements Dashboard |  "
@@ -2074,6 +2075,8 @@ export default function AdmissionAdmin() {
                 </Button>
               </div>
             </form>
+
+            <SelectMultipleStudent />
             <BasicTableAdmission
               admissionlist={searchData?.data ? searchData : admissionlist}
               onEdit={handleEdit}
@@ -2084,6 +2087,6 @@ export default function AdmissionAdmin() {
           </ComponentCard>
         </div>
       </div>
-    </div>
+    </>
   );
 }

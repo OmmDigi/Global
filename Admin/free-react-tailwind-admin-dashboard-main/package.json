@@ -47,7 +47,8 @@
     "swiper": "^11.2.3",
     "swr": "^2.3.4",
     "tailwind-merge": "^3.0.1",
-    "to-words": "^4.7.0"
+    "to-words": "^4.7.0",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",

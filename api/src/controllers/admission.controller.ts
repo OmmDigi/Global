@@ -17,6 +17,7 @@ import { getAuthToken } from "../utils/getAuthToken";
 import { logFeeHeadDelete } from "../utils/logFeeHeadDelete";
 import { parsePagination } from "../utils/parsePagination";
 import {
+  VChangeStudentAdmissionCourse,
   VCreateAdmission,
   VDeleteSingleAdmission,
   VGetSessionCourseHeadPrice,
@@ -700,7 +701,7 @@ export const promotAdmission = asyncErrorHandler(async (req, res) => {
 });
 
 export const deleteSingleFeeHeadFromSingleAdmisson = asyncErrorHandler(
-  async (req : CustomRequest, res) => {
+  async (req: CustomRequest, res) => {
     const { error, value } = VDeleteSingleAdmission.validate(req.params ?? {});
     if (error) throw new ErrorHandler(400, error.message);
 
@@ -716,17 +717,38 @@ export const deleteSingleFeeHeadFromSingleAdmisson = asyncErrorHandler(
       );
 
       await logFeeHeadDelete({
-        formId : value.form_id,
-        feeHeadId : value.fee_head_id,
-        deletedById : req.user_info?.id as any,
-        data : {
-          form_fee_structure : form_fee_structure.rows,
-          payments : payments.rows
-        }
-      })
-
+        formId: value.form_id,
+        feeHeadId: value.fee_head_id,
+        deletedById: req.user_info?.id as any,
+        data: {
+          form_fee_structure: form_fee_structure.rows,
+          payments: payments.rows,
+        },
+      });
     });
 
     res.status(200).json(new ApiResponse(200, "Successfully removed"));
+  }
+);
+
+export const changeStudentAdmisionCourse = asyncErrorHandler(
+  async (req, res) => {
+    const { error, value } = VChangeStudentAdmissionCourse.validate(
+      req.body ?? {}
+    );
+    if (error) throw new ErrorHandler(400, error.message);
+
+    const uniqueFormIds = new Set<number>(value.form_ids);
+
+    const placeholder = [...uniqueFormIds].map(
+      (_: any, index: number) => `$${(index + 3) + 1}`
+    );
+    
+    await pool.query(
+      `UPDATE enrolled_courses SET course_id = $1, batch_id = $2, session_id = $3 WHERE form_id IN (${placeholder})`,
+      [value.course_id, value.batch_id, value.session_id, ...uniqueFormIds]
+    );
+
+    res.status(200).json(new ApiResponse(200, "Successfully updated!"));
   }
 );

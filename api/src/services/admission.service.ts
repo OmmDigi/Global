@@ -185,7 +185,7 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
 
   let feeHeadIdFilter = `WHERE fee_head_id != ${LATE_FINE_FEE_HEAD_ID}`;
   if(value.fee_head_id) {
-    feeHeadIdFilter += `AND fee_head_id = $${placeholder++}`;
+    feeHeadIdFilter += ` AND fee_head_id = $${placeholder++}`;
     filterValues.push(value.fee_head_id);
   }
 
