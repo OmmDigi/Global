@@ -617,12 +617,12 @@ export default function AdmissionAdmin() {
                   <div className="max-w-4xl mx-auto p-6 bg-white">
                     {/* Header Section */}
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-6 custom_input_color">
                       {/* Serial No and Date */}
                       {current === 0 && (
                         <div>
                           <div className="w-12/12  mb-4">
-                            <label className="block text-lg font-bold text-gray-700 mb-1">
+                            <label className="block text-lg font-bold mb-1">
                               Choose your Courses{" "}
                               <span className="text-red-500">*</span>
                             </label>
@@ -651,7 +651,7 @@ export default function AdmissionAdmin() {
 
                           <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 mb-10">
                             <div>
-                              <label className="block text-sm font-bold text-gray-700 mb-1">
+                              <label className="block text-sm font-bold mb-1">
                                 Choose your Session{" "}
                                 <span className="text-red-500">*</span>
                               </label>
@@ -682,7 +682,7 @@ export default function AdmissionAdmin() {
                               </select>
                             </div>
                             <div>
-                              <label className="block text-sm font-bold text-gray-700 mb-1">
+                              <label className="block text-sm font-bold mb-1">
                                 Choose your Batch{" "}
                                 <span className="text-red-500">*</span>
                               </label>
@@ -715,7 +715,7 @@ export default function AdmissionAdmin() {
                               </select>
                             </div>
                             <div className="mt-0">
-                              <label className="block text-sm text-start text-gray-700 mb-1">
+                              <label className="block text-sm text-start mb-1">
                                 Date <span className="text-red-500">*</span>
                               </label>
                               <input
@@ -730,7 +730,7 @@ export default function AdmissionAdmin() {
 
                           {/* Personal Details */}
                           <div className=" border-gray-300 p-4">
-                            <h2 className="text-lg font-semibold mb-4 bg-gray-100 p-2">
+                            <h2 className="text-lg font-semibold mb-4 bg-gray-100 p-2 text-black">
                               Personal Details
                             </h2>
 
@@ -783,7 +783,7 @@ export default function AdmissionAdmin() {
                                 </div>
 
                                 <div>
-                                  <label className="block text-sm text-start text-gray-700 mb-1">
+                                  <label className="block text-sm text-start text-black mb-1">
                                     Candidate's Name{" "}
                                     <span className="text-red-500">*</span>
                                   </label>
@@ -792,12 +792,12 @@ export default function AdmissionAdmin() {
                                     name="candidateName"
                                     value={formData.candidateName}
                                     onChange={handleInputChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full text-black px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                   />
                                 </div>
 
                                 <div>
-                                  <label className="block text-sm text-start text-gray-700 mb-1">
+                                  <label className="block text-sm text-start mb-1">
                                     Father's Name
                                   </label>
                                   <input
@@ -810,7 +810,7 @@ export default function AdmissionAdmin() {
                                 </div>
 
                                 <div>
-                                  <label className="block text-sm text-start text-gray-700 mb-1">
+                                  <label className="block text-sm text-start mb-1">
                                     Mother's Name
                                   </label>
                                   <input
@@ -823,7 +823,7 @@ export default function AdmissionAdmin() {
                                 </div>
 
                                 <div>
-                                  <label className="block text-sm text-start text-gray-700 mb-1">
+                                  <label className="block text-sm text-start mb-1">
                                     Guardian's Name
                                   </label>
                                   <input
@@ -836,7 +836,7 @@ export default function AdmissionAdmin() {
                                 </div>
 
                                 <div>
-                                  <label className="block text-sm text-start text-gray-700 mb-1">
+                                  <label className="block text-sm text-start mb-1">
                                     Address
                                   </label>
                                   <textarea
@@ -851,7 +851,7 @@ export default function AdmissionAdmin() {
 
                               <div className="grid grid-cols-3 gap-4">
                                 <div>
-                                  <label className="block text-sm text-start text-gray-700 mb-1">
+                                  <label className="block text-sm text-start mb-1">
                                     Whatsapp No{" "}
                                     <span className="text-red-500">*</span>
                                   </label>
@@ -864,7 +864,7 @@ export default function AdmissionAdmin() {
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-sm text-start text-gray-700 mb-1">
+                                  <label className="block text-sm text-start mb-1">
                                     Mobile
                                   </label>
                                   <input
@@ -876,7 +876,7 @@ export default function AdmissionAdmin() {
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-sm text-start text-gray-700 mb-1">
+                                  <label className="block text-sm text-start mb-1">
                                     Email{" "}
                                     <span className="text-red-500">*</span>
                                   </label>
@@ -893,7 +893,7 @@ export default function AdmissionAdmin() {
 
                               <div className="grid grid-cols-1 md:grid-cols-3  gap-4">
                                 <div>
-                                  <label className="block text-sm text-start text-gray-700 mb-1">
+                                  <label className="block text-sm text-start mb-1">
                                     Sex
                                   </label>
                                   <select
@@ -908,7 +908,7 @@ export default function AdmissionAdmin() {
                                   </select>
                                 </div>
                                 <div>
-                                  <label className="block text-sm text-start text-gray-700 mb-1">
+                                  <label className="block text-sm text-start mb-1">
                                     Date of Birth
                                   </label>
                                   <input
@@ -920,7 +920,7 @@ export default function AdmissionAdmin() {
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-sm text-start text-gray-700 mb-1">
+                                  <label className="block text-sm text-start mb-1">
                                     Blood Group
                                   </label>
                                   <input
@@ -935,7 +935,7 @@ export default function AdmissionAdmin() {
 
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
-                                  <label className="block text-sm text-start text-gray-700 mb-1">
+                                  <label className="block text-sm text-start mb-1">
                                     Category
                                   </label>
                                   <select
@@ -952,7 +952,7 @@ export default function AdmissionAdmin() {
                                   </select>
                                 </div>
                                 <div>
-                                  <label className="block text-sm text-start text-gray-700 mb-1">
+                                  <label className="block text-sm text-start mb-1">
                                     Person with Disability
                                   </label>
                                   <select
@@ -967,7 +967,7 @@ export default function AdmissionAdmin() {
                                   </select>
                                 </div>
                                 <div>
-                                  <label className="block text-sm text-start text-gray-700 mb-1">
+                                  <label className="block text-sm text-start mb-1">
                                     Monthly Income (in Rupees)
                                   </label>
                                   <input
@@ -981,7 +981,7 @@ export default function AdmissionAdmin() {
                               </div>
 
                               <div>
-                                <label className="block text-sm text-start text-gray-700 mb-1">
+                                <label className="block text-sm text-start mb-1">
                                   Languages Known
                                 </label>
                                 <input
@@ -1106,7 +1106,7 @@ export default function AdmissionAdmin() {
                             <h2 className="text-lg font-semibold mb-4 bg-gray-100 p-2">
                               Declaration
                             </h2>
-                            <p className="text-sm text-gray-700 mb-4">
+                            <p className="text-sm mb-4">
                               I hereby declare that the information provided by
                               me is true and subject to verification by G.T.I. I
                               hereby acknowledge that I have read and understood
@@ -1117,7 +1117,7 @@ export default function AdmissionAdmin() {
 
                             <div className="grid grid-cols-2 gap-8">
                               <div>
-                                <label className="block text-sm text-start text-gray-700 mb-1">
+                                <label className="block text-sm text-start mb-1">
                                   Place
                                 </label>
                                 <input
@@ -1129,7 +1129,7 @@ export default function AdmissionAdmin() {
                                 />
                               </div>
                               <div>
-                                <label className="block text-sm text-start text-gray-700 mb-1">
+                                <label className="block text-sm text-start mb-1">
                                   Name
                                 </label>
                                 <input
@@ -1143,7 +1143,7 @@ export default function AdmissionAdmin() {
                             </div>
                             <div className="grid grid-cols-2 gap-8">
                               <div className="mt-4">
-                                <label className="block text-sm text-start text-gray-700 mb-1">
+                                <label className="block text-sm text-start mb-1">
                                   Date
                                 </label>
                                 <input
@@ -1183,7 +1183,7 @@ export default function AdmissionAdmin() {
 
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                  <label className="block text-sm text-start text-gray-700 mb-2">
+                                  <label className="block text-sm text-start mb-2">
                                     Self attested copies of last result
                                   </label>
                                   <input
@@ -1242,7 +1242,7 @@ export default function AdmissionAdmin() {
                                 </div>
 
                                 <div>
-                                  <label className="block text-sm text-start text-gray-700 mb-2">
+                                  <label className="block text-sm text-start mb-2">
                                     Age Proof (Madhyamik certificate / PAN Card)
                                   </label>
                                   <input
@@ -1286,7 +1286,7 @@ export default function AdmissionAdmin() {
                                 </div>
 
                                 <div>
-                                  <label className="block text-sm text-start text-gray-700 mb-2">
+                                  <label className="block text-sm text-start mb-2">
                                     Address Proof (Aadhar Card )
                                   </label>
                                   <input
@@ -1337,7 +1337,7 @@ export default function AdmissionAdmin() {
                                 Declaration
                               </h2>
 
-                              <div className="text-sm text-gray-700 mb-4 leading-relaxed">
+                              <div className="text-sm mb-4 leading-relaxed">
                                 I hereby declare that all the particulars stated
                                 in this application form are true to the host of
                                 my knowledge and belief. Also agree to able by
@@ -1366,7 +1366,7 @@ export default function AdmissionAdmin() {
                                   onChange={handleInputChange}
                                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                                 />
-                                <label className="text-sm text-gray-700">
+                                <label className="text-sm">
                                   I accept the above declaration
                                 </label>
                               </div>
@@ -1380,7 +1380,7 @@ export default function AdmissionAdmin() {
 
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                  <label className="block text-sm text-start text-gray-700 mb-2">
+                                  <label className="block text-sm text-start mb-2">
                                     Name of Applicant
                                   </label>
                                   <input
@@ -1394,7 +1394,7 @@ export default function AdmissionAdmin() {
                                 </div>
 
                                 <div>
-                                  <label className="block text-sm text-start text-gray-700 mb-2">
+                                  <label className="block text-sm text-start mb-2">
                                     Name of Parent/Guardian
                                   </label>
                                   <input
@@ -1407,7 +1407,7 @@ export default function AdmissionAdmin() {
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-sm text-start text-gray-700 mb-2">
+                                  <label className="block text-sm text-start mb-2">
                                     Phono No of Parent/Guardian
                                   </label>
                                   <input
@@ -1421,7 +1421,7 @@ export default function AdmissionAdmin() {
                                 </div>
 
                                 <div>
-                                  <label className="block text-sm text-start text-gray-700 mb-2">
+                                  <label className="block text-sm text-start mb-2">
                                     Date
                                   </label>
                                   <input
@@ -1434,7 +1434,7 @@ export default function AdmissionAdmin() {
                                 </div>
 
                                 {/* <div>
-                                  <label className="block text-sm text-start text-gray-700 mb-2">
+                                  <label className="block text-sm text-start mb-2">
                                     Date
                                   </label>
                                   <input
@@ -1454,7 +1454,7 @@ export default function AdmissionAdmin() {
                       )}
 
                       {current === 2 && (
-                        <div className="max-w-4xl mx-auto  bg-white min-h-screen">
+                        <div className="max-w-4xl mx-auto bg-white min-h-screen">
                           <div className="space-y-8">
                             {/* Header */}
                             <div className="text-center">
@@ -1472,7 +1472,7 @@ export default function AdmissionAdmin() {
                               <div className="space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                   <div>
-                                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-start mb-2">
                                       Title
                                     </label>
                                     <select
@@ -1489,7 +1489,7 @@ export default function AdmissionAdmin() {
                                   </div>
 
                                   <div className="md:col-span-3">
-                                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-start mb-2">
                                       Full Name
                                     </label>
                                     <input
@@ -1505,7 +1505,7 @@ export default function AdmissionAdmin() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   <div>
-                                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-start mb-2">
                                       Relationship Type
                                     </label>
                                     <select
@@ -1524,7 +1524,7 @@ export default function AdmissionAdmin() {
                                   </div>
 
                                   <div>
-                                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-start mb-2">
                                       Father's/Husband's Name
                                     </label>
                                     <input
@@ -1539,7 +1539,7 @@ export default function AdmissionAdmin() {
                                 </div>
 
                                 <div className="bg-blue-50 p-4 rounded-md">
-                                  <p className="text-sm text-gray-700 mb-4">
+                                  <p className="text-sm mb-4">
                                     <strong>Declaration:</strong> I hereby
                                     declare that I will have to pay a sum of Rs.
                                     <input
@@ -1559,7 +1559,7 @@ export default function AdmissionAdmin() {
                                     Teachers' Training course (6 Months) of
                                   </p>
 
-                                  <p className="text-sm text-gray-700 mt-2">
+                                  <p className="text-sm mt-2">
                                     within 3 (three) months from the date of
                                     getting Admission in the aforesaid Course.
                                   </p>
@@ -1577,7 +1577,7 @@ export default function AdmissionAdmin() {
                                 <div className="space-y-4">
                                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                     <div>
-                                      <label className="block text-sm font-medium text-start text-gray-700 mb-2">
+                                      <label className="block text-sm font-medium text-start mb-2">
                                         Title
                                       </label>
                                       <select
@@ -1594,7 +1594,7 @@ export default function AdmissionAdmin() {
                                     </div>
 
                                     <div className="md:col-span-3">
-                                      <label className="block text-sm font-medium text-start text-gray-700 mb-2">
+                                      <label className="block text-sm font-medium text-start mb-2">
                                         Full Name
                                       </label>
                                       <input
@@ -1610,7 +1610,7 @@ export default function AdmissionAdmin() {
 
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                      <label className="block text-sm font-medium text-start text-gray-700 mb-2">
+                                      <label className="block text-sm font-medium text-start mb-2">
                                         Relationship Type
                                       </label>
                                       <select
@@ -1633,7 +1633,7 @@ export default function AdmissionAdmin() {
                                     </div>
 
                                     <div>
-                                      <label className="block text-sm font-medium text-start text-gray-700 mb-2">
+                                      <label className="block text-sm font-medium text-start mb-2">
                                         Father's/Husband's Name
                                       </label>
                                       <input
@@ -1648,7 +1648,7 @@ export default function AdmissionAdmin() {
                                   </div>
 
                                   <div className="bg-green-50 p-4 rounded-md">
-                                    <p className="text-sm text-gray-700">
+                                    <p className="text-sm">
                                       <strong>Declaration:</strong> I hereby
                                       declare that I will also have to pay a sum
                                       of Rs.
@@ -1688,7 +1688,7 @@ export default function AdmissionAdmin() {
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-4">
                                   <div className="border-b-2 border-dashed border-gray-300 pb-4">
-                                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-start mb-2">
                                       Signature of Parent/Guardian
                                     </label>
                                     <input
@@ -1702,7 +1702,7 @@ export default function AdmissionAdmin() {
                                   </div>
 
                                   <div>
-                                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-start mb-2">
                                       Date
                                     </label>
                                     <input
@@ -1717,7 +1717,7 @@ export default function AdmissionAdmin() {
 
                                 <div className="space-y-4">
                                   <div className="border-b-2 border-dashed border-gray-300 pb-4">
-                                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-start mb-2">
                                       Signature of the Applicant/Candidate
                                     </label>
                                     <input
@@ -1731,7 +1731,7 @@ export default function AdmissionAdmin() {
                                   </div>
 
                                   <div>
-                                    <label className="block text-sm font-medium text-start text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-start mb-2">
                                       Date
                                     </label>
                                     <input
@@ -1749,7 +1749,7 @@ export default function AdmissionAdmin() {
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-10">
                             <div>
-                              <label className="block text-sm font-medium text-start text-gray-700 mb-2">
+                              <label className="block text-sm font-medium text-start mb-2">
                                 Set User Name{" "}
                                 <span className="text-red-500">*</span>
                               </label>
@@ -1764,7 +1764,7 @@ export default function AdmissionAdmin() {
                             </div>
 
                             <div>
-                              <label className="block text-sm font-medium text-start text-gray-700 mb-2">
+                              <label className="block text-sm font-medium text-start mb-2">
                                 Set Your password{" "}
                                 <span className="text-red-500">*</span>
                               </label>
