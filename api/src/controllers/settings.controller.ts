@@ -55,9 +55,10 @@ export const backupDatabase = asyncErrorHandler(async (req, res) => {
     });
   });
 
-  res.json({
-    message: "Backup created successfully",
-    file: fileName,
-    path: filePath,
-  });
+  res.status(201).json(
+    new ApiResponse(201, "Backup created successfully", {
+      file: fileName,
+      path: filePath,
+    })
+  );
 });

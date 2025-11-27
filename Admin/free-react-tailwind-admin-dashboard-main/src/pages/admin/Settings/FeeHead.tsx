@@ -7,6 +7,7 @@ import Input from "../../../components/form/input/InputField";
 import useSWRMutation from "swr/mutation";
 import { postFetcher } from "../../../api/fatcher";
 import { message } from "antd";
+import BackupDatabaseSection from "../../../components/BackupDatabaseSection";
 
 type FormDataType = {
   id?: number; // optional (if sometimes missing)
@@ -65,7 +66,7 @@ export default function Settings() {
   };
 
   return (
-    <div>
+    <div className="space-y-3.5">
       {contextHolder}
       <PageMeta
         title=" Dashboard Form Elements Dashboard |  "
@@ -122,6 +123,8 @@ export default function Settings() {
           </ComponentCard>
         </div>
       </div>
+
+      <BackupDatabaseSection />
     </div>
   );
 }
