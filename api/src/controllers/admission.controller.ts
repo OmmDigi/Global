@@ -324,24 +324,63 @@ export const getSingleAdmissionFormData = asyncErrorHandler(
 
     const { rows, rowCount } = await pool.query(
       `
-    SELECT
-      ff.id AS form_id,
-      ff.student_id,
-      (
-        SELECT admission_details FROM admission_data 
-        WHERE student_id = ff.student_id
-        ORDER BY id DESC
-        LIMIT 1
-      ) as admission_details
-    FROM fillup_forms ff
-    WHERE ff.id = $1
+      SELECT
+        ff.id AS form_id,
+        ff.student_id,
+        ec.course_id,
+        ec.batch_id,
+        ec.session_id,
+
+        JSON_AGG(
+          JSON_BUILD_OBJECT (
+            'form_id', ad.form_id,
+            'admission_details', ad.admission_details
+          )
+        ) admission_data_details
+        /*(
+          SELECT admission_details FROM admission_data 
+          WHERE student_id = ff.student_id
+          ORDER BY id DESC
+          LIMIT 1
+        ) as admission_details*/
+      FROM fillup_forms ff
+
+      LEFT JOIN enrolled_courses ec
+      ON ec.form_id = ff.id
+
+      LEFT JOIN admission_data ad
+      ON ad.student_id = ff.student_id
+
+      WHERE ff.id = $1
+
+      GROUP BY ec.id, ff.id
     `,
       [value.form_id]
     );
 
     if (rowCount === 0) throw new ErrorHandler(400, "No Form Data Found");
 
-    res.status(200).json(new ApiResponse(200, "Admision Details", rows[0]));
+    // find the admission data related to current form id
+    const foundAdmissionDetails = rows[0].admission_data_details.find((item : any) => item.form_id == value.form_id);
+    
+    const dataToReturn = {
+      form_id : rows[0].form_id,
+      student_id : rows[0].student_id,
+      course_id : rows[0].course_id,
+      batch_id : rows[0].batch_id,
+      session_id : rows[0].session_id,
+      admission_details : "",
+    };
+
+  // if not found mean the new admision detila could not saved so return the first one
+   if(!foundAdmissionDetails) {
+     dataToReturn.admission_details = rows[0].admission_data_details[0].admission_details;
+   } else {
+     // else retunr the exec one
+     dataToReturn.admission_details = foundAdmissionDetails.admission_details;
+   }
+
+    res.status(200).json(new ApiResponse(200, "Admision Details", dataToReturn));
   }
 );
 
@@ -679,7 +718,7 @@ export const promotAdmission = asyncErrorHandler(async (req, res) => {
       await doAdmission({
         student_id: id,
         client,
-        admission_data: value.admission_data,
+        admission_data: undefined,
         course_id: value.course_id,
         batch_id: value.batch_id,
         fee_structure,
@@ -691,7 +730,7 @@ export const promotAdmission = asyncErrorHandler(async (req, res) => {
 
     res
       .status(201)
-      .json(new ApiResponse(201, "Admission info successfully saved"));
+      .json(new ApiResponse(201, "Successfully promot the admission"));
   } catch (error: any) {
     await client.query("ROLLBACK");
     throw new ErrorHandler(400, error.message);

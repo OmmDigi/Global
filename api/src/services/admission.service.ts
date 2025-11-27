@@ -230,6 +230,7 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
         MAX(tfc.course_fee) AS course_fee,
         MAX(tfc.due_amount) AS due_amount,
         MAX(tfc.total_collection) AS total_collection,
+        ff.student_id,
 
         /* (
           COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id ${feeHeadIdFilter}), 0.00) - 

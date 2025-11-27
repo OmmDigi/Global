@@ -10,13 +10,6 @@ export const VCreateAdmission = Joi.object({
   // payment_type : Joi.string().valid("Part Payment", "Full Payment").required()
 });
 
-export const VPromotAdmisson = Joi.object({
-  student_ids: Joi.array().items(Joi.number()),
-  course_id: Joi.number().required().label("Course"),
-  batch_id: Joi.number().required().label("Batch"),
-  session_id: Joi.number().required().label("Session"),
-});
-
 export const VGetSingleAdmission = Joi.object({
   form_id: Joi.number().required(),
 });
@@ -89,9 +82,16 @@ export const VDeleteSingleAdmission = Joi.object({
 });
 
 
+export const VPromotAdmisson = Joi.object({
+  student_ids: Joi.array().items(Joi.number()),
+  course_id: Joi.number().required().label("Course"),
+  batch_id: Joi.number().required().label("Batch"),
+  session_id: Joi.number().required().label("Session"),
+});
+
 export const VChangeStudentAdmissionCourse = Joi.object({
   form_ids : Joi.array().items(Joi.number()).required(),
-  course_id : Joi.number().required(),
-  session_id : Joi.number().required(),
-  batch_id : Joi.number().required()
+  course_id: Joi.number().required().label("Course"),
+  batch_id: Joi.number().required().label("Batch"),
+  session_id: Joi.number().required().label("Session"),
 })

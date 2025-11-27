@@ -421,11 +421,15 @@ export default function AdmissionAdmin() {
         tempObj[key] = value;
       });
 
+      tempObj.courseName = response?.data?.course_id;
+      tempObj.batchName = response?.data?.batch_id;
+      tempObj.sessionName = response?.data?.session_id;
+
       //  setCurrent(0);
       setFormData(tempObj);
       setEditedFormId(response?.data?.form_id);
-      setSelectedCourseId(userData?.courseName);
-      setPhoto(userData?.image);
+      setSelectedCourseId(tempObj?.courseName);
+      setPhoto(tempObj?.image);
       // alert(typeof userData?.courseName);
       // alert(userData?.courseName);
     } catch (error) {
@@ -437,6 +441,7 @@ export default function AdmissionAdmin() {
     form_id: id,
     admission_data: JSON.stringify(formData),
   };
+
   const handleUpdate = async () => {
     try {
       const response = await update(admissionFormUpdate as any);
@@ -570,6 +575,10 @@ export default function AdmissionAdmin() {
     });
   }, []);
 
+  // const clearAdmissionForm = () => {
+  //  setFormData(initialFormData);
+  // };
+
   return (
     <>
       <div className="z-50 fixed top-50">{contextHolder}</div>
@@ -590,15 +599,27 @@ export default function AdmissionAdmin() {
               className="cursor-pointer text-gray-500 hover:text-gray-500 dark:text-gray-300  flex items-center justify-center"
             >
               {montessoriTeachers ? (
-                <div className="flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-gray-800 p-2">
+                <button
+                  // onClick={() => {
+                  //   setId(undefined);
+                  //   clearAdmissionForm();
+                  // }}
+                  className="flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-gray-800 p-2"
+                >
                   <Minus className="text-red-500" size={50} />
                   <div className="text-2xl"> Student Admission</div>
-                </div>
+                </button>
               ) : (
-                <div className="flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-gray-800 p-2">
+                <button
+                  // onClick={() => {
+                  //   setId(undefined);
+                  //   clearAdmissionForm();
+                  // }}
+                  className="flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-gray-800 p-2"
+                >
                   <Plus size={50} />
                   <div className="text-2xl"> Student Admission</div>
-                </div>
+                </button>
               )}
             </div>
 
@@ -617,7 +638,11 @@ export default function AdmissionAdmin() {
                   <div className="max-w-4xl mx-auto p-6 bg-white">
                     {/* Header Section */}
 
-                    <form onSubmit={handleSubmit} className="space-y-6 custom_input_color">
+                    <form
+                      key={id}
+                      onSubmit={handleSubmit}
+                      className="space-y-6 custom_input_color"
+                    >
                       {/* Serial No and Date */}
                       {current === 0 && (
                         <div>
@@ -1928,7 +1953,7 @@ export default function AdmissionAdmin() {
                     formDataParams.courseName ?? formData.courseName
                   }`}
                   name="courseName"
-                  disabled={id ? true : false}
+                  // disabled={id ? true : false}
                   // defaultValue={formData.courseName}
                   defaultValue={
                     formDataParams.courseName ?? formData.courseName
@@ -1954,7 +1979,7 @@ export default function AdmissionAdmin() {
                     formDataParams.sessionName ?? formData.sessionName
                   }`}
                   name="sessionName"
-                  disabled={id ? true : false}
+                  // disabled={id ? true : false}
                   defaultValue={
                     formDataParams.sessionName ?? formData.sessionName
                   }
@@ -1981,7 +2006,7 @@ export default function AdmissionAdmin() {
                     formDataParams.batchName ?? formData.batchName
                   }`}
                   name="batchName"
-                  disabled={id ? true : false}
+                  // disabled={id ? true : false}
                   defaultValue={formDataParams.batchName ?? formData.batchName}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"

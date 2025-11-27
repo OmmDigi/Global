@@ -1,12 +1,12 @@
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import Button from "./ui/button/Button";
 import { useSearchParams } from "react-router";
 // import { useNonSelectedFormids } from "../zustand/useNonSelectedFormids";
 // import { useSWRConfig } from "swr";
-import { useSelectedFormIds } from "../zustand/useSelectedFormIds";
+import { useSelectedForms } from "../zustand/useSelectedForms";
 import ChooseCourseBatchDialog from "./ChooseCourseBatchDialog";
 import useSWRMutation from "swr/mutation";
-import { putFetcher } from "../api/fatcher";
+import { postFetcher, putFetcher } from "../api/fatcher";
 import { AxiosError } from "axios";
 import { message } from "antd";
 import { useSWRConfig } from "swr";
@@ -21,12 +21,18 @@ export default function SelectMultipleStudent() {
   const [isPending, startTransition] = useTransition();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const type = useRef<"promote" | "move">("move");
 
-  const { form_ids, clear, addNewFormid } = useSelectedFormIds();
+  const { data: selectedForms, clear, addItem } = useSelectedForms();
 
   const { trigger: changeCourse, isMutating: isChangingCourse } =
     useSWRMutation("api/v1/admission/change-course", (url, { arg }) =>
       putFetcher(url, arg)
+    );
+
+  const { trigger: promotStudent, isMutating: isPromotingStudent } =
+    useSWRMutation("api/v1/admission/promot", (url, { arg }) =>
+      postFetcher(url, arg)
     );
 
   const { cache } = useSWRConfig();
@@ -71,20 +77,38 @@ export default function SelectMultipleStudent() {
     batch_id: number,
     session_id: number
   ) => {
-
-    if(!confirm("Are you sure you want to continue? Once you click OK, this action cannot be undone.")) return;
+    if (
+      !confirm(
+        "Are you sure you want to continue? Once you click OK, this action cannot be undone."
+      )
+    )
+      return;
 
     try {
-      const response = await changeCourse({
-        course_id,
-        batch_id,
-        session_id,
-        form_ids,
-      } as any);
-      messageApi.open({
-        type: "success",
-        content: response?.message,
-      });
+      if (type.current === "move") {
+        const response = await changeCourse({
+          course_id,
+          batch_id,
+          session_id,
+          form_ids: selectedForms.map((item) => item.form_id),
+        } as any);
+        messageApi.open({
+          type: "success",
+          content: response?.message,
+        });
+      } else {
+        console.log(selectedForms.map((item) => item.student_id))
+        const response = await promotStudent({
+          course_id,
+          batch_id,
+          session_id,
+          student_ids: selectedForms.map((item) => item.student_id),
+        } as any);
+        messageApi.open({
+          type: "success",
+          content: response?.message,
+        });
+      }
       mutate(`api/v1/admission?${searchParams.toString()}`);
       clear();
       const urlSearchParams = new URLSearchParams(searchParams);
@@ -103,13 +127,16 @@ export default function SelectMultipleStudent() {
   useEffect(() => {
     const isSelectedAll = (searchParams.get("select-all") ?? "false") == "true";
     setIsSelected(isSelectedAll);
-  }, [searchParams.toString()])
+  }, [searchParams.toString()]);
 
   useEffect(() => {
     startTransition(() => {
       if (admissionList?.data?.data && isSelected) {
-        addNewFormid(
-          admissionList?.data?.data?.map((item: any) => item.form_id)
+        addItem(
+          admissionList?.data?.data?.map((item: any) => ({
+            form_id: item.form_id,
+            student_id: item.student_id,
+          }))
         );
       } else {
         clear();
@@ -126,7 +153,7 @@ export default function SelectMultipleStudent() {
             <ChooseCourseBatchDialog
               setIsDialogOpen={setIsDialogOpen}
               onFormSubmit={onChooseCourseBatchFormSubmit}
-              isFormSubmiting={isChangingCourse}
+              isFormSubmiting={isChangingCourse || isPromotingStudent}
             />
           </div>
         </div>
@@ -134,7 +161,7 @@ export default function SelectMultipleStudent() {
       <div className="flex items-center justify-between">
         <span className="flex items-center gap-1.5">
           {isPending ? (
-            <Loader className="animate-spin text-white" size={18}/>
+            <Loader className="animate-spin text-white" size={18} />
           ) : (
             <input
               checked={isSelected}
@@ -151,12 +178,25 @@ export default function SelectMultipleStudent() {
           </label>
         </span>
 
-        <div>
+        <div className="space-x-2.5">
           <Button
-            onClick={() => setIsDialogOpen(true)}
-            disabled={form_ids.length == 0 || isChangingCourse}
+            onClick={() => {
+              type.current = "move";
+              setIsDialogOpen(true);
+            }}
+            disabled={selectedForms.length == 0 || isChangingCourse || isPromotingStudent}
           >
-            Shift Course / Batch
+            Move
+          </Button>
+
+          <Button
+            onClick={() => {
+              type.current = "promote";
+              setIsDialogOpen(true);
+            }}
+            disabled={selectedForms.length == 0 || isChangingCourse || isPromotingStudent}
+          >
+            Copy
           </Button>
         </div>
       </div>

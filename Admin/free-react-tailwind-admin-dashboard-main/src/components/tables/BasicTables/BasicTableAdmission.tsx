@@ -11,7 +11,10 @@ import { useNavigate, useSearchParams } from "react-router";
 // import { useEffect, useState } from "react";
 import Pagination from "../../form/Pagination";
 import { Calendar, IdCard } from "lucide-react";
-import { useSelectedFormIds } from "../../../zustand/useSelectedFormIds";
+import {
+  ISelectedFormData,
+  useSelectedForms,
+} from "../../../zustand/useSelectedForms";
 
 export default function BasicTableAdmission({
   admissionlist,
@@ -23,7 +26,7 @@ any) {
   const [searchParams] = useSearchParams();
   const isSelectedAll = (searchParams.get("select-all") ?? "false") == "true";
 
-  const { addNewFormid, removeFormid } = useSelectedFormIds();
+  const { addItem, removeItem } = useSelectedForms();
 
   const currentPage = parseInt(searchParams.get("page") || "1");
 
@@ -41,11 +44,11 @@ any) {
   //   onSendData(count);
   // }, [count, onSendData]);
 
-  const onCheckBoxChanged = (checked: boolean, formid: number) => {
+  const onCheckBoxChanged = (checked: boolean, data: ISelectedFormData) => {
     if (checked) {
-      addNewFormid(formid);
+      addItem(data);
     } else {
-      removeFormid(formid);
+      removeItem(data);
     }
   };
 
@@ -117,10 +120,10 @@ any) {
                     <input
                       key={`${isSelectedAll}`}
                       onChange={(e) =>
-                        onCheckBoxChanged(
-                          e.currentTarget.checked,
-                          order.form_id
-                        )
+                        onCheckBoxChanged(e.currentTarget.checked, {
+                          form_id: order.form_id,
+                          student_id: order.student_id,
+                        })
                       }
                       defaultChecked={isSelectedAll}
                       type="checkbox"
