@@ -35,10 +35,10 @@ export default function BackupDatabaseSection() {
           <p className="text-red-400">{error?.response?.data.message}</p>
         ) : null}
         {data ? (
-          <>
-            <p className="text-green-400">{data?.response?.data.message}</p>
-            <p className="text-green-400 text-sm">{data?.response?.data}</p>
-          </>
+          <div>
+            <p className="text-green-400">{data?.message}</p>
+            <p className="text-green-400 text-sm">{JSON.stringify(data?.data)}</p>
+          </div>
         ) : null}
       </ComponentCard>
     </section>
