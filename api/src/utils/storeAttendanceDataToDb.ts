@@ -125,7 +125,7 @@ export const storeAttendanceDataToDb = async (finalPunches: TFinalPunch[]) => {
     await client.query("ROLLBACK");
     console.log(error)
     return {
-      success: true,
+      success: false,
       message: error.message,
     };
   } finally {
