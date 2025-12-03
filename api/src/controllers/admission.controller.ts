@@ -787,16 +787,16 @@ export const changeStudentAdmisionCourse = asyncErrorHandler(
     );
     if (error) throw new ErrorHandler(400, error.message);
 
-    const uniqueFormIds = new Set<number>(value.form_ids);
+    const uniqueFormIds = [...new Set<number>(value.form_ids)];
 
-    const placeholder = [...uniqueFormIds].map(
+    const placeholder = uniqueFormIds.map(
       (_: any, index: number) => `$${index + 3 + 1}`
     );
 
     await doTransition(async (client) => {
       await client.query(
         `UPDATE enrolled_courses SET course_id = $1, batch_id = $2, session_id = $3 WHERE form_id IN (${placeholder})`,
-        [value.course_id, value.batch_id, value.session_id, ...uniqueFormIds]
+        [value.course_id, value.batch_id, value.session_id, uniqueFormIds]
       );
 
       await client.query(
