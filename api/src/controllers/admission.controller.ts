@@ -735,7 +735,7 @@ export const promotAdmission = asyncErrorHandler(async (req : CustomRequest, res
 
     await client.query(
       "INSERT INTO copy_move_logs (user_id, data, action_type) VALUES ($1, $2, $3)",
-      [req.user_info?.id, value.student_ids, "move"]
+      [req.user_info?.id, {student_ids : value.student_ids}, "copy"]
     );
 
     res
@@ -801,7 +801,7 @@ export const changeStudentAdmisionCourse = asyncErrorHandler(
 
       await client.query(
         "INSERT INTO copy_move_logs (user_id, data, action_type) VALUES ($1, $2, $3)",
-        [req.user_info?.id, uniqueFormIds, "copy"]
+        [req.user_info?.id, {form_ids : uniqueFormIds}, "move"]
       );
     });
 
