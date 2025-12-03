@@ -361,26 +361,31 @@ export const getSingleAdmissionFormData = asyncErrorHandler(
     if (rowCount === 0) throw new ErrorHandler(400, "No Form Data Found");
 
     // find the admission data related to current form id
-    const foundAdmissionDetails = rows[0].admission_data_details.find((item : any) => item.form_id == value.form_id);
-    
+    const foundAdmissionDetails = rows[0].admission_data_details.find(
+      (item: any) => item.form_id == value.form_id
+    );
+
     const dataToReturn = {
-      form_id : rows[0].form_id,
-      student_id : rows[0].student_id,
-      course_id : rows[0].course_id,
-      batch_id : rows[0].batch_id,
-      session_id : rows[0].session_id,
-      admission_details : "",
+      form_id: rows[0].form_id,
+      student_id: rows[0].student_id,
+      course_id: rows[0].course_id,
+      batch_id: rows[0].batch_id,
+      session_id: rows[0].session_id,
+      admission_details: "",
     };
 
-  // if not found mean the new admision detila could not saved so return the first one
-   if(!foundAdmissionDetails) {
-     dataToReturn.admission_details = rows[0].admission_data_details[0].admission_details;
-   } else {
-     // else retunr the exec one
-     dataToReturn.admission_details = foundAdmissionDetails.admission_details;
-   }
+    // if not found mean the new admision detila could not saved so return the first one
+    if (!foundAdmissionDetails) {
+      dataToReturn.admission_details =
+        rows[0].admission_data_details[0].admission_details;
+    } else {
+      // else retunr the exec one
+      dataToReturn.admission_details = foundAdmissionDetails.admission_details;
+    }
 
-    res.status(200).json(new ApiResponse(200, "Admision Details", dataToReturn));
+    res
+      .status(200)
+      .json(new ApiResponse(200, "Admision Details", dataToReturn));
   }
 );
 
@@ -665,7 +670,7 @@ export const modifyFeeHeadOfAdmission = asyncErrorHandler(async (req, res) => {
     .json(new ApiResponse(200, "Admission Fee Head Successfully Modified"));
 });
 
-export const promotAdmission = asyncErrorHandler(async (req, res) => {
+export const promotAdmission = asyncErrorHandler(async (req : CustomRequest, res) => {
   const { error, value } = VPromotAdmisson.validate(req.body ?? {});
   if (error) throw new ErrorHandler(400, error.message);
 
@@ -728,6 +733,11 @@ export const promotAdmission = asyncErrorHandler(async (req, res) => {
       });
     }
 
+    await client.query(
+      "INSERT INTO copy_move_logs SET (user_id, data, action_type) VALUES ($1, $2, $3)",
+      [req.user_info?.id, value.student_ids, "move"]
+    );
+
     res
       .status(201)
       .json(new ApiResponse(201, "Successfully promot the admission"));
@@ -771,7 +781,7 @@ export const deleteSingleFeeHeadFromSingleAdmisson = asyncErrorHandler(
 );
 
 export const changeStudentAdmisionCourse = asyncErrorHandler(
-  async (req, res) => {
+  async (req: CustomRequest, res) => {
     const { error, value } = VChangeStudentAdmissionCourse.validate(
       req.body ?? {}
     );
@@ -780,13 +790,20 @@ export const changeStudentAdmisionCourse = asyncErrorHandler(
     const uniqueFormIds = new Set<number>(value.form_ids);
 
     const placeholder = [...uniqueFormIds].map(
-      (_: any, index: number) => `$${(index + 3) + 1}`
+      (_: any, index: number) => `$${index + 3 + 1}`
     );
-    
-    await pool.query(
-      `UPDATE enrolled_courses SET course_id = $1, batch_id = $2, session_id = $3 WHERE form_id IN (${placeholder})`,
-      [value.course_id, value.batch_id, value.session_id, ...uniqueFormIds]
-    );
+
+    await doTransition(async (client) => {
+      await client.query(
+        `UPDATE enrolled_courses SET course_id = $1, batch_id = $2, session_id = $3 WHERE form_id IN (${placeholder})`,
+        [value.course_id, value.batch_id, value.session_id, ...uniqueFormIds]
+      );
+
+      await client.query(
+        "INSERT INTO copy_move_logs SET (user_id, data, action_type) VALUES ($1, $2, $3)",
+        [req.user_info?.id, uniqueFormIds, "copy"]
+      );
+    });
 
     res.status(200).json(new ApiResponse(200, "Successfully updated!"));
   }
