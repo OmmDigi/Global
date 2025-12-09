@@ -169,7 +169,7 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
     if(filter === "") {
       filter = `WHERE u.name ILIKE '%' || $${placeholder++} || '%'`;
     } else {
-      filter += ` AND u.name = '%' || $${placeholder++} || '%'`;
+      filter += ` AND u.name ILIKE '%' || $${placeholder++} || '%'`;
     }
     filterValues.push(value.name);
   }
