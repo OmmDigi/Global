@@ -57,7 +57,7 @@ export default function TotalFeeAmountReport({ courseList }: IProps) {
   return (
     <ComponentCard
       className="mt-15"
-      title="Report For Student Fee summary Report "
+      title="Combind Fees for All Course"
     >
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <div>
