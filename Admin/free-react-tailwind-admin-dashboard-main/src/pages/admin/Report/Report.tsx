@@ -9,6 +9,7 @@ import PageMeta from "../../../components/common/PageMeta";
 import ComponentCard from "../../../components/common/ComponentCard";
 import useSWRMutation from "swr/mutation";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
+import TotalFeeAmountReport from "./TotalFeeAmountReport";
 
 function Report() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -239,8 +240,6 @@ function Report() {
     setExcelFileUrlOverAll(null);
     startTransitionOverAll(async () => {
       if (
-        // dateRangeOverAll[0] &&
-        // dateRangeOverAll[0] &&
         course &&
         batch
       ) {
@@ -692,6 +691,8 @@ function Report() {
           )}
         </div>
       </ComponentCard>
+
+      <TotalFeeAmountReport courseList={courseList}/>
 
       <ComponentCard className="mt-15" title="Report For Inventory  ">
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">

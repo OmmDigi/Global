@@ -10,7 +10,7 @@ export const VPaymentReport = Joi.object({
 });
 
 export const VGenerateUrl = Joi.object({
-  type: Joi.string().valid("payment_report", "admission_report", "salary_sheet", "inventory_report", "monthly_payment_report", "fee_summary_report").required(),
+  type: Joi.string().valid("payment_report", "admission_report", "salary_sheet", "inventory_report", "monthly_payment_report", "fee_summary_report", "total_amount_report").required(),
   query: Joi.string().required()
 });
 
@@ -52,4 +52,12 @@ export const VFeeSummaryReport = Joi.object({
   mode : Joi.string().valid("Cash", "Online", "Both").required(),
   
   token: Joi.string().required()
+})
+
+export const VTotalPaymentReport = Joi.object({
+  course : Joi.number().optional(),
+  from_date : Joi.string().required(),
+  to_date : Joi.string().required(),
+  mode : Joi.string().optional(),
+  token : Joi.string().required()
 })

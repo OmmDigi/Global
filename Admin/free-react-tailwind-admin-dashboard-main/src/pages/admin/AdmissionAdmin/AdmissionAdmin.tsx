@@ -246,6 +246,9 @@ export default function AdmissionAdmin() {
         if (currentKey === "form_no") {
           prev.delete("form_no");
         }
+        if(currentKey === "page") {
+          prev.delete("page")
+        }
       }
       prev.set(key, value);
       return prev;
