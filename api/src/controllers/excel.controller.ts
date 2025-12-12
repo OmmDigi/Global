@@ -4280,7 +4280,7 @@ export const totalPaymentReport = asyncErrorHandler(async (req, res) => {
     stream: res,
     useStyles: true,
   });
-  const worksheet = workbook.addWorksheet("Fee Summart Report");
+  const worksheet = workbook.addWorksheet("Combind Fees Report");
 
   worksheet.getCell("A1").font = {
     size: 20,
@@ -4299,7 +4299,7 @@ export const totalPaymentReport = asyncErrorHandler(async (req, res) => {
   };
 
 
-  worksheet.getCell("A1").value = `Total Payment Report`;
+  worksheet.getCell("A1").value = `Combind Fees Report`;
   worksheet.mergeCells("A1:F1");
 
   const rowArray = ["Sr Number", "Course", "Fee Head", "Fees Collect", "", "Total"];
