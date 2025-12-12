@@ -27,7 +27,7 @@ module.exports = {
       name: "gti-essl-server",
       script: "http-server.js",
       cwd: "/var/www/Global/essl",
-      env: { TCP_NET_PORT: 6001, HOST: "127.0.0.1", NODE_ENV: "production" },
+      env: { PORT: 6001, HOST: "127.0.0.1", NODE_ENV: "production" },
     },
     // {
     //   name: "gti-essl-net-server",
