@@ -27,7 +27,7 @@ function page() {
     <>
       <AOSProvider>
         <Navbar />
-        <div   className="relative bg-gray-300 overflow-hidden top-0 z-0">
+        <div className="relative bg-gray-300 overflow-hidden top-0 z-0">
           {/* Background Image Layer */}
           <div
             className="absolute inset-0 bg-cover bg-center opacity-5"

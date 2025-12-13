@@ -26,40 +26,8 @@ import { useEffect, useState } from "react";
 import SocialMedia from "@/components/SocialMedia";
 import HomeCarousal from "@/components/HomeCarousal";
 import PhoneNumber from "@/components/PhoneNumber";
-
-const navigation1 = [
-  { name: "HOME", href: "#" },
-  { name: "ABOUT US", href: "#" },
-  { name: "OUR COURSES", href: "#" },
-  { name: "OUR SPECIALITY", href: "#" },
-];
-const navigation2 = [
-  { name: "OUR PLACEMENTS", href: "#" },
-  { name: "OUR BLOG", href: "#" },
-  { name: "OUR GALLERY", href: "#" },
-  { name: "CONTACT US", href: "#" },
-];
-const navigation3 = [
-  {
-    name: "Call for Query",
-    href: "#",
-    image: "/image/booking.png",
-    detail: "(+91)9231551285",
-  },
-  {
-    name: "OUR Schedle",
-    href: "#",
-    image: "/image/clock.png",
-    detail: "News & Events",
-  },
-  {
-    name: "Join Our Courses",
-    href: "#",
-    image: "/image/registration.png",
-    detail: "Admission Form",
-  },
-  { name: "Find US", href: "#", image: "/image/map.png", detail: "Our Branch" },
-];
+import { X } from "lucide-react";
+import dayjs from "dayjs";
 
 const responsive = {
   superLargeDesktop: {
@@ -136,50 +104,22 @@ const CustomRightArrow = ({ onClick }) => {
   );
 };
 
-const slides = [
-  // { id: "slide-7263", image: "image/caros7.png" },
-  { id: "slide-7262", image: "image/caros10.png" },
-  { id: "slide-7265", image: "image/caros11.png" },
-  { id: "slide-8058", image: "image/caros12.png" },
-  // { id: "slide-7272", image: "image/caros14.png" },
-  { id: "slide-8760", image: "image/caros15.png" },
-  { id: "slide-8660", image: "image/caros17.png" },
-];
 export default function Home() {
   const [ref, inView] = useInView({ triggerOnce: true });
   const [currentText, setCurrentText] = useState("");
   const [textIndex, setTextIndex] = useState(0);
   const careerTexts = ["Career", "Future", "Dream Job", "Path", "Opportunity"];
+  const [popup, setPopup] = useState(false);
 
-  // useEffect(() => {
-  //   const typeText = () => {
-  //     const fullText = careerTexts[textIndex];
-  //     let charIndex = 0;
-
-  //     const typeInterval = setInterval(() => {
-  //       if (charIndex <= fullText.length) {
-  //         setCurrentText(fullText.slice(0, charIndex));
-  //         charIndex++;
-  //       } else {
-  //         clearInterval(typeInterval);
-  //         setTimeout(() => {
-  //           // Erase text
-  //           const eraseInterval = setInterval(() => {
-  //             if (charIndex > 0) {
-  //               setCurrentText(fullText.slice(0, charIndex - 1));
-  //               charIndex--;
-  //             } else {
-  //               clearInterval(eraseInterval);
-  //               setTextIndex((prev) => (prev + 1) % careerTexts.length);
-  //             }
-  //           }, 10);
-  //         }, 2000);
-  //       }
-  //     }, 10);
-  //   };
-
-  //   typeText();
-  // }, [textIndex]);
+  useEffect(() => {
+    setTimeout(() => {
+      if (new Date("2025-12-14") > new Date()) {
+        setPopup(true);
+      } else {
+        setPopup(false);
+      }
+    }, 1000);
+  }, []);
 
   return (
     <>
@@ -1068,6 +1008,18 @@ export default function Home() {
         <div>Item 4</div>
       </Carousel> */}
       </AOSProvider>
+      {popup && (
+        <div
+          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-100 
+        h-100 z-50 shadow-lg border-rounded-lg"
+        >
+          <X
+            className="absolute top-0 right-0"
+            onClick={() => setPopup(false)}
+          />
+          <img src="/image/popup/popup.jpeg" alt="popup" />
+        </div>
+      )}
     </>
   );
 }
