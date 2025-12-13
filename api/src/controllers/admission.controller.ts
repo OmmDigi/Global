@@ -10,16 +10,21 @@ import { verifyToken } from "../services/jwt";
 import { createNewUser } from "../services/user.service";
 import { CustomRequest, IUserToken } from "../types";
 import { ApiResponse } from "../utils/ApiResponse";
+import { doTransition } from "../utils/doTransition";
 import { ErrorHandler } from "../utils/ErrorHandler";
 import { generatePlaceholders } from "../utils/generatePlaceholders";
 import { getAuthToken } from "../utils/getAuthToken";
+import { logFeeHeadDelete } from "../utils/logFeeHeadDelete";
 import { parsePagination } from "../utils/parsePagination";
 import {
+  VChangeStudentAdmissionCourse,
   VCreateAdmission,
+  VDeleteSingleAdmission,
   VGetSessionCourseHeadPrice,
   VGetSingleAdmission,
   VGetSingleAdmissionForm,
   VModifyAdmissionFeeHead,
+  VPromotAdmisson,
   VUpdateAdmission,
   VUpdateAdmissionStatus,
   VUpdateDeclarationStatus,
@@ -57,7 +62,7 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
     username: null,
   };
 
-  let admissionDate : string | null = null;
+  let admissionDate: string | null = null;
 
   try {
     await client.query("BEGIN");
@@ -319,24 +324,68 @@ export const getSingleAdmissionFormData = asyncErrorHandler(
 
     const { rows, rowCount } = await pool.query(
       `
-    SELECT
-      ff.id AS form_id,
-      ff.student_id,
-      (
-        SELECT admission_details FROM admission_data 
-        WHERE student_id = ff.student_id
-        ORDER BY id DESC
-        LIMIT 1
-      ) as admission_details
-    FROM fillup_forms ff
-    WHERE ff.id = $1
+      SELECT
+        ff.id AS form_id,
+        ff.student_id,
+        ec.course_id,
+        ec.batch_id,
+        ec.session_id,
+
+        JSON_AGG(
+          JSON_BUILD_OBJECT (
+            'form_id', ad.form_id,
+            'admission_details', ad.admission_details
+          )
+        ) admission_data_details
+        /*(
+          SELECT admission_details FROM admission_data 
+          WHERE student_id = ff.student_id
+          ORDER BY id DESC
+          LIMIT 1
+        ) as admission_details*/
+      FROM fillup_forms ff
+
+      LEFT JOIN enrolled_courses ec
+      ON ec.form_id = ff.id
+
+      LEFT JOIN admission_data ad
+      ON ad.student_id = ff.student_id
+
+      WHERE ff.id = $1
+
+      GROUP BY ec.id, ff.id
     `,
       [value.form_id]
     );
 
     if (rowCount === 0) throw new ErrorHandler(400, "No Form Data Found");
 
-    res.status(200).json(new ApiResponse(200, "Admision Details", rows[0]));
+    // find the admission data related to current form id
+    const foundAdmissionDetails = rows[0].admission_data_details.find(
+      (item: any) => item.form_id == value.form_id
+    );
+
+    const dataToReturn = {
+      form_id: rows[0].form_id,
+      student_id: rows[0].student_id,
+      course_id: rows[0].course_id,
+      batch_id: rows[0].batch_id,
+      session_id: rows[0].session_id,
+      admission_details: "",
+    };
+
+    // if not found mean the new admision detila could not saved so return the first one
+    if (!foundAdmissionDetails) {
+      dataToReturn.admission_details =
+        rows[0].admission_data_details[0].admission_details;
+    } else {
+      // else retunr the exec one
+      dataToReturn.admission_details = foundAdmissionDetails.admission_details;
+    }
+
+    res
+      .status(200)
+      .json(new ApiResponse(200, "Admision Details", dataToReturn));
   }
 );
 
@@ -443,7 +492,7 @@ export const updateAdmissionFeeHeadAmount = asyncErrorHandler(
       req.body ?? {}
     );
     if (error) throw new ErrorHandler(400, error.message);
-    
+
     const client = await pool.connect();
 
     try {
@@ -620,3 +669,142 @@ export const modifyFeeHeadOfAdmission = asyncErrorHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, "Admission Fee Head Successfully Modified"));
 });
+
+export const promotAdmission = asyncErrorHandler(async (req : CustomRequest, res) => {
+  const { error, value } = VPromotAdmisson.validate(req.body ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
+
+  const client = await pool.connect();
+
+  try {
+    // get the coures info with course_fee_structure
+    const courseInfo = await client.query(
+      `
+      SELECT 
+        c.*,
+        COALESCE(
+            (
+                SELECT JSON_AGG(
+                    JSON_BUILD_OBJECT(
+                        'fee_head_id', cfs.fee_head_id,
+                        'fee_head_name', cfh.name,
+                        'amount', cfs.amount,
+                        'min_amount', cfs.min_amount,
+                        'required', cfs.required
+                    )
+                    ORDER BY cfs.id
+                )
+                FROM course_fee_structure cfs
+                LEFT JOIN course_fee_head cfh ON cfs.fee_head_id = cfh.id
+                  WHERE cfs.course_id = c.id
+              ),
+              '[]'::json
+          ) AS fee_structures
+      FROM course c
+      WHERE c.id = $1
+      GROUP BY c.id;
+       `,
+      [value.course_id]
+    );
+
+    if (courseInfo.rowCount === 0)
+      throw new ErrorHandler(404, "No course found");
+
+    const fee_structure = courseInfo.rows[0].fee_structures as {
+      fee_head_id: number;
+      fee_head_name: string;
+      amount: number;
+      min_amount: number;
+      required: boolean;
+    }[];
+
+    for (const id of value.student_ids) {
+      // do the admission
+      await doAdmission({
+        student_id: id,
+        client,
+        admission_data: undefined,
+        course_id: value.course_id,
+        batch_id: value.batch_id,
+        fee_structure,
+        admissionDate: null,
+        session_id: value.session_id,
+        declaration_status: value?.declaration_status,
+      });
+    }
+
+    await client.query(
+      "INSERT INTO copy_move_logs (user_id, data, action_type) VALUES ($1, $2, $3)",
+      [req.user_info?.id, {student_ids : value.student_ids}, "copy"]
+    );
+
+    res
+      .status(201)
+      .json(new ApiResponse(201, "Successfully promot the admission"));
+  } catch (error: any) {
+    await client.query("ROLLBACK");
+    throw new ErrorHandler(400, error.message);
+  } finally {
+    client.release();
+  }
+});
+
+export const deleteSingleFeeHeadFromSingleAdmisson = asyncErrorHandler(
+  async (req: CustomRequest, res) => {
+    const { error, value } = VDeleteSingleAdmission.validate(req.params ?? {});
+    if (error) throw new ErrorHandler(400, error.message);
+
+    await doTransition(async (client) => {
+      const form_fee_structure = await client.query(
+        "DELETE FROM form_fee_structure WHERE form_id = $1 AND fee_head_id = $2 RETURNING *",
+        [value.form_id, value.fee_head_id]
+      );
+
+      const payments = await client.query(
+        "DELETE FROM payments WHERE form_id = $1 AND fee_head_id = $2 RETURNING *",
+        [value.form_id, value.fee_head_id]
+      );
+
+      await logFeeHeadDelete({
+        formId: value.form_id,
+        feeHeadId: value.fee_head_id,
+        deletedById: req.user_info?.id as any,
+        data: {
+          form_fee_structure: form_fee_structure.rows,
+          payments: payments.rows,
+        },
+      });
+    });
+
+    res.status(200).json(new ApiResponse(200, "Successfully removed"));
+  }
+);
+
+export const changeStudentAdmisionCourse = asyncErrorHandler(
+  async (req: CustomRequest, res) => {
+    const { error, value } = VChangeStudentAdmissionCourse.validate(
+      req.body ?? {}
+    );
+    if (error) throw new ErrorHandler(400, error.message);
+
+    const uniqueFormIds = [...new Set<number>(value.form_ids)];
+
+    const placeholder = uniqueFormIds.map(
+      (_: any, index: number) => `$${index + 3 + 1}`
+    );
+
+    await doTransition(async (client) => {
+      await client.query(
+        `UPDATE enrolled_courses SET course_id = $1, batch_id = $2, session_id = $3 WHERE form_id IN (${placeholder})`,
+        [value.course_id, value.batch_id, value.session_id, ...uniqueFormIds]
+      );
+
+      await client.query(
+        "INSERT INTO copy_move_logs (user_id, data, action_type) VALUES ($1, $2, $3)",
+        [req.user_info?.id, {form_ids : uniqueFormIds}, "move"]
+      );
+    });
+
+    res.status(200).json(new ApiResponse(200, "Successfully updated!"));
+  }
+);

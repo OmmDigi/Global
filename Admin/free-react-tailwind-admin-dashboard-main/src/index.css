@@ -167,7 +167,6 @@ layer(base);
   --z-index-999999: 999999;
 }
 
-
 /* Disable scroll behavior on number inputs */
 input[type="number"] {
   -moz-appearance: textfield; /* For Firefox */
@@ -180,8 +179,6 @@ input[type="number"]::-webkit-outer-spin-button {
 input[type="number"]:focus {
   pointer-events: none; /* Prevent interactions like scrolling when focused */
 }
- 
- 
 
 /*
   The default border color has changed to `currentColor` in Tailwind CSS v4,
@@ -793,4 +790,27 @@ span.flatpickr-weekday,
 
 .simplebar-scrollbar.simplebar-visible:before {
   @apply opacity-100;
+}
+
+.custom_input_color input {
+  color: #000000 !important;
+}
+
+.custom_input_color textarea {
+  color: #000000 !important;
+}
+
+.custom_input_color select {
+  color: #000000 !important;
+}
+
+.custom_input_color option {
+  color: #000000 !important;
+}
+.custom_input_color label {
+  color: #000000 !important;
+}
+
+.custom_input_color table {
+  color: #000000 !important;
 }

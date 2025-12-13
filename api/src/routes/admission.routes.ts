@@ -1,7 +1,9 @@
 import { Router } from "express";
 import {
   acceptDeclarationStatus,
+  changeStudentAdmisionCourse,
   createAdmission,
+  deleteSingleFeeHeadFromSingleAdmisson,
   getAdmissionFeeHeadHistoryList,
   getAdmissionFeeHeadPrice,
   // downloadDeclarationStatus,
@@ -9,6 +11,7 @@ import {
   getSingleAdmission,
   getSingleAdmissionFormData,
   modifyFeeHeadOfAdmission,
+  promotAdmission,
   updateAdmissionData,
   updateAdmissionFeeHeadAmount,
   updateAdmissionStatus,
@@ -21,6 +24,8 @@ export const admissionRoute = Router();
 
 admissionRoute
   .post("/create", createAdmission)
+  .post("/promot", isAuthorized(6), promotAdmission)
+  .put("/change-course", isAuthorized(6), changeStudentAdmisionCourse)
   .get("/", isAuthorized(6), getAdmissionList)
   // .get("/excel", isAuthorized(6), getAdmissionExcelReport)
   .patch("/", isAuthorized(6), updateAdmissionStatus)
@@ -33,4 +38,5 @@ admissionRoute
   .post("/amount", isAuthorized(6), updateAdmissionFeeHeadAmount)
   .post("/fee-head", isAuthorized(6), modifyFeeHeadOfAdmission)
   .get("/:form_id", isAuthorized(6), getSingleAdmission)
+  .delete("/:form_id/:fee_head_id", isAuthorized(6), deleteSingleFeeHeadFromSingleAdmisson)
 

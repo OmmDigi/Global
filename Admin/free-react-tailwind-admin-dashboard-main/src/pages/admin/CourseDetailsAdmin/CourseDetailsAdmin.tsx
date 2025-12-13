@@ -5,7 +5,7 @@ import { useParams, useSearchParams } from "react-router-dom";
 import ComponentCard from "../../../components/common/ComponentCard";
 import Label from "../../../components/form/Label";
 import { message } from "antd";
-import { getFetcher, postFetcher } from "../../../api/fatcher";
+import { deleteFetcher, getFetcher, postFetcher } from "../../../api/fatcher";
 import useSWRMutation from "swr/mutation";
 import useSWR from "swr";
 import BasicTableCourseDetailsAdmin from "../../../components/tables/BasicTables/BasicTableCourseDetailsAdmin";
@@ -14,13 +14,18 @@ import dayjs from "dayjs";
 import DatePicker from "react-datepicker";
 import { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
+import { Loader, Trash2 } from "lucide-react";
 // import { ReceiptIndianRupee } from "lucide-react";
 // import { log } from "console";
+
+const year = new Date().getFullYear();
 
 export default function CourseDetailsAdmin() {
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
   const [isPending, startTransition] = useTransition();
+
+  const whilchFeeHeadDeleting = useRef(-1);
 
   const [searchParams] = useSearchParams();
 
@@ -86,7 +91,10 @@ export default function CourseDetailsAdmin() {
     mutate: refetch,
   } = useSWR(`api/v1/admission/${id}?${searchParams.toString()}`, getFetcher);
 
-  const { data: feeHeadList } = useSWR(`api/v1/course/fee-head?${searchParams.toString()}`, getFetcher);
+  const { data: feeHeadList } = useSWR(
+    `api/v1/course/fee-head?${searchParams.toString()}`,
+    getFetcher
+  );
 
   //  if(!feesStructure?.data?.student_name){
   //     messageApi.open({
@@ -104,6 +112,13 @@ export default function CourseDetailsAdmin() {
     `api/v1/admission/fee-head`,
     (url, { arg }) => postFetcher(url, arg)
   );
+
+  const { trigger: deleteFeeHead, isMutating } = useSWRMutation(
+    `api/v1/admission`,
+    (url, { arg }: { arg: { formid: number; feeheadid: number } }) =>
+      deleteFetcher(`${url}/${arg.formid}/${arg.feeheadid}`) // arg contains the id
+  );
+
   //
   if (feesStructureLoading) {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
@@ -156,18 +171,18 @@ export default function CourseDetailsAdmin() {
   const handleSearchByForm = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    
+
     const searchBy = formData.get("search_by");
     const searchByValue = formData.get("search_by_value")?.toString();
 
-    if(!searchByValue || searchByValue.trim() == "") {
-      return alert("Enter a form id to search")
+    if (!searchByValue || searchByValue.trim() == "") {
+      return alert("Enter a form id to search");
     }
 
     const split1 = searchByValue.split("/");
     const split_value = split1[split1.length - 1];
 
-    if(searchBy?.toString() === "form_id") {
+    if (searchBy?.toString() === "form_id") {
       navigate(`/courseDetailsAdmin/${split_value}`);
     }
   };
@@ -206,6 +221,7 @@ export default function CourseDetailsAdmin() {
 
   const handleSubmit2 = (e: any) => {
     e.preventDefault();
+
     const fee_structure_info = feesStructure?.data?.fee_structure_info?.map(
       (item: any) => ({
         fee_head_id: item.fee_head_id,
@@ -386,7 +402,7 @@ export default function CourseDetailsAdmin() {
       [fee.fee_head_id]: fee.payment_date ? new Date(fee.payment_date) : null,
     }));
 
-    setRemarksText((prev : any) => ({...prev, [fee.fee_head_id]: fee.remark}))
+    setRemarksText((prev: any) => ({ ...prev, [fee.fee_head_id]: fee.remark }));
 
     // for Monthly fees only — set month picker
     if ((fee.fee_head_id == 4 || fee.fee_head_id == 5) && fee.month) {
@@ -449,6 +465,34 @@ export default function CourseDetailsAdmin() {
     });
   };
 
+  const handleRemoveFeeHead = async (fee_head_id: number) => {
+    if (
+      !confirm(
+        "After removing this fee head all payment list related to this fee head will remove. are you sure you want to continue ?"
+      )
+    )
+      return;
+
+    whilchFeeHeadDeleting.current = fee_head_id;
+    try {
+      const response = await deleteFeeHead({
+        formid: parseInt(id ?? "0"),
+        feeheadid: fee_head_id,
+      });
+      messageApi.open({
+        type: "success",
+        content: response?.message,
+      });
+      refetch();
+    } catch (error) {
+      const err = error as AxiosError<any>;
+      messageApi.open({
+        type: "error",
+        content: err.response?.data?.message,
+      });
+    }
+  };
+
   const fees_structure_table = feesStructure?.data?.payments_history;
   return (
     <>
@@ -472,7 +516,10 @@ export default function CourseDetailsAdmin() {
           <label className="block text-sm text-start text-gray-500 mb-1">
             Search By
           </label>
-          <select name="search_by" className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md">
+          <select
+            name="search_by"
+            className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md"
+          >
             <option value="form_id">Form Id</option>
             {/* <option value="name">Name</option> */}
           </select>
@@ -569,8 +616,9 @@ export default function CourseDetailsAdmin() {
                 <Label htmlFor="inputTwo">
                   Total Collected Fee :{" "}
                   <span className="font-semibold text-green-500">
-                    {parseFloat(feesStructure?.data?.course_fee ?? "0.00") -
-                      parseFloat(feesStructure?.data?.due_amount ?? "0.00")}
+                    {/* {parseFloat(feesStructure?.data?.course_fee ?? "0.00") -
+                      parseFloat(feesStructure?.data?.due_amount ?? "0.00")} */}
+                      {feesStructure?.data?.total_collection}
                   </span>
                 </Label>
               </div>
@@ -595,6 +643,11 @@ export default function CourseDetailsAdmin() {
               ) : (
                 ""
               )}
+              <div>
+                <Label htmlFor="inputTwo">
+                  Admission Date : {feesStructure?.data?.admission_date}
+                </Label>
+              </div>
             </div>
             <div className="flex flex-wrap justify-center items-center gap-6"></div>
           </div>
@@ -742,7 +795,25 @@ export default function CourseDetailsAdmin() {
                                 : ""
                             }`}
                           >
-                            <div className="flex justify-between gap-1">
+                            <div className="flex justify-between gap-3.5">
+                              <button
+                                disabled={
+                                  whilchFeeHeadDeleting.current ==
+                                    item.fee_head_id && isMutating
+                                }
+                                onClick={() =>
+                                  handleRemoveFeeHead(item.fee_head_id)
+                                }
+                                type="button"
+                              >
+                                {whilchFeeHeadDeleting.current ==
+                                  item.fee_head_id && isMutating ? (
+                                  <Loader className="animate-spin" />
+                                ) : (
+                                  <Trash2 className="text-red-500" size={20} />
+                                )}
+                              </button>
+
                               <div className="flex flex-col w-full gap-1">
                                 <label className="flex-1 text-xl">
                                   {index + 1}. {item.fee_head_name}
@@ -774,7 +845,7 @@ export default function CourseDetailsAdmin() {
                                   </div>
                                 </div>
                               </div>
-                              <div className=" mr-1">
+                              <div className="mr-1">
                                 <select
                                   name="payment_mode"
                                   value={
@@ -795,13 +866,12 @@ export default function CourseDetailsAdmin() {
                                 </select>
                               </div>
                               {item.fee_head_id == 4 ||
-                              item.fee_head_id == 5 ? (
-                                ""
-                              ) : (
-                                <div className=" mr-2 text-gray-500 flex flex-col dark:text-gray-400">
+                              item.fee_head_id == 5 ? null : (
+                                <div className="mr-2 text-gray-500 flex flex-col dark:text-gray-400">
                                   <DatePicker
                                     selected={
-                                      selectedDates[item.fee_head_id] || null
+                                      selectedDates[item.fee_head_id] ||
+                                      new Date(`${year}-01-01`)
                                     }
                                     onChange={(date: Date | null) => {
                                       setSelectedDates((prev) => ({
@@ -838,7 +908,7 @@ export default function CourseDetailsAdmin() {
                                       <DatePicker
                                         selected={
                                           selectedDates[item.fee_head_id] ||
-                                          null
+                                          new Date(`${year}-01-01`)
                                         }
                                         onChange={(date: Date | null) => {
                                           setSelectedDates((prev) => ({

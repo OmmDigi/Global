@@ -550,3 +550,16 @@ CREATE TABLE IF NOT EXISTS enquiry (
     phone VARCHAR(20),
     message TEXT
 );
+
+
+CREATE TABLE IF NOT EXISTS copy_move_logs (
+   id SERIAL PRIMARY KEY,
+
+   user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+
+   data JSONB,
+
+   action_type VARCHAR(20),
+
+   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

@@ -4,6 +4,7 @@ import { ErrorHandler } from "../utils/ErrorHandler";
 import { parsePagination } from "../utils/parsePagination";
 import { Request } from "express";
 import { VGetAdmissionList } from "../validator/admission.validator";
+import { ADMISSION_FEE_HEAD_ID, BSS_FEE_HEAD_ID, LATE_FINE_FEE_HEAD_ID, MONTHLY_PAYMENT_HEAD_ID } from "../constant";
 
 type IFillUpForm = {
   student_id: number;
@@ -166,9 +167,9 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
 
   if (value.name) {
     if(filter === "") {
-      filter = `WHERE u.name = $${placeholder++}`;
+      filter = `WHERE u.name ILIKE '%' || $${placeholder++} || '%'`;
     } else {
-      filter += ` AND u.name = $${placeholder++}`;
+      filter += ` AND u.name ILIKE '%' || $${placeholder++} || '%'`;
     }
     filterValues.push(value.name);
   }
@@ -182,26 +183,62 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
     filterValues.push(value.email);
   }
 
-  let feeHeadIdFilter = "";
+  let feeHeadIdFilter = `WHERE fee_head_id != ${LATE_FINE_FEE_HEAD_ID}`;
   if(value.fee_head_id) {
-    feeHeadIdFilter += `AND fee_head_id = $${placeholder++}`;
+    feeHeadIdFilter += ` AND fee_head_id = $${placeholder++}`;
     filterValues.push(value.fee_head_id);
   }
 
   const query = `
+
+      WITH total_payment_info AS (
+        SELECT
+          p.form_id,
+          COALESCE(SUM(p.amount) FILTER (WHERE p.mode != 'Discount' AND p.fee_head_id != ${LATE_FINE_FEE_HEAD_ID}), 0) AS total_collection_without_late_fee,
+          COALESCE(SUM(p.amount) FILTER (WHERE p.mode != 'Discount'), 0) AS total_collection_with_late_fee,
+          COALESCE(SUM(p.amount) FILTER (WHERE p.mode = 'Discount'), 0) AS total_discount
+        FROM payments p
+
+        WHERE p.status = 2
+
+        GROUP BY p.form_id
+      ),
+
+      total_fee_calcluction AS (
+        SELECT
+          ffs.form_id,
+          COALESCE(SUM(ffs.amount), 0.00) AS course_fee,
+          COALESCE(SUM(ffs.amount), 0) - COALESCE(MAX(tpi.total_collection_without_late_fee), 0.00) AS due_amount,
+          COALESCE(MAX(tpi.total_discount), 0.00) AS total_discount,
+          COALESCE(MAX(tpi.total_collection_with_late_fee), 0.00) AS total_collection
+        FROM form_fee_structure ffs
+
+        LEFT JOIN total_payment_info tpi
+        ON tpi.form_id = ffs.form_id
+
+        ${feeHeadIdFilter}
+
+        GROUP BY ffs.form_id
+      )
+
       SELECT
         ff.id AS form_id,
         ff.form_name,
         u.name AS student_name,
         u.image AS student_image,
         c.name AS course_name,
-        
-        (
+        MAX(tfc.course_fee) AS course_fee,
+        MAX(tfc.due_amount) AS due_amount,
+        MAX(tfc.total_collection) AS total_collection,
+        ff.student_id,
+
+        /* (
           COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id ${feeHeadIdFilter}), 0.00) - 
           COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND mode = 'Discount' AND status = 2 ${feeHeadIdFilter}), 0.00)
         ) AS course_fee,
 
-        COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id ${feeHeadIdFilter}), 0.00) - COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND status = 2 ${feeHeadIdFilter}), 0.00) AS due_amount,
+        COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id ${feeHeadIdFilter}), 0.00) - COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND status = 2 ${feeHeadIdFilter}), 0.00) AS due_amount, */
+  
         b.month_name AS batch_name,
         CASE WHEN ff.status = 2 THEN true ELSE false END AS form_status
         -- JSON_AGG(JSON_BUILD_OBJECT('batch_id', b.id, 'batch_name', b.month_name)) AS batches
@@ -218,6 +255,9 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
   
       LEFT JOIN course c
       ON c.id = ec.course_id
+
+      LEFT JOIN total_fee_calcluction tfc
+      ON tfc.form_id = ff.id
 
      ${filter}
   
@@ -249,7 +289,7 @@ export const getSingleAdmissionData = async (
       basicQueryFilterValues.push(student_id);
     }
 
-    let feeHeadIdFilter = "";
+    let feeHeadIdFilter = `WHERE fee_head_id != ${LATE_FINE_FEE_HEAD_ID}`;
     if(fee_head_id) {
       feeHeadIdFilter += ` AND fee_head_id = $${basicQueryFilterPlaceNum++}`;
       basicQueryFilterValues.push(fee_head_id);
@@ -257,6 +297,35 @@ export const getSingleAdmissionData = async (
     
     const { rows: basicInfo } = await client.query(
       `
+         WITH total_payment_info AS (
+          SELECT
+            p.form_id,
+            COALESCE(SUM(p.amount) FILTER (WHERE p.mode != 'Discount' AND p.fee_head_id != ${LATE_FINE_FEE_HEAD_ID}), 0) AS total_collection_without_late_fee,
+            COALESCE(SUM(p.amount) FILTER (WHERE p.mode != 'Discount'), 0) AS total_collection_with_late_fee,
+            COALESCE(SUM(p.amount) FILTER (WHERE p.mode = 'Discount'), 0) AS total_discount
+          FROM payments p
+
+          WHERE p.status = 2
+
+          GROUP BY p.form_id
+         ),
+
+         total_fee_calcluction AS (
+           SELECT
+            ffs.form_id,
+            COALESCE(SUM(ffs.amount), 0.00) AS course_fee,
+            COALESCE(SUM(ffs.amount), 0) - COALESCE(MAX(tpi.total_collection_without_late_fee), 0.00) AS due_amount,
+            COALESCE(MAX(tpi.total_discount), 0.00) AS total_discount,
+            COALESCE(MAX(tpi.total_collection_with_late_fee), 0.00) AS total_collection
+           FROM form_fee_structure ffs
+
+           LEFT JOIN total_payment_info tpi
+           ON tpi.form_id = ffs.form_id
+
+           ${feeHeadIdFilter}
+
+           GROUP BY ffs.form_id
+         )
          SELECT
             ff.id AS form_id,
             ff.form_name,
@@ -269,9 +338,14 @@ export const getSingleAdmissionData = async (
             (c.duration || ' ' || c.duration_name) AS duration,
             b.month_name AS batch_name,
             s.name AS session_name,
-            COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id ${feeHeadIdFilter}), 0.00) AS course_fee,
-            COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id ${feeHeadIdFilter}), 0.00) - COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND status = 2 ${feeHeadIdFilter}), 0.00) AS due_amount,
-            COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND status = 2 AND mode = 'Discount' ${feeHeadIdFilter}), 0.00) AS total_discount
+            TO_CHAR(ff.admission_date, 'DD FMMonth YYYY') AS admission_date,
+            -- COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id AND fee_head_id != ${LATE_FINE_FEE_HEAD_ID} ${feeHeadIdFilter}), 0.00) AS course_fee,
+            -- COALESCE((SELECT SUM(amount) FROM form_fee_structure WHERE form_id = ff.id AND fee_head_id != ${LATE_FINE_FEE_HEAD_ID} ${feeHeadIdFilter}), 0.00) - COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND status = 2 AND fee_head_id != ${LATE_FINE_FEE_HEAD_ID} ${feeHeadIdFilter}), 0.00) AS due_amount,
+            -- COALESCE((SELECT SUM(amount) FROM payments WHERE form_id = ff.id AND status = 2 AND mode = 'Discount' AND fee_head_id != ${LATE_FINE_FEE_HEAD_ID} ${feeHeadIdFilter}), 0.00) AS total_discount
+            tfc.course_fee,
+            tfc.due_amount,
+            tfc.total_discount,
+            tfc.total_collection
           FROM fillup_forms ff
   
           LEFT JOIN users u
@@ -288,8 +362,13 @@ export const getSingleAdmissionData = async (
   
           LEFT JOIN session s
           ON s.id = ec.session_id
+
+          LEFT JOIN total_fee_calcluction tfc
+          ON tfc.form_id = ff.id
   
           ${basicQueryFilter}
+
+          
         `,
       basicQueryFilterValues
     );
@@ -366,7 +445,20 @@ export const getSingleAdmissionData = async (
 
         ${paymentListFilter}
           
-        ORDER BY p.payment_date, cfh.position ASC
+        --ORDER BY p.payment_date, cfh.position ASC
+        ORDER BY
+        CASE
+          WHEN cfh.id = ${ADMISSION_FEE_HEAD_ID} THEN 1
+          WHEN cfh.id IN (${MONTHLY_PAYMENT_HEAD_ID}, ${LATE_FINE_FEE_HEAD_ID}) THEN 2
+          WHEN cfh.id = ${BSS_FEE_HEAD_ID} THEN 3
+          ELSE 4
+        END,
+        CASE
+          WHEN cfh.id IN (${MONTHLY_PAYMENT_HEAD_ID}, ${LATE_FINE_FEE_HEAD_ID}) THEN p.month
+          ELSE NULL
+        END,
+        --p.payment_date,
+        cfh.position ASC;
       `,
       paymentListValues
     );

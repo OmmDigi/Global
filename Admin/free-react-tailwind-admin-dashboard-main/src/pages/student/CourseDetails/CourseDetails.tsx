@@ -250,6 +250,9 @@ export default function CourseDetails() {
       {feesStructure?.data?.declaration_status == 0 ? null : (
         <>
           <PageBreadcrumb pageTitle="Course Details" />
+          <h1 className="text-gray-800 dark:text-amber-50 text-3xl mb-5">
+            {feesStructure?.data?.form_name}
+          </h1>
           <div className=" max-w-full overflow-x-auto">
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-[35%_65%]">
               <div className="space-y-6  ">
@@ -345,6 +348,11 @@ export default function CourseDetails() {
                         ""
                       )}
                     </div>
+                     <div>
+                        <Label htmlFor="inputTwo">
+                          Admission Date : {feesStructure?.data?.admission_date}
+                        </Label>
+                      </div>
                     <div className="flex flex-wrap justify-center items-center gap-6"></div>
                   </div>
                 </ComponentCard>

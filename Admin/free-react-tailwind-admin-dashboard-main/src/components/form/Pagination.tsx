@@ -33,6 +33,8 @@ const Pagination: React.FC<PaginationProps> = ({ count, onChange, length }) => {
     }
   };
 
+  const nextBtnDisiable = parseInt(searchParams.get("limit") ?? "10") == -1;
+
   return (
     <div className="flex items-center space-x-4">
       <button
@@ -51,10 +53,10 @@ const Pagination: React.FC<PaginationProps> = ({ count, onChange, length }) => {
       </span>
 
       <button
-        disabled={length < 10}
+        disabled={length < 10 || nextBtnDisiable}
         onClick={handleNext}
         className={`px-4 py-2  ${
-          length < 10 ? "bg-gray-500" : "bg-blue-500"
+          length < 10 || nextBtnDisiable ? "bg-gray-500" : "bg-blue-500"
         } text-white rounded`}
       >
         Next
