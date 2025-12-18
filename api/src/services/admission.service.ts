@@ -18,7 +18,7 @@ type IFillUpForm = {
     required: boolean;
   }[];
   admission_data?: string;
-  admissionDate:string | null
+  admissionDate: string | null
   client?: PoolClient;
   declaration_status?: number;
 };
@@ -37,11 +37,9 @@ export const doAdmission = async (data: IFillUpForm) => {
 
   const { rows } = await pgClient.query(
     `
-     INSERT INTO fillup_forms (form_name, student_id, admission_date ${
-       data.declaration_status !== undefined ? ",declaration_status" : ""
-     })
-     VALUES ($1 || nextval('${fillup_form_seq_constant_key}')::TEXT, $2, TO_CHAR($3::date, 'YYYY-MM-DD')::date ${
-      data.declaration_status !== undefined ? ",$4" : ""
+     INSERT INTO fillup_forms (form_name, student_id, admission_date ${data.declaration_status !== undefined ? ",declaration_status" : ""
+    })
+     VALUES ($1 || nextval('${fillup_form_seq_constant_key}')::TEXT, $2, TO_CHAR($3::date, 'YYYY-MM-DD')::date ${data.declaration_status !== undefined ? ",$4" : ""
     })
      RETURNING form_name, id
     `,
@@ -63,8 +61,7 @@ export const doAdmission = async (data: IFillUpForm) => {
   const placeholder = data.fee_structure
     .map(
       (_, index) =>
-        `($${index * 5 + 1}, $${index * 5 + 2}, $${index * 5 + 3}, $${
-          index * 5 + 4
+        `($${index * 5 + 1}, $${index * 5 + 2}, $${index * 5 + 3}, $${index * 5 + 4
         }, $${index * 5 + 5})`
     )
     .join(", ");
@@ -148,7 +145,7 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
   }
 
   if (value.form_no) {
-    if(filter === "") {
+    if (filter === "") {
       filter = `WHERE ff.form_name = $${placeholder++}`;
     } else {
       filter += ` AND ff.form_name = $${placeholder++}`;
@@ -157,7 +154,7 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
   }
 
   if (value.ph_no) {
-    if(filter === "") {
+    if (filter === "") {
       filter = `WHERE u.ph_no = $${placeholder++}`;
     } else {
       filter += ` AND u.ph_no = $${placeholder++}`;
@@ -166,7 +163,7 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
   }
 
   if (value.name) {
-    if(filter === "") {
+    if (filter === "") {
       filter = `WHERE u.name ILIKE '%' || $${placeholder++} || '%'`;
     } else {
       filter += ` AND u.name ILIKE '%' || $${placeholder++} || '%'`;
@@ -175,7 +172,7 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
   }
 
   if (value.email) {
-    if(filter === "") {
+    if (filter === "") {
       filter = `WHERE u.email = $${placeholder++}`;
     } else {
       filter += ` AND u.email = $${placeholder++}`;
@@ -184,8 +181,13 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
   }
 
   let feeHeadIdFilter = `WHERE fee_head_id != ${LATE_FINE_FEE_HEAD_ID}`;
-  if(value.fee_head_id) {
+  let paymentTableFilter = "WHERE p.status = 2";
+
+  if (value.fee_head_id) {
     feeHeadIdFilter += ` AND fee_head_id = $${placeholder++}`;
+    filterValues.push(value.fee_head_id);
+
+    paymentTableFilter += ` AND fee_head_id = $${placeholder++}`;
     filterValues.push(value.fee_head_id);
   }
 
@@ -199,7 +201,7 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
           COALESCE(SUM(p.amount) FILTER (WHERE p.mode = 'Discount'), 0) AS total_discount
         FROM payments p
 
-        WHERE p.status = 2
+        ${paymentTableFilter}
 
         GROUP BY p.form_id
       ),
@@ -273,7 +275,7 @@ export const getSingleAdmissionData = async (
   form_id: number,
   student_id?: number,
   request_user_id?: number,
-  fee_head_id?:number
+  fee_head_id?: number
 ) => {
   const client = await pool.connect();
 
@@ -282,19 +284,24 @@ export const getSingleAdmissionData = async (
 
     let basicQueryFilter = "WHERE ff.id = $1";
     let basicQueryFilterPlaceNum = 2;
-    const basicQueryFilterValues : any[] = [form_id];
+    const basicQueryFilterValues: any[] = [form_id];
 
-    if(student_id) {
+    if (student_id) {
       basicQueryFilter += ` AND ff.student_id = $${basicQueryFilterPlaceNum++} AND ff.status = 2`;
       basicQueryFilterValues.push(student_id);
     }
 
     let feeHeadIdFilter = `WHERE fee_head_id != ${LATE_FINE_FEE_HEAD_ID}`;
-    if(fee_head_id) {
+    let paymentTableFilter = "WHERE p.status = 2";
+    if (fee_head_id) {
       feeHeadIdFilter += ` AND fee_head_id = $${basicQueryFilterPlaceNum++}`;
       basicQueryFilterValues.push(fee_head_id);
+
+      paymentTableFilter += ` AND fee_head_id = $${basicQueryFilterPlaceNum++}`;
+      basicQueryFilterValues.push(fee_head_id);
     }
-    
+
+
     const { rows: basicInfo } = await client.query(
       `
          WITH total_payment_info AS (
@@ -305,7 +312,7 @@ export const getSingleAdmissionData = async (
             COALESCE(SUM(p.amount) FILTER (WHERE p.mode = 'Discount'), 0) AS total_discount
           FROM payments p
 
-          WHERE p.status = 2
+          ${paymentTableFilter}
 
           GROUP BY p.form_id
          ),
@@ -375,9 +382,9 @@ export const getSingleAdmissionData = async (
 
     let feeStructureInfoFilter = "WHERE ffs.form_id = $1";
     let feeStructureInfoFilterNum = 2;
-    const feeStrucInfoFilterValues : any[] = [form_id];
+    const feeStrucInfoFilterValues: any[] = [form_id];
 
-    if(fee_head_id) {
+    if (fee_head_id) {
       feeStructureInfoFilter += ` AND ffs.fee_head_id = $${feeStructureInfoFilterNum++}`
       feeStrucInfoFilterValues.push(fee_head_id)
     }
@@ -413,9 +420,9 @@ export const getSingleAdmissionData = async (
 
     let paymentListFilter = "WHERE p.form_id = $2 AND p.status = 2";
     let paymentListPlaceholerNum = 3;
-    let paymentListValues : any[] = [request_user_id, form_id];
+    let paymentListValues: any[] = [request_user_id, form_id];
 
-    if(fee_head_id) {
+    if (fee_head_id) {
       paymentListFilter += ` AND p.fee_head_id = $${paymentListPlaceholerNum++}`;
       paymentListValues.push(fee_head_id)
     }

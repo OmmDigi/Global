@@ -475,7 +475,21 @@ export const updateCourse = asyncErrorHandler(async (req, res) => {
   }
 });
 
+
 export const getCourseWithBatchSession = asyncErrorHandler(async (req, res) => {
+  let sessionFilter = "WHERE b2.course_id = c.id AND s.id IS NOT NULL";
+  let batchFilter = "WHERE b3.course_id = c.id AND b3.id IS NOT NULL";
+  let courseFilter = "WHERE 1=1";
+
+  const crmHostUrl = process.env.CRM_HOST_URL;
+  const headerOrigin = req.headers.origin;
+
+  if(crmHostUrl && headerOrigin && !crmHostUrl.includes(headerOrigin)) {
+    sessionFilter += " AND s.is_active = true";
+    batchFilter += " AND b3.is_active = true";
+    courseFilter += " AND c.is_active = true"
+  }
+
   const { rows } = await pool.query(
     `
      SELECT 
@@ -491,7 +505,7 @@ export const getCourseWithBatchSession = asyncErrorHandler(async (req, res) => {
             SELECT DISTINCT s.id AS session_id, s.name AS session_name
             FROM batch b2
             LEFT JOIN session s ON b2.session_id = s.id
-            WHERE b2.course_id = c.id AND s.is_active = true AND s.id IS NOT NULL
+            ${sessionFilter}
           ) AS unique_sessions
         ),
         '[]'::json
@@ -504,7 +518,7 @@ export const getCourseWithBatchSession = asyncErrorHandler(async (req, res) => {
           FROM (
             SELECT DISTINCT b3.id AS batch_id, b3.month_name, b3.session_id
             FROM batch b3
-            WHERE b3.course_id = c.id AND b3.is_active = true AND b3.id IS NOT NULL
+            ${batchFilter}
           ) AS unique_batches
         ),
         '[]'::json
@@ -512,7 +526,7 @@ export const getCourseWithBatchSession = asyncErrorHandler(async (req, res) => {
 
     FROM course c
     
-    WHERE c.is_active = true
+    ${courseFilter}
     `
   );
 

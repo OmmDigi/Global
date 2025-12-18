@@ -7,7 +7,7 @@ import asyncErrorHandler from "./asyncErrorHandler";
 // need to check the access here
 export const isAuthorized = (
   route_id: number | number[],
-  view_own_only: boolean = false
+  view_own_only: boolean = false,
 ) => {
   return asyncErrorHandler(async (req: CustomRequest, _, next) => {
     // need to check is the isAuthenticated middleware called before the isAuthorize or not
