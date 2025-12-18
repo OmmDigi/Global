@@ -10,7 +10,7 @@ import { ToWords } from "to-words";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 
-import {  getFetcher, postFetcher } from "@/lib/fetcher";
+import { getFetcher, postFetcher } from "@/lib/fetcher";
 import { uploadFiles } from "@/utils/uploadFile";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
@@ -154,7 +154,8 @@ function AdmissionPage() {
   if (courseLoading) {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }
-  console.log("courseList", courseList);
+
+  console.log("courseListdsas", courseList);
 
   // create Admission
 
@@ -390,13 +391,15 @@ function AdmissionPage() {
     marginTop: 16,
   };
 
-  const [selectedCourseId, setSelectedCourseId] = useState(courseId ? parseInt(courseId) : null);
+  const [selectedCourseId, setSelectedCourseId] = useState(
+    courseId ? parseInt(courseId) : null
+  );
 
   useEffect(() => {
-    if(courseId) {
-      setFormData(prev => ({...prev, courseName : parseInt(courseId)}))
+    if (courseId) {
+      setFormData((prev) => ({ ...prev, courseName: parseInt(courseId) }));
     }
-  }, [courseId])
+  }, [courseId]);
 
   const handleCourseChange = (e) => {
     const { name, value } = e.target;
@@ -548,13 +551,18 @@ function AdmissionPage() {
                     Choose your Courses <span className="text-red-500">*</span>
                   </label>
                   <select
+                    required
                     name="courseName"
                     onChange={handleCourseChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Option</option>
                     {courseList?.data?.map((data, index) => (
-                      <option selected = {courseId == data.id} key={index} value={`${data?.id}`}>
+                      <option
+                        selected={courseId == data.id}
+                        key={index}
+                        value={`${data?.id}`}
+                      >
                         {data?.course_name}
                       </option>
                     ))}
@@ -568,6 +576,7 @@ function AdmissionPage() {
                       <span className="text-red-500">*</span>
                     </label>
                     <select
+                      required
                       disabled={
                         !selectedCourse || !selectedCourse.session.length
                       }
@@ -591,6 +600,7 @@ function AdmissionPage() {
                       Choose your Batch <span className="text-red-500">*</span>
                     </label>
                     <select
+                      required
                       name="batchName"
                       value={formData.batchName}
                       disabled={!selectedCourse || !selectedCourse.batch.length}
@@ -669,6 +679,7 @@ function AdmissionPage() {
                         </label>
 
                         <input
+                          required
                           type="text"
                           name="candidateName"
                           value={formData.candidateName}
@@ -683,6 +694,7 @@ function AdmissionPage() {
                           <span className="text-red-500">*</span>
                         </label>
                         <input
+                          required
                           type="text"
                           name="fatherName"
                           value={formData.fatherName}
@@ -697,6 +709,7 @@ function AdmissionPage() {
                           <span className="text-red-500">*</span>
                         </label>
                         <input
+                          required
                           type="text"
                           name="motherName"
                           value={formData.motherName}
@@ -711,6 +724,7 @@ function AdmissionPage() {
                           <span className="text-red-500">*</span>
                         </label>
                         <input
+                          required
                           type="text"
                           name="guardianName"
                           value={formData.guardianName}
@@ -739,6 +753,7 @@ function AdmissionPage() {
                           Whatsapp No <span className="text-red-500">*</span>
                         </label>
                         <input
+                          required
                           type="tel"
                           name="phone"
                           value={formData.phone}
@@ -751,6 +766,7 @@ function AdmissionPage() {
                           Mobile <span className="text-red-500">*</span>
                         </label>
                         <input
+                          required
                           type="tel"
                           name="mobile"
                           value={formData.mobile}
@@ -763,6 +779,7 @@ function AdmissionPage() {
                           Email <span className="text-red-500">*</span>
                         </label>
                         <input
+                          required
                           type="email"
                           name="email"
                           value={formData.email}
@@ -778,6 +795,7 @@ function AdmissionPage() {
                           Sex <span className="text-red-500">*</span>
                         </label>
                         <select
+                          required
                           name="sex"
                           value={formData.sex}
                           onChange={handleInputChange}
@@ -793,6 +811,7 @@ function AdmissionPage() {
                           Date of Birth <span className="text-red-500">*</span>
                         </label>
                         <input
+                          required
                           type="date"
                           name="dateOfBirth"
                           value={formData.dateOfBirth}
@@ -805,6 +824,7 @@ function AdmissionPage() {
                           Blood Group
                         </label>
                         <input
+                          required
                           type="text"
                           name="bloodGroup"
                           value={formData.bloodGroup}
@@ -820,6 +840,7 @@ function AdmissionPage() {
                           Category <span className="text-red-500">*</span>
                         </label>
                         <select
+                          required
                           name="category"
                           value={formData.category}
                           onChange={handleInputChange}
@@ -838,6 +859,7 @@ function AdmissionPage() {
                           <span className="text-red-500">*</span>
                         </label>
                         <select
+                          required
                           name="disability"
                           value={formData.disability}
                           onChange={handleInputChange}
@@ -854,6 +876,7 @@ function AdmissionPage() {
                           <span className="text-red-500">*</span>
                         </label>
                         <input
+                          required
                           type="number"
                           name="monthlyIncome"
                           value={formData.monthlyIncome}
@@ -868,6 +891,7 @@ function AdmissionPage() {
                         Languages Known
                       </label>
                       <input
+                        required
                         type="text"
                         name="languages"
                         value={formData.languages}
@@ -950,6 +974,7 @@ function AdmissionPage() {
                               </td>
                               <td className="border border-gray-300 p-2">
                                 <input
+                                  required
                                   type="text"
                                   value={data.year}
                                   onChange={(e) =>
@@ -964,6 +989,7 @@ function AdmissionPage() {
                               </td>
                               <td className="border border-gray-300 p-2">
                                 <input
+                                  required
                                   type="text"
                                   value={data.marks}
                                   onChange={(e) =>
@@ -1003,6 +1029,7 @@ function AdmissionPage() {
                         Place <span className="text-red-500">*</span>
                       </label>
                       <input
+                        required
                         type="text"
                         name="place"
                         value={formData.place}
@@ -1015,6 +1042,7 @@ function AdmissionPage() {
                         Name <span className="text-red-500">*</span>
                       </label>
                       <input
+                        required
                         type="text"
                         name="name"
                         value={formData.name}
@@ -1029,6 +1057,7 @@ function AdmissionPage() {
                         Date <span className="text-red-500">*</span>
                       </label>
                       <input
+                        required
                         type="date"
                         name="date"
                         value={formData.date}
@@ -1059,6 +1088,7 @@ function AdmissionPage() {
                           <span className="text-red-500">*</span>
                         </label>
                         <input
+                          required
                           type="file"
                           name="selfAttestedLastResult"
                           onChange={(e) =>
@@ -1102,6 +1132,7 @@ function AdmissionPage() {
                           <span className="text-red-500">*</span>
                         </label>
                         <input
+                          required
                           type="file"
                           name="ageProofAdmitCard"
                           onChange={(e) =>
@@ -1140,6 +1171,7 @@ function AdmissionPage() {
                           <span className="text-red-500">*</span>
                         </label>
                         <input
+                          required
                           type="file"
                           name="addressProof"
                           onChange={(e) =>
@@ -1221,6 +1253,7 @@ function AdmissionPage() {
                           <span className="text-red-500">*</span>
                         </label>
                         <input
+                          required
                           type="text"
                           name="applicantSignature"
                           value={formData.applicantSignature}
@@ -1236,6 +1269,7 @@ function AdmissionPage() {
                           <span className="text-red-500">*</span>
                         </label>
                         <input
+                          required
                           type="text"
                           name="guardianSignature"
                           value={formData.guardianSignature}
@@ -1250,6 +1284,7 @@ function AdmissionPage() {
                           <span className="text-red-500">*</span>
                         </label>
                         <input
+                          required
                           type="number"
                           name="guardianPhone"
                           value={formData.guardianPhone}
@@ -1264,6 +1299,7 @@ function AdmissionPage() {
                           Date <span className="text-red-500">*</span>
                         </label>
                         <input
+                          required
                           type="date"
                           name="applicantDate"
                           value={formData.applicantDate}
@@ -1295,6 +1331,7 @@ function AdmissionPage() {
                       <span className="text-red-500">*</span>
                     </label>
                     <input
+                      required
                       type="text"
                       name="username"
                       value={formData.username}
@@ -1310,6 +1347,7 @@ function AdmissionPage() {
                       <span className="text-red-500">*</span>
                     </label>
                     <input
+                      required
                       type="password"
                       name="password"
                       value={formData.password}
@@ -1345,6 +1383,7 @@ function AdmissionPage() {
                             Title
                           </label>
                           <select
+                            required
                             name="applicantTitle1"
                             value={formData.applicantTitle1}
                             onChange={handleInputChange}
@@ -1362,6 +1401,7 @@ function AdmissionPage() {
                             Full Name
                           </label>
                           <input
+                            required
                             type="text"
                             name="applicantName1"
                             value={formData.applicantName1}
@@ -1378,6 +1418,7 @@ function AdmissionPage() {
                             Relationship Type
                           </label>
                           <select
+                            required
                             name="relationshipType1"
                             value={formData.relationshipType1}
                             onChange={handleInputChange}
@@ -1395,6 +1436,7 @@ function AdmissionPage() {
                             Father&apos;s/Husband&apos;s Name
                           </label>
                           <input
+                            required
                             type="text"
                             name="relationName1"
                             value={formData.relationName1}
@@ -1410,6 +1452,7 @@ function AdmissionPage() {
                           <strong>Declaration:</strong> I hereby declare that I
                           will have to pay a sum of Rs.
                           <input
+                            required
                             type="number"
                             readOnly
                             name="admissionFeeAmount"
@@ -1446,6 +1489,7 @@ function AdmissionPage() {
                             Title
                           </label>
                           <select
+                            required
                             name="applicantTitle2"
                             value={formData.applicantTitle2}
                             onChange={handleInputChange}
@@ -1463,6 +1507,7 @@ function AdmissionPage() {
                             Full Name
                           </label>
                           <input
+                            required
                             type="text"
                             name="applicantName2"
                             value={formData.applicantName2}
@@ -1479,6 +1524,7 @@ function AdmissionPage() {
                             Relationship Type
                           </label>
                           <select
+                            required
                             name="relationshipType2"
                             value={formData.relationshipType2}
                             onChange={handleInputChange}
@@ -1496,6 +1542,7 @@ function AdmissionPage() {
                             Father&apos;s/Husband&apos;s Name
                           </label>
                           <input
+                            required
                             type="text"
                             name="relationName2"
                             value={formData.relationName2}
@@ -1511,6 +1558,7 @@ function AdmissionPage() {
                           <strong>Declaration:</strong> I hereby declare that I
                           will also have to pay a sum of Rs.
                           <input
+                            required
                             type="number"
                             readOnly
                             name="bssRegistrationFee"
@@ -1543,6 +1591,7 @@ function AdmissionPage() {
                             Signature of Parent/Guardian
                           </label>
                           <input
+                            required
                             type="text"
                             name="parentGuardianSignature"
                             value={formData.parentGuardianSignature}
@@ -1557,6 +1606,7 @@ function AdmissionPage() {
                             Date
                           </label>
                           <input
+                            required
                             type="date"
                             name="parentGuardianDate"
                             value={formData.parentGuardianDate}
@@ -1572,6 +1622,7 @@ function AdmissionPage() {
                             Signature of the Applicant/Candidate
                           </label>
                           <input
+                            required
                             type="text"
                             name="applicantSignature"
                             value={formData.applicantSignature}
@@ -1586,6 +1637,7 @@ function AdmissionPage() {
                             Date
                           </label>
                           <input
+                            required
                             type="date"
                             name="applicantDate"
                             value={formData.applicantDate}
@@ -1604,6 +1656,7 @@ function AdmissionPage() {
                       Set User Name
                     </label>
                     <input
+                      required
                       type="text"
                       name="username"
                       value={formData.username}
@@ -1618,6 +1671,7 @@ function AdmissionPage() {
                       Set Your password
                     </label>
                     <input
+                      required
                       type="password"
                       name="password"
                       value={formData.password}
@@ -1629,6 +1683,7 @@ function AdmissionPage() {
                 </div>
               </div>
             )}
+
             <div className=" flex justify-center">
               {current > 0 && (
                 <Button style={{ margin: "0 8px" }} onClick={() => prev()}>
