@@ -1,4 +1,4 @@
-import Joi, { number } from "joi";
+import Joi from "joi";
 
 export const VCreateAdmission = Joi.object({
   // user_type: Joi.string().valid("new", "old").required(),
@@ -7,6 +7,7 @@ export const VCreateAdmission = Joi.object({
   batch_id: Joi.number().required().label("Batch"),
   session_id: Joi.number().required().label("Session"),
   declaration_status: Joi.number().optional(),
+  admission_from: Joi.string().valid("crm", "website").required(),
   // payment_type : Joi.string().valid("Part Payment", "Full Payment").required()
 });
 
@@ -81,7 +82,6 @@ export const VDeleteSingleAdmission = Joi.object({
   fee_head_id: Joi.number().required(),
 });
 
-
 export const VPromotAdmisson = Joi.object({
   student_ids: Joi.array().items(Joi.number()),
   course_id: Joi.number().required().label("Course"),
@@ -90,8 +90,8 @@ export const VPromotAdmisson = Joi.object({
 });
 
 export const VChangeStudentAdmissionCourse = Joi.object({
-  form_ids : Joi.array().items(Joi.number()).required(),
+  form_ids: Joi.array().items(Joi.number()).required(),
   course_id: Joi.number().required().label("Course"),
   batch_id: Joi.number().required().label("Batch"),
   session_id: Joi.number().required().label("Session"),
-})
+});

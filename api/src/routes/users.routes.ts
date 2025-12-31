@@ -6,6 +6,7 @@ import {
   deleteUser,
   doEnquiry,
   generatePayslip,
+  getAllEnquiry,
   getChangePasswordPage,
   getLoanList,
   getOneUser,
@@ -19,6 +20,7 @@ import {
   getUsersList,
   loginUser,
   manageTeacherDailyClassStatus,
+  updateEnquiryStatus,
   updateLoadnInfo,
   updateUser,
 } from "../controllers/users.controller";
@@ -30,10 +32,16 @@ import { ApiResponse } from "../utils/ApiResponse";
 export const usersRoutes = Router();
 
 usersRoutes
-  .get("/is-login", isAuthenticated, asyncErrorHandler(async (_, res) => {
-    res.status(200).json(new ApiResponse(200, "Login successfull", true))
-  }))
+  .get(
+    "/is-login",
+    isAuthenticated,
+    asyncErrorHandler(async (_, res) => {
+      res.status(200).json(new ApiResponse(200, "Login successfull", true));
+    })
+  )
   .post("/enquiry", doEnquiry)
+  .get("/enquiry", isAuthorized(16), getAllEnquiry)
+  .patch("/enquiry", isAuthorized(16), updateEnquiryStatus)
   .get("/change-password", getChangePasswordPage)
   .post("/change-password", changePassword)
   .post("/login", loginUser)
@@ -57,4 +65,4 @@ usersRoutes
   .get("/:id", isAuthorized(7, true), getOneUser)
   .get("/", isAuthorized(7), getUsersList)
   .put("/", isAuthorized(7), updateUser)
-  .delete("/:id", isAuthorized(7), deleteUser)
+  .delete("/:id", isAuthorized(7), deleteUser);

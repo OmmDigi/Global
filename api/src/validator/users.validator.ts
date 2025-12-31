@@ -159,6 +159,8 @@ export const VAddEnquiry = Joi.object({
   email: Joi.string().optional().allow("").label("Your email"),
   message: Joi.string().optional().allow("").label("Your enquiry"),
 
+  course_ids: Joi.array().items(Joi.number()).required(),
+
   address: Joi.string().optional().allow("").label("Your Address"),
   age: Joi.string().optional().allow("").label("Your age"),
   gender: Joi.string().optional().allow("").label("Your gender"),
