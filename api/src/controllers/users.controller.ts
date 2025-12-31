@@ -100,7 +100,7 @@ export const getAllEnquiry = asyncErrorHandler(async (req, res) => {
   }
 
   if (req.query.from_date && req.query.to_date) {
-    filter += ` AND e.created_at BETWEEN $${placeholderNum++} AND $${placeholderNum++}`;
+    filter += ` AND e.created_at >= $${placeholderNum++} AND e.created_at <  $${placeholderNum++}`;
     filterValue.push(req.query.from_date, req.query.to_date);
   }
 
