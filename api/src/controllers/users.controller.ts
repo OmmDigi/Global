@@ -100,13 +100,14 @@ export const getAllEnquiry = asyncErrorHandler(async (req, res) => {
   }
 
   if (req.query.from_date && req.query.to_date) {
-    filter += ` AND e.created_at >= $${placeholderNum++} AND e.created_at <  $${placeholderNum++}`;
+    filter += ` AND e.created_at::date >= $${placeholderNum++}::date AND e.created_at::date <= $${placeholderNum++}::date`;
     filterValue.push(req.query.from_date, req.query.to_date);
   }
 
   const enquiry = await pool.query(
     `SELECT 
       e.*,
+      TO_CHAR(e.created_at, 'FMDD FMMonth, YYYY') AS created_at,
       STRING_AGG(c.name, ', ') AS course_names
      FROM enquiry e
 

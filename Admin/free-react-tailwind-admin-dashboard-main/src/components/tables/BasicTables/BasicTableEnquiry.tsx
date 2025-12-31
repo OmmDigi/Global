@@ -5,7 +5,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../ui/table";
-import { Eye } from "lucide-react";
+import { Calendar, Eye } from "lucide-react";
 import { useState } from "react";
 
 import { useSearchParams } from "react-router";
@@ -80,12 +80,14 @@ any) {
                       {currentPage * 10 - 10 + index + 1}
                     </div>
 
-                    <div className="flex flex-col ">
-                      <div>
-                        <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                          {order.name}
-                        </span>
-                      </div>
+                    <div className="flex flex-col gap-y-1">
+                      <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                        {order.name}
+                      </span>
+                      <span className="flex items-center gap-2 dark:text-gray-400 text-sm">
+                        <Calendar size={15} strokeWidth={2} />
+                        <span className="text-sm">{order.created_at}</span>
+                      </span>
                     </div>
                   </div>
                 </TableCell>

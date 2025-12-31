@@ -12,21 +12,22 @@ import dayjs from "dayjs";
 import BasicTableEnquiry from "../../../components/tables/BasicTables/BasicTableEnquiry";
 import { message } from "antd";
 import useSWRMutation from "swr/mutation";
+import { useSearchParams } from "react-router";
 
 export default function Enquiry() {
   const [messageApi, contextHolder] = message.useMessage();
-
-  //   const [current, setCurrent] = useState(0);
 
   const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
     null,
     null,
   ]);
-  const [filter, setFilter] = useState("");
+  // const [filter, setFilter] = useState("");
   const [startDate, endDate] = dateRange;
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const { data: enquirylist, mutate: mutateEnquiryList } = useSWR(
-    `api/v1/users/enquiry?${filter ? filter : ``}`,
+    `api/v1/users/enquiry?${searchParams.toString()}`,
     getFetcher
   );
   const { trigger: update2 } = useSWRMutation(
@@ -62,11 +63,10 @@ export default function Enquiry() {
 
   const submitDate = () => {
     if (dateRange[0] !== null && dateRange[1] !== null) {
-      setFilter(
-        `from_date=${dayjs(dateRange[0]).format("YYYY-MM-DD")}&to_date=${dayjs(
-          dateRange[1]
-        ).format("YYYY-MM-DD")}`
-      );
+      setSearchParams({
+        from_date: dayjs(dateRange[0]).format("YYYY-MM-DD"),
+        to_date: dayjs(dateRange[1]).format("YYYY-MM-DD"),
+      });
     }
   };
 
