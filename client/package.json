@@ -8,7 +8,7 @@
     "export": "next export",
     "dev": "next dev",
     "build": "next build",
-    "start": "next start -p 3001 -H 192.168.0.232"
+    "start": "next start -p 3000 -H 192.168.0.213"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.4",

@@ -9,6 +9,7 @@ import { PiOfficeChairDuotone } from "react-icons/pi";
 import { GrHostMaintenance } from "react-icons/gr";
 import { TbReport } from "react-icons/tb";
 import { IoSettingsOutline } from "react-icons/io5";
+import { FaClipboardQuestion } from "react-icons/fa6";
 
 import {
   ChevronDownIcon,
@@ -59,6 +60,12 @@ const navItems: NavItem[] = [
     id: 6,
     icon: <FaUniversity />,
     path: "/admissionAdmin",
+  },
+  {
+    name: "Enquiry ",
+    id: 16,
+    icon: <FaClipboardQuestion />,
+    path: "/enquiry ",
   },
   {
     name: "Create Employee",

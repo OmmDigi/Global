@@ -138,7 +138,7 @@ any) {
                         className="h-8 w-8 rounded-full"
                       />
                     </div>
-                    <div className="flex flex-col ">
+                    <div className="flex flex-col gap-y-1">
                       <div>
                         <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
                           {order.student_name}
@@ -156,6 +156,15 @@ any) {
                           {order.form_name}
                         </span>
                       </div>
+                      <span
+                        className={` flex items-center gap-1 text-sm uppercase ${
+                          order.admission_from === "crm"
+                            ? "text-green-600"
+                            : "text-red-400"
+                        }`}
+                      >
+                        {order.admission_from}
+                      </span>
                     </div>
                   </div>
                 </TableCell>

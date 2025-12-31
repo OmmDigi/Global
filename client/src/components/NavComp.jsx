@@ -26,6 +26,7 @@ export default function NavComp() {
   const openImage = (src) => {
     setIsOpenPopup(true);
   };
+
   const openAdmission = (src) => {
     setIsadmissionPopup(true);
   };
@@ -83,15 +84,14 @@ export default function NavComp() {
 
   const open = (event, item, index) => {
     event.preventDefault();
-    if (index === 3) {
-      openImage();
-      console.log("4th element clicked:", item);
-    }
     if (index === 1) {
       router.push("/news-events");
     }
     if (index === 2) {
       openAdmission();
+    }
+    if (index === 3) {
+      openImage();
     }
     if (index === 4) {
       router.push("/login");
@@ -706,6 +706,7 @@ export default function NavComp() {
           <Suspense>
             <AdmissionPopup isOpen={isadmissionPopup} setIsOpem={closeModal} />
           </Suspense>
+
           {/* pre Admission  */}
           {/* {isadmissionPopup && (
             <div className="fixed inset-0 bg-gray-500/70 flex items-center justify-center z-50 ">

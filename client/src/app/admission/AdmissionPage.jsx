@@ -267,6 +267,7 @@ function AdmissionPage() {
     course_id: formData.courseName,
     batch_id: formData.batchName,
     session_id: formData.sessionName,
+    admission_form: "website",
     admission_data: JSON.stringify(formData),
   };
 

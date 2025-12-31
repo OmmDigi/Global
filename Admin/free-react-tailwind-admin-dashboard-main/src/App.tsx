@@ -51,6 +51,7 @@ import NotFound from "./pages/admin/OtherPage/NotFound";
 import Settings from "./pages/admin/Settings/FeeHead";
 import AdminReport from "./pages/admin/AdminReport/AdminReport";
 import FeesUpdate from "./pages/admin/FesUpdate/FeesUpdate";
+import Enquiry from "./pages/admin/Enquiry/Enquiry";
 
 export default function App() {
   const [user, setUser] = useState<string | null>(null);
@@ -61,8 +62,6 @@ export default function App() {
     const category = query.get("category");
     const permissions = query.get("permissions");
     // const id = query.get("id");
-
-    
 
     if (category) {
       setUser(category);
@@ -107,6 +106,7 @@ export default function App() {
               <Route path="/feeHead" element={<FeeHead />} />
               {/* Admission */}
               <Route path="/admissionAdmin" element={<Admission />} />
+              <Route path="/enquiry" element={<Enquiry />} />
               <Route path="/createLeave" element={<CreateLeave />} />
               <Route path="/manageLeave" element={<ManageLeave />} />
               <Route path="/report" element={<Report />} />

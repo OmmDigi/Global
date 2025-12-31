@@ -14,25 +14,25 @@ interface ISelectedFormids {
   clear: () => void;
 }
 
-export const useSelectedForms = create<ISelectedFormids>((set) => ({
+export const useSelectedForms = create<ISelectedFormids>((set: any) => ({
   form_ids: [],
   student_ids: [],
   data: [],
 
-  addItem: (data) => {
-    return set((state) => {
+  addItem: (data: any) => {
+    return set((state: any) => {
       if (Array.isArray(data))
         return { data: [...new Set([...state.data, ...data])] };
       return { data: [...new Set([...state.data, data])] };
     });
   },
   removeItem: (data: ISelectedFormData) =>
-    set((state) => ({
+    set((state: any) => ({
       data: state.data.filter(
-        (item) =>
+        (item: any) =>
           item.student_id != data.student_id && item.form_id !== data.form_id
       ),
     })),
 
-  clear: () => set((_) => ({ data: [] })),
+  clear: () => set((_: any) => ({ data: [] })),
 }));

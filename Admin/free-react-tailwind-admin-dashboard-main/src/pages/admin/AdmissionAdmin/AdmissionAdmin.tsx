@@ -246,8 +246,8 @@ export default function AdmissionAdmin() {
         if (currentKey === "form_no") {
           prev.delete("form_no");
         }
-        if(currentKey === "page") {
-          prev.delete("page")
+        if (currentKey === "page") {
+          prev.delete("page");
         }
       }
       prev.set(key, value);
@@ -377,6 +377,7 @@ export default function AdmissionAdmin() {
     batch_id: formData.batchName,
     session_id: formData.sessionName,
     declaration_status: 1,
+    admission_from: "crm",
     admission_data: JSON.stringify(formData),
   };
 
