@@ -66,7 +66,6 @@ export const doEnquiry = asyncErrorHandler(async (req, res) => {
   });
 
   const emails = process.env.ENQUIRY_EMAIL?.split(",") ?? [];
-  if (emails.length === 0) throw new ErrorHandler(400, "No email found");
 
   if (emails.length != 0) {
     await sendEmail(emails, "ENQUIRY_EMAIL", {
