@@ -4,7 +4,12 @@ import { ErrorHandler } from "../utils/ErrorHandler";
 import { parsePagination } from "../utils/parsePagination";
 import { Request } from "express";
 import { VGetAdmissionList } from "../validator/admission.validator";
-import { ADMISSION_FEE_HEAD_ID, BSS_FEE_HEAD_ID, LATE_FINE_FEE_HEAD_ID, MONTHLY_PAYMENT_HEAD_ID } from "../constant";
+import {
+  ADMISSION_FEE_HEAD_ID,
+  BSS_FEE_HEAD_ID,
+  LATE_FINE_FEE_HEAD_ID,
+  MONTHLY_PAYMENT_HEAD_ID,
+} from "../constant";
 
 type IFillUpForm = {
   student_id: number;
@@ -18,9 +23,10 @@ type IFillUpForm = {
     required: boolean;
   }[];
   admission_data?: string;
-  admissionDate: string | null
+  admissionDate: string | null;
   client?: PoolClient;
   declaration_status?: number;
+  admission_from: string;
 };
 
 export const doAdmission = async (data: IFillUpForm) => {
@@ -30,22 +36,38 @@ export const doAdmission = async (data: IFillUpForm) => {
   const pgClient = data.client ?? pool;
 
   const date = new Date();
-  const ADMISSION_DATE_TO_STORE = data.admissionDate === "" || data.admissionDate == null ? date.toISOString().split('T')[0] : data.admissionDate; //YYYY-MM-DD
+  const ADMISSION_DATE_TO_STORE =
+    data.admissionDate === "" || data.admissionDate == null
+      ? date.toISOString().split("T")[0]
+      : data.admissionDate; //YYYY-MM-DD
 
   const customFormIdPrefix = `GTI/FORM/${date.getFullYear()}/`;
   const fillup_form_seq_constant_key = "fillup_form_seq";
 
   const { rows } = await pgClient.query(
     `
-     INSERT INTO fillup_forms (form_name, student_id, admission_date ${data.declaration_status !== undefined ? ",declaration_status" : ""
-    })
-     VALUES ($1 || nextval('${fillup_form_seq_constant_key}')::TEXT, $2, TO_CHAR($3::date, 'YYYY-MM-DD')::date ${data.declaration_status !== undefined ? ",$4" : ""
+     INSERT INTO fillup_forms (form_name, student_id, admission_date, admission_from ${
+       data.declaration_status !== undefined ? ",declaration_status" : ""
+     })
+     VALUES ($1 || nextval('${fillup_form_seq_constant_key}')::TEXT, $2, TO_CHAR($3::date, 'YYYY-MM-DD')::date, $4 ${
+      data.declaration_status !== undefined ? ",$5" : ""
     })
      RETURNING form_name, id
     `,
     data.declaration_status !== undefined
-      ? [customFormIdPrefix, data.student_id, ADMISSION_DATE_TO_STORE, data.declaration_status]
-      : [customFormIdPrefix, data.student_id, ADMISSION_DATE_TO_STORE]
+      ? [
+          customFormIdPrefix,
+          data.student_id,
+          ADMISSION_DATE_TO_STORE,
+          data.admission_from,
+          data.declaration_status,
+        ]
+      : [
+          customFormIdPrefix,
+          data.student_id,
+          ADMISSION_DATE_TO_STORE,
+          data.admission_from,
+        ]
   );
 
   const form_name = rows[0].form_name as string;
@@ -61,7 +83,8 @@ export const doAdmission = async (data: IFillUpForm) => {
   const placeholder = data.fee_structure
     .map(
       (_, index) =>
-        `($${index * 5 + 1}, $${index * 5 + 2}, $${index * 5 + 3}, $${index * 5 + 4
+        `($${index * 5 + 1}, $${index * 5 + 2}, $${index * 5 + 3}, $${
+          index * 5 + 4
         }, $${index * 5 + 5})`
     )
     .join(", ");
@@ -226,6 +249,7 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
       SELECT
         ff.id AS form_id,
         ff.form_name,
+        ff.admission_from,
         u.name AS student_name,
         u.image AS student_image,
         c.name AS course_name,
@@ -300,7 +324,6 @@ export const getSingleAdmissionData = async (
       paymentTableFilter += ` AND fee_head_id = $${basicQueryFilterPlaceNum++}`;
       basicQueryFilterValues.push(fee_head_id);
     }
-
 
     const { rows: basicInfo } = await client.query(
       `
@@ -385,8 +408,8 @@ export const getSingleAdmissionData = async (
     const feeStrucInfoFilterValues: any[] = [form_id];
 
     if (fee_head_id) {
-      feeStructureInfoFilter += ` AND ffs.fee_head_id = $${feeStructureInfoFilterNum++}`
-      feeStrucInfoFilterValues.push(fee_head_id)
+      feeStructureInfoFilter += ` AND ffs.fee_head_id = $${feeStructureInfoFilterNum++}`;
+      feeStrucInfoFilterValues.push(fee_head_id);
     }
 
     const { rows: feeStructureInfo } = await client.query(
@@ -417,14 +440,13 @@ export const getSingleAdmissionData = async (
       feeStrucInfoFilterValues
     );
 
-
     let paymentListFilter = "WHERE p.form_id = $2 AND p.status = 2";
     let paymentListPlaceholerNum = 3;
     let paymentListValues: any[] = [request_user_id, form_id];
 
     if (fee_head_id) {
       paymentListFilter += ` AND p.fee_head_id = $${paymentListPlaceholerNum++}`;
-      paymentListValues.push(fee_head_id)
+      paymentListValues.push(fee_head_id);
     }
 
     const { rows: admissionFormPayments } = await client.query(

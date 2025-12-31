@@ -7,6 +7,7 @@ import { ApiResponse } from "../utils/ApiResponse";
 import { ErrorHandler } from "../utils/ErrorHandler";
 import { parsePagination } from "../utils/parsePagination";
 import {
+  enquiryUpdateValidator,
   VAddEnquiry,
   VAddLoanOrAdvancePayment,
   VChangePassword,
@@ -36,26 +37,46 @@ import QueryStream from "pg-query-stream";
 import { generateTeacherPayslipQuery } from "../utils/generateTeacherPayslipQuery";
 import { numberToWords } from "../utils/numberToWords";
 import { sendEmail } from "../utils/sendEmail";
+import { doTransition } from "../utils/doTransition";
 
 export const doEnquiry = asyncErrorHandler(async (req, res) => {
   const { error, value } = VAddEnquiry.validate(req.body ?? {});
   if (error) throw new ErrorHandler(400, error.message);
 
+  await doTransition(async (client) => {
+    const { rows } = await client.query(
+      "INSERT INTO enquiry (name, email, phone, message, address, age, gender, education_qualification) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id",
+      [
+        value.name,
+        value.email ?? null,
+        value.phone,
+        value.message ?? null,
+        value.address,
+        value.age,
+        value.gender,
+        value.education_qualification,
+      ]
+    );
+
+    const placeholders = generatePlaceholders(value.course_ids.length, 2);
+    await client.query(
+      `INSERT INTO enquiry_courses (enquiry_id, course_id) VALUES ${placeholders}`,
+      value.course_ids.flatMap((id: any) => [rows[0].id, id])
+    );
+  });
+
   const emails = process.env.ENQUIRY_EMAIL?.split(",") ?? [];
   if (emails.length === 0) throw new ErrorHandler(400, "No email found");
 
-  await sendEmail(emails, "ENQUIRY_EMAIL", {
-    name: value.name,
-    email: value?.email,
-    phone: value.phone,
-    course : undefined,
-    message: value?.message,
-  });
-
-  await pool.query(
-    "INSERT INTO enquiry (name, email, phone, message) VALUES ($1, $2, $3, $4)",
-    [value.name, value.email ?? null, value.phone, value.message ?? null]
-  );
+  if (emails.length != 0) {
+    await sendEmail(emails, "ENQUIRY_EMAIL", {
+      name: value.name,
+      email: value?.email,
+      phone: value.phone,
+      course: undefined,
+      message: value?.message,
+    });
+  }
 
   res
     .status(200)
@@ -65,6 +86,65 @@ export const doEnquiry = asyncErrorHandler(async (req, res) => {
         "Enquiry successfully submitted. We will get back to you soon"
       )
     );
+});
+
+export const getAllEnquiry = asyncErrorHandler(async (req, res) => {
+  const { TO_STRING } = parsePagination(req);
+
+  let filter = "WHERE 1=1";
+  const filterValue: any[] = [];
+  let placeholderNum = 1;
+
+  if (req.query.status) {
+    filter += ` AND e.status = $${placeholderNum++}`;
+    filterValue.push(req.query.status);
+  }
+
+  if (req.query.from_date && req.query.to_date) {
+    filter += ` AND e.created_at BETWEEN $${placeholderNum++} AND $${placeholderNum++}`;
+    filterValue.push(req.query.from_date, req.query.to_date);
+  }
+
+  const enquiry = await pool.query(
+    `SELECT 
+      e.*,
+      STRING_AGG(c.name, ', ') AS course_names
+     FROM enquiry e
+
+     LEFT JOIN enquiry_courses ec
+     ON e.id = ec.enquiry_id
+
+     LEFT JOIN course c
+     ON ec.course_id = c.id
+
+     ${filter} 
+
+     GROUP BY e.id
+
+     ${TO_STRING}
+     `,
+    filterValue
+  );
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Enquiry fetched successfully", enquiry.rows));
+});
+
+export const updateEnquiryStatus = asyncErrorHandler(async (req, res) => {
+  const { error, value } = enquiryUpdateValidator.validate(req.body);
+  if (error) {
+    throw new ErrorHandler(400, error.message);
+  }
+
+  await pool.query("UPDATE enquiry SET status = $1 WHERE id = $2", [
+    value.status,
+    value.id,
+  ]);
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Enquiry status updated successfully", null));
 });
 
 export const getChangePasswordPage = asyncErrorHandler(async (req, res) => {

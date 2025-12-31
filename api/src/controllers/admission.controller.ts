@@ -187,6 +187,7 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
       admissionDate,
       session_id: value.session_id,
       declaration_status: value?.declaration_status,
+      admission_from: value.admission_from,
     });
 
     await client.query("COMMIT");
@@ -670,16 +671,17 @@ export const modifyFeeHeadOfAdmission = asyncErrorHandler(async (req, res) => {
     .json(new ApiResponse(200, "Admission Fee Head Successfully Modified"));
 });
 
-export const promotAdmission = asyncErrorHandler(async (req : CustomRequest, res) => {
-  const { error, value } = VPromotAdmisson.validate(req.body ?? {});
-  if (error) throw new ErrorHandler(400, error.message);
+export const promotAdmission = asyncErrorHandler(
+  async (req: CustomRequest, res) => {
+    const { error, value } = VPromotAdmisson.validate(req.body ?? {});
+    if (error) throw new ErrorHandler(400, error.message);
 
-  const client = await pool.connect();
+    const client = await pool.connect();
 
-  try {
-    // get the coures info with course_fee_structure
-    const courseInfo = await client.query(
-      `
+    try {
+      // get the coures info with course_fee_structure
+      const courseInfo = await client.query(
+        `
       SELECT 
         c.*,
         COALESCE(
@@ -704,50 +706,52 @@ export const promotAdmission = asyncErrorHandler(async (req : CustomRequest, res
       WHERE c.id = $1
       GROUP BY c.id;
        `,
-      [value.course_id]
-    );
+        [value.course_id]
+      );
 
-    if (courseInfo.rowCount === 0)
-      throw new ErrorHandler(404, "No course found");
+      if (courseInfo.rowCount === 0)
+        throw new ErrorHandler(404, "No course found");
 
-    const fee_structure = courseInfo.rows[0].fee_structures as {
-      fee_head_id: number;
-      fee_head_name: string;
-      amount: number;
-      min_amount: number;
-      required: boolean;
-    }[];
+      const fee_structure = courseInfo.rows[0].fee_structures as {
+        fee_head_id: number;
+        fee_head_name: string;
+        amount: number;
+        min_amount: number;
+        required: boolean;
+      }[];
 
-    for (const id of value.student_ids) {
-      // do the admission
-      await doAdmission({
-        student_id: id,
-        client,
-        admission_data: undefined,
-        course_id: value.course_id,
-        batch_id: value.batch_id,
-        fee_structure,
-        admissionDate: null,
-        session_id: value.session_id,
-        declaration_status: value?.declaration_status,
-      });
+      for (const id of value.student_ids) {
+        // do the admission
+        await doAdmission({
+          student_id: id,
+          client,
+          admission_data: undefined,
+          course_id: value.course_id,
+          batch_id: value.batch_id,
+          fee_structure,
+          admissionDate: null,
+          session_id: value.session_id,
+          declaration_status: value?.declaration_status,
+          admission_from: "crm",
+        });
+      }
+
+      await client.query(
+        "INSERT INTO copy_move_logs (user_id, data, action_type) VALUES ($1, $2, $3)",
+        [req.user_info?.id, { student_ids: value.student_ids }, "copy"]
+      );
+
+      res
+        .status(201)
+        .json(new ApiResponse(201, "Successfully promot the admission"));
+    } catch (error: any) {
+      await client.query("ROLLBACK");
+      throw new ErrorHandler(400, error.message);
+    } finally {
+      client.release();
     }
-
-    await client.query(
-      "INSERT INTO copy_move_logs (user_id, data, action_type) VALUES ($1, $2, $3)",
-      [req.user_info?.id, {student_ids : value.student_ids}, "copy"]
-    );
-
-    res
-      .status(201)
-      .json(new ApiResponse(201, "Successfully promot the admission"));
-  } catch (error: any) {
-    await client.query("ROLLBACK");
-    throw new ErrorHandler(400, error.message);
-  } finally {
-    client.release();
   }
-});
+);
 
 export const deleteSingleFeeHeadFromSingleAdmisson = asyncErrorHandler(
   async (req: CustomRequest, res) => {
@@ -801,7 +805,7 @@ export const changeStudentAdmisionCourse = asyncErrorHandler(
 
       await client.query(
         "INSERT INTO copy_move_logs (user_id, data, action_type) VALUES ($1, $2, $3)",
-        [req.user_info?.id, {form_ids : uniqueFormIds}, "move"]
+        [req.user_info?.id, { form_ids: uniqueFormIds }, "move"]
       );
     });
 
