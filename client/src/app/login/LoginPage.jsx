@@ -60,6 +60,7 @@ function LoginPage() {
 
         const queryString = new URLSearchParams({
           token: response.data?.data?.token,
+          name: response.data?.data?.name,
           category: response.data?.data?.category,
           id: response.data?.data?.id,
           permissions: response?.data?.data?.permissions,

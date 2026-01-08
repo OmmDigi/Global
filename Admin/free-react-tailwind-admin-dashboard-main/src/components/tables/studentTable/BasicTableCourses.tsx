@@ -69,6 +69,9 @@ export default function BasicTableCourses({ courseList }: any) {
                       <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
                         {order.course_name}
                       </span>
+                      <span className="block text-gray-800 dark:text-slate-400">
+                        {order.form_name}
+                      </span>
                     </div>
                   </div>
                 </TableCell>

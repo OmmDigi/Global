@@ -196,7 +196,7 @@ export const loginUser = asyncErrorHandler(async (req, res) => {
   // if (isError || decrypted !== value.password)
   //   throw new ErrorHandler(400, "Wrong Password", ["password"]);
 
-  const { category, id, permissions } = await verifyUser({
+  const { category, id, permissions, name } = await verifyUser({
     password: value.password,
     username: value.username,
   });
@@ -224,6 +224,7 @@ export const loginUser = asyncErrorHandler(async (req, res) => {
       id,
       token,
       permissions: permissionArray,
+      name,
     })
   );
 });

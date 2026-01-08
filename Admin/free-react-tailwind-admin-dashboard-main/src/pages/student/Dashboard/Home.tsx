@@ -10,9 +10,11 @@ export default function Home() {
     const query = new URLSearchParams(window.location.search);
     const token = query.get("token");
     const category = query.get("category");
+    const name = query.get("name");
 
     if (token) localStorage.setItem("token", token);
     if (category) localStorage.setItem("category", category);
+    if (name) localStorage.setItem("name", name);
   }, []);
 
   const { data: courseList, isLoading: courseLoading } = useSWR(
@@ -32,7 +34,11 @@ export default function Home() {
       <div className=" max-w-full overflow-x-auto">
         <div className="col-span-12 space-y-6 xl:col-span-7">
           {/* <EcommerceMetrics /> */}
-          <ComponentCard title="Student DashBoard">
+          <ComponentCard
+            title={`Welcome ${
+              localStorage.getItem("name") ?? " to your dashboard"
+            }`}
+          >
             <BasicTableCourses courseList={courseList} />
           </ComponentCard>
         </div>
