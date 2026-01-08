@@ -25,6 +25,10 @@ export default function CourseDetailsAdmin() {
   const [messageApi, contextHolder] = message.useMessage();
   const [isPending, startTransition] = useTransition();
 
+  const paymentModeDropdownRef = useRef<
+    Record<string, HTMLSelectElement | null>
+  >({});
+
   const whilchFeeHeadDeleting = useRef(-1);
 
   const [searchParams] = useSearchParams();
@@ -196,8 +200,8 @@ export default function CourseDetailsAdmin() {
       });
       refetch();
       setEnteredAmounts("");
-      setEnteredBillno("");
-      setPaymentMode("");
+      // setEnteredBillno("");
+      // setPaymentMode("");
       setEditId(null);
       // setPaymentDetails("");
       // refatch(`api/v1/admission/${id}`, undefined, { revalidate: true });
@@ -618,7 +622,7 @@ export default function CourseDetailsAdmin() {
                   <span className="font-semibold text-green-500">
                     {/* {parseFloat(feesStructure?.data?.course_fee ?? "0.00") -
                       parseFloat(feesStructure?.data?.due_amount ?? "0.00")} */}
-                      {feesStructure?.data?.total_collection}
+                    {feesStructure?.data?.total_collection}
                   </span>
                 </Label>
               </div>
@@ -847,6 +851,11 @@ export default function CourseDetailsAdmin() {
                               </div>
                               <div className="mr-1">
                                 <select
+                                  ref={(el) => {
+                                    paymentModeDropdownRef.current[
+                                      item.fee_head_id
+                                    ] = el;
+                                  }}
                                   name="payment_mode"
                                   value={
                                     paymentMode[item.fee_head_id] || ""
@@ -967,7 +976,12 @@ export default function CourseDetailsAdmin() {
                               <div>
                                 {editId?.[1] == item.fee_head_id ? (
                                   <div
-                                    onClick={() => handleUpdate(item)}
+                                    onClick={() => {
+                                      handleUpdate(item);
+                                      paymentModeDropdownRef.current[
+                                        item.fee_head_id
+                                      ]?.focus();
+                                    }}
                                     className="px-2 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition cursor-pointer"
                                   >
                                     Update
@@ -976,7 +990,12 @@ export default function CourseDetailsAdmin() {
                                   <button
                                     type="button"
                                     disabled={isPending}
-                                    onClick={() => handleRowSave(item)}
+                                    onClick={() => {
+                                      handleRowSave(item);
+                                      paymentModeDropdownRef.current[
+                                        item.fee_head_id
+                                      ]?.focus();
+                                    }}
                                     className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
                                   >
                                     {isPending ? (
