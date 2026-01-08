@@ -55,10 +55,7 @@ export default function TotalFeeAmountReport({ courseList }: IProps) {
   };
 
   return (
-    <ComponentCard
-      className="mt-15"
-      title="Combind Fees for All Course"
-    >
+    <ComponentCard className="mt-15" title="Combind Fees for All Course">
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <div>
           <label className="block text-sm font-bold text-gray-500 mb-1">
@@ -88,12 +85,18 @@ export default function TotalFeeAmountReport({ courseList }: IProps) {
             name="courseName"
             onChange={(e) => {
               const course = e.currentTarget.value;
+              setExcelDownloadUrl(null);
               if (course != "-1" && course != "") {
-                setExcelDownloadUrl(null);
                 setFormData((prev) => ({
                   ...prev,
                   course: course,
                 }));
+              } else {
+                setFormData((prev) => {
+                  const newState = { ...prev };
+                  delete newState.course;
+                  return newState;
+                });
               }
             }}
             className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 "
@@ -117,12 +120,18 @@ export default function TotalFeeAmountReport({ courseList }: IProps) {
             name="mode"
             onChange={(e) => {
               const value = e.currentTarget.value;
+              setExcelDownloadUrl(null);
               if (value !== "Both" && value !== "") {
-                setExcelDownloadUrl(null);
                 setFormData((prev) => ({
                   ...prev,
                   mode: value,
                 }));
+              } else {
+                setFormData((prev) => {
+                  const newState = { ...prev };
+                  delete newState.mode;
+                  return newState;
+                });
               }
             }}
             className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"

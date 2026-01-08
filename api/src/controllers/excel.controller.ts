@@ -55,9 +55,9 @@ urls.set("fee_summary_report", {
 });
 
 urls.set("total_amount_report", {
-  url : `${HOST_URL}/api/v1/excel/total-payment-report`,
-  route_id : 6
-})
+  url: `${HOST_URL}/api/v1/excel/total-payment-report`,
+  route_id: 6,
+});
 
 export const generateUrl = asyncErrorHandler(async (req, res) => {
   const { error, value } = VGenerateUrl.validate(req.body ?? {});
@@ -4251,7 +4251,7 @@ export const totalPaymentReport = asyncErrorHandler(async (req, res) => {
   let placeholder = 1;
 
   if (value.from_date && value.to_date) {
-    filter += ` AND DATE(ff.admission_date) BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
+    filter += ` AND DATE(p.payment_date) BETWEEN $${placeholder++}::date AND $${placeholder++}::date`;
     filterValues.push(value.from_date);
     filterValues.push(value.to_date);
   }
@@ -4261,10 +4261,13 @@ export const totalPaymentReport = asyncErrorHandler(async (req, res) => {
     filterValues.push(value.course);
   }
 
-  if(value.mode) {
+  if (value.mode) {
     filter += ` AND p.mode = $${placeholder++}`;
     filterValues.push(value.mode);
   }
+
+  console.log(filter);
+  console.log(filterValues);
 
   // Set response headers for streaming
   res.setHeader(
@@ -4298,11 +4301,17 @@ export const totalPaymentReport = asyncErrorHandler(async (req, res) => {
     vertical: "middle",
   };
 
-
   worksheet.getCell("A1").value = `Combind Fees Report`;
   worksheet.mergeCells("A1:F1");
 
-  const rowArray = ["Sr Number", "Course", "Fee Head", "Fees Collect", "", "Total"];
+  const rowArray = [
+    "Sr Number",
+    "Course",
+    "Fee Head",
+    "Fees Collect",
+    "",
+    "Total",
+  ];
 
   worksheet.addRow(rowArray);
 
@@ -4336,17 +4345,17 @@ export const totalPaymentReport = asyncErrorHandler(async (req, res) => {
 
   const caseTxtCell = worksheet.getCell("D3");
   caseTxtCell.value = "Cash";
-  
+
   caseTxtCell.style = {
-    alignment : {horizontal : "center", vertical : "middle"}
-  }
+    alignment: { horizontal: "center", vertical: "middle" },
+  };
 
   const onlineTxtCell = worksheet.getCell("E3");
   onlineTxtCell.value = "Online";
 
   onlineTxtCell.style = {
-    alignment : {horizontal : "center", vertical : "middle"}
-  }
+    alignment: { horizontal: "center", vertical: "middle" },
+  };
 
   const client = await pool.connect();
   const query = new QueryStream(
@@ -4388,7 +4397,7 @@ export const totalPaymentReport = asyncErrorHandler(async (req, res) => {
 
   let srNumber = 0;
   let currentCourseId = -1;
-  let totalAmount = 0.00;
+  let totalAmount = 0.0;
 
   let margeFrom = 0;
   let margeTo = 0;
@@ -4397,34 +4406,38 @@ export const totalPaymentReport = asyncErrorHandler(async (req, res) => {
     pgStream.pause();
 
     if (data.course_id != currentCourseId) {
-
       // will increase serial number if the current course is diffrent than previous one
       srNumber += 1;
 
       // now marge the previous rows if exist
       // if the margeFrom and margeTo is not 0 than marge them it will mean it is not the first loop
-  
-      if(margeFrom != 0 && margeTo != 0) {
-        // marge A (Sr Number) col 
+
+      if (margeFrom != 0 && margeTo != 0) {
+        // marge A (Sr Number) col
         worksheet.mergeCells(`A${margeFrom}:A${margeTo}`);
-        
+
         // marge B (Course Name) col
         worksheet.mergeCells(`B${margeFrom}:B${margeTo}`);
-        
-        // marge F (Total Collection) col 
+
+        // marge F (Total Collection) col
         worksheet.mergeCells(`F${margeFrom}:F${margeTo}`);
-      
+      }
+
+      if (margeFrom != 0) {
         // get the total amount cell
         const totalAmountCell = worksheet.getCell(`F${margeFrom}`);
         totalAmountCell.value = totalAmount;
         totalAmountCell.numFmt = "#,##,##0.00";
 
-        [worksheet.getCell(`A${margeFrom}`), worksheet.getCell(`B${margeFrom}`), worksheet.getCell(`F${margeFrom}`)].forEach(cell => {
+        [
+          worksheet.getCell(`A${margeFrom}`),
+          worksheet.getCell(`B${margeFrom}`),
+          worksheet.getCell(`F${margeFrom}`),
+        ].forEach((cell) => {
           cell.style = {
             alignment: { horizontal: "center", vertical: "middle" },
-          }
-        })
-
+          };
+        });
       }
 
       const excelRow = worksheet.addRow([
@@ -4433,18 +4446,18 @@ export const totalPaymentReport = asyncErrorHandler(async (req, res) => {
         data.fee_head_name,
         parseFloat(data.cash_payment),
         parseFloat(data.online_payment),
-        0
+        0,
       ]);
 
-      worksheet.getCell(`D${excelRow.number}`).numFmt = '#,##,##0.00';
-      worksheet.getCell(`E${excelRow.number}`).numFmt = '#,##,##0.00';
+      worksheet.getCell(`D${excelRow.number}`).numFmt = "#,##,##0.00";
+      worksheet.getCell(`E${excelRow.number}`).numFmt = "#,##,##0.00";
 
       margeFrom = excelRow.number;
 
       currentCourseId = data.course_id;
 
       // reset total amount to 0 for the new course
-      totalAmount = 0.00;
+      totalAmount = 0.0;
     } else {
       const excelRow = worksheet.addRow([
         "",
@@ -4452,43 +4465,48 @@ export const totalPaymentReport = asyncErrorHandler(async (req, res) => {
         data.fee_head_name,
         parseFloat(data.cash_payment),
         parseFloat(data.online_payment),
-        0
+        0,
       ]);
 
       margeTo = excelRow.number;
 
-      worksheet.getCell(`D${excelRow.number}`).numFmt = '#,##,##0.00';
-      worksheet.getCell(`E${excelRow.number}`).numFmt = '#,##,##0.00';
+      worksheet.getCell(`D${excelRow.number}`).numFmt = "#,##,##0.00";
+      worksheet.getCell(`E${excelRow.number}`).numFmt = "#,##,##0.00";
     }
 
-    totalAmount += parseFloat(data.cash_payment) + parseFloat(data.online_payment);
+    totalAmount +=
+      parseFloat(data.cash_payment) + parseFloat(data.online_payment);
 
     pgStream.resume();
   });
 
   pgStream.on("end", () => {
-    if(margeFrom != 0 && margeTo != 0) {
-      // marge A (Sr Number) col 
-      worksheet.mergeCells(`A${margeFrom}:A${margeTo}`);
-        
-      // marge B (Course Name) col
-      worksheet.mergeCells(`B${margeFrom}:B${margeTo}`);
-        
-      // marge F (Total Collection) col 
-      worksheet.mergeCells(`F${margeFrom}:F${margeTo}`);
+    if (margeFrom != 0 && margeTo != 0) {
+      try {
+        // marge A (Sr Number) col
+        worksheet.mergeCells(`A${margeFrom}:A${margeTo}`);
+
+        // marge B (Course Name) col
+        worksheet.mergeCells(`B${margeFrom}:B${margeTo}`);
+
+        // marge F (Total Collection) col
+        worksheet.mergeCells(`F${margeFrom}:F${margeTo}`);
+      } catch {}
 
       // get the total amount cell
       const totalAmountCell = worksheet.getCell(`F${margeFrom}`);
       totalAmountCell.value = totalAmount;
       totalAmountCell.numFmt = "#,##,##0.00";
 
-      [worksheet.getCell(`A${margeFrom}`), worksheet.getCell(`B${margeFrom}`), worksheet.getCell(`F${margeFrom}`)].forEach(cell => {
+      [
+        worksheet.getCell(`A${margeFrom}`),
+        worksheet.getCell(`B${margeFrom}`),
+        worksheet.getCell(`F${margeFrom}`),
+      ].forEach((cell) => {
         cell.style = {
           alignment: { horizontal: "center", vertical: "middle" },
-        }
-      })
-
-
+        };
+      });
     }
 
     workbook.commit();
