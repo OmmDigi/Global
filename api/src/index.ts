@@ -75,13 +75,13 @@ initCronJobs();
 app.use(globalErrorController);
 
 app.get("/test", (req, res) => {
-    const filepath = path.resolve(
+  const filepath = path.resolve(
     __dirname,
     "../../attendance-logs/attendance-logs.json"
   );
-  res.send(filepath)
+  res.send(filepath);
   // const workerProcessPath = path.resolve(__dirname, "./workers/processAttendance.ts");
-  
+
   // const worker = new Worker(workerProcessPath, {
   //   workerData: { filepath },
   //   execArgv: ["-r", "ts-node/register"],
