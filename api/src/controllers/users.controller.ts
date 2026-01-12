@@ -121,9 +121,9 @@ export const getAllEnquiry = asyncErrorHandler(async (req, res) => {
 
      GROUP BY e.id
 
-     ${TO_STRING}
-
      ORDER BY e.created_at
+
+     ${TO_STRING}
      `,
     filterValue
   );
