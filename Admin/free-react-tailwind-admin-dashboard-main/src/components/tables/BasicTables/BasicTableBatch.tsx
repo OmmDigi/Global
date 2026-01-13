@@ -16,7 +16,7 @@ import Pagination from "../../form/Pagination";
 
 interface IProps {
   batchList: any;
-  //   onEdit: (id: number) => void;
+  onEdit: (id: number) => void;
   onActive: (checked: boolean, id: number) => void;
   onSendData: any;
   mutateBatchList: any;
@@ -29,6 +29,7 @@ export default function BasicTableSession({
   onActive,
   onSendData,
   mutateBatchList,
+  onEdit,
 }: IProps) {
   // const onShowSizeChange: PaginationProps["onShowSizeChange"] = (
   //   current,
@@ -153,12 +154,12 @@ export default function BasicTableSession({
 
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   <div className="flex items-center gap-2">
-                    {/* <button
+                    <button
                       onClick={() => onEdit(order.id)}
                       className="text-blue-500 hover:underline"
                     >
                       Edit
-                    </button> */}
+                    </button>
                     <button
                       onClick={() => handleDelete(order.id)}
                       className="text-red-500 hover:underline"

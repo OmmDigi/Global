@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import PageMeta from "../../../components/common/PageMeta";
 import ComponentCard from "../../../components/common/ComponentCard";
@@ -13,30 +13,78 @@ interface Option {
   name: string;
 }
 
-const options: Option[] = [
-  { name: "JAN" },
-  { name: "FEB" },
-  { name: "MAR" },
-  { name: "APR" },
-  { name: "MAY" },
-  { name: "JUN" },
-  { name: "JULY" },
-  { name: "AUG" },
-  { name: "SEPT" },
-  { name: "OCT" },
-  { name: "NOV" },
-  { name: "DEC" },
-];
 export default function Batch() {
   const [messageApi, contextHolder] = message.useMessage();
   const [id, setId] = useState<number>(0);
   const [pageCount, setPageCount] = useState<number>(1);
+  const [options, setOptions] = useState<Option[]>([]);
 
-  const [formData, setFormData] = useState({
-    course_id: "",
-    session_id: "",
-    month_names: [],
+  const [formData, setFormData] = useState(() => {
+    return {
+      course_id: "",
+      session_id: "",
+      month_names: [],
+      year: new Date().getFullYear().toString(),
+    };
   });
+
+  useEffect(() => {
+    if (formData.year !== "") {
+      setOptions([
+        { name: `JAN - ${formData.year}` },
+        { name: `FEB - ${formData.year}` },
+        { name: `MAR - ${formData.year}` },
+        { name: `APR - ${formData.year}` },
+        { name: `MAY - ${formData.year}` },
+        { name: `JUN - ${formData.year}` },
+        { name: `JULY - ${formData.year}` },
+        { name: `AUG - ${formData.year}` },
+        { name: `SEPT - ${formData.year}` },
+        { name: `OCT - ${formData.year}` },
+        { name: `NOV - ${formData.year}` },
+        { name: `DEC - ${formData.year}` },
+      ]);
+    } else {
+      setOptions([
+        {
+          name: "JAN",
+        },
+        {
+          name: "FEB",
+        },
+        {
+          name: "MAR",
+        },
+        {
+          name: "APR",
+        },
+        {
+          name: "MAY",
+        },
+        {
+          name: "JUN",
+        },
+        {
+          name: "JULY",
+        },
+        {
+          name: "AUG",
+        },
+        {
+          name: "SEPT",
+        },
+        {
+          name: "OCT",
+        },
+        {
+          name: "NOV",
+        },
+        {
+          name: "DEC",
+        },
+      ]);
+    }
+  }, [formData.year]);
 
   //   get Course list
   const { data: courseList } = useSWR(
@@ -97,8 +145,32 @@ export default function Batch() {
   };
 
   const handleUpdate = async () => {
+    if (id === 0) {
+      messageApi.open({
+        type: "error",
+        content: "Please select a batch to update",
+      });
+      return;
+    }
+
+    if (formData.month_names.length > 1) {
+      messageApi.open({
+        type: "error",
+        content: "Please select only one Batch Month",
+      });
+      return;
+    }
+
+    const payloadToUpdate: any = {
+      id,
+      ...formData,
+    };
+
+    delete payloadToUpdate.month_names;
+    payloadToUpdate["month_name"] = formData.month_names[0];
+
     try {
-      const response = await update(formData as any);
+      const response = await update(payloadToUpdate as any);
       mutate("api/v1/course/batch");
       messageApi.open({
         type: "success",
@@ -109,6 +181,7 @@ export default function Batch() {
         course_id: "",
         session_id: "",
         month_names: [],
+        year: "",
       });
     } catch (error: any) {
       messageApi.open({
@@ -157,6 +230,7 @@ export default function Batch() {
         course_id: "",
         session_id: "",
         month_names: [],
+        year: "",
       });
     } catch (error: any) {
       messageApi.open({
@@ -166,6 +240,28 @@ export default function Batch() {
           : " try again ",
       });
     }
+  };
+
+  const handleEdit = (id: number) => {
+    if (!confirm("Are you sure you want to edit this batch")) return;
+    setId(id);
+    const editData: any = batchList?.data?.find((data: any) => data?.id === id);
+    const yearName = editData?.year ?? "";
+    setFormData({
+      course_id: editData?.course_id,
+      session_id: editData?.session_id,
+      month_names:
+        yearName !== "" && !editData?.month_name.includes(" - ")
+          ? [`${editData?.month_name} - ${yearName}`]
+          : ([editData?.month_name] as any),
+      year: yearName,
+    });
+
+    setOptions([
+      {
+        name: editData?.month_name,
+      },
+    ]);
   };
 
   return (
@@ -218,6 +314,18 @@ export default function Batch() {
                       ))}
                     </select>
                   </div>
+                  <div className="w-12/12  mb-4">
+                    <label className="block text-sm text-start mt-1 dark:text-gray-400 text-gray-700 mb-1">
+                      Year
+                    </label>
+                    <input
+                      name="year"
+                      type="text"
+                      value={formData.year}
+                      onChange={handleChange}
+                      className="w-full px-3 py-3 bg-gray-100 pl-2.5 pr-2 text-sm hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                    />
+                  </div>
                   <div>
                     {/* <Label htmlFor="inputOne">{"S/elect Batch Month"}</Label> */}
                     <MultiSelectName
@@ -258,7 +366,7 @@ export default function Batch() {
             </div>
             <BasicTableBatch
               batchList={batchList}
-              // onEdit={handleEdit}
+              onEdit={handleEdit}
               onActive={handleActive}
               onSendData={handleChildData}
               mutateBatchList={mutateBatchList}

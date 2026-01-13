@@ -23,6 +23,7 @@ ALLOWED_BATCH_FIELDS.set("session_id", "b.session_id");
 ALLOWED_BATCH_FIELDS.set("month_name", "b.month_name");
 ALLOWED_BATCH_FIELDS.set("is_active", "b.is_active");
 ALLOWED_BATCH_FIELDS.set("created_at", "b.created_at");
+ALLOWED_BATCH_FIELDS.set("year", "b.year");
 
 ALLOWED_BATCH_FIELDS.set("session_name", "s.name AS session_name");
 ALLOWED_BATCH_FIELDS.set("course_name", "c.name AS course_name");
@@ -40,7 +41,7 @@ avilable_permissions.set("9", "Purchase Record");
 avilable_permissions.set("10", "Maintenance Record");
 avilable_permissions.set("11", "Stuff Attandance");
 
-export const MONTHLY_PAYMENT_HEAD_ID = 4
+export const MONTHLY_PAYMENT_HEAD_ID = 4;
 export const LATE_FINE_FEE_HEAD_ID = 5;
 export const ADMISSION_FEE_HEAD_ID = 3;
 export const BSS_FEE_HEAD_ID = 3;

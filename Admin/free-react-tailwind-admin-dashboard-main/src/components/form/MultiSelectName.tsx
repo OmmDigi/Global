@@ -1,9 +1,8 @@
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface Option {
   name: string;
- 
 }
 
 interface MultiSelectProps {
@@ -24,6 +23,10 @@ const MultiSelectName: React.FC<MultiSelectProps> = ({
   const [selectedOptions, setSelectedOptions] =
     useState<string[]>(defaultSelected);
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    setSelectedOptions(defaultSelected);
+  }, [defaultSelected]);
 
   const toggleDropdown = () => {
     if (!disabled) setIsOpen((prev) => !prev);
@@ -111,7 +114,7 @@ const MultiSelectName: React.FC<MultiSelectProps> = ({
                     className={`stroke-current ${isOpen ? "rotate-180" : ""}`}
                     width="20"
                     height="20"
-                     onClick={toggleDropdown}
+                    onClick={toggleDropdown}
                     viewBox="0 0 20 20"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -135,7 +138,7 @@ const MultiSelectName: React.FC<MultiSelectProps> = ({
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex flex-col">
-                {options.map((option :any, index : number) => (
+                {options.map((option: any, index: number) => (
                   <div
                     key={index}
                     className={`hover:bg-primary/5 w-full cursor-pointer rounded-t border-b border-gray-200 dark:border-gray-800`}

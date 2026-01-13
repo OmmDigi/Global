@@ -19,6 +19,7 @@ import {
   VGetSessionList,
   // VSingleFeeStructure,
   VSingleSession,
+  VUpdateBatch,
   VUpdateCourse,
   VUpdateFeeHead,
   // VUpdateFeeStructure,
@@ -475,7 +476,6 @@ export const updateCourse = asyncErrorHandler(async (req, res) => {
   }
 });
 
-
 export const getCourseWithBatchSession = asyncErrorHandler(async (req, res) => {
   let sessionFilter = "WHERE b2.course_id = c.id AND s.id IS NOT NULL";
   let batchFilter = "WHERE b3.course_id = c.id AND b3.id IS NOT NULL";
@@ -484,10 +484,10 @@ export const getCourseWithBatchSession = asyncErrorHandler(async (req, res) => {
   const crmHostUrl = process.env.CRM_HOST_URL;
   const headerOrigin = req.headers.origin;
 
-  if(crmHostUrl && headerOrigin && !crmHostUrl.includes(headerOrigin)) {
+  if (crmHostUrl && headerOrigin && !crmHostUrl.includes(headerOrigin)) {
     sessionFilter += " AND s.is_active = true";
     batchFilter += " AND b3.is_active = true";
-    courseFilter += " AND c.is_active = true"
+    courseFilter += " AND c.is_active = true";
   }
 
   const { rows } = await pool.query(
@@ -542,13 +542,21 @@ export const createBatch = asyncErrorHandler(async (req, res) => {
 
   const placeholder = months
     .map(
-      (_, index) => `($${index * 3 + 1}, $${index * 3 + 2}, $${index * 3 + 3})`
+      (_, index) =>
+        `($${index * 4 + 1}, $${index * 4 + 2}, $${index * 4 + 3}, $${
+          index * 4 + 4
+        })`
     )
     .join(", ");
 
   await pool.query(
-    `INSERT INTO batch (course_id, session_id, month_name) VALUES ${placeholder}`,
-    months.flatMap((month) => [value.course_id, value.session_id, month])
+    `INSERT INTO batch (course_id, session_id, month_name, year) VALUES ${placeholder}`,
+    months.flatMap((month) => [
+      value.course_id,
+      value.session_id,
+      month,
+      value.year,
+    ])
   );
 
   res
@@ -621,7 +629,8 @@ export const getBatch = asyncErrorHandler(async (req, res) => {
 });
 
 export const updateBatch = asyncErrorHandler(async (req, res) => {
-  const { error, value } = VUpdateSession.validate(req.body ?? {});
+  // const { error, value } = VUpdateSession.validate(req.body ?? {});
+  const { error, value } = VUpdateBatch.validate(req.body ?? {});
   if (error) throw new ErrorHandler(400, error.message);
 
   const id_to_update = value.id;

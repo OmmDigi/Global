@@ -114,4 +114,30 @@ export const VCreateBatches = Joi.object({
   course_id: Joi.number().required(),
   session_id: Joi.number().required(),
   month_names: Joi.array().items(Joi.string()).required(),
+  year: Joi.string().required(),
+});
+
+export const VUpdateBatch = Joi.object({
+  id: Joi.number().required(),
+  is_active: Joi.bool().optional(),
+  course_id: Joi.when("is_active", {
+    is: Joi.exist(),
+    then: Joi.number().optional(),
+    otherwise: Joi.number().required(),
+  }),
+  session_id: Joi.when("is_active", {
+    is: Joi.exist(),
+    then: Joi.number().optional(),
+    otherwise: Joi.number().required(),
+  }),
+  month_name: Joi.when("is_active", {
+    is: Joi.exist(),
+    then: Joi.string().optional(),
+    otherwise: Joi.string().required(),
+  }),
+  year: Joi.when("is_active", {
+    is: Joi.exist(),
+    then: Joi.string().optional(),
+    otherwise: Joi.string().required(),
+  }),
 });
