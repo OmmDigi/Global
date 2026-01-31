@@ -486,8 +486,10 @@ export const getSingleAdmissionData = async (
           WHEN cfh.id IN (${MONTHLY_PAYMENT_HEAD_ID}, ${LATE_FINE_FEE_HEAD_ID}) THEN p.month
           ELSE NULL
         END,
-        --p.payment_date,
+        p.payment_date,
         cfh.position ASC;
+        -- cfh.position ASC,
+        -- p.payment_date DESC;
       `,
       paymentListValues
     );
