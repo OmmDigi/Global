@@ -97,7 +97,7 @@ export default function CourseDetailsAdmin() {
 
   const { data: feeHeadList } = useSWR(
     `api/v1/course/fee-head?${searchParams.toString()}`,
-    getFetcher
+    getFetcher,
   );
 
   //  if(!feesStructure?.data?.student_name){
@@ -109,18 +109,18 @@ export default function CourseDetailsAdmin() {
   // admin payment
   const { trigger: create } = useSWRMutation(
     `api/v1/payment/add`,
-    (url, { arg }) => postFetcher(url, arg)
+    (url, { arg }) => postFetcher(url, arg),
   );
 
   const { trigger: addCreate } = useSWRMutation(
     `api/v1/admission/fee-head`,
-    (url, { arg }) => postFetcher(url, arg)
+    (url, { arg }) => postFetcher(url, arg),
   );
 
   const { trigger: deleteFeeHead, isMutating } = useSWRMutation(
     `api/v1/admission`,
     (url, { arg }: { arg: { formid: number; feeheadid: number } }) =>
-      deleteFetcher(`${url}/${arg.formid}/${arg.feeheadid}`) // arg contains the id
+      deleteFetcher(`${url}/${arg.formid}/${arg.feeheadid}`), // arg contains the id
   );
 
   //
@@ -236,7 +236,7 @@ export default function CourseDetailsAdmin() {
         payment_date: selectedDates[item.fee_head_id]
           ? dayjs(selectedDates[item.fee_head_id]).format("YYYY-MM-DD")
           : null,
-      })
+      }),
     );
 
     const finalFormData = {
@@ -252,7 +252,7 @@ export default function CourseDetailsAdmin() {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -297,7 +297,7 @@ export default function CourseDetailsAdmin() {
   };
 
   const handleAddAmountChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     setAddFormData((prev) => ({
@@ -337,6 +337,7 @@ export default function CourseDetailsAdmin() {
 
   // Handle save per row
   const handleRowSave = (item: any) => {
+    paymentModeDropdownRef.current[item.fee_head_id]?.focus();
     const fee_structure_info = [
       {
         fee_head_id: item.fee_head_id,
@@ -370,6 +371,7 @@ export default function CourseDetailsAdmin() {
 
   const handleEdit = (fee: any) => {
     feeHeadRef.current?.scrollIntoView({ behavior: "smooth" });
+    paymentModeDropdownRef.current[fee.fee_head_id]?.focus();
     currentEditFeeHeadId.current = fee.fee_head_id;
     setEditId([fee?.id, fee?.fee_head_id]);
     const feeList =
@@ -377,7 +379,7 @@ export default function CourseDetailsAdmin() {
 
     // find the matching record by fee_head_id
     const existingFee = feeList.find(
-      (item: any) => Number(item.fee_head_id) === Number(fee.fee_head_id)
+      (item: any) => Number(item.fee_head_id) === Number(fee.fee_head_id),
     );
 
     if (!existingFee) {
@@ -419,6 +421,7 @@ export default function CourseDetailsAdmin() {
   };
 
   const handleUpdate = async (item: any) => {
+    paymentModeDropdownRef.current[item.fee_head_id]?.focus();
     const fee_structure_info = [
       {
         id: editId?.[0],
@@ -472,7 +475,7 @@ export default function CourseDetailsAdmin() {
   const handleRemoveFeeHead = async (fee_head_id: number) => {
     if (
       !confirm(
-        "After removing this fee head all payment list related to this fee head will remove. are you sure you want to continue ?"
+        "After removing this fee head all payment list related to this fee head will remove. are you sure you want to continue ?",
       )
     )
       return;
@@ -669,7 +672,7 @@ export default function CourseDetailsAdmin() {
                       const selected =
                         feesStructure?.data?.fee_structure_info.find(
                           (opt: any) =>
-                            opt.fee_head_id === Number(e.target.value)
+                            opt.fee_head_id === Number(e.target.value),
                         );
                       setFormData((prev) => ({
                         ...prev,
@@ -685,7 +688,7 @@ export default function CourseDetailsAdmin() {
                         <option key={i} value={opt.fee_head_id}>
                           {opt.fee_head_name}
                         </option>
-                      )
+                      ),
                     )}
                   </select>
                 </div>
@@ -723,7 +726,7 @@ export default function CourseDetailsAdmin() {
                     value={addFormData.fee_head_id}
                     onChange={(e) => {
                       const selected = feeHeadList?.data?.find(
-                        (opt: any) => opt.id === Number(e.target.value)
+                        (opt: any) => opt.id === Number(e.target.value),
                       );
                       setAddFormData((prev) => ({
                         ...prev,
@@ -978,9 +981,6 @@ export default function CourseDetailsAdmin() {
                                   <div
                                     onClick={() => {
                                       handleUpdate(item);
-                                      paymentModeDropdownRef.current[
-                                        item.fee_head_id
-                                      ]?.focus();
                                     }}
                                     className="px-2 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition cursor-pointer"
                                   >
@@ -992,9 +992,6 @@ export default function CourseDetailsAdmin() {
                                     disabled={isPending}
                                     onClick={() => {
                                       handleRowSave(item);
-                                      paymentModeDropdownRef.current[
-                                        item.fee_head_id
-                                      ]?.focus();
                                     }}
                                     className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
                                   >

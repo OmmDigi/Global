@@ -174,7 +174,7 @@ export default function AdmissionAdmin() {
 
   const { data: admissionlist, mutate: mutateAdmissionList } = useSWR(
     `api/v1/admission?${searchParams.toString()}`,
-    getFetcher
+    getFetcher,
   );
 
   const handleSearch = () => {
@@ -257,21 +257,21 @@ export default function AdmissionAdmin() {
 
   const { trigger: create } = useSWRMutation(
     "api/v1/admission/create",
-    (url, { arg }) => postFetcher(url, arg)
+    (url, { arg }) => postFetcher(url, arg),
   );
 
   // update course
   const { trigger: update } = useSWRMutation(
     "api/v1/admission/form",
-    (url, { arg }) => putFetcher(url, arg)
+    (url, { arg }) => putFetcher(url, arg),
   );
   const { trigger: update2 } = useSWRMutation(
     "api/v1/admission",
-    (url, { arg }) => patchFetcher(url, arg)
+    (url, { arg }) => patchFetcher(url, arg),
   );
 
   const handleInputChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     setBatch(value);
@@ -281,7 +281,7 @@ export default function AdmissionAdmin() {
     }));
   };
   const handleSessionChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     setChangeSession(value);
@@ -317,7 +317,7 @@ export default function AdmissionAdmin() {
   const handleEducationChange = (
     level: string,
     field: string,
-    value: string
+    value: string,
   ) => {
     setFormData((prev: any) => ({
       ...prev,
@@ -400,6 +400,7 @@ export default function AdmissionAdmin() {
       }
       mutateAdmissionList();
       setCurrent(0);
+      jumpToTop();
     } catch (error: any) {
       messageApi.open({
         type: "error",
@@ -457,7 +458,7 @@ export default function AdmissionAdmin() {
       setId(0);
       setMontessoriTeachers(false);
       setCurrent(0);
-
+      jumpToTop();
       setFormData(initialFormData);
     } catch (error: any) {
       messageApi.open({
@@ -509,9 +510,8 @@ export default function AdmissionAdmin() {
     });
   };
 
+  const nextButtonRef = useRef<HTMLButtonElement>(null);
   const next = () => {
-    // jumpToTop();
-
     if (
       formData.date === `${year}-01-01` &&
       !confirm("Have you changed the admission date ?")
@@ -520,6 +520,16 @@ export default function AdmissionAdmin() {
 
     setCurrent(current + 1);
   };
+
+  useEffect(() => {
+    if (current != 0) {
+      nextButtonRef.current?.scrollIntoView({
+        behavior: "instant",
+        block: "center",
+      });
+    }
+  }, [current]);
+
   const prev = () => {
     // jumpToTop();
     setCurrent(current - 1);
@@ -673,7 +683,7 @@ export default function AdmissionAdmin() {
                                   <option key={index} value={`${data?.id}`}>
                                     {data?.course_name}
                                   </option>
-                                )
+                                ),
                               )}
                             </select>
                           </div>
@@ -706,7 +716,7 @@ export default function AdmissionAdmin() {
                                     >
                                       {session.session_name}
                                     </option>
-                                  )
+                                  ),
                                 )}
                               </select>
                             </div>
@@ -731,7 +741,7 @@ export default function AdmissionAdmin() {
                                     (batch: any) =>
                                       batch.session_id ==
                                       (formDataParams.sessionName ??
-                                        formData.sessionName)
+                                        formData.sessionName),
                                   )
                                   .map((batch: any, index: number) => (
                                     <option
@@ -1059,12 +1069,12 @@ export default function AdmissionAdmin() {
                                           {level === "madhyamik"
                                             ? "Madhyamik"
                                             : level === "hsH2"
-                                            ? "H.S/H-2"
-                                            : level === "degree"
-                                            ? "Degree"
-                                            : level === "pg"
-                                            ? "PG"
-                                            : "Others (Specify)"}
+                                              ? "H.S/H-2"
+                                              : level === "degree"
+                                                ? "Degree"
+                                                : level === "pg"
+                                                  ? "PG"
+                                                  : "Others (Specify)"}
                                         </td>
                                         <td className="border border-gray-300 p-2">
                                           <input
@@ -1074,7 +1084,7 @@ export default function AdmissionAdmin() {
                                               handleEducationChange(
                                                 level,
                                                 "subjects",
-                                                e.target.value
+                                                e.target.value,
                                               )
                                             }
                                             className="w-full px-2 py-1 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -1088,7 +1098,7 @@ export default function AdmissionAdmin() {
                                               handleEducationChange(
                                                 level,
                                                 "board",
-                                                e.target.value
+                                                e.target.value,
                                               )
                                             }
                                             className="w-full px-2 py-1 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -1102,7 +1112,7 @@ export default function AdmissionAdmin() {
                                               handleEducationChange(
                                                 level,
                                                 "year",
-                                                e.target.value
+                                                e.target.value,
                                               )
                                             }
                                             className="w-full px-2 py-1 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -1116,14 +1126,14 @@ export default function AdmissionAdmin() {
                                               handleEducationChange(
                                                 level,
                                                 "marks",
-                                                e.target.value
+                                                e.target.value,
                                               )
                                             }
                                             className="w-full px-2 py-1 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                                           />
                                         </td>
                                       </tr>
-                                    )
+                                    ),
                                   )}
                                 </tbody>
                               </table>
@@ -1221,7 +1231,7 @@ export default function AdmissionAdmin() {
                                     onChange={(e) =>
                                       handleFileChange(
                                         e,
-                                        "selfAttestedLastResult"
+                                        "selfAttestedLastResult",
                                       )
                                     }
                                     multiple
@@ -1255,7 +1265,7 @@ export default function AdmissionAdmin() {
                                                 onClick={() =>
                                                   removeFile2(
                                                     "selfAttestedLastResult",
-                                                    index
+                                                    index,
                                                   )
                                                 }
                                                 className="text-red-500 hover:text-red-700 ml-2"
@@ -1264,7 +1274,7 @@ export default function AdmissionAdmin() {
                                               </button>
                                             </div>
                                           </div>
-                                        )
+                                        ),
                                       )}
                                     </div>
                                   )}
@@ -1300,7 +1310,7 @@ export default function AdmissionAdmin() {
                                               onClick={() =>
                                                 removeFile2(
                                                   "ageProofAdmitCard",
-                                                  index
+                                                  index,
                                                 )
                                               }
                                               className="text-red-500 hover:text-red-700 ml-2"
@@ -1308,7 +1318,7 @@ export default function AdmissionAdmin() {
                                               ×
                                             </button>
                                           </div>
-                                        )
+                                        ),
                                       )}
                                     </div>
                                   )}
@@ -1344,7 +1354,7 @@ export default function AdmissionAdmin() {
                                               onClick={() =>
                                                 removeFile2(
                                                   "addressProof",
-                                                  index
+                                                  index,
                                                 )
                                               }
                                               className="text-red-500 hover:text-red-700 ml-2"
@@ -1352,7 +1362,7 @@ export default function AdmissionAdmin() {
                                               ×
                                             </button>
                                           </div>
-                                        )
+                                        ),
                                       )}
                                     </div>
                                   )}
@@ -1839,6 +1849,7 @@ export default function AdmissionAdmin() {
                         ) : (
                           <Button
                             type="primary"
+                            ref={nextButtonRef}
                             onClick={() => {
                               next();
                             }}
@@ -1997,7 +2008,7 @@ export default function AdmissionAdmin() {
                       <option key={index} value={`${session?.session_id}`}>
                         {session.session_name}
                       </option>
-                    )
+                    ),
                   )}
                 </select>
               </div>
@@ -2020,7 +2031,7 @@ export default function AdmissionAdmin() {
                     ?.filter(
                       (batch: any) =>
                         batch.session_id == formData.sessionName ||
-                        batch.session_id == formDataParams.sessionName
+                        batch.session_id == formDataParams.sessionName,
                     )
                     .map((batch: any, index: number) => (
                       <option key={index} value={`${batch.batch_id}`}>
