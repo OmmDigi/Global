@@ -268,6 +268,7 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
         b.month_name AS batch_name,
         CASE WHEN ff.status = 2 THEN true ELSE false END AS form_status
         -- JSON_AGG(JSON_BUILD_OBJECT('batch_id', b.id, 'batch_name', b.month_name)) AS batches
+        (SELECT SUM(total_collection) FROM total_fee_calcluction) AS global_total_collection
       FROM fillup_forms ff
   
       LEFT JOIN users u
