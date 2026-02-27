@@ -127,6 +127,7 @@ export default function AdmissionAdmin() {
   const [formSearch, setFormSearch] = useState<any>({});
   const [pageCount] = useState<number>(0);
   const [searchParams, setSearchParams] = useSearchParams();
+  const admissionDateFormRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (course && batch && changeSession && pageCount && formSearch) {
@@ -400,7 +401,8 @@ export default function AdmissionAdmin() {
       }
       mutateAdmissionList();
       setCurrent(0);
-      jumpToTop();
+      jumpToTop(200);
+      admissionDateFormRef.current?.focus();
     } catch (error: any) {
       messageApi.open({
         type: "error",
@@ -503,9 +505,9 @@ export default function AdmissionAdmin() {
     setMontessoriTeachers(true);
   };
 
-  const jumpToTop = () => {
+  const jumpToTop = (fromTop?:number) => {
     window.scrollTo({
-      top: 50,
+      top: fromTop ?? 50,
       behavior: "smooth",
     });
   };
@@ -605,7 +607,6 @@ export default function AdmissionAdmin() {
         <div className="space-y-6 ">
           <ComponentCard title="Admission">
             {/* form body  */}
-
             <div
               onClick={
                 montessoriTeachers ? handleTeacherShow : handleTeacherClose
@@ -639,13 +640,13 @@ export default function AdmissionAdmin() {
 
             {montessoriTeachers && (
               <div>
-                <div className="p-7 pl-30 pr-30  flex items-center sticky top-20 bg-gray-100  dark:bg-gray-800 dark:text-gray-100   text-gray-800  z-20 justify-center">
-                  {/* <Steps
+                {/* <div className="p-7 pl-30 pr-30  flex items-center sticky top-20 bg-gray-100  dark:bg-gray-800 dark:text-gray-100   text-gray-800  z-20 justify-center">
+                  <Steps
                     style={{ fontSize: "20px", width: "" }}
                     current={current}
                     items={items}
-                  /> */}
-                </div>
+                  />
+                </div> */}
 
                 {/* form body  */}
                 <div style={contentStyle}>
@@ -758,6 +759,7 @@ export default function AdmissionAdmin() {
                                 Date <span className="text-red-500">*</span>
                               </label>
                               <input
+                                ref={admissionDateFormRef}
                                 type="date"
                                 name="date"
                                 value={formData.date}
