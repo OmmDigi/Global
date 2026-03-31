@@ -1,13 +1,14 @@
 "use client";
 
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Button } from "@headlessui/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { message } from "antd";
 import useSWR from "swr";
 import { getFetcher } from "@/lib/fetcher";
+import { Loader2 } from "lucide-react";
 
 export default function AdmissionPopup({ isOpen, setIsOpem }) {
   const searchParams = useSearchParams();
@@ -15,6 +16,7 @@ export default function AdmissionPopup({ isOpen, setIsOpem }) {
   const [formOpen, setFormOpen] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   const [selectedCourses, setSelectedCourses] = useState([]);
+  const [isPending, startTransition] = useTransition();
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -68,7 +70,7 @@ export default function AdmissionPopup({ isOpen, setIsOpem }) {
     try {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}api/v1/users/login`,
-        formData
+        formData,
       );
       messageApi.open({
         type: "success",
@@ -104,7 +106,7 @@ export default function AdmissionPopup({ isOpen, setIsOpem }) {
     const value = e.target.value;
 
     const courseName = courseList?.data.find(
-      (item) => item.id == value
+      (item) => item.id == value,
     )?.course_name;
 
     if (value && !selectedCourses.includes(value)) {
@@ -117,35 +119,39 @@ export default function AdmissionPopup({ isOpen, setIsOpem }) {
     setSelectedCourses(selectedCourses.filter((c) => c.value !== id));
   };
 
-  const handleEnquirySubmit = async (e) => {
+  const handleEnquirySubmit = (e) => {
     e.preventDefault();
 
     const arrayId = [];
     selectedCourses.forEach((item) => {
       arrayId.push(parseInt(item.value));
     });
+
     enquiryData.course_ids = arrayId;
     enquiryData.message = "";
-    try {
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}api/v1/users/enquiry`,
-        enquiryData
-      );
 
-      messageApi.open({
-        type: "success",
-        content: res.data?.message || "Enquiry submitted successfully",
-      });
+    startTransition(async () => {
+      try {
+        const res = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}api/v1/users/enquiry`,
+          enquiryData,
+        );
 
-      setEnquiryData({});
-      setSelectedCourses([]);
-      setEnquiryOpen(false);
-    } catch (error) {
-      messageApi.open({
-        type: "error",
-        content: "Failed to submit enquiry",
-      });
-    }
+        messageApi.open({
+          type: "success",
+          content: res.data?.message || "Enquiry submitted successfully",
+        });
+
+        setEnquiryData({});
+        setSelectedCourses([]);
+        setEnquiryOpen(false);
+      } catch (error) {
+        messageApi.open({
+          type: "error",
+          content: "Failed to submit enquiry",
+        });
+      }
+    });
   };
 
   return isOpen ? (
@@ -156,7 +162,9 @@ export default function AdmissionPopup({ isOpen, setIsOpem }) {
         <button
           className="absolute top-6 right-6 text-white bg-white/20 hover:bg-white/40 p-2 rounded-full transition duration-300"
           onClick={() => (
-            setIsOpem(), setFormOpen(false), setEnquiryOpen(false)
+            setIsOpem(),
+            setFormOpen(false),
+            setEnquiryOpen(false)
           )}
         >
           <XMarkIcon aria-hidden="true" className="size-6" />
@@ -385,8 +393,8 @@ export default function AdmissionPopup({ isOpen, setIsOpem }) {
                   </div>
 
                   <div className="flex justify-center">
-                    <button className="bg-orange-400 px-6 py-2 rounded text-white">
-                      Submit
+                    <button disabled ={isPending} className="bg-orange-400 disabled:opacity-40 px-6 py-2 rounded text-white">
+                      {isPending ? <span className="flex items-center gap-1.5"><Loader2 className="animate-spin" size={18}/> Submitting...</span> : "Submit"}
                     </button>
                   </div>
                 </form>

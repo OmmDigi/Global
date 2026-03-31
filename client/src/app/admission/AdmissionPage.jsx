@@ -155,8 +155,6 @@ function AdmissionPage() {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   }
 
-  console.log("courseListdsas", courseList);
-
   // create Admission
 
   const {
