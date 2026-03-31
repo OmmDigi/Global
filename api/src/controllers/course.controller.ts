@@ -107,7 +107,7 @@ export const updateSession = asyncErrorHandler(async (req, res) => {
   values.push(id_to_update);
   await pool.query(
     `UPDATE session SET ${keys} WHERE id = $${paramsNum}`,
-    values
+    values,
   );
 
   res.status(200).json(new ApiResponse(200, "Single session info updated"));
@@ -119,7 +119,7 @@ export const getSingleSession = asyncErrorHandler(async (req, res) => {
 
   const { rows, rowCount } = await pool.query(
     "SELECT * FROM session WHERE id = $1",
-    [value.id]
+    [value.id],
   );
 
   if (rowCount === 0) throw new ErrorHandler(404, "Session not found");
@@ -152,7 +152,7 @@ export const updateFeeHead = asyncErrorHandler(async (req, res) => {
 
   await pool.query(
     `UPDATE course_fee_head SET ${keys} WHERE id = $${paramsNum}`,
-    values
+    values,
   );
 
   res
@@ -174,7 +174,7 @@ export const getFeeHeadList = asyncErrorHandler(async (req, res) => {
 
   const { rows } = await pool.query(
     `SELECT * FROM course_fee_head ${filter} ORDER BY id DESC`,
-    filterValues
+    filterValues,
   );
   res.status(200).json(new ApiResponse(200, "Fee head list", rows));
 });
@@ -185,7 +185,7 @@ export const getSingleFeeHead = asyncErrorHandler(async (req, res) => {
 
   const { rows, rowCount } = await pool.query(
     "SELECT * FROM course_fee_head WHERE id = $1",
-    [value.id]
+    [value.id],
   );
   if (rowCount === 0)
     throw new ErrorHandler(404, "No course fee head avilable");
@@ -271,14 +271,14 @@ export const createCourse = asyncErrorHandler(async (req, res) => {
     await client.query("BEGIN");
     const { rows } = await client.query(
       "INSERT INTO course (name, duration, duration_name, description) VALUES ($1, $2, $3, $4) RETURNING id",
-      [value.name, value.duration, value.duration_name, value.description]
+      [value.name, value.duration, value.duration_name, value.description],
     );
 
     const course_id = rows[0].id;
 
     await client.query(
       "DELETE FROM course_fee_structure WHERE course_id = $1",
-      [course_id]
+      [course_id],
     );
 
     const fee_structure = value.fee_structure as {
@@ -297,7 +297,7 @@ export const createCourse = asyncErrorHandler(async (req, res) => {
         item.amount,
         item.min_amount,
         item.required,
-      ])
+      ]),
     );
 
     await client.query("COMMIT");
@@ -359,7 +359,7 @@ export const getCourseList = asyncErrorHandler(async (req, res) => {
       GROUP BY c.id
       ORDER BY c.id DESC 
       ${TO_STRING}`,
-    filterValues
+    filterValues,
   );
 
   res.status(200).json(new ApiResponse(200, "Course List", rows, []));
@@ -400,7 +400,7 @@ export const getSingleCourse = asyncErrorHandler(async (req, res) => {
      WHERE c.id = $1
      
      GROUP BY c.id`,
-    [value.id]
+    [value.id],
   );
   if (rowCount === 0)
     throw new ErrorHandler(400, "No course avilable with this id");
@@ -442,13 +442,13 @@ export const updateCourse = asyncErrorHandler(async (req, res) => {
 
     await pool.query(
       `UPDATE course SET ${keys} WHERE id = $${paramsNum}`,
-      values
+      values,
     );
 
     if (fee_structure.length !== 0) {
       await client.query(
         "DELETE FROM course_fee_structure WHERE course_id = $1",
-        [course_id]
+        [course_id],
       );
 
       const placeholder = generatePlaceholders(fee_structure.length, 5);
@@ -461,7 +461,7 @@ export const updateCourse = asyncErrorHandler(async (req, res) => {
           item.amount,
           item.min_amount,
           item.required,
-        ])
+        ]),
       );
     }
 
@@ -527,7 +527,7 @@ export const getCourseWithBatchSession = asyncErrorHandler(async (req, res) => {
     FROM course c
     
     ${courseFilter}
-    `
+    `,
   );
 
   res.status(200).json(new ApiResponse(200, "Course Info For DropDown", rows));
@@ -545,7 +545,7 @@ export const createBatch = asyncErrorHandler(async (req, res) => {
       (_, index) =>
         `($${index * 4 + 1}, $${index * 4 + 2}, $${index * 4 + 3}, $${
           index * 4 + 4
-        })`
+        })`,
     )
     .join(", ");
 
@@ -556,7 +556,7 @@ export const createBatch = asyncErrorHandler(async (req, res) => {
       value.session_id,
       month,
       value.year,
-    ])
+    ]),
   );
 
   res
@@ -622,7 +622,7 @@ export const getBatch = asyncErrorHandler(async (req, res) => {
       ${filter}
       ORDER BY id DESC 
       ${TO_STRING}`,
-    filterValues
+    filterValues,
   );
 
   res.status(200).json(new ApiResponse(200, "Batch List", rows));

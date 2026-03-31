@@ -22,6 +22,7 @@ import {
   VUpdateLoanOrAdvancePayment,
   VUpdateTeacherClassStatus,
   VUpdateUser,
+  VUpdateUserProfile,
 } from "../validator/users.validator";
 import { CustomRequest, TeacherFeeStruct } from "../types";
 import {
@@ -853,6 +854,23 @@ export const manageTeacherDailyClassStatus = asyncErrorHandler(
     // }
   }
 );
+
+export const updateStudentProfileImage = asyncErrorHandler(async (req: CustomRequest, res) => {
+  const { error, value } = VUpdateUserProfile.validate(req.body ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
+
+  const userId = req.user_info?.id;
+  if (!userId) throw new ErrorHandler(401, "Unauthorize");
+
+  await pool.query(
+    "UPDATE users SET image = $1 WHERE id = $2 AND category = 'Student'",
+    [value.image, userId]
+  );
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Profile image updated successfully"));
+})
 
 /**
  * Generate payslips in a streaming + batched fashion.

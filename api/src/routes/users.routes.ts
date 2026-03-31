@@ -22,6 +22,7 @@ import {
   manageTeacherDailyClassStatus,
   updateEnquiryStatus,
   updateLoadnInfo,
+  updateStudentProfileImage,
   updateUser,
 } from "../controllers/users.controller";
 import { isAuthorized } from "../middlewares/isAuthorized";
@@ -61,6 +62,8 @@ usersRoutes
   .put("/loan", isAuthorized(11), updateLoadnInfo)
   .get("/loan", isAuthorized(11), getLoanList)
   .get("/loan/:id", isAuthorized(11), getSingleLoanInfo)
+
+  .patch("/profile/image", isAuthenticated, updateStudentProfileImage)
 
   .get("/:id", isAuthorized(7, true), getOneUser)
   .get("/", isAuthorized(7), getUsersList)

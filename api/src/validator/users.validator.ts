@@ -60,6 +60,10 @@ export const VCreateUser = Joi.object({
   ),
 });
 
+export const VUpdateUserProfile = Joi.object({
+  image: Joi.string().required().label("Profile Image"),
+});
+
 export const VUpdateUser = Joi.object({
   id: Joi.number().required(),
   category: Joi.string()

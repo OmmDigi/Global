@@ -5,10 +5,10 @@ import { PaymentResponse } from "../types";
 import {
   StandardCheckoutClient,
   Env,
-  CreateSdkOrderRequest,
-  MetaInfo,
+  // CreateSdkOrderRequest,
+  // MetaInfo,
   StandardCheckoutPayRequest,
-} from "pg-sdk-node";
+} from "@phonepe-pg/pg-sdk-node";
 
 interface ICreateOrderPayload {
   merchantUserId: string;

@@ -29,20 +29,31 @@ export const isAuthorized = (
 
     // now check the permission
     const user_permissions_array = JSON.parse(
-      userInfo.permissions ?? "[]"
+      userInfo.permissions ?? "[]",
     ) as number[];
 
     const route_ids = Array.isArray(route_id) ? route_id : [route_id];
 
-    const hasCommon = route_ids.some(item => user_permissions_array.includes(item));
+    const hasCommon = route_ids.some((item) =>
+      user_permissions_array.includes(item),
+    );
 
     if (!hasCommon) {
       const currentRequestId =
         req.params?.id ?? req.query?.user_id ?? req.body?.user_id;
-      if (view_own_only === true && parseInt(currentRequestId) == userInfo.id) {
+
+      const requestIds : string[] = [];
+      if(typeof currentRequestId === "string") {
+        requestIds.push(currentRequestId);
+      } else if(Array.isArray(currentRequestId)) {
+        requestIds.push(...currentRequestId);
+      }
+
+      if(view_own_only === true && requestIds.some(id => parseInt(id) === userInfo.id)) {
         next();
         return;
       }
+
       throw new ErrorHandler(403, "Forbidden error");
     }
 

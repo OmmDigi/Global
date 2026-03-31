@@ -1,5 +1,5 @@
 import PageMeta from "../../../components/common/PageMeta";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import { useParams } from "react-router-dom";
 import { message } from "antd";
@@ -7,21 +7,33 @@ import ComponentCard from "../../../components/common/ComponentCard";
 import Label from "../../../components/form/Label";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
-import { getFetcher, patchFetcher, postFetcher } from "../../../api/fatcher";
+import {
+  getFetcher,
+  patchFetcher,
+  postFetcher,
+  uploadUrl,
+} from "../../../api/fatcher";
 // import BasicTableCourses from "../../../components/tables/studentTable/BasicTableCourses";
 import BasicTableFeesList from "../../../components/tables/studentTable/BasicTableFeesList";
 import DatePicker from "react-datepicker";
 import dayjs from "dayjs";
+import { uploadFiles } from "../../../utils/uploadFile";
+import Button from "../../../components/ui/button/Button";
+import { Loader2 } from "lucide-react";
 // import DatePicker from "react-datepicker";
 // import BasicTableCourseDetailsAdmin from "../../../components/tables/BasicTables/BasicTableCourseDetailsAdmin";
 
 export default function CourseDetails() {
   const [messageApi, contextHolder] = message.useMessage();
   const [isPending, startTransition] = useTransition();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const [month, setMonth] = useState<{
     [key: number]: Date | null;
   }>({});
+
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   // const months = useRef<{
   //   monthly_fee_month: string | null;
@@ -47,11 +59,11 @@ export default function CourseDetails() {
 
   const { trigger: create } = useSWRMutation(
     "api/v1/admission/accept-declaration-status",
-    (url, { arg }) => patchFetcher(url, arg)
+    (url, { arg }) => patchFetcher(url, arg),
   );
   const { trigger: create2 } = useSWRMutation(
     "api/v1/payment/create-order",
-    (url, { arg }) => postFetcher(url, arg)
+    (url, { arg }) => postFetcher(url, arg),
   );
   if (feesStructureLoading) {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
@@ -77,7 +89,7 @@ export default function CourseDetails() {
         month: month[item.fee_head_id]
           ? dayjs(month[item.fee_head_id]).format("YYYY-MM")
           : null,
-      })
+      }),
     );
 
     const finalFormData = {
@@ -109,12 +121,12 @@ export default function CourseDetails() {
   //   mutate();
   // };
   const admissionFees = feesStructure?.data?.fee_structure_info?.find(
-    (item: any) => item.fee_head_id == 3
+    (item: any) => item.fee_head_id == 3,
   );
   // .filter((price: number | null) => price !== null);
 
   const bssFees = feesStructure?.data?.fee_structure_info?.find(
-    (item: any) => item.fee_head_id === 6
+    (item: any) => item.fee_head_id === 6,
   );
 
   const fees_structure_table = feesStructure?.data?.payments_history;
@@ -134,6 +146,57 @@ export default function CourseDetails() {
         content: error.response?.data?.message
           ? error.response?.data?.message
           : " try again ",
+      });
+    }
+  };
+
+  const updateProfileImage = async (imageUrl: string) => {
+    try {
+      const response = await patchFetcher(`api/v1/users/profile/image`, {
+        image: imageUrl,
+      });
+      messageApi.success(response.message);
+      setPhoto(imageUrl);
+    } catch (error: any) {
+      messageApi.open({
+        type: "error",
+        content: error.response?.data?.message
+          ? error.response?.data?.message
+          : " try again ",
+      });
+    }
+  };
+
+  const handleFileUpload = (e: any, type: string) => {
+    const file = e.target.files[0];
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event: ProgressEvent<FileReader>) => {
+        const result = event.target?.result as string;
+        if (type === "photo") {
+          setPhoto(result as any);
+        }
+      };
+      reader.readAsDataURL(file);
+      setIsUploading(true);
+
+      uploadFiles({
+        url: `${uploadUrl}api/v1/upload/multiple`,
+        files: [file],
+        folder: "profile_image",
+        onUploaded(result) {
+          const imageUrl = result[0].url;
+          updateProfileImage(imageUrl);
+          setIsUploading(false);
+        },
+        onError() {
+          setIsUploading(false);
+          messageApi.open({
+            type: "error",
+            content: "Image upload failed. Please try again.",
+          });
+        },
       });
     }
   };
@@ -258,17 +321,57 @@ export default function CourseDetails() {
               <div className="space-y-6  ">
                 <ComponentCard title="Profile">
                   <div className="space-y-6">
-                    <div className=" font-medium flex justify-center text-gray-500 text-theme-xs dark:text-gray-400 mb-10">
+                    <div className="font-medium relative flex justify-center text-gray-500 text-theme-xs dark:text-gray-400 mb-10">
                       <img
                         src={
-                          feesStructure?.data?.student_image
-                            ? feesStructure?.data?.student_image
-                            : "/images/chat/chat.jpg"
+                          photo
+                            ? photo
+                            : feesStructure?.data?.student_image !== ""
+                              ? feesStructure?.data?.student_image
+                              : "/images/chat/chat.jpg"
                         }
                         // src="/images/chat/chat.jpg"
-                        alt="/images/chat/chat.jpg"
+                        alt="Student Image"
                         className="h-30 w-30 rounded-full"
                       />
+                      <input
+                        ref={inputRef}
+                        type="file"
+                        accept="image/*"
+                        className="absolute -z-10 opacity-0"
+                        onChange={(e) => handleFileUpload(e, "photo")}
+                      />
+                    </div>
+
+                    {isUploading && (
+                      <div className="flex items-center justify-center">
+                        <Loader2 className="animate-spin text-white" />
+                        <p className="text-white text-sm ml-1">Uploading..</p>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-6">
+                      <Button
+                        onClick={() => {
+                          inputRef.current?.click();
+                        }}
+                      >
+                        Upload Image
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          window.open(
+                            photo
+                              ? photo
+                              : feesStructure?.data?.student_image !== ""
+                                ? feesStructure?.data?.student_image
+                                : "/images/chat/chat.jpg",
+                          );
+                        }}
+                        variant="outline"
+                      >
+                        View Image
+                      </Button>
                     </div>
 
                     <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
@@ -321,10 +424,10 @@ export default function CourseDetails() {
                           Total Paid Fee :{" "}
                           <span className="font-semibold text-green-500">
                             {parseFloat(
-                              feesStructure?.data?.course_fee ?? "0.00"
+                              feesStructure?.data?.course_fee ?? "0.00",
                             ) -
                               parseFloat(
-                                feesStructure?.data?.due_amount ?? "0.00"
+                                feesStructure?.data?.due_amount ?? "0.00",
                               )}
                           </span>
                         </Label>
@@ -348,11 +451,11 @@ export default function CourseDetails() {
                         ""
                       )}
                     </div>
-                     <div>
-                        <Label htmlFor="inputTwo">
-                          Admission Date : {feesStructure?.data?.admission_date}
-                        </Label>
-                      </div>
+                    <div>
+                      <Label htmlFor="inputTwo">
+                        Admission Date : {feesStructure?.data?.admission_date}
+                      </Label>
+                    </div>
                     <div className="flex flex-wrap justify-center items-center gap-6"></div>
                   </div>
                 </ComponentCard>
@@ -441,7 +544,7 @@ export default function CourseDetails() {
                                   </div>
                                 </div>
                               );
-                            }
+                            },
                           )}
                         </div>
                       </div>
