@@ -56,13 +56,13 @@ export const doEnquiry = asyncErrorHandler(async (req, res) => {
         value.age,
         value.gender,
         value.education_qualification,
-      ]
+      ],
     );
 
     const placeholders = generatePlaceholders(value.course_ids.length, 2);
     await client.query(
       `INSERT INTO enquiry_courses (enquiry_id, course_id) VALUES ${placeholders}`,
-      value.course_ids.flatMap((id: any) => [rows[0].id, id])
+      value.course_ids.flatMap((id: any) => [rows[0].id, id]),
     );
   });
 
@@ -83,8 +83,8 @@ export const doEnquiry = asyncErrorHandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        "Enquiry successfully submitted. We will get back to you soon"
-      )
+        "Enquiry successfully submitted. We will get back to you soon",
+      ),
     );
 });
 
@@ -126,7 +126,7 @@ export const getAllEnquiry = asyncErrorHandler(async (req, res) => {
 
      ${TO_STRING}
      `,
-    filterValue
+    filterValue,
   );
 
   res
@@ -174,13 +174,13 @@ export const changePassword = asyncErrorHandler(
 
     const { rowCount } = await pool.query(
       "UPDATE users SET password = $1 WHERE id = $2 AND category != 'Admin' RETURNING id",
-      [encrypt_pass, id]
+      [encrypt_pass, id],
     );
     if (rowCount === 0)
       throw new ErrorHandler(400, "Unable to find your account");
 
     res.status(200).json(new ApiResponse(200, "Password successfully changed"));
-  }
+  },
 );
 
 export const loginUser = asyncErrorHandler(async (req, res) => {
@@ -228,7 +228,7 @@ export const loginUser = asyncErrorHandler(async (req, res) => {
       token,
       permissions: permissionArray,
       name,
-    })
+    }),
   );
 });
 
@@ -265,7 +265,7 @@ export const createUser = asyncErrorHandler(async (req, res) => {
         value.email,
         encrypt_pass,
         permissionsString,
-      ]
+      ],
     );
 
     if (rowCount === 0)
@@ -326,7 +326,7 @@ export const createUser = asyncErrorHandler(async (req, res) => {
           item.salary_type,
           item.amount,
           item.class_per_month,
-        ])
+        ]),
       );
     } else if (userCategory === "Stuff") {
       await client.query(
@@ -342,7 +342,7 @@ export const createUser = asyncErrorHandler(async (req, res) => {
           item.fee_head,
           item.amount,
           item.amount_type,
-        ])
+        ]),
       );
     }
 
@@ -382,7 +382,7 @@ export const getOneUser = asyncErrorHandler(async (req, res) => {
       TO_CHAR(joining_date, 'FMDD FMMonth, YYYY') AS formatted_joining_date
     FROM users WHERE id = $1
     `,
-    [user_id]
+    [user_id],
   );
   if (rowCount === 0) throw new ErrorHandler(404, "No user found");
 
@@ -403,11 +403,11 @@ export const getOneUser = asyncErrorHandler(async (req, res) => {
         GROUP BY course_id
         ORDER BY course_id;
     `,
-      [user_id]
+      [user_id],
     );
 
     rows[0].fee_structure_teacher = feeStructrueTeacher.filter(
-      (item: any) => item.type != "P_tax"
+      (item: any) => item.type != "P_tax",
     );
     rows[0].p_tax =
       feeStructrueTeacher.find((item: any) => item.type == "P_tax")?.amount ??
@@ -425,7 +425,7 @@ export const getOneUser = asyncErrorHandler(async (req, res) => {
         AND course_id IS NULL
       ORDER BY salary_type;
     `,
-      [user_id]
+      [user_id],
     );
 
     rows[0].fee_structure_teacher = [];
@@ -491,7 +491,7 @@ export const getUsersList = asyncErrorHandler(async (req, res) => {
     ORDER BY id DESC
     LIMIT ${LIMIT} OFFSET ${OFFSET}
     `,
-    filterValues
+    filterValues,
   );
 
   res.status(200).json(new ApiResponse(200, "User info list", rows));
@@ -528,7 +528,7 @@ export const updateUser = asyncErrorHandler(async (req, res) => {
         encrypt_pass,
         permissionsString,
         value.id,
-      ]
+      ],
     );
 
     const userId = value.id.toString();
@@ -537,7 +537,7 @@ export const updateUser = asyncErrorHandler(async (req, res) => {
     // delete old fee structure of that employee and replace with new one
     await client.query(
       "DELETE FROM employee_salary_structure WHERE employee_id = $1",
-      [userId]
+      [userId],
     );
 
     if (userCategory === "Teacher") {
@@ -591,7 +591,7 @@ export const updateUser = asyncErrorHandler(async (req, res) => {
           item.salary_type,
           item.amount,
           item.class_per_month,
-        ])
+        ]),
       );
     } else if (userCategory === "Stuff") {
       await client.query(
@@ -607,7 +607,7 @@ export const updateUser = asyncErrorHandler(async (req, res) => {
           item.fee_head,
           item.amount,
           item.amount_type,
-        ])
+        ]),
       );
     }
 
@@ -645,7 +645,7 @@ export const deleteUser = asyncErrorHandler(async (req, res) => {
 
     const { rows, rowCount } = await client.query(
       "DELETE FROM users WHERE id = $1 RETURNING name, password",
-      [value.id]
+      [value.id],
     );
 
     if (rowCount == 0)
@@ -677,9 +677,9 @@ export const deleteUser = asyncErrorHandler(async (req, res) => {
 
 export const getUserEnrolledCourseList = asyncErrorHandler(
   async (req: CustomRequest, res) => {
-    const { rows } = await getAdmissions(req, req.user_info?.id);
-    res.status(200).json(new ApiResponse(200, "User Admission List", rows));
-  }
+    const { data } = await getAdmissions(req, req.user_info?.id);
+    res.status(200).json(new ApiResponse(200, "User Admission List", data));
+  },
 );
 
 export const getUserSingleAdmissionData = asyncErrorHandler(
@@ -689,20 +689,20 @@ export const getUserSingleAdmissionData = asyncErrorHandler(
 
     const response = await getSingleAdmissionData(
       value.form_id,
-      req.user_info?.id
+      req.user_info?.id,
     );
 
     res
       .status(200)
       .json(new ApiResponse(200, "Single Admission Data", response));
-  }
+  },
 );
 
 export const getUserLeaveRequest = asyncErrorHandler(
   async (req: CustomRequest, res) => {
     const { rows } = await getLeaveList(req, req.user_info?.id);
     res.status(200).json(new ApiResponse(200, "User Leave list", rows));
-  }
+  },
 );
 
 export const getSingleTeacherDailyClassStatus = asyncErrorHandler(
@@ -752,13 +752,13 @@ export const getSingleTeacherDailyClassStatus = asyncErrorHandler(
     GROUP BY ess.employee_id, c.id
     ORDER BY c.id
     `,
-      [value.id]
+      [value.id],
     );
 
     res
       .status(200)
       .json(new ApiResponse(200, "One teacher daily class list", rows));
-  }
+  },
 );
 
 export const manageTeacherDailyClassStatus = asyncErrorHandler(
@@ -852,25 +852,27 @@ export const manageTeacherDailyClassStatus = asyncErrorHandler(
     // } finally {
     //   client.release()
     // }
-  }
+  },
 );
 
-export const updateStudentProfileImage = asyncErrorHandler(async (req: CustomRequest, res) => {
-  const { error, value } = VUpdateUserProfile.validate(req.body ?? {});
-  if (error) throw new ErrorHandler(400, error.message);
+export const updateStudentProfileImage = asyncErrorHandler(
+  async (req: CustomRequest, res) => {
+    const { error, value } = VUpdateUserProfile.validate(req.body ?? {});
+    if (error) throw new ErrorHandler(400, error.message);
 
-  const userId = req.user_info?.id;
-  if (!userId) throw new ErrorHandler(401, "Unauthorize");
+    const userId = req.user_info?.id;
+    if (!userId) throw new ErrorHandler(401, "Unauthorize");
 
-  await pool.query(
-    "UPDATE users SET image = $1 WHERE id = $2 AND category = 'Student'",
-    [value.image, userId]
-  );
+    await pool.query(
+      "UPDATE users SET image = $1 WHERE id = $2 AND category = 'Student'",
+      [value.image, userId],
+    );
 
-  res
-    .status(200)
-    .json(new ApiResponse(200, "Profile image updated successfully"));
-})
+    res
+      .status(200)
+      .json(new ApiResponse(200, "Profile image updated successfully"));
+  },
+);
 
 /**
  * Generate payslips in a streaming + batched fashion.
@@ -890,7 +892,7 @@ export const generatePayslip = asyncErrorHandler(async (req, res, next) => {
   if (value.role !== "Teacher") {
     throw new ErrorHandler(
       400,
-      "Currently payslip generation is only available for Teachers"
+      "Currently payslip generation is only available for Teachers",
     );
   }
 
@@ -898,7 +900,7 @@ export const generatePayslip = asyncErrorHandler(async (req, res, next) => {
   if (!/^\d{4}-\d{2}$/.test(value.month)) {
     throw new ErrorHandler(
       400,
-      "Invalid month format. Use 'YYYY-MM' (e.g., 2025-08)."
+      "Invalid month format. Use 'YYYY-MM' (e.g., 2025-08).",
     );
   }
   const monthStart = `${value.month}-01`;
@@ -1003,7 +1005,7 @@ export const getPayslip = asyncErrorHandler(async (req: CustomRequest, res) => {
   if (!/^\d{4}-\d{2}$/.test(value.month)) {
     throw new ErrorHandler(
       400,
-      "Invalid month format. Use 'YYYY-MM' (e.g., 2025-08)."
+      "Invalid month format. Use 'YYYY-MM' (e.g., 2025-08).",
     );
   }
   const monthStart = `${value.month}-01`;
@@ -1021,7 +1023,7 @@ export const getPayslip = asyncErrorHandler(async (req: CustomRequest, res) => {
     FROM payslip
     WHERE user_id = $1 AND month = $2
     `,
-    [value.id, monthStart]
+    [value.id, monthStart],
   );
 
   if (rowCount === 0)
@@ -1122,7 +1124,7 @@ export const getPayslipList = asyncErrorHandler(async (req, res) => {
   if (!/^\d{4}-\d{2}$/.test(value.month)) {
     throw new ErrorHandler(
       400,
-      "Invalid month format. Use 'YYYY-MM' (e.g., 2025-08)."
+      "Invalid month format. Use 'YYYY-MM' (e.g., 2025-08).",
     );
   }
   const monthStart = `${value.month}-01`;
@@ -1150,7 +1152,7 @@ export const getPayslipList = asyncErrorHandler(async (req, res) => {
 
      ${filter}
     `,
-    filterValues
+    filterValues,
   );
 
   res.status(200).json(new ApiResponse(200, "", rows));
@@ -1163,7 +1165,7 @@ export const addLoanOrAdvancePayment = asyncErrorHandler(async (req, res) => {
 
   await pool.query(
     `INSERT INTO employee_loan_or_advance_payment (user_id, total_amount, monthly_return_amount) VALUES ($1, $2, $3)`,
-    [value.user_id, value.total_amount, value.monthly_return_amount]
+    [value.user_id, value.total_amount, value.monthly_return_amount],
   );
 
   res.status(201).json(new ApiResponse(201, "Information successfully saved"));
@@ -1195,7 +1197,7 @@ export const getLoanList = asyncErrorHandler(async (req, res) => {
 
     ${filter}
   `,
-    filterValues
+    filterValues,
   );
 
   res.status(200).json(new ApiResponse(200, "", rows));
@@ -1207,7 +1209,7 @@ export const getSingleLoanInfo = asyncErrorHandler(async (req, res) => {
 
   const { rows, rowCount } = await pool.query(
     "SELECT * FROM employee_loan_or_advance_payment WHERE id = $1",
-    [value.id]
+    [value.id],
   );
 
   if (rowCount === 0) throw new ErrorHandler(400, "No row found");
@@ -1221,7 +1223,7 @@ export const updateLoadnInfo = asyncErrorHandler(async (req, res) => {
 
   await pool.query(
     "UPDATE employee_loan_or_advance_payment SET total_amount = $1, user_id = $2, monthly_return_amount = $3 WHERE id = $4",
-    [value.total_amount, value.user_id, value.monthly_return_amount, value.id]
+    [value.total_amount, value.user_id, value.monthly_return_amount, value.id],
   );
 
   res

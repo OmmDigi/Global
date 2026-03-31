@@ -18,6 +18,7 @@ import {
 
 export default function BasicTableAdmission({
   admissionlist,
+  totalAmountSum,
   onEdit,
   onActive,
 }: // onSendData,
@@ -113,7 +114,7 @@ any) {
 
           {/* Table Body */}
           <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-            {admissionlist?.data?.map((order: any, index: number) => (
+            {admissionlist?.map((order: any, index: number) => (
               <TableRow key={order.form_id}>
                 <TableCell className="px-5 py-4 sm:px-6 text-start">
                   <div className="flex items-center gap-3">
@@ -246,15 +247,22 @@ any) {
             ))}
           </TableBody>
         </Table>
-
-        <div className="p-8">
+        <div className="p-8 flex items-center justify-between">
           <Pagination
             // count={count}
             // onChange={setCount}
-            length={
-              admissionlist?.data?.length ? admissionlist?.data?.length : 1
-            }
+            length={admissionlist.length ?? 1}
           />
+
+          <div className="grid grid-cols-2 gap-2.5 text-white">
+            <span>Total Fee : {totalAmountSum?.total_course_fee ?? 0}</span>
+            <span className="text-green-600">
+              Total Collection : {totalAmountSum?.total_collection ?? 0}
+            </span>
+            <span className="text-red-500">
+              Total Due : {totalAmountSum?.total_due_amount ?? 0}
+            </span>
+          </div>
         </div>
       </div>
     </div>

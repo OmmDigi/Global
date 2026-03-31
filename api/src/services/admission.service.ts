@@ -50,8 +50,8 @@ export const doAdmission = async (data: IFillUpForm) => {
        data.declaration_status !== undefined ? ",declaration_status" : ""
      })
      VALUES ($1 || nextval('${fillup_form_seq_constant_key}')::TEXT, $2, TO_CHAR($3::date, 'YYYY-MM-DD')::date, $4 ${
-      data.declaration_status !== undefined ? ",$5" : ""
-    })
+       data.declaration_status !== undefined ? ",$5" : ""
+     })
      RETURNING form_name, id
     `,
     data.declaration_status !== undefined
@@ -67,7 +67,7 @@ export const doAdmission = async (data: IFillUpForm) => {
           data.student_id,
           ADMISSION_DATE_TO_STORE,
           data.admission_from,
-        ]
+        ],
   );
 
   const form_name = rows[0].form_name as string;
@@ -77,7 +77,7 @@ export const doAdmission = async (data: IFillUpForm) => {
     `
      INSERT INTO enrolled_courses (form_id, course_id, batch_id, session_id) VALUES ($1, $2, $3, $4)
     `,
-    [form_id, data.course_id, data.batch_id, data.session_id]
+    [form_id, data.course_id, data.batch_id, data.session_id],
   );
 
   const placeholder = data.fee_structure
@@ -85,7 +85,7 @@ export const doAdmission = async (data: IFillUpForm) => {
       (_, index) =>
         `($${index * 5 + 1}, $${index * 5 + 2}, $${index * 5 + 3}, $${
           index * 5 + 4
-        }, $${index * 5 + 5})`
+        }, $${index * 5 + 5})`,
     )
     .join(", ");
   await pgClient.query(
@@ -96,7 +96,7 @@ export const doAdmission = async (data: IFillUpForm) => {
       item.amount,
       item.min_amount,
       item.required,
-    ])
+    ]),
   );
 
   if (data.admission_data) {
@@ -104,7 +104,7 @@ export const doAdmission = async (data: IFillUpForm) => {
       `
        INSERT INTO admission_data (form_id, student_id, admission_details) VALUES ($1, $2, $3)
       `,
-      [form_id, data.student_id, data.admission_data]
+      [form_id, data.student_id, data.admission_data],
     );
   }
 
@@ -114,7 +114,11 @@ export const doAdmission = async (data: IFillUpForm) => {
   };
 };
 
-export const getAdmissions = async (req: Request, student_id?: number) => {
+export const getAdmissions = async (
+  req: Request,
+  student_id?: number,
+  calcluteTotal: boolean = false,
+) => {
   const { TO_STRING } = parsePagination(req);
 
   const { error, value } = VGetAdmissionList.validate(req.query);
@@ -214,6 +218,49 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
     filterValues.push(value.fee_head_id);
   }
 
+  const totalAmountSumQuery = `
+   WITH total_payment_info AS (
+    SELECT
+      p.form_id,
+      COALESCE(SUM(p.amount) FILTER (WHERE p.mode != 'Discount' AND p.fee_head_id != ${LATE_FINE_FEE_HEAD_ID}), 0) AS total_collection_without_late_fee,
+      COALESCE(SUM(p.amount) FILTER (WHERE p.mode != 'Discount'), 0) AS total_collection_with_late_fee,
+      COALESCE(SUM(p.amount) FILTER (WHERE p.mode = 'Discount'), 0) AS total_discount
+    FROM payments p
+    ${paymentTableFilter}
+    GROUP BY p.form_id
+  ),
+
+  total_fee_calcluction AS (
+    SELECT
+      ffs.form_id,
+      COALESCE(SUM(ffs.amount), 0.00) AS course_fee,
+      COALESCE(SUM(ffs.amount), 0) - COALESCE(MAX(tpi.total_collection_without_late_fee), 0.00) AS due_amount,
+      COALESCE(MAX(tpi.total_collection_with_late_fee), 0.00) AS total_collection
+    FROM form_fee_structure ffs
+    LEFT JOIN total_payment_info tpi ON tpi.form_id = ffs.form_id
+    ${feeHeadIdFilter}
+    GROUP BY ffs.form_id
+  ),
+
+  filtered_forms AS (
+    SELECT DISTINCT ff.id AS form_id
+    FROM fillup_forms ff
+    LEFT JOIN users u       ON u.id  = ff.student_id
+    LEFT JOIN enrolled_courses ec ON ec.form_id = ff.id
+    LEFT JOIN batch b       ON b.id  = ec.batch_id
+    LEFT JOIN course c      ON c.id  = ec.course_id
+    ${filter}
+  )
+
+  SELECT
+    COALESCE(SUM(tfc.course_fee),       0) AS total_course_fee,
+    COALESCE(SUM(tfc.total_collection), 0) AS total_collection,
+    COALESCE(SUM(tfc.due_amount),       0) AS total_due_amount
+  FROM total_fee_calcluction tfc
+  WHERE tfc.form_id IN (SELECT form_id FROM filtered_forms)
+  
+  `;
+
   const query = `
 
       WITH total_payment_info AS (
@@ -293,14 +340,24 @@ export const getAdmissions = async (req: Request, student_id?: number) => {
       ${TO_STRING}
   `;
 
-  return await pool.query(query, filterValues);
+  let totalAmountSum = null;
+  if (calcluteTotal) {
+    totalAmountSum = await pool.query(totalAmountSumQuery, filterValues);
+  }
+
+  const data = await pool.query(query, filterValues);
+
+  return {
+    data: data.rows,
+    totalAmountSum: totalAmountSum?.rows[0],
+  };
 };
 
 export const getSingleAdmissionData = async (
   form_id: number,
   student_id?: number,
   request_user_id?: number,
-  fee_head_id?: number
+  fee_head_id?: number,
 ) => {
   const client = await pool.connect();
 
@@ -401,7 +458,7 @@ export const getSingleAdmissionData = async (
 
           
         `,
-      basicQueryFilterValues
+      basicQueryFilterValues,
     );
 
     let feeStructureInfoFilter = "WHERE ffs.form_id = $1";
@@ -438,7 +495,7 @@ export const getSingleAdmissionData = async (
 
           ORDER BY cfh.position
         `,
-      feeStrucInfoFilterValues
+      feeStrucInfoFilterValues,
     );
 
     let paymentListFilter = "WHERE p.form_id = $2 AND p.status = 2";
@@ -492,7 +549,7 @@ export const getSingleAdmissionData = async (
         -- cfh.position ASC,
         -- p.payment_date DESC;
       `,
-      paymentListValues
+      paymentListValues,
     );
 
     await client.query("COMMIT");

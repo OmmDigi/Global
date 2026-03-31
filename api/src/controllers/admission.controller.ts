@@ -79,7 +79,7 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
       // fetch the user info from database
       const { rows, rowCount } = await pool.query(
         "SELECT id, name, username, ph_no FROM users WHERE id = $1 AND category = 'Student'",
-        [data?.id]
+        [data?.id],
       );
 
       if (rowCount !== 0) {
@@ -163,7 +163,7 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
       WHERE c.id = $1
       GROUP BY c.id;
        `,
-      [value.course_id]
+      [value.course_id],
     );
 
     if (rowCount === 0) throw new ErrorHandler(404, "No course found");
@@ -197,9 +197,9 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
         form_id,
         course_name: rows[0].name,
         fee_structure: fee_structure.filter(
-          (item) => item.fee_head_id == 1 || item.fee_head_id == 3
+          (item) => item.fee_head_id == 1 || item.fee_head_id == 3,
         ),
-      })
+      }),
     );
   } catch (error: any) {
     await client.query("ROLLBACK");
@@ -237,7 +237,7 @@ export const updateAdmissionData = asyncErrorHandler(async (req, res) => {
 
     const { rows: formTableInfo, rowCount } = await client.query(
       "SELECT student_id FROM fillup_forms WHERE id = $1",
-      [value.form_id]
+      [value.form_id],
     );
     if (rowCount === 0) throw new ErrorHandler(404, "No form found");
 
@@ -255,7 +255,7 @@ export const updateAdmissionData = asyncErrorHandler(async (req, res) => {
         profileImage,
         email,
         studentId,
-      ]
+      ],
     );
 
     // update the admission form in admission_data table if exist update else insert
@@ -268,7 +268,7 @@ export const updateAdmissionData = asyncErrorHandler(async (req, res) => {
        ON CONFLICT (form_id, student_id) DO UPDATE
          SET admission_details = EXCLUDED.admission_details
       `,
-      [value.form_id, studentId, value.admission_data]
+      [value.form_id, studentId, value.admission_data],
     );
 
     await client.query("COMMIT");
@@ -283,8 +283,13 @@ export const updateAdmissionData = asyncErrorHandler(async (req, res) => {
 });
 
 export const getAdmissionList = asyncErrorHandler(async (req, res) => {
-  const { rows } = await getAdmissions(req);
-  res.status(200).json(new ApiResponse(200, "Admission Search List", rows));
+  const { data, totalAmountSum } = await getAdmissions(req, undefined, true);
+  res.status(200).json(
+    new ApiResponse(200, "Admission Search List", {
+      admissionData: data,
+      totalAmountSum: totalAmountSum,
+    }),
+  );
 });
 
 export const updateAdmissionStatus = asyncErrorHandler(async (req, res) => {
@@ -311,11 +316,11 @@ export const getSingleAdmission = asyncErrorHandler(
       value.form_id,
       undefined,
       req.user_info?.id,
-      req.query?.fee_head_id as any
+      req.query?.fee_head_id as any,
     );
 
     res.status(200).json(new ApiResponse(200, "Fee Info", response));
-  }
+  },
 );
 
 export const getSingleAdmissionFormData = asyncErrorHandler(
@@ -356,14 +361,14 @@ export const getSingleAdmissionFormData = asyncErrorHandler(
 
       GROUP BY ec.id, ff.id
     `,
-      [value.form_id]
+      [value.form_id],
     );
 
     if (rowCount === 0) throw new ErrorHandler(400, "No Form Data Found");
 
     // find the admission data related to current form id
     const foundAdmissionDetails = rows[0].admission_data_details.find(
-      (item: any) => item.form_id == value.form_id
+      (item: any) => item.form_id == value.form_id,
     );
 
     const dataToReturn = {
@@ -387,7 +392,7 @@ export const getSingleAdmissionFormData = asyncErrorHandler(
     res
       .status(200)
       .json(new ApiResponse(200, "Admision Details", dataToReturn));
-  }
+  },
 );
 
 export const acceptDeclarationStatus = asyncErrorHandler(
@@ -399,14 +404,14 @@ export const acceptDeclarationStatus = asyncErrorHandler(
 
     const { rowCount } = await pool.query(
       "UPDATE fillup_forms SET declaration_status = 1 WHERE id = $1 AND student_id = $2 RETURNING student_id",
-      [value.form_id, userId]
+      [value.form_id, userId],
     );
     if (rowCount === 0) {
       throw new ErrorHandler(404, "Failed to accept declaration");
     }
 
     res.status(200).json(new ApiResponse(200, "Declaration status accepted"));
-  }
+  },
 );
 
 export const downloadDeclarationStatus = asyncErrorHandler(async (req, res) => {
@@ -477,7 +482,7 @@ export const getAdmissionFeeHeadPrice = asyncErrorHandler(async (req, res) => {
 
     LIMIT 1
     `,
-    filterValues
+    filterValues,
   );
 
   if (rowCount === 0) {
@@ -490,7 +495,7 @@ export const getAdmissionFeeHeadPrice = asyncErrorHandler(async (req, res) => {
 export const updateAdmissionFeeHeadAmount = asyncErrorHandler(
   async (req, res) => {
     const { error, value } = VUpdateSessionCourseHeadPrice.validate(
-      req.body ?? {}
+      req.body ?? {},
     );
     if (error) throw new ErrorHandler(400, error.message);
 
@@ -508,7 +513,7 @@ export const updateAdmissionFeeHeadAmount = asyncErrorHandler(
           value.current_amount,
           value.course_id,
           value.batch_id ?? null,
-        ]
+        ],
       );
 
       //get the list of form id which should be update
@@ -553,7 +558,7 @@ export const updateAdmissionFeeHeadAmount = asyncErrorHandler(
         FROM enrolled_courses ec
         ${filter}
         `,
-        filterValues
+        filterValues,
       );
 
       const placeholder = generatePlaceholders(rows.length, 5);
@@ -573,7 +578,7 @@ export const updateAdmissionFeeHeadAmount = asyncErrorHandler(
           value.current_amount,
           value.current_amount,
           true,
-        ])
+        ]),
       );
       await client.query("COMMIT");
 
@@ -582,8 +587,8 @@ export const updateAdmissionFeeHeadAmount = asyncErrorHandler(
         .json(
           new ApiResponse(
             200,
-            "Admission Fee Head Amount Successfully Update For This Session"
-          )
+            "Admission Fee Head Amount Successfully Update For This Session",
+          ),
         );
     } catch (error: any) {
       await client.query("ROLLBACK");
@@ -591,7 +596,7 @@ export const updateAdmissionFeeHeadAmount = asyncErrorHandler(
     } finally {
       client.release();
     }
-  }
+  },
 );
 
 export const getAdmissionFeeHeadHistoryList = asyncErrorHandler(
@@ -641,13 +646,13 @@ export const getAdmissionFeeHeadHistoryList = asyncErrorHandler(
 
      ${TO_STRING}
     `,
-      filterValues
+      filterValues,
     );
 
     res
       .status(200)
       .json(new ApiResponse(200, "Admission amount history", rows));
-  }
+  },
 );
 
 export const modifyFeeHeadOfAdmission = asyncErrorHandler(async (req, res) => {
@@ -663,7 +668,7 @@ export const modifyFeeHeadOfAdmission = asyncErrorHandler(async (req, res) => {
     ON CONFLICT (form_id, fee_head_id) DO UPDATE 
       SET amount = EXCLUDED.amount
     `,
-    [value.form_id, value.fee_head_id, value.amount, value.amount, false]
+    [value.form_id, value.fee_head_id, value.amount, value.amount, false],
   );
 
   res
@@ -706,7 +711,7 @@ export const promotAdmission = asyncErrorHandler(
       WHERE c.id = $1
       GROUP BY c.id;
        `,
-        [value.course_id]
+        [value.course_id],
       );
 
       if (courseInfo.rowCount === 0)
@@ -738,7 +743,7 @@ export const promotAdmission = asyncErrorHandler(
 
       await client.query(
         "INSERT INTO copy_move_logs (user_id, data, action_type) VALUES ($1, $2, $3)",
-        [req.user_info?.id, { student_ids: value.student_ids }, "copy"]
+        [req.user_info?.id, { student_ids: value.student_ids }, "copy"],
       );
 
       res
@@ -750,7 +755,7 @@ export const promotAdmission = asyncErrorHandler(
     } finally {
       client.release();
     }
-  }
+  },
 );
 
 export const deleteSingleFeeHeadFromSingleAdmisson = asyncErrorHandler(
@@ -761,12 +766,12 @@ export const deleteSingleFeeHeadFromSingleAdmisson = asyncErrorHandler(
     await doTransition(async (client) => {
       const form_fee_structure = await client.query(
         "DELETE FROM form_fee_structure WHERE form_id = $1 AND fee_head_id = $2 RETURNING *",
-        [value.form_id, value.fee_head_id]
+        [value.form_id, value.fee_head_id],
       );
 
       const payments = await client.query(
         "DELETE FROM payments WHERE form_id = $1 AND fee_head_id = $2 RETURNING *",
-        [value.form_id, value.fee_head_id]
+        [value.form_id, value.fee_head_id],
       );
 
       await logFeeHeadDelete({
@@ -781,34 +786,34 @@ export const deleteSingleFeeHeadFromSingleAdmisson = asyncErrorHandler(
     });
 
     res.status(200).json(new ApiResponse(200, "Successfully removed"));
-  }
+  },
 );
 
 export const changeStudentAdmisionCourse = asyncErrorHandler(
   async (req: CustomRequest, res) => {
     const { error, value } = VChangeStudentAdmissionCourse.validate(
-      req.body ?? {}
+      req.body ?? {},
     );
     if (error) throw new ErrorHandler(400, error.message);
 
     const uniqueFormIds = [...new Set<number>(value.form_ids)];
 
     const placeholder = uniqueFormIds.map(
-      (_: any, index: number) => `$${index + 3 + 1}`
+      (_: any, index: number) => `$${index + 3 + 1}`,
     );
 
     await doTransition(async (client) => {
       await client.query(
         `UPDATE enrolled_courses SET course_id = $1, batch_id = $2, session_id = $3 WHERE form_id IN (${placeholder})`,
-        [value.course_id, value.batch_id, value.session_id, ...uniqueFormIds]
+        [value.course_id, value.batch_id, value.session_id, ...uniqueFormIds],
       );
 
       await client.query(
         "INSERT INTO copy_move_logs (user_id, data, action_type) VALUES ($1, $2, $3)",
-        [req.user_info?.id, { form_ids: uniqueFormIds }, "move"]
+        [req.user_info?.id, { form_ids: uniqueFormIds }, "move"],
       );
     });
 
     res.status(200).json(new ApiResponse(200, "Successfully updated!"));
-  }
+  },
 );

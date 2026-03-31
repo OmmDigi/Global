@@ -123,7 +123,7 @@ export default function AdmissionAdmin() {
   const [course, setCourse] = useState<number>(0);
   const [batch, setBatch] = useState<any>(0);
   const [changeSession, setChangeSession] = useState<any>(0);
-  const [searchData] = useState<any>({});
+  // const [searchData] = useState<any>({});
   const [formSearch, setFormSearch] = useState<any>({});
   const [pageCount] = useState<number>(0);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -505,7 +505,7 @@ export default function AdmissionAdmin() {
     setMontessoriTeachers(true);
   };
 
-  const jumpToTop = (fromTop?:number) => {
+  const jumpToTop = (fromTop?: number) => {
     window.scrollTo({
       top: fromTop ?? 50,
       behavior: "smooth",
@@ -637,7 +637,6 @@ export default function AdmissionAdmin() {
                 </button>
               )}
             </div>
-
             {montessoriTeachers && (
               <div>
                 {/* <div className="p-7 pl-30 pr-30  flex items-center sticky top-20 bg-gray-100  dark:bg-gray-800 dark:text-gray-100   text-gray-800  z-20 justify-center">
@@ -1865,13 +1864,11 @@ export default function AdmissionAdmin() {
                 </div>
               </div>
             )}
-
             <div className="flex flex-col gap-6">
               <h3 className="text-gray-500 dark:text-gray-400 ">
                 Admission List
               </h3>
             </div>
-
             {/* <div className="grid grid-cols-1 gap-6 xl:grid-cols-4">
               <div className="  mb-4">
                 <label className="block text-sm font-bold text-gray-500 mb-1">
@@ -1954,7 +1951,6 @@ export default function AdmissionAdmin() {
                 </Button>
               </div>
             </div> */}
-
             <form
               ref={filterFormRef}
               onSubmit={handleFilterSubmit}
@@ -2067,7 +2063,6 @@ export default function AdmissionAdmin() {
                 </Button>
               </div>
             </form>
-
             <form ref={searchByfilterFormRef} onSubmit={handleSearchBySubmit}>
               <div className="flex items-end justify-center gap-2.5">
                 <div className="flex-1">
@@ -2117,10 +2112,10 @@ export default function AdmissionAdmin() {
                 </Button>
               </div>
             </form>
-
             <SelectMultipleStudent />
             <BasicTableAdmission
-              admissionlist={searchData?.data ? searchData : admissionlist}
+              admissionlist={admissionlist?.data?.admissionData ?? []}
+              totalAmountSum={admissionlist?.data?.totalAmountSum}
               onEdit={handleEdit}
               onActive={handleActive}
               // onSendData={handleChildData}
