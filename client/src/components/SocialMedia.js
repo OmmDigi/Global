@@ -6,22 +6,24 @@ import { IoLogoWhatsapp } from "react-icons/io";
 function SocialMedia() {
   const socialLinks = [
     {
-      href: "https://wa.me/919231551285",
-      icon: "/image/whatsapp.png",
-      label: "WhatsApp",
-      alt: "teachers training institute Kolkata",
+      href: "https://www.instagram.com/globaltechnicalinstitute/",
+      icon: "/image/instagram.png",
+      label: "Instagram",
+      alt: "teachers training in Kolkata",
     },
+
     {
       href: "https://www.facebook.com/gtitrainingcourse",
       icon: "/image/facebook.png",
       label: "Facebook",
       alt: "teachers training institute Kolkata",
     },
+
     {
-      href: "https://www.instagram.com/globaltechnicalinstitute/",
-      icon: "/image/instagram.png",
-      label: "Instagram",
-      alt: "teachers training in Kolkata",
+      href: "https://wa.me/919231551285",
+      icon: "/image/whatsapp.png",
+      label: "WhatsApp",
+      alt: "teachers training institute Kolkata",
     },
   ];
 
@@ -52,8 +54,9 @@ function SocialMedia() {
           href="https://wa.me/919231551285"
           className="flex items-center transform translate-x-35 hover:translate-x-0 transition-all duration-700 ease-in-out text-white bg-[#47a35b] rounded-l-full px-3 py-2 uppercase text-lg font-semibold font-sans"
         >
-          <i className="fab fa-youtube text-green-400 bg-white rounded-full  h-10 w-10 flex items-center justify-center mr-4"><IoLogoWhatsapp/>
-</i>
+          <i className="fab fa-youtube text-green-400 bg-white rounded-full  h-10 w-10 flex items-center justify-center mr-4">
+            <IoLogoWhatsapp />
+          </i>
           WHATSAPP
         </a>
       </div>

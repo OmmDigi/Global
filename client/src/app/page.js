@@ -223,84 +223,12 @@ export default function Home() {
                   </Marquee>
                 </div>
               </div>
-              {/* carousal */}
-              {/* <div className="relative w-full h-[200px] md:h-[400px]">
-                <div className="absolute top-0  w-full h-full">
-                  {slides.map((slide, index) => (
-                    <div
-                      key={slide.id}
-                      className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                        index === current ? "opacity-100 z-10" : "opacity-0 z-0"
-                      }`}
-                    >
-                      <div className="w-full h-full flex items-center justify-center">
-                        <div className="slide-inner">
-                          <Image
-                            src={slide.image}
-                            alt="slide"
-                            className={`object-cover md:w-[500px] md:h-[380px] sm:w-[330px] sm:h-[200px] rounded-lg transition-transform duration-1000 ${
-                              index === current ? "scale-105" : "scale-100"
-                            }`}
-                          />
-                        </div>
-                      </div>
-                      <div className="slide-bg absolute inset-0"></div>
-                    </div>
-                  ))}
-                </div>
-              </div> */}
+
               <HomeCarousal />
             </div>
           </div>
         </div>
 
-        {/* Your Phone Number */}
-        {/* <div className="flex relative justify-center w-full z-12">
-          <section className="bg-blue-500 py-1  w-12/12 md:w-[96%]   ">
-            <div className="container mx-auto flex flex-col md:flex-row items-center ">
-              <div className="w-full md:w-1/2 text-center  md:text-left">
-                <p className="text-3xl font-bold text-gray-100 md:pl-5 pt-3 md:p-0  ">
-                  Discover Your Ideal
-                  <br className="  md:hidden flex"/> 
-                  <span className="text-gray-100 typed-text">
-                  <span className="cursor text-5xl">&nbsp;</span>
-                    {currentText}
-                  </span>
-
-                  <span className="cursor text-5xl">|</span>
-                </p>
-              </div>
-
-              <div className="w-full md:w-1/2 rounded-lg md:p-6 pl-2 pr-2 pb-3">
-                <p className="text-lg font-medium text-gray-100 mt-4">
-                  <i className="fas fa-mobile-alt text-blue-500 mr-2"></i> Your
-                  Phone Number
-                </p>
-                <form
-                  method="POST"
-                  action="#"
-                  className="flex flex-col md:flex-row items-center gap-4 "
-                >
-                  <input
-                    type="tel"
-                    name="phone"
-                    placeholder="(+91) 9800000000"
-                    required
-                    maxLength="15"
-                    className="flex-1 w-full px-4 py-2  border rounded-4xl border-gray-300  focus:ring-2 focus:ring-gray-400 shadow-xl bg-gray-100 focus:outline-none"
-                  />
-
-                  <button
-                    type="submit"
-                    className="bg-gray-100 text-gray-800 px-4 shadow-xl py-1 md:px-6 md:py-2 font-semibold rounded-4xl transition-all"
-                  >
-                    Cal Me Back
-                  </button>
-                </form>
-              </div>
-            </div>
-          </section>
-        </div> */}
         <PhoneNumber />
 
         {/* carousal card section  */}
