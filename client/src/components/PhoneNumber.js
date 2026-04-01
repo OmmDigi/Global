@@ -11,8 +11,8 @@ function PhoneNumber() {
       <div className="flex relative justify-center w-full z-12">
         <section className="bg-blue-500 py-1  w-12/12 md:w-[100%]   ">
           <div className="container mx-auto flex flex-col md:flex-row md:justify-around gap-2 md:py-3 ">
-            <p className="text-xl md:text-3xl text-center font-bold text-gray-100 md:pl-5 pt-1 md:p-0  ">
-              Don’t Just Study, Start Your Career.
+            <p className="text-[16px] md:text-3xl text-center font-bold text-gray-100 md:pl-5 pt-1 md:p-0  ">
+              Don’t Just Study, Start Your Career With Us.
             </p>
             {/* <p className="text-2xl font-bold text-gray-100 md:pl-5  md:p-0  "></p> */}
             {/* <span className="cursor text-5xl">|</span> */}
@@ -44,7 +44,7 @@ function PhoneNumber() {
             <div className="flex flex-col md:flex-row items-center mb-3 md:mb-0 ">
               <a
                 href="tel:+919231551285"
-                className="bg-gray-100 text-gray-800 px-4 shadow-xl py-1 md:px-6 md:py-2 font-semibold rounded-4xl transition-all flex items-center gap-4"
+                className="bg-gray-100 text-gray-800 px-4 shadow-xl py-1 pt-1.5 md:px-6 md:py-2 font-semibold rounded-4xl transition-all flex items-center gap-4"
               >
                 <PhoneCall size={20} />
                 Call Us Today
