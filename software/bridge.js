@@ -129,7 +129,7 @@ function connectWebSocket() {
       }
 
 
-      // get the instructions to f
+      // get all attendance logs from the device and send to the cloud
       if(data.action === "set_attendance_logs") {
         // send the log to the essl ws sever
         const logs = await zks[0].getAttendances();
