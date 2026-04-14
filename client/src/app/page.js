@@ -937,15 +937,17 @@ export default function Home() {
       </Carousel> */}
       </AOSProvider>
       {popup && (
-        <div
-          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-92 
-        h-100 z-50 shadow-lg border-rounded-lg"
-        >
-          <X
-            className="absolute top-0 right-0"
-            onClick={() => setPopup(false)}
-          />
-          <img src="/image/popup/foundationDay.png" alt="foundationDay" />
+        <div className="fixed inset-0 z-100 bg-black/40 flex items-center justify-center">
+          <div
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-92 
+        h-100 z-50  border-rounded-lg shadow-gray-700 shadow-2xl"
+          >
+            <X
+              className="absolute top-0 right-0"
+              onClick={() => setPopup(false)}
+            />
+            <img src="/image/popup/foundationDay.png" alt="foundationDay" />
+          </div>
         </div>
       )}
     </>
