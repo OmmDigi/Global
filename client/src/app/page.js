@@ -113,7 +113,7 @@ export default function Home() {
 
   useEffect(() => {
     setTimeout(() => {
-      if (new Date("2025-12-14") > new Date()) {
+      if (new Date("2026-05-15") > new Date()) {
         setPopup(true);
       } else {
         setPopup(false);
@@ -938,14 +938,14 @@ export default function Home() {
       </AOSProvider>
       {popup && (
         <div
-          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-100 
+          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-90 
         h-100 z-50 shadow-lg border-rounded-lg"
         >
           <X
             className="absolute top-0 right-0"
             onClick={() => setPopup(false)}
           />
-          <img src="/image/popup/popup.jpeg" alt="popup" />
+          <img src="/image/popup/foundationDay.png" alt="foundationDay" />
         </div>
       )}
     </>
