@@ -1,5 +1,5 @@
 import { useState, useTransition } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
@@ -12,6 +12,7 @@ export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [messageApi, contextHolder] = message.useMessage();
+  const navigate = useNavigate();
   // const route = useRoute();
 
   const [formData, setFormData] = useState({
@@ -52,7 +53,8 @@ export default function SignInForm() {
           content: response.message,
         });
         if (response?.data) {
-          window.location.href = `/${import.meta.env.VITE_HOMEPAGE_URL}/home?${queryString.toString()}`;
+          navigate(`/home?${queryString.toString()}`);
+          // window.location.href = `${import.meta.env.VITE_HOMEPAGE_URL}/home?${queryString.toString()}`;
         }
       } catch (error: any) {
         messageApi.open({
