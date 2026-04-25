@@ -53,8 +53,7 @@ export default function SignInForm() {
           content: response.message,
         });
         if (response?.data) {
-          navigate(`/home?${queryString.toString()}`);
-          // window.location.href = `${import.meta.env.VITE_HOMEPAGE_URL}/home?${queryString.toString()}`;
+          window.location.href = `${import.meta.env.VITE_HOMEPAGE_URL}/home?${queryString.toString()}`;
         }
       } catch (error: any) {
         messageApi.open({
