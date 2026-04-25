@@ -1,6 +1,7 @@
 import { pool } from "../config/db";
 import { ALLOWED_BATCH_FIELDS, ALLOWED_COURSE_FIELDS } from "../constant";
 import asyncErrorHandler from "../middlewares/asyncErrorHandler";
+import { CustomRequest } from "../types";
 import { ApiResponse } from "../utils/ApiResponse";
 import { ErrorHandler } from "../utils/ErrorHandler";
 import { generatePlaceholders } from "../utils/generatePlaceholders";
@@ -476,15 +477,23 @@ export const updateCourse = asyncErrorHandler(async (req, res) => {
   }
 });
 
-export const getCourseWithBatchSession = asyncErrorHandler(async (req, res) => {
+export const getCourseWithBatchSession = asyncErrorHandler(async (req : CustomRequest, res) => {
   let sessionFilter = "WHERE b2.course_id = c.id AND s.id IS NOT NULL";
   let batchFilter = "WHERE b3.course_id = c.id AND b3.id IS NOT NULL";
   let courseFilter = "WHERE 1=1";
 
-  const crmHostUrl = process.env.CRM_HOST_URL;
-  const headerOrigin = req.headers.origin;
+  // const crmHostUrl = process.env.CRM_HOST_URL;
+  // const headerOrigin = req.headers.origin;
 
-  if (crmHostUrl && headerOrigin && !crmHostUrl.includes(headerOrigin)) {
+  // if (crmHostUrl && headerOrigin && !crmHostUrl.includes(headerOrigin)) {
+  //   sessionFilter += " AND s.is_active = true";
+  //   batchFilter += " AND b3.is_active = true";
+  //   courseFilter += " AND c.is_active = true";
+  // }
+
+  const userInfo = req?.user_info;
+
+  if (userInfo && (userInfo.category == "Stuff" || userInfo.category == "Admin")) {
     sessionFilter += " AND s.is_active = true";
     batchFilter += " AND b3.is_active = true";
     courseFilter += " AND c.is_active = true";

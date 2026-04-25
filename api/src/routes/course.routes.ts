@@ -26,6 +26,7 @@ import {
   updateSession,
 } from "../controllers/course.controller";
 import { isAuthorized } from "../middlewares/isAuthorized";
+import { checkUser } from "../middlewares/checkUser";
 
 export const courseRoutes = Router();
 courseRoutes
@@ -53,7 +54,7 @@ courseRoutes
 
   .post("/", isAuthorized(5), createCourse)
   .get("/", getCourseList) //isAuthorized(5)
-  .get("/dropdown", getCourseWithBatchSession)
+  .get("/dropdown", checkUser, getCourseWithBatchSession)
   .get("/:id", isAuthorized(5), getSingleCourse)
   .delete("/:id", isAuthorized(5), deleteSingleCourse)
   .put("/", isAuthorized(5), updateCourse);
