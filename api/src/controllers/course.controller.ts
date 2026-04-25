@@ -492,6 +492,7 @@ export const getCourseWithBatchSession = asyncErrorHandler(async (req : CustomRe
   // }
 
   const userInfo = req?.user_info;
+  console.log(userInfo)
 
   if (userInfo != undefined && (userInfo.category == "Stuff" || userInfo.category == "Admin")) {
     sessionFilter += " AND s.is_active = true";
