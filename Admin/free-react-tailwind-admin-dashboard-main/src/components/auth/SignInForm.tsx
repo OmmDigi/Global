@@ -10,19 +10,18 @@ import { postFetcher } from "../../api/fatcher";
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
-    const [isPending, startTransition] = useTransition();
-    const [messageApi, contextHolder] = message.useMessage();
-    // const route = useRoute();
+  const [isPending, startTransition] = useTransition();
+  const [messageApi, contextHolder] = message.useMessage();
+  // const route = useRoute();
 
-   const [formData, setFormData] = useState({
-      username: "",
-      password: "",
-      category:"admin",
-    });
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+    category: "admin",
+  });
 
-
-     const handleChange = (e:any) => {
-    const { name, value,  } = e.target;
+  const handleChange = (e: any) => {
+    const { name, value } = e.target;
 
     setFormData((prev) => ({
       ...prev,
@@ -30,42 +29,41 @@ export default function SignInForm() {
     }));
   };
 
-   //   create Batch
+  //   create Batch
   const { trigger: create } = useSWRMutation(
     "api/v1/users/login",
-    (url, { arg }) => postFetcher(url, arg)
+    (url, { arg }) => postFetcher(url, arg),
   );
-   const handleSubmit = (e:any) => {
-      e.preventDefault();
-      startTransition(async () => {
-        // await new Promise( (resolve) => setTimeout(resolve,5000))
-        try {
-          const response = await create( formData as any);
-          
-            const queryString = new URLSearchParams({
-            token: response.data?.token,
-            category: response.data?.category,
-            id: response.data?.id,
-            permissions: response?.data?.permissions,
-          });
-          messageApi.open({
-            type: "success",
-            content: response.message,
-          });
-          if (response?.data) {
-          window.location.href = `/Home?${queryString.toString()}`;
+  const handleSubmit = (e: any) => {
+    e.preventDefault();
+    startTransition(async () => {
+      // await new Promise( (resolve) => setTimeout(resolve,5000))
+      try {
+        const response = await create(formData as any);
+
+        const queryString = new URLSearchParams({
+          token: response.data?.token,
+          category: response.data?.category,
+          id: response.data?.id,
+          permissions: response?.data?.permissions,
+        });
+        messageApi.open({
+          type: "success",
+          content: response.message,
+        });
+        if (response?.data) {
+          window.location.href = `/${import.meta.env.VITE_HOMEPAGE_URL}/home?${queryString.toString()}`;
         }
-        } 
-        catch (error:any) {
-          messageApi.open({
-            type: "error",
-            content: error.response?.data?.message
-              ? error.response?.data?.message
-              : "Try Again",
-          });
-        }
-      });
-    };
+      } catch (error: any) {
+        messageApi.open({
+          type: "error",
+          content: error.response?.data?.message
+            ? error.response?.data?.message
+            : "Try Again",
+        });
+      }
+    });
+  };
   return (
     <div className="flex flex-col flex-1">
       {contextHolder}
@@ -89,22 +87,21 @@ export default function SignInForm() {
             </p>
           </div>
           <div>
-           
-            
             <form onSubmit={handleSubmit}>
               <div className="space-y-6">
                 <div>
                   <Label>
                     Email <span className="text-error-500">*</span>{" "}
                   </Label>
-                  <Input id="username"
-                      name="username"
-                      type="text"
-                      value={formData.username}
-                      onChange={handleChange}
-                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                      placeholder="you@example.com"
-                       />
+                  <Input
+                    id="username"
+                    name="username"
+                    type="text"
+                    value={formData.username}
+                    onChange={handleChange}
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                    placeholder="you@example.com"
+                  />
                 </div>
                 <div>
                   <Label>
@@ -112,14 +109,13 @@ export default function SignInForm() {
                   </Label>
                   <div className="relative">
                     <Input
-                       id="password"
+                      id="password"
                       name="password"
                       type={showPassword ? "text" : "password"}
                       value={formData.password}
                       onChange={handleChange}
                       className="block w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
                       placeholder="Enter your password"
-                     
                     />
                     <span
                       onClick={() => setShowPassword(!showPassword)}
@@ -133,17 +129,14 @@ export default function SignInForm() {
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center justify-between">
-                 
-                 
-                </div>
+                <div className="flex items-center justify-between"></div>
                 <div>
-                  <Button  disabled={isPending} className="w-full" size="sm">
-                   {isPending ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  ) : (
-                    "Sign In"
-                  )}
+                  <Button disabled={isPending} className="w-full" size="sm">
+                    {isPending ? (
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      "Sign In"
+                    )}
                   </Button>
                 </div>
               </div>
