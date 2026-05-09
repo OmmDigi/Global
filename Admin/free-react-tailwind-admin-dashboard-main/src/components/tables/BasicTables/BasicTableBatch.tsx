@@ -111,7 +111,7 @@ export default function BasicTableSession({
                 <TableCell className="px-5 py-4 sm:px-6 text-start">
                   <div className="flex items-center gap-3">
                     <div className="block font-medium text-gray-500 text-theme-xs dark:text-gray-400]">
-                      {index + 1}
+                      {((count - 1) * 10) + (index + 1)}
                     </div>
                     <div>
                       <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
