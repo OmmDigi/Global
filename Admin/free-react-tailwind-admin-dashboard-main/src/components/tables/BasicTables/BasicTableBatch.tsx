@@ -11,7 +11,7 @@ import useSWRMutation from "swr/mutation";
 import { deleteFetcher } from "../../../api/fatcher";
 import { message } from "antd";
 // import { mutate } from "swr";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Pagination from "../../form/Pagination";
 
 interface IProps {
@@ -54,9 +54,7 @@ export default function BasicTableSession({
     }
   };
   const [count, setCount] = useState(1);
-  useEffect(() => {
-    onSendData(count);
-  }, [count, onSendData]);
+
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
       <div className="max-w-full overflow-x-auto">
@@ -175,7 +173,10 @@ export default function BasicTableSession({
         <div className="p-8">
           <Pagination
             count={count}
-            onChange={setCount}
+            onChange={(page) => {
+              setCount(page);
+              onSendData(page);
+            }}
             length={batchList?.data?.length ? batchList?.data?.length : 1}
           />
         </div>

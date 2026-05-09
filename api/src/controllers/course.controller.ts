@@ -606,14 +606,20 @@ export const getBatch = asyncErrorHandler(async (req, res) => {
   const { TO_STRING } = parsePagination(req);
 
   // filtes
-  let filter = "";
+  let filter = "WHERE 1=1";
   const filterValues: string[] = [];
   let pNum = 1;
 
   if (typeof value.is_active !== "undefined") {
-    filter += `WHERE b.is_active = $${pNum}`;
+    filter += ` AND b.is_active = $${pNum}`;
     pNum++;
     filterValues.push(value.is_active);
+  }
+
+  if(value.session_id) {
+    filter += ` AND b.session_id = $${pNum}`;
+    pNum++;
+    filterValues.push(value.session_id);
   }
 
   const { rows } = await pool.query(

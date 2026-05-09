@@ -17,6 +17,7 @@ export const VUpdateSession = Joi.object({
 
 export const VGetSessionList = Joi.object({
   fields: Joi.string().optional(),
+  session_id: Joi.number().optional(),
   page: Joi.number().optional(),
   limit: Joi.number().optional(),
   is_active: Joi.bool().optional(),

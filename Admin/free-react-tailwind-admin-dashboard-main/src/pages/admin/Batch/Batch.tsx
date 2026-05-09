@@ -8,6 +8,7 @@ import { getFetcher, postFetcher, putFetcher } from "../../../api/fatcher";
 import { message } from "antd";
 import useSWR, { mutate } from "swr";
 import MultiSelectName from "../../../components/form/MultiSelectName";
+import { useSearchParams } from "react-router";
 
 interface Option {
   name: string;
@@ -16,8 +17,9 @@ interface Option {
 export default function Batch() {
   const [messageApi, contextHolder] = message.useMessage();
   const [id, setId] = useState<number>(0);
-  const [pageCount, setPageCount] = useState<number>(1);
   const [options, setOptions] = useState<Option[]>([]);
+
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [formData, setFormData] = useState(() => {
     return {
@@ -89,25 +91,25 @@ export default function Batch() {
   //   get Course list
   const { data: courseList } = useSWR(
     "api/v1/course?is_active=true&limit=-1",
-    getFetcher
+    getFetcher,
   );
 
   //   get session list
   const { data: sessionList, isLoading: sessionLoading } = useSWR(
     "api/v1/course/session?limit=-1&is_active=true",
-    getFetcher
+    getFetcher,
   );
 
   //   create Batch
   const { trigger: create } = useSWRMutation(
     "api/v1/course/batch",
-    (url, { arg }) => postFetcher(url, arg)
+    (url, { arg }) => postFetcher(url, arg),
   );
 
   //   get batch list
   const { data: batchList, mutate: mutateBatchList } = useSWR(
-    `api/v1/course/batch?page=${pageCount}`,
-    getFetcher
+    `api/v1/course/batch?${searchParams.toString()}`,
+    getFetcher,
   );
 
   //   get single data
@@ -120,7 +122,7 @@ export default function Batch() {
   //   get updated data
   const { trigger: update } = useSWRMutation(
     "api/v1/course/batch",
-    (url, { arg }) => putFetcher(url, arg)
+    (url, { arg }) => putFetcher(url, arg),
   );
   if (sessionLoading) {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
@@ -130,12 +132,15 @@ export default function Batch() {
   }
 
   const handleChildData = (data: any) => {
-    setPageCount(data);
+    const newUrlSearchParams = new URLSearchParams(searchParams);
+    newUrlSearchParams.set("page", String(data));
+    setSearchParams(newUrlSearchParams);
   };
+
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -264,6 +269,18 @@ export default function Batch() {
     ]);
   };
 
+  const handleFilterChange = (key: string, value: string) => {
+    const newUrlSearchParams = new URLSearchParams(searchParams);
+    if (value === "") {
+      newUrlSearchParams.delete(key);
+      setSearchParams(newUrlSearchParams);
+      return;
+    }
+
+    newUrlSearchParams.set(key, value);
+    setSearchParams(newUrlSearchParams);
+  };
+
   return (
     <div>
       {contextHolder}
@@ -363,6 +380,29 @@ export default function Batch() {
                   </div>
                 </div>
               </form>
+            </div>
+
+            <div className="flex items-center justify-end">
+              <div className="mb-4 min-w-44">
+                <label className="block text-sm text-start mt-1 dark:text-gray-400 text-gray-700 mb-1">
+                  Filter By Session
+                </label>
+                <select
+                  name="session_id"
+                  value={searchParams.get("session_id") ?? ""}
+                  onChange={(e) => {
+                    handleFilterChange("session_id", e.target.value);
+                  }}
+                  className="w-full px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                >
+                  <option value="">Choose</option>
+                  {sessionList?.data?.map((data: any, index: number) => (
+                    <div key={index}>
+                      <option value={data?.id}>{data?.name}</option>
+                    </div>
+                  ))}
+                </select>
+              </div>
             </div>
             <BasicTableBatch
               batchList={batchList}
