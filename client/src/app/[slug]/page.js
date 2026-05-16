@@ -11,7 +11,7 @@ async function getPost(slug) {
     `${process.env.NEXT_PUBLIC_BLOG}/wp-json/custom/v1/blog/${slug}`,
     {
       next: { revalidate: 60 }, // ISR caching (optional)
-    }
+    },
   );
 
   if (!res.ok) return null;
@@ -28,7 +28,7 @@ export default async function PostDetails({ params }) {
   }
 
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BLOG}wp-json/custom/v1/blog/${params?.slug}/related`
+    `${process.env.NEXT_PUBLIC_BLOG}wp-json/custom/v1/blog/${params?.slug}/related`,
   );
   const response = await res.json();
 
@@ -46,8 +46,8 @@ export default async function PostDetails({ params }) {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto p-6 gap-20 flex">
-        <article className="bg-white shadow-md rounded-lg overflow-hidden w-[70%]">
+      <div className="max-w-7xl mx-auto p-2 md:p-6 gap-20 block md:flex ">
+        <article className="bg-white shadow-md rounded-lg overflow-hidden p-2 w-full md:w-[70%]">
           <div className="flex flex-col justify-center items-center gap-2 mb-4">
             <div className=" flex justify-center items-center">
               <p
@@ -82,8 +82,8 @@ export default async function PostDetails({ params }) {
             />
           </div>
         </article>
-        <div className="w-[30%] text-2xl font-bold">
-          <h2 >Related Blogs</h2>
+        <div className="w-full md:w-[30%] text-2xl font-bold">
+          <h2>Related Blogs</h2>
           <hr className="text-2xl font-bold mb-3" />
           <div className="grid grid-cols-1  items-center">
             {response?.map((data, index) => {
@@ -93,7 +93,7 @@ export default async function PostDetails({ params }) {
               return (
                 <article
                   key={index}
-                  className="w-full h-160 p-4 mb-5 shadow-2xl bg-white"
+                  className="w-full h-auto p-4 mb-5 shadow-2xl bg-white"
                 >
                   <Link
                     href={`${data?.slug}`}
