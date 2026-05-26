@@ -271,12 +271,13 @@ export default function AdmissionPopup({ isOpen, setIsOpem }) {
                   className="mt-10 space-y-4  "
                 >
                   <div>
-                    <label>Full Name</label>
+                    <label>Full Name *</label>
                     <input
                       name="name"
                       value={enquiryData.name}
                       onChange={handleEnquiryChange}
                       className="w-full p-2 border rounded"
+                      required
                     />
                   </div>
 
@@ -298,16 +299,18 @@ export default function AdmissionPopup({ isOpen, setIsOpem }) {
                         value={enquiryData.age}
                         onChange={handleEnquiryChange}
                         className="w-full p-2 border rounded"
+                        type="number"
                       />
                     </div>
 
                     <div>
-                      <label>Sex</label>
+                      <label>Sex *</label>
                       <select
                         name="gender"
                         value={enquiryData.gender}
                         onChange={handleEnquiryChange}
                         className="w-full p-2 border rounded"
+                        required
                       >
                         <option value="">Select</option>
                         <option>Male</option>
@@ -328,22 +331,25 @@ export default function AdmissionPopup({ isOpen, setIsOpem }) {
                   </div>
 
                   <div>
-                    <label>Contact / WhatsApp No</label>
+                    <label>Contact / WhatsApp No *</label>
                     <input
                       name="phone"
                       value={enquiryData.phone}
                       onChange={handleEnquiryChange}
                       className="w-full p-2 border rounded"
+                      required
                     />
                   </div>
 
                   <div>
-                    <label>Email ID</label>
+                    <label>Email ID *</label>
                     <input
                       name="email"
                       value={enquiryData.email}
                       onChange={handleEnquiryChange}
                       className="w-full p-2 border rounded"
+                      required
+                      type="email"
                     />
                   </div>
 
