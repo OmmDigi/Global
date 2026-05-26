@@ -45,6 +45,7 @@ function page() {
               <Carousel
                 responsive={responsive2}
                 infinite={true}
+                autoPlay={true}
                 autoPlaySpeed={1000}
                 keyBoardControl={true}
                 transitionDuration={500}
@@ -53,28 +54,49 @@ function page() {
                 <div>
                   <img
                     className="w-full h-auto object-cover rounded-lg"
-                    src="/image/hom-01.jpg"
+                    src="/image/about/Website1.jpg"
                     alt="teachers training institute in Kolkata"
                   />
                 </div>
                 <div>
                   <img
                     className="w-full h-auto object-cover rounded-lg"
-                    src="/image/hom-02.jpg"
+                    src="/image/about/Website2.jpg"
                     alt="teachers training institute in Kolkata"
                   />
                 </div>
                 <div>
                   <img
                     className="w-full h-auto object-cover rounded-lg"
-                    src="/image/hom-03.jpg"
+                    src="/image/about/Website3.jpg"
                     alt="teachers training institute in Kolkata"
                   />
                 </div>
                 <div>
                   <img
                     className="w-full h-auto object-cover rounded-lg"
-                    src="/image/hom-04.jpg"
+                    src="/image/about/Website4.jpg"
+                    alt="teachers training institute in Kolkata"
+                  />
+                </div>
+                <div>
+                  <img
+                    className="w-full h-auto object-cover rounded-lg"
+                    src="/image/about/Website5.jpg"
+                    alt="teachers training institute in Kolkata"
+                  />
+                </div>
+                <div>
+                  <img
+                    className="w-full h-auto object-cover rounded-lg"
+                    src="/image/about/Website6.jpg"
+                    alt="teachers training institute in Kolkata"
+                  />
+                </div>
+                <div>
+                  <img
+                    className="w-full h-auto object-cover rounded-lg"
+                    src="/image/about/Website7.jpg"
                     alt="teachers training institute in Kolkata"
                   />
                 </div>
