@@ -936,6 +936,16 @@ export default function Home() {
                     width={300}
                   />
                 </div>
+                  <div>
+                  {" "}
+                  <Image
+                    src="/image/Collaborations/9.png"
+                    alt="yea"
+                    className="mx-auto h-24 object-contain"
+                    height={48}
+                    width={300}
+                  />
+                </div>
               </Carousel>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 items-center"></div>
