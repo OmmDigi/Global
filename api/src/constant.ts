@@ -13,7 +13,7 @@ ALLOWED_COURSE_FIELDS.set("created_at", "c.created_at");
 ALLOWED_COURSE_FIELDS.set("is_active", "c.is_active");
 ALLOWED_COURSE_FIELDS.set(
   "fee_structure",
-  "COALESCE(JSON_AGG(JSON_BUILD_OBJECT('fee_head_id', cfs.fee_head_id, 'amount', cfs.amount, 'min_amount', cfs.min_amount, 'required', cfs.required)) FILTER (WHERE cfs.id IS NOT NULL), '[]') AS fee_structure"
+  "COALESCE(JSON_AGG(JSON_BUILD_OBJECT('fee_head_id', cfs.fee_head_id, 'amount', cfs.amount, 'min_amount', cfs.min_amount, 'required', cfs.required)) FILTER (WHERE cfs.id IS NOT NULL), '[]') AS fee_structure",
 );
 
 export const ALLOWED_BATCH_FIELDS = new Map<string, string>();
@@ -45,3 +45,18 @@ export const MONTHLY_PAYMENT_HEAD_ID = 4;
 export const LATE_FINE_FEE_HEAD_ID = 5;
 export const ADMISSION_FEE_HEAD_ID = 3;
 export const BSS_FEE_HEAD_ID = 3;
+
+export const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];

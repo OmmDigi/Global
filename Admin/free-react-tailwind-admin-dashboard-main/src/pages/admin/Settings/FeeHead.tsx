@@ -8,6 +8,7 @@ import useSWRMutation from "swr/mutation";
 import { postFetcher } from "../../../api/fatcher";
 import { message } from "antd";
 import BackupDatabaseSection from "../../../components/BackupDatabaseSection";
+import LateFineSection from "../../../components/LateFineSection";
 
 type FormDataType = {
   id?: number; // optional (if sometimes missing)
@@ -124,6 +125,7 @@ export default function Settings() {
         </div>
       </div>
 
+      <LateFineSection />
       <BackupDatabaseSection />
     </div>
   );

@@ -19,7 +19,7 @@ export default function Home() {
 
   const { data: courseList, isLoading: courseLoading } = useSWR(
     "api/v1/users/course",
-    getFetcher
+    getFetcher,
   );
   if (courseLoading) {
     return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;

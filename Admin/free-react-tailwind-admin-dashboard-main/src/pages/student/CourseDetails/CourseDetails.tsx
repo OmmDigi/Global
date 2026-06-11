@@ -2,7 +2,7 @@ import PageMeta from "../../../components/common/PageMeta";
 import { useRef, useState, useTransition } from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import { useParams } from "react-router-dom";
-import { message } from "antd";
+import { message, Modal } from "antd";
 import ComponentCard from "../../../components/common/ComponentCard";
 import Label from "../../../components/form/Label";
 import useSWR from "swr";
@@ -20,6 +20,7 @@ import dayjs from "dayjs";
 import { uploadFiles } from "../../../utils/uploadFile";
 import Button from "../../../components/ui/button/Button";
 import { Loader2 } from "lucide-react";
+import { LATE_FINE, MONTHLY_PAYMENT } from "../../../constant";
 // import DatePicker from "react-datepicker";
 // import BasicTableCourseDetailsAdmin from "../../../components/tables/BasicTables/BasicTableCourseDetailsAdmin";
 
@@ -34,6 +35,9 @@ export default function CourseDetails() {
 
   const [photo, setPhoto] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [lateFineDialogOpen, setLateFineDialogOpen] = useState(false);
+  const [lateFineAmount, setLateFineAmount] = useState(0);
+  const [pendingFormData, setPendingFormData] = useState<any>(null);
 
   // const months = useRef<{
   //   monthly_fee_month: string | null;
@@ -79,42 +83,73 @@ export default function CourseDetails() {
     }));
   };
 
-  // api/v1/payment/create-order
-  const handleSubmit2 = async (e: any) => {
-    e.preventDefault();
-    const fee_structure_info = feesStructure?.data?.fee_structure_info?.map(
-      (item: any) => ({
-        fee_head_id: item.fee_head_id,
-        custom_min_amount: enteredAmounts[item.fee_head_id] || 0,
-        month: month[item.fee_head_id]
-          ? dayjs(month[item.fee_head_id]).format("YYYY-MM")
-          : null,
-      }),
-    );
-
-    const finalFormData = {
-      form_id: id,
-      fee_structure_info,
-    };
-
+  const proceedWithPayment = (formData: any) => {
     startTransition(async () => {
       try {
-        const response = await create2(finalFormData as any);
-        messageApi.open({
-          type: "success",
-          content: response.message,
-        });
+        const response = await create2(formData);
+        messageApi.open({ type: "success", content: response.message });
         refetch();
         window.location.href = response?.data?.payment_page_url;
       } catch (error: any) {
         messageApi.open({
           type: "error",
-          content: error?.response?.data?.message
-            ? error?.response?.data?.message
-            : "Try Again",
+          content: error?.response?.data?.message ?? "Try Again",
         });
       }
     });
+  };
+
+  // api/v1/payment/create-order
+  const handleSubmit2 = async (e: any) => {
+    e.preventDefault();
+
+    const fee_structure_info: any[] = [];
+
+    let findIndex = 0;
+    let monthlyFeeIndex = -1;
+    feesStructure?.data?.fee_structure_info?.forEach((item: any) => {
+      const entireAmount = enteredAmounts[item.fee_head_id] || 0;
+      if (entireAmount !== 0) {
+        if (item.fee_head_id == MONTHLY_PAYMENT) {
+          monthlyFeeIndex = findIndex;
+        }
+
+        fee_structure_info.push({
+          fee_head_id: item.fee_head_id,
+          custom_min_amount: entireAmount,
+          month: month[item.fee_head_id]
+            ? dayjs(month[item.fee_head_id]).format("YYYY-MM")
+            : null,
+        });
+
+        findIndex++;
+      }
+    });
+
+    if (fee_structure_info.length == 0) {
+      return messageApi.error("You have to pay minium one fee");
+    }
+
+    const finalFormData = { form_id: id, fee_structure_info };
+
+    if (monthlyFeeIndex !== -1) {
+      try {
+        const fineRes = await getFetcher(
+          `api/v1/payment/check-late-fine?pay_month=${fee_structure_info[monthlyFeeIndex].month}`,
+        );
+
+        if (fineRes?.data?.amount > 0) {
+          setPendingFormData(finalFormData);
+          setLateFineAmount(fineRes.data.amount);
+          setLateFineDialogOpen(true);
+          return;
+        }
+      } catch {
+        // proceed if check fails
+      }
+    }
+
+    proceedWithPayment(finalFormData);
   };
 
   // const mutateClick = () => {
@@ -208,6 +243,24 @@ export default function CourseDetails() {
   return (
     <>
       {contextHolder}
+      <Modal
+        title="Late Fine Notice"
+        open={lateFineDialogOpen}
+        onOk={() => {
+          setLateFineDialogOpen(false);
+          proceedWithPayment(pendingFormData);
+        }}
+        onCancel={() => setLateFineDialogOpen(false)}
+        okText="Proceed"
+        cancelText="Cancel"
+      >
+        <p className="text-gray-700">
+          An additional late fine of{" "}
+          <span className="font-semibold text-red-500">₹{lateFineAmount}</span>{" "}
+          will be charged with your payment.
+        </p>
+        <p className="text-gray-500 mt-2">Do you wish to proceed?</p>
+      </Modal>
       <PageMeta
         title=" Dashboard Ecommerce Dashboard |  "
         description="This is  Dashboard Ecommerce Dashboard page for TailAdmin -  Dashboard Tailwind CSS Admin Dashboard Template"
@@ -228,8 +281,8 @@ export default function CourseDetails() {
             </h2>
 
             <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="md:col-span-3">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div className="sm:col-span-3">
                   <label className="block text-sm font-medium text-start text-gray-700 mb-2">
                     Full Name
                   </label>
@@ -246,15 +299,14 @@ export default function CourseDetails() {
               <div className="bg-blue-50 p-4 rounded-md">
                 <p className="text-sm text-gray-700 mb-4">
                   <strong>Declaration:</strong> I hereby declare that I will
-                  have to pay a sum of Rs.
+                  have to pay a sum of Rs.{" "}
                   <input
                     type="number"
                     readOnly
                     name="admissionFeeAmount"
                     value={admissionFees?.price ?? 0}
-                    // onChange={handleInputChange}
-                    className="mx-2 w-30 p-1 border border-gray-300 rounded text-center"
-                  />
+                    className="inline-block w-24 sm:w-28 p-1 border border-gray-300 rounded text-center"
+                  />{" "}
                   only towards Admission Fee for Montessori Teachers' Training
                   course (6 Months) of
                 </p>
@@ -278,15 +330,14 @@ export default function CourseDetails() {
                 <div className="bg-green-50 p-4 rounded-md">
                   <p className="text-sm text-gray-700">
                     <strong>Declaration:</strong> I hereby declare that I will
-                    also have to pay a sum of Rs.
+                    also have to pay a sum of Rs.{" "}
                     <input
                       type="number"
                       readOnly
                       name="bssRegistrationFee"
                       value={bssFees.price}
-                      // onChange={handleInputChange}
-                      className="mx-2 w-30 p-1 border border-gray-300 rounded text-center"
-                    />
+                      className="inline-block w-24 sm:w-28 p-1 border border-gray-300 rounded text-center"
+                    />{" "}
                     only towards BSS Registration Fee within 3 (Three) months
                     after 6 (Six) months of getting Admission for Montessori
                     Teachers' Training Course.
@@ -296,11 +347,11 @@ export default function CourseDetails() {
             </div>
           ) : null}
           {admissionFees || bssFees ? (
-            <div className="flex justify-center">
+            <div className="flex justify-center px-4">
               <button
                 type="submit"
                 onClick={submitClick}
-                className="bg-blue-200 p-4 hover:bg-blue-400 hover:text-gray-100 text-lg rounded-4xl"
+                className="w-full sm:w-auto bg-blue-200 px-8 py-3 hover:bg-blue-400 hover:text-gray-100 text-lg font-semibold rounded-full transition-colors"
               >
                 I Agree
               </button>
@@ -313,11 +364,11 @@ export default function CourseDetails() {
       {feesStructure?.data?.declaration_status == 0 ? null : (
         <>
           <PageBreadcrumb pageTitle="Course Details" />
-          <h1 className="text-gray-800 dark:text-amber-50 text-3xl mb-5">
+          <h1 className="text-gray-800 dark:text-amber-50 text-xl sm:text-2xl lg:text-3xl mb-5 break-words">
             {feesStructure?.data?.form_name}
           </h1>
-          <div className=" max-w-full overflow-x-auto">
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-[35%_65%]">
+          <div className="max-w-full overflow-x-auto">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[35%_65%]">
               <div className="space-y-6  ">
                 <ComponentCard title="Profile">
                   <div className="space-y-6">
@@ -350,7 +401,7 @@ export default function CourseDetails() {
                       </div>
                     )}
 
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-2 gap-3 sm:gap-6">
                       <Button
                         onClick={() => {
                           inputRef.current?.click();
@@ -374,7 +425,7 @@ export default function CourseDetails() {
                       </Button>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                       <div>
                         <Label htmlFor="inputTwo">
                           Name : {feesStructure?.data?.student_name}{" "}
@@ -386,7 +437,7 @@ export default function CourseDetails() {
                         </Label>
                       </div>
                     </div>
-                    <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                       <div>
                         <Label htmlFor="inputTwo">
                           Session : {feesStructure?.data?.session_name}{" "}
@@ -398,7 +449,7 @@ export default function CourseDetails() {
                         </Label>
                       </div>
                     </div>
-                    <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                       <div>
                         <Label htmlFor="inputTwo">
                           Total Fees : {feesStructure?.data?.course_fee}
@@ -466,19 +517,19 @@ export default function CourseDetails() {
                     <form onSubmit={handleSubmit2} className="space-y-6">
                       <div className="p-4 bg-gray-100 dark:bg-gray-800 dark:text-gray-200 rounded-lg shadow-sm  ">
                         <div className="space-y-6">
-                          {feesStructure?.data?.fee_structure_info?.map(
-                            (item: any, index: number) => {
+                          {feesStructure?.data?.fee_structure_info
+                            ?.filter(
+                              (item: any) => item.fee_head_id != LATE_FINE,
+                            )
+                            ?.map((item: any, index: number) => {
                               return (
-                                <div
-                                  key={item.fee_head_id}
-                                  className="flex flex-col"
-                                >
-                                  <div className="flex flex-wrap md:flex-nowrap gap-2.5">
-                                    <div className="flex-1">
-                                      <p className="flex-1">
+                                <div key={item.fee_head_id} className="">
+                                  <div className="flex flex-col sm:flex-row sm:items-start gap-2.5">
+                                    <div className="flex-1 min-w-0">
+                                      <p className="font-medium text-sm">
                                         {index + 1}. {item.fee_head_name}
                                       </p>
-                                      <div className="flex items-center gap-3.5 text-sm text-gray-400">
+                                      <div className="flex flex-wrap items-center gap-3 text-sm text-gray-400 mt-0.5">
                                         <p>Fees : ₹ {item.price}</p>{" "}
                                         <p>
                                           Due Fees : ₹{" "}
@@ -494,9 +545,9 @@ export default function CourseDetails() {
                                         </p>
                                       </div>
                                     </div>
-                                    <div className="w-full md:w-auto flex items-center gap-2.5">
-                                      {item.fee_head_id == 4 ||
-                                      item.fee_head_id == 5 ? (
+                                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:shrink-0">
+                                      {item.fee_head_id == MONTHLY_PAYMENT ||
+                                      item.fee_head_id == LATE_FINE ? (
                                         <DatePicker
                                           name="fee_head_id"
                                           selected={
@@ -510,12 +561,12 @@ export default function CourseDetails() {
                                           }}
                                           dateFormat="MM-yyyy"
                                           showMonthYearPicker
-                                          className="border w-30 border-gray-300 dark:border-gray-300 dark:text-gray-200 rounded-md px-1 py-1 mr-2 mt-1 text-sm"
+                                          className="border w-[7.5rem] border-gray-300 dark:border-gray-300 dark:text-gray-200 rounded-md px-2 py-1 text-sm"
                                           autoComplete="off"
                                           placeholderText="Select Month"
                                         />
                                       ) : null}
-                                      <div className="flex-1">
+                                      <div className="w-full sm:w-28">
                                         <input
                                           disabled={
                                             Number(item?.due_amount) === 0
@@ -523,14 +574,13 @@ export default function CourseDetails() {
                                               : false
                                           }
                                           type="number"
-                                          min={1}
+                                          min={item.min_amount}
                                           max={item?.price}
-                                          // value={formData2.fee_structure_info.fee_head_id}
                                           onChange={(e) =>
                                             handleAmountChange(e, item)
                                           }
                                           placeholder="Amount"
-                                          className="px-2 py-1 border rounded"
+                                          className="w-full px-2 py-1 border rounded"
                                         />
                                         {/* {item?.min_amount > 0 &&
                                         item?.due_amount > 0 ? (
@@ -542,29 +592,39 @@ export default function CourseDetails() {
                                       </div>
                                     </div>
                                   </div>
+                                  {/* <div className="flex items-center justify-end">
+                                    <button className="bg-blue-700 px-3.5 py-1 text-sm rounded-lg">
+                                      Pay
+                                    </button>
+                                  </div> */}
+                                  {item.fee_head_id == MONTHLY_PAYMENT && (
+                                    <span className="text-sm text-yellow-600">
+                                      You have to pay {item.min_amount}/month
+                                    </span>
+                                  )}
                                 </div>
                               );
-                            },
-                          )}
+                            })}
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+                      <div>
                         <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm">
-                          <div className="space-x-4">
-                            <div className="flex flex-wrap justify-center font-bold items-center gap-10">
-                              <button
-                                disabled={isPending}
-                                type="submit"
-                                className="bg-blue-200 p-4 hover:bg-blue-400 hover:text-gray-100 text-lg rounded-4xl"
-                              >
-                                {isPending ? (
-                                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                ) : (
-                                  "Click For Payment"
-                                )}
-                              </button>
-                            </div>
+                          <div className="flex justify-center">
+                            <button
+                              disabled={
+                                isPending ||
+                                Object.keys(enteredAmounts).length == 0
+                              }
+                              type="submit"
+                              className="w-full disabled:opacity-30 sm:w-auto bg-blue-200 px-6 py-3 hover:bg-blue-400 hover:text-gray-100 text-base sm:text-lg font-bold rounded-full transition-colors"
+                            >
+                              {isPending ? (
+                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>
+                              ) : (
+                                "Click For Payment"
+                              )}
+                            </button>
                           </div>
                         </div>
                       </div>

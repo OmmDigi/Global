@@ -75,6 +75,7 @@ export const VModifyAdmissionFeeHead = Joi.object({
   form_id: Joi.number().required(),
   fee_head_id: Joi.number().required(),
   amount: Joi.number().required(),
+  min_amount: Joi.number().optional(),
 });
 
 export const VDeleteSingleAdmission = Joi.object({

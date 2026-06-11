@@ -666,9 +666,15 @@ export const modifyFeeHeadOfAdmission = asyncErrorHandler(async (req, res) => {
     VALUES
       ($1, $2, $3, $4, $5)
     ON CONFLICT (form_id, fee_head_id) DO UPDATE 
-      SET amount = EXCLUDED.amount
+      SET amount = EXCLUDED.amount, min_amount = EXCLUDED.min_amount
     `,
-    [value.form_id, value.fee_head_id, value.amount, value.amount, false],
+    [
+      value.form_id,
+      value.fee_head_id,
+      value.amount,
+      value.min_amount ?? value.amount,
+      false,
+    ],
   );
 
   res

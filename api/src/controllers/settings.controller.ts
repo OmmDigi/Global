@@ -3,10 +3,11 @@ import asyncErrorHandler from "../middlewares/asyncErrorHandler";
 import { ApiResponse } from "../utils/ApiResponse";
 import { ErrorHandler } from "../utils/ErrorHandler";
 import { updateEsslConfig } from "../utils/updateEsslConfig";
-import { VAddEsslConfig } from "../validator/settings.validator";
+import { VAddEsslConfig, VSaveLateFineConfig } from "../validator/settings.validator";
 import path from "node:path";
 import fs from "fs";
 import { parse } from "url";
+import { pool } from "../config/db";
 
 export const addEsslConfig = asyncErrorHandler(async (req, res) => {
   const { error, value } = VAddEsslConfig.validate(req.body ?? {});
@@ -61,4 +62,30 @@ export const backupDatabase = asyncErrorHandler(async (req, res) => {
       path: filePath,
     })
   );
+});
+
+export const getLateFineConfig = asyncErrorHandler(async (req, res) => {
+  const { rows } = await pool.query(`SELECT * FROM late_fine_config LIMIT 1`);
+  res.status(200).json(new ApiResponse(200, "Late fine config", rows[0] ?? null));
+});
+
+export const saveLateFineConfig = asyncErrorHandler(async (req, res) => {
+  const { error, value } = VSaveLateFineConfig.validate(req.body ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
+
+  const { rows } = await pool.query(`SELECT id FROM late_fine_config LIMIT 1`);
+
+  if (rows.length > 0) {
+    await pool.query(
+      `UPDATE late_fine_config SET amount = $1, applicable_months = $2, fine_date = $3 WHERE id = $4`,
+      [value.amount, value.applicable_months, value.fine_date, rows[0].id]
+    );
+  } else {
+    await pool.query(
+      `INSERT INTO late_fine_config (amount, applicable_months, fine_date) VALUES ($1, $2, $3)`,
+      [value.amount, value.applicable_months, value.fine_date]
+    );
+  }
+
+  res.status(200).json(new ApiResponse(200, "Late fine config saved."));
 });

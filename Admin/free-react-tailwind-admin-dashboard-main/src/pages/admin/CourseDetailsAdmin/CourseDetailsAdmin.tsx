@@ -56,6 +56,7 @@ export default function CourseDetailsAdmin() {
   const [addFormData, setAddFormData] = useState({
     fee_head_id: "",
     amount: "",
+    min_amount: 0,
   });
 
   // console.log("addFormData", addFormData);
@@ -312,6 +313,7 @@ export default function CourseDetailsAdmin() {
       form_id: id,
       fee_head_id: addFormData.fee_head_id,
       amount: addFormData.amount,
+      min_amount: addFormData.min_amount,
     };
 
     try {
@@ -324,6 +326,7 @@ export default function CourseDetailsAdmin() {
       setAddFormData({
         fee_head_id: "",
         amount: "",
+        min_amount: 0,
       });
     } catch (error: any) {
       messageApi.open({
@@ -718,21 +721,26 @@ export default function CourseDetailsAdmin() {
 
           <ComponentCard title="Add extra Fees">
             <form onSubmit={handleAddAmountSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+              <div className="grid grid-cols-1 gap-x-6 gap-y-4 xl:grid-cols-2">
                 <div>
                   <Label htmlFor="inputTwo">Choose Fee</Label>
                   <select
                     name="fee_head_id"
                     value={addFormData.fee_head_id}
                     onChange={(e) => {
-                      const selected = feeHeadList?.data?.find(
-                        (opt: any) => opt.id === Number(e.target.value),
-                      );
-                      setAddFormData((prev) => ({
-                        ...prev,
+                      // const selected = feeHeadList?.data?.find(
+                      //   (opt: any) => opt.id === Number(e.target.value),
+                      // );
+                      const oldFeeInfo =
+                        feesStructure.data.fee_structure_info.find(
+                          (item: any) => item.fee_head_id == e.target.value,
+                        );
+                      setAddFormData({
                         fee_head_id: e.target.value,
-                      }));
-                      if (selected) setMaxValue(selected.due_amount); // ✅ set max value here
+                        amount: oldFeeInfo?.due_amount ?? 0,
+                        min_amount: oldFeeInfo?.min_amount ?? 0,
+                      });
+                      if (oldFeeInfo) setMaxValue(oldFeeInfo.due_amount); // ✅ set max value here
                     }}
                     className="w-full px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
                   >
@@ -752,6 +760,18 @@ export default function CourseDetailsAdmin() {
                     max={`${maxValue}`}
                     placeholder="Amount"
                     value={addFormData.amount}
+                    onChange={handleAddAmountChange}
+                    className="flex-1 border px-3 py-1 rounded-md"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="inputTwo"> Min Amount</Label>
+                  <Input
+                    type="number"
+                    name="min_amount"
+                    max={`${maxValue}`}
+                    placeholder="Min Amount"
+                    value={addFormData.min_amount}
                     onChange={handleAddAmountChange}
                     className="flex-1 border px-3 py-1 rounded-md"
                   />

@@ -1,6 +1,8 @@
 import { PoolClient } from "pg";
 import { pool } from "../config/db";
 import { generatePlaceholders } from "../utils/generatePlaceholders";
+import { ErrorHandler } from "../utils/ErrorHandler";
+import { MONTHS } from "../constant";
 
 type IPaymentProps = {
   form_id: number;
@@ -26,7 +28,7 @@ export const setPayment = async (data: IPaymentProps) => {
 
   const date = new Date();
   const next_receipt_sr_number = await pgClient.query(
-    "SELECT nextval('receipt_no_seq') AS receipt_no"
+    "SELECT nextval('receipt_no_seq') AS receipt_no",
   );
   const SEQ = next_receipt_sr_number.rows[0].receipt_no;
   const receipt_id = `GTI/${date.getFullYear()}/${SEQ}`;
@@ -40,7 +42,7 @@ export const setPayment = async (data: IPaymentProps) => {
           index * 14 + 8
         }, $${index * 14 + 9}, $${index * 14 + 10}, $${index * 14 + 11}, $${
           index * 14 + 12
-        }, $${index * 14 + 13}, $${index * 14 + 14})`
+        }, $${index * 14 + 13}, $${index * 14 + 14})`,
     )
     .join(", ");
 
@@ -63,7 +65,7 @@ export const setPayment = async (data: IPaymentProps) => {
         fee_head_info.month,
         fee_head_info.bill_no,
       ];
-    })
+    }),
   );
 
   return {
@@ -100,7 +102,7 @@ export const deletePaymentService = async (value: IDeletePaymentProps) => {
 
   const { rows, rowCount } = await client.query(
     `DELETE FROM payments WHERE id IN (${placeholder}) AND form_id = $${placeholdernum} RETURNING *`,
-    valueToStore
+    valueToStore,
   );
 
   if (rowCount === 0) {
@@ -114,8 +116,56 @@ export const deletePaymentService = async (value: IDeletePaymentProps) => {
     rows.flatMap((item) => {
       const paymentInfoJson = JSON.stringify(item);
       return [item.id, paymentInfoJson, item.form_id, value.user_id];
-    })
+    }),
   );
 
   return true;
+};
+
+export const checkLateFineService = async (
+  payMonthTxt: string,
+): Promise<{ amount: number }> => {
+  // from payMonth expect "2026-06" YYYY-MM
+
+  const payMonthDateInstance = new Date(payMonthTxt);
+  const currentMonthDateInstance = new Date();
+
+  const payMonth = payMonthDateInstance.getMonth() + 1;
+  const currentMonth = currentMonthDateInstance.getMonth() + 1;
+
+  const { rows, rowCount } = await pool.query(
+    `SELECT * FROM late_fine_config LIMIT 1`,
+  );
+  if (rowCount == 0) {
+    throw new ErrorHandler(
+      500,
+      "No late fine config set. please try again after some time",
+    );
+  }
+
+  // if paymonth is lessthan current month than surely add a fine amount
+  if (
+    payMonth < currentMonth &&
+    !rows[0].applicable_months.includes(MONTHS[payMonth - 1])
+  ) {
+    return {
+      amount: rows[0].amount,
+    };
+  }
+
+  if (payMonth > currentMonth) {
+    return {
+      amount: 0,
+    };
+  }
+
+  if (currentMonthDateInstance.getDate() >= rows[0].fine_date) {
+    return {
+      amount: rows[0].amount,
+    };
+  }
+
+  return {
+    amount: 0,
+  };
 };

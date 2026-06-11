@@ -8,6 +8,7 @@ import Input from "../../components/form/input/InputField";
 import Label from "../../components/form/Label";
 export default function UserProfiles() {
   const { isOpen, openModal, closeModal } = useModal();
+
   const handleSave = () => {
     // Handle save logic here
     closeModal();

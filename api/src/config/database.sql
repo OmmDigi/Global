@@ -582,3 +582,11 @@ CREATE TABLE IF NOT EXISTS enquiry_courses (
 ALTER TABLE fillup_forms ADD COLUMN IF NOT EXISTS admission_from VARCHAR(20) DEFAULT 'crm';
 
 ALTER TABLE batch ADD COLUMN IF NOT EXISTS year VARCHAR(10);
+
+-- 2026-06-09
+CREATE TABLE IF NOT EXISTS late_fine_config (
+  id SERIAL PRIMARY KEY,
+  amount NUMERIC(10,2) NOT NULL DEFAULT 0,
+  applicable_months TEXT[] NOT NULL DEFAULT '{}',
+  fine_date INT NOT NULL DEFAULT 10
+);

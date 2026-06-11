@@ -2,12 +2,18 @@ import { pool } from "../config/db";
 import { phonePe } from "../config/phonePe";
 import { LATE_FINE_FEE_HEAD_ID, MONTHLY_PAYMENT_HEAD_ID } from "../constant";
 import asyncErrorHandler from "../middlewares/asyncErrorHandler";
-import { deletePaymentService, setPayment } from "../services/payment.service";
+import {
+  checkLateFineService,
+  deletePaymentService,
+  setPayment,
+} from "../services/payment.service";
 import { CustomRequest } from "../types";
 import { ApiResponse } from "../utils/ApiResponse";
+import { doTransition } from "../utils/doTransition";
 import { ErrorHandler } from "../utils/ErrorHandler";
 import {
   VAddPayment,
+  VCheckFine,
   VCreateOrderValidator,
   VDeletePayment,
 } from "../validator/payment.validator";
@@ -25,16 +31,41 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
   try {
     await client.query("BEGIN");
 
+    let monthlyFeeIndex = -1;
+    let filteredPosition = 0;
     const fee_structure_info = (
       value.fee_structure_info as {
         fee_head_id: number;
         custom_min_amount: number;
-        month : string | null
+        month: string | null;
       }[]
-    ).filter((item) => item.custom_min_amount != 0);
+    ).filter((item) => {
+      if (item.custom_min_amount == 0) {
+        return false;
+      }
+      if (item.fee_head_id == MONTHLY_PAYMENT_HEAD_ID) {
+        monthlyFeeIndex = filteredPosition;
+      }
+      filteredPosition++;
+      return true;
+    });
 
     if (fee_structure_info.length === 0)
       throw new ErrorHandler(400, "Nothing to pay");
+
+    // check montlyFeeAvilable In the PaymentRequest
+    if (monthlyFeeIndex !== -1) {
+      const monthlyPaymentInfo = fee_structure_info[monthlyFeeIndex];
+      if (!monthlyPaymentInfo.month) {
+        throw new ErrorHandler(400, "Please choose monthly payment month");
+      }
+      const { amount } = await checkLateFineService(monthlyPaymentInfo.month);
+      fee_structure_info.push({
+        fee_head_id: LATE_FINE_FEE_HEAD_ID,
+        custom_min_amount: amount,
+        month: monthlyPaymentInfo.month,
+      });
+    }
 
     const placeholder = fee_structure_info
       .map((_, index) => `$${index + 2}`)
@@ -64,7 +95,7 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
       [
         value.form_id,
         ...fee_structure_info.flatMap((item) => [item.fee_head_id]),
-      ]
+      ],
     );
 
     if (rowCount === 0) throw new ErrorHandler(400, "No admission form found");
@@ -88,8 +119,12 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
 
     rows.forEach((item) => {
       // const db_min_amount = parseFloat(item.min_amount);
-      const singleFeeStructure = fee_structure_info.find((fs) => fs.fee_head_id == item.fee_head_id);
-      const custom_amount = singleFeeStructure?.custom_min_amount ?? 0;
+      const singleFeeStructure = fee_structure_info.find(
+        (fs) => fs.fee_head_id == item.fee_head_id,
+      );
+      const custom_amount = parseFloat(
+        singleFeeStructure?.custom_min_amount.toString() ?? "0",
+      );
 
       amountToPaid += custom_amount;
 
@@ -103,7 +138,9 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
         fee_head_ids_info.push({
           fee_head_id: item.fee_head_id,
           amount: custom_amount,
-          month: singleFeeStructure?.month ? `${singleFeeStructure.month}-01` : null,
+          month: singleFeeStructure?.month
+            ? `${singleFeeStructure.month}-01`
+            : null,
           payment_date: payment_date_str,
           bill_no: null,
           payment_mode: null,
@@ -145,7 +182,7 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
     res.status(201).json(
       new ApiResponse(201, "Order created", {
         payment_page_url: data.instrumentResponse.redirectInfo.url,
-      })
+      }),
     );
   } catch (error: any) {
     await client.query("ROLLBACK");
@@ -157,7 +194,7 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
 
 export const verifyPayment = asyncErrorHandler(async (req, res) => {
   const response = await phonePe().checkStatus(
-    req.query.merchant_order_id?.toString() ?? ""
+    req.query.merchant_order_id?.toString() ?? "",
   );
 
   // after verify add transactionId as payment_name_id and change the status of the payment table
@@ -166,30 +203,53 @@ export const verifyPayment = asyncErrorHandler(async (req, res) => {
     COMPLETED: 2,
     FAILED: 3,
   };
-  
-  await pool.query(
-    "UPDATE payments SET payment_name_id = $1, status = $2, transition_id = $3, order_id = $4, payment_date = $5, remark = $6 WHERE order_id = $7",
-    [
-      response.data.transactionId,
-      payment_status[response.data.state],
-      response.data.transactionId,
-      response.data.orderId,
-      new Date(),
-      `Online Transaction ID : ${response.data.transactionId}`,
-      req.query.merchant_order_id?.toString(),
-    ]
-  );
 
-  // if (!response.success) {
-  //   res.render("payment-status", {
-  //   status: response.data.state === "COMPLETED" ? "success" : "failed",
-  //   orderId: response.data.orderId,
-  //   amount: response.data.amount / 100,
-  //   transactionId : response.data.transactionId,
-  //   frontendhomepage : process.env.FRONTEND_HOST_URL
-  // });
-  //   throw new ErrorHandler(400, response.message);
-  // }
+  // await pool.query(
+  //   "UPDATE payments SET payment_name_id = $1, status = $2, transition_id = $3, order_id = $4, payment_date = $5, remark = $6 WHERE order_id = $7",
+  //   [
+  //     response.data.transactionId,
+  //     payment_status[response.data.state],
+  //     response.data.transactionId,
+  //     response.data.orderId,
+  //     new Date(),
+  //     `Online Transaction ID : ${response.data.transactionId}`,
+  //     req.query.merchant_order_id?.toString(),
+  //   ],
+  // );
+
+  await doTransition(async (client) => {
+    const paymentUpdateInfo = await client.query<{
+      form_id: number;
+      amount: number;
+      fee_head_id: number;
+    }>(
+      "UPDATE payments SET payment_name_id = $1, status = $2, transition_id = $3, order_id = $4, payment_date = $5, remark = $6 WHERE order_id = $7 RETURNING form_id, amount, fee_head_id",
+      [
+        response.data.transactionId,
+        payment_status[response.data.state],
+        response.data.transactionId,
+        response.data.orderId,
+        new Date(),
+        `Online Transaction ID : ${response.data.transactionId}`,
+        req.query.merchant_order_id?.toString(),
+      ],
+    );
+
+    const lateFineFeeHeadPayment = paymentUpdateInfo.rows.find(
+      (item) => item.fee_head_id == LATE_FINE_FEE_HEAD_ID,
+    );
+
+    if (lateFineFeeHeadPayment) {
+      await client.query(
+        "UPDATE form_fee_structure SET amount = amount + $1, min_amount = amount WHERE form_id = $2 AND fee_head_id = $3",
+        [
+          lateFineFeeHeadPayment.amount,
+          lateFineFeeHeadPayment.form_id,
+          lateFineFeeHeadPayment.fee_head_id,
+        ],
+      );
+    }
+  });
 
   res.render("payment-status", {
     status: response.data.state === "COMPLETED" ? "success" : "failed",
@@ -200,10 +260,19 @@ export const verifyPayment = asyncErrorHandler(async (req, res) => {
   });
 });
 
+export const checkLateFine = asyncErrorHandler(async (req, res) => {
+  // check the late fine
+  const { error, value } = VCheckFine.validate(req.query ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
+
+  const { amount } = await checkLateFineService(value.pay_month);
+  res.status(200).json(new ApiResponse(200, "Successfull", { amount }));
+});
+
 // this is from admin panel only
 export const addPayment = asyncErrorHandler(async (req: CustomRequest, res) => {
   const { error, value } = VAddPayment.validate(
-    req.body ? { ...req.body, user_id: req.user_info?.id } : {}
+    req.body ? { ...req.body, user_id: req.user_info?.id } : {},
   );
   if (error) throw new ErrorHandler(400, error.message);
 
@@ -269,7 +338,7 @@ export const addPayment = asyncErrorHandler(async (req: CustomRequest, res) => {
 
   const { rows, rowCount } = await pool.query(
     "SELECT student_id FROM fillup_forms WHERE id = $1",
-    [form_id]
+    [form_id],
   );
 
   if (rowCount === 0)
@@ -288,7 +357,7 @@ export const addPayment = asyncErrorHandler(async (req: CustomRequest, res) => {
       if (!/^\d{4}-\d{2}$/.test(item.month)) {
         throw new ErrorHandler(
           400,
-          "Invalid month format. Use 'YYYY-MM' (e.g., 2025-08)."
+          "Invalid month format. Use 'YYYY-MM' (e.g., 2025-08).",
         );
       }
 
@@ -317,12 +386,12 @@ export const addPayment = asyncErrorHandler(async (req: CustomRequest, res) => {
     // now need to check is any monthly payment already had or not
     const { rowCount, rows } = await pool.query(
       "SELECT TO_CHAR(month, 'FMMonth, YYYY') AS month FROM payments WHERE form_id = $1 AND month IS NOT NULL AND month = $2",
-      [form_id, monthlyPaymentMonthStartDate]
+      [form_id, monthlyPaymentMonthStartDate],
     );
     if (rowCount !== 0)
       throw new ErrorHandler(
         409,
-        `Student already paid payment for this month : ${rows[0].month} do you want to continue`
+        `Student already paid payment for this month : ${rows[0].month} do you want to continue`,
       );
   }
 
@@ -374,7 +443,7 @@ export const addPayment = asyncErrorHandler(async (req: CustomRequest, res) => {
 export const deletePayment = asyncErrorHandler(
   async (req: CustomRequest, res) => {
     const { error, value } = VDeletePayment.validate(
-      req.params ? { ...req.params, user_id: req.user_info?.id } : {}
+      req.params ? { ...req.params, user_id: req.user_info?.id } : {},
     );
     if (error) throw new ErrorHandler(400, error.message);
 
@@ -401,5 +470,5 @@ export const deletePayment = asyncErrorHandler(
     } finally {
       client.release();
     }
-  }
+  },
 );
