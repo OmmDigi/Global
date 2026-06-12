@@ -424,7 +424,6 @@ export default function CourseDetailsAdmin() {
   };
 
   const handleUpdate = async (item: any) => {
-    paymentModeDropdownRef.current[item.fee_head_id]?.focus();
     const fee_structure_info = [
       {
         id: editId?.[0],
@@ -977,6 +976,12 @@ export default function CourseDetailsAdmin() {
                                   onChange={(e) => handleAmountChange(e, item)}
                                   className="w-22 px-2 py-1 border border-amber-400 rounded"
                                   placeholder="Amount"
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter" && !e.shiftKey) {
+                                      e.preventDefault();
+                                      handleUpdate(item);
+                                    }
+                                  }}
                                 />
                               </div>
 
@@ -998,14 +1003,15 @@ export default function CourseDetailsAdmin() {
                               </div>
                               <div>
                                 {editId?.[1] == item.fee_head_id ? (
-                                  <div
+                                  <button
+                                    type="button"
                                     onClick={() => {
                                       handleUpdate(item);
                                     }}
-                                    className="px-2 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition cursor-pointer"
+                                    className="bg-indigo-500 cursor-pointer hover:bg-indigo-600 text-white px-2 py-1 rounded"
                                   >
                                     Update
-                                  </div>
+                                  </button>
                                 ) : (
                                   <button
                                     type="button"
