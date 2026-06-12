@@ -48,5 +48,8 @@ export const VDeletePayment = Joi.object({
 });
 
 export const VCheckFine = Joi.object({
-  pay_month: Joi.string().required(),
+  pay_month: Joi.alternatives().try(
+    Joi.string().pattern(/^\d{4}-\d{2}$/),
+    Joi.array().items(Joi.string().pattern(/^\d{4}-\d{2}$/)),
+  ),
 });

@@ -21,16 +21,17 @@ export const useSelectedForms = create<ISelectedFormids>((set: any) => ({
 
   addItem: (data: any) => {
     return set((state: any) => {
-      if (Array.isArray(data))
-        return { data: [...new Set([...state.data, ...data])] };
-      return { data: [...new Set([...state.data, data])] };
+      const incoming: ISelectedFormData[] = Array.isArray(data) ? data : [data];
+      const existingIds = new Set(state.data.map((item: ISelectedFormData) => item.form_id));
+      const newItems = incoming.filter((item) => !existingIds.has(item.form_id));
+      return { data: [...state.data, ...newItems] };
     });
   },
   removeItem: (data: ISelectedFormData) =>
     set((state: any) => ({
       data: state.data.filter(
         (item: any) =>
-          item.student_id != data.student_id && item.form_id !== data.form_id
+          item.student_id !== data.student_id || item.form_id !== data.form_id
       ),
     })),
 

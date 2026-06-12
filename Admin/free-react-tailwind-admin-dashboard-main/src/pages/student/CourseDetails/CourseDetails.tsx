@@ -33,6 +33,8 @@ export default function CourseDetails() {
     [key: number]: Date | null;
   }>({});
 
+  const [selectedMonths, setSelectedMonths] = useState<Date[]>([]);
+
   const [photo, setPhoto] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [lateFineDialogOpen, setLateFineDialogOpen] = useState(false);
@@ -104,16 +106,31 @@ export default function CourseDetails() {
     e.preventDefault();
 
     const fee_structure_info: any[] = [];
+    let hasMonthlyPayment = false;
 
-    let findIndex = 0;
-    let monthlyFeeIndex = -1;
-    feesStructure?.data?.fee_structure_info?.forEach((item: any) => {
-      const entireAmount = enteredAmounts[item.fee_head_id] || 0;
-      if (entireAmount !== 0) {
-        if (item.fee_head_id == MONTHLY_PAYMENT) {
-          monthlyFeeIndex = findIndex;
+    for (const item of feesStructure?.data?.fee_structure_info ?? []) {
+      const entireAmount = Number(enteredAmounts[item.fee_head_id] || 0);
+      if (entireAmount === 0) continue;
+
+      if (item.fee_head_id == MONTHLY_PAYMENT) {
+        if (selectedMonths.length === 0) {
+          return messageApi.error(
+            "Select at least one month for monthly payment",
+          );
         }
 
+        hasMonthlyPayment = true;
+        const count = selectedMonths.length;
+        const perMonth = Math.floor(entireAmount / count);
+        const remainder = entireAmount - perMonth * (count - 1);
+        selectedMonths.forEach((m, i) => {
+          fee_structure_info.push({
+            fee_head_id: item.fee_head_id,
+            custom_min_amount: i === count - 1 ? remainder : perMonth,
+            month: dayjs(m).format("YYYY-MM"),
+          });
+        });
+      } else {
         fee_structure_info.push({
           fee_head_id: item.fee_head_id,
           custom_min_amount: entireAmount,
@@ -121,10 +138,8 @@ export default function CourseDetails() {
             ? dayjs(month[item.fee_head_id]).format("YYYY-MM")
             : null,
         });
-
-        findIndex++;
       }
-    });
+    }
 
     if (fee_structure_info.length == 0) {
       return messageApi.error("You have to pay minium one fee");
@@ -132,20 +147,38 @@ export default function CourseDetails() {
 
     const finalFormData = { form_id: id, fee_structure_info };
 
-    if (monthlyFeeIndex !== -1) {
+    if (hasMonthlyPayment) {
+      let totalFine = 0;
+      // for (const entry of fee_structure_info.filter(
+      //   (f) => f.fee_head_id == MONTHLY_PAYMENT,
+      // )) {
+
+      // }
+
+      const monthlyPayments = fee_structure_info.filter(
+        (f) => f.fee_head_id == MONTHLY_PAYMENT,
+      );
+      console.log(
+        monthlyPayments.map((item) => `pay_month=${item.month}`).join("&"),
+      );
+
       try {
         const fineRes = await getFetcher(
-          `api/v1/payment/check-late-fine?pay_month=${fee_structure_info[monthlyFeeIndex].month}`,
+          `api/v1/payment/check-late-fine?${monthlyPayments.map((item) => `pay_month=${item.month}`).join("&")}`,
         );
-
-        if (fineRes?.data?.amount > 0) {
-          setPendingFormData(finalFormData);
-          setLateFineAmount(fineRes.data.amount);
-          setLateFineDialogOpen(true);
-          return;
+        const fineAmount = Number(fineRes?.data?.amount ?? 0);
+        if (fineAmount > 0) {
+          totalFine += fineAmount;
         }
       } catch {
         // proceed if check fails
+      }
+
+      if (totalFine > 0) {
+        setPendingFormData(finalFormData);
+        setLateFineAmount(totalFine);
+        setLateFineDialogOpen(true);
+        return;
       }
     }
 
@@ -546,8 +579,7 @@ export default function CourseDetails() {
                                       </div>
                                     </div>
                                     <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:shrink-0">
-                                      {item.fee_head_id == MONTHLY_PAYMENT ||
-                                      item.fee_head_id == LATE_FINE ? (
+                                      {item.fee_head_id == LATE_FINE ? (
                                         <DatePicker
                                           name="fee_head_id"
                                           selected={
@@ -574,33 +606,113 @@ export default function CourseDetails() {
                                               : false
                                           }
                                           type="number"
-                                          min={item.min_amount}
-                                          max={item?.price}
+                                          min={
+                                            item.fee_head_id == MONTHLY_PAYMENT
+                                              ? item.min_amount *
+                                                Math.max(
+                                                  1,
+                                                  selectedMonths.length,
+                                                )
+                                              : item.min_amount
+                                          }
+                                          max={
+                                            item.fee_head_id == MONTHLY_PAYMENT
+                                              ? item?.price
+                                              : item.min_amount
+                                          }
                                           onChange={(e) =>
                                             handleAmountChange(e, item)
                                           }
                                           placeholder="Amount"
                                           className="w-full px-2 py-1 border rounded"
                                         />
-                                        {/* {item?.min_amount > 0 &&
-                                        item?.due_amount > 0 ? (
-                                          <p className="text-xs text-red-300">
-                                            {" "}
-                                            Minimum to pay {item?.min_amount}
-                                          </p>
-                                        ) : null} */}
                                       </div>
                                     </div>
                                   </div>
-                                  {/* <div className="flex items-center justify-end">
-                                    <button className="bg-blue-700 px-3.5 py-1 text-sm rounded-lg">
-                                      Pay
-                                    </button>
-                                  </div> */}
                                   {item.fee_head_id == MONTHLY_PAYMENT && (
-                                    <span className="text-sm text-yellow-600">
-                                      You have to pay {item.min_amount}/month
-                                    </span>
+                                    <div className="mt-2 space-y-2">
+                                      <div className="flex items-center gap-2">
+                                        <DatePicker
+                                          selected={null}
+                                          onChange={(date: Date | null) => {
+                                            if (!date) return;
+                                            const formatted =
+                                              dayjs(date).format("YYYY-MM");
+                                            const already = selectedMonths.some(
+                                              (m) =>
+                                                dayjs(m).format("YYYY-MM") ===
+                                                formatted,
+                                            );
+                                            if (!already) {
+                                              setSelectedMonths((prev) => [
+                                                ...prev,
+                                                date,
+                                              ]);
+                                            }
+                                          }}
+                                          dateFormat="MM-yyyy"
+                                          showMonthYearPicker
+                                          className="border w-[7.5rem] border-gray-300 dark:border-gray-300 dark:text-gray-200 rounded-md px-2 py-1 text-sm"
+                                          autoComplete="off"
+                                          placeholderText="+ Add Month"
+                                        />
+                                      </div>
+                                      {selectedMonths.length > 0 && (
+                                        <div className="flex flex-wrap gap-1">
+                                          {selectedMonths.map((m, i) => (
+                                            <span
+                                              key={i}
+                                              className="inline-flex items-center gap-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs px-2 py-0.5 rounded-full"
+                                            >
+                                              {dayjs(m).format("MMM YYYY")}
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  setSelectedMonths((prev) =>
+                                                    prev.filter(
+                                                      (_, idx) => idx !== i,
+                                                    ),
+                                                  )
+                                                }
+                                                className="text-blue-500 hover:text-red-500 font-bold leading-none"
+                                              >
+                                                ×
+                                              </button>
+                                            </span>
+                                          ))}
+                                        </div>
+                                      )}
+                                      <div className="text-xs text-yellow-600 space-y-0.5">
+                                        <p>
+                                          Min ₹{item.min_amount}/month
+                                          {selectedMonths.length > 1 && (
+                                            <>
+                                              {" "}
+                                              · Total min ₹
+                                              {item.min_amount *
+                                                selectedMonths.length}{" "}
+                                              for {selectedMonths.length} months
+                                            </>
+                                          )}
+                                        </p>
+                                        {selectedMonths.length > 1 &&
+                                          Number(
+                                            enteredAmounts[item.fee_head_id],
+                                          ) > 0 && (
+                                            <p className="text-blue-500">
+                                              ≈ ₹
+                                              {Math.floor(
+                                                Number(
+                                                  enteredAmounts[
+                                                    item.fee_head_id
+                                                  ],
+                                                ) / selectedMonths.length,
+                                              )}{" "}
+                                              per month
+                                            </p>
+                                          )}
+                                      </div>
+                                    </div>
                                   )}
                                 </div>
                               );

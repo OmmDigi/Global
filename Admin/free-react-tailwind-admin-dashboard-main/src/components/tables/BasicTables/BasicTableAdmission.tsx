@@ -25,9 +25,8 @@ export default function BasicTableAdmission({
 any) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const isSelectedAll = (searchParams.get("select-all") ?? "false") == "true";
-
-  const { addItem, removeItem } = useSelectedForms();
+  const { data: selectedForms, addItem, removeItem } = useSelectedForms();
+  const selectedFormIds = new Set(selectedForms.map((f) => f.form_id));
 
   const currentPage = parseInt(searchParams.get("page") || "1");
 
@@ -114,88 +113,88 @@ any) {
 
           {/* Table Body */}
           <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-            {admissionlist?.map((order: any, index: number) => (
-              <TableRow key={order.form_id}>
-                <TableCell className="px-5 py-4 sm:px-6 text-start">
-                  <div className="flex items-center gap-3">
-                    <input
-                      key={`${isSelectedAll}`}
-                      onChange={(e) =>
-                        onCheckBoxChanged(e.currentTarget.checked, {
-                          form_id: order.form_id,
-                          student_id: order.student_id,
-                        })
-                      }
-                      defaultChecked={isSelectedAll}
-                      type="checkbox"
-                    />
-                    <div className="text-gray-500">
-                      {currentPage * 10 - 10 + index + 1}
-                    </div>
-                    <div className="block font-medium text-gray-500 text-theme-xs dark:text-gray-400]">
-                      <img
-                        src={order.student_image}
-                        alt={order.student_image}
-                        className="h-8 w-8 rounded-full"
+            {admissionlist?.map((order: any, index: number) => {
+              return (
+                <TableRow key={order.form_id}>
+                  <TableCell className="px-5 py-4 sm:px-6 text-start">
+                    <div className="flex items-center gap-3">
+                      <input
+                        onChange={(e) =>
+                          onCheckBoxChanged(e.currentTarget.checked, {
+                            form_id: order.form_id,
+                            student_id: order.student_id,
+                          })
+                        }
+                        checked={selectedFormIds.has(order.form_id)}
+                        type="checkbox"
                       />
-                    </div>
-                    <div className="flex flex-col gap-y-1">
-                      <div>
-                        <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                          {order.student_name}
+                      <div className="text-gray-500">
+                        {currentPage * 10 - 10 + index + 1}
+                      </div>
+                      <div className="block font-medium text-gray-500 text-theme-xs dark:text-gray-400]">
+                        <img
+                          src={order.student_image}
+                          alt={order.student_image}
+                          className="h-8 w-8 rounded-full"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-y-1">
+                        <div>
+                          <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                            {order.student_name}
+                          </span>
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-gray-400 flex text-nowrap items-center gap-1 text-sm">
+                            <Calendar size={15} />
+                            {order.batch_name ?? "All Batch"}
+                          </span>
+
+                          <span className="text-gray-400 flex items-center gap-1 text-sm">
+                            <IdCard size={15} />
+
+                            {order.form_name}
+                          </span>
+                        </div>
+                        <span
+                          className={` flex items-center gap-1 text-sm uppercase ${
+                            order.admission_from === "crm"
+                              ? "text-green-600"
+                              : "text-red-400"
+                          }`}
+                        >
+                          {order.admission_from}
                         </span>
                       </div>
-                      <div className="flex gap-5">
-                        <span className="text-gray-400 flex items-center gap-1 text-sm">
-                          <Calendar size={15} />
-                          {order.batch_name ?? "All Batch"}
-                        </span>
-
-                        <span className="text-gray-400 flex items-center gap-1 text-sm">
-                          <IdCard size={15} />
-
-                          {order.form_name}
-                        </span>
-                      </div>
-                      <span
-                        className={` flex items-center gap-1 text-sm uppercase ${
-                          order.admission_from === "crm"
-                            ? "text-green-600"
-                            : "text-red-400"
-                        }`}
-                      >
-                        {order.admission_from}
-                      </span>
                     </div>
-                  </div>
-                </TableCell>
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  {order.course_name}
-                </TableCell>
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                    {order.course_name}
+                  </TableCell>
 
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  {order.course_fee}
-                </TableCell>
+                  <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                    {order.course_fee}
+                  </TableCell>
 
-                <TableCell>
-                  <span className="font-semibold text-green-700 block text-center">
-                    {/* {parseFloat(order.course_fee) -
+                  <TableCell>
+                    <span className="font-semibold text-green-700 block text-center">
+                      {/* {parseFloat(order.course_fee) -
                       parseFloat(order.due_amount)} */}
-                    {order.total_collection}
-                  </span>
-                </TableCell>
+                      {order.total_collection}
+                    </span>
+                  </TableCell>
 
-                <TableCell
-                  className={`px-4 py-3 ${
-                    Number(order.due_amount) === 0
-                      ? "text-green-500 dark:text-green-400"
-                      : "text-red-500 dark:text-red-500 "
-                  }  text-start text-theme-sm `}
-                >
-                  {order.due_amount}
-                </TableCell>
+                  <TableCell
+                    className={`px-4 py-3 ${
+                      Number(order.due_amount) === 0
+                        ? "text-green-500 dark:text-green-400"
+                        : "text-red-500 dark:text-red-500 "
+                    }  text-start text-theme-sm `}
+                  >
+                    {order.due_amount}
+                  </TableCell>
 
-                {/* <TableCell>
+                  {/* <TableCell>
                   <div className="pl-4">
                     <Switch
                       label=""
@@ -207,33 +206,33 @@ any) {
                   </div>
                 </TableCell> */}
 
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  <div className="flex items-center gap-3.5">
-                    <Switch
-                      label=""
-                      defaultChecked={order.form_status}
-                      onChange={(defaultChecked) =>
-                        onActive(defaultChecked, order.form_id)
-                      }
-                    />
+                  <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                    <div className="flex items-center gap-3.5">
+                      <Switch
+                        label=""
+                        defaultChecked={order.form_status}
+                        onChange={(defaultChecked) =>
+                          onActive(defaultChecked, order.form_id)
+                        }
+                      />
 
-                    <button
-                      onClick={() => onEdit(order.form_id)}
-                      className="text-blue-500 hover:underline"
-                    >
-                      Edit
-                    </button>
+                      <button
+                        onClick={() => onEdit(order.form_id)}
+                        className="text-blue-500 hover:underline"
+                      >
+                        Edit
+                      </button>
 
-                    <button
-                      onClick={() => handleDetailsClick(order.form_id)}
-                      className="text-blue-500 hover:underline"
-                    >
-                      Details
-                    </button>
-                  </div>
-                </TableCell>
+                      <button
+                        onClick={() => handleDetailsClick(order.form_id)}
+                        className="text-blue-500 hover:underline"
+                      >
+                        Details
+                      </button>
+                    </div>
+                  </TableCell>
 
-                {/* <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                  {/* <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleDetailsClick(order.form_id)}
@@ -243,8 +242,9 @@ any) {
                     </button>
                   </div>
                 </TableCell> */}
-              </TableRow>
-            ))}
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
         <div className="p-8 flex items-center justify-between">

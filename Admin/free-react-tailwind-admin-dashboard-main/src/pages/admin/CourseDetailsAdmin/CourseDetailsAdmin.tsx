@@ -757,7 +757,7 @@ export default function CourseDetailsAdmin() {
                   <Input
                     type="number"
                     name="amount"
-                    max={`${maxValue}`}
+                    // max={`${maxValue}`}
                     placeholder="Amount"
                     value={addFormData.amount}
                     onChange={handleAddAmountChange}
@@ -769,7 +769,7 @@ export default function CourseDetailsAdmin() {
                   <Input
                     type="number"
                     name="min_amount"
-                    max={`${maxValue}`}
+                    // max={`${maxValue}`}
                     placeholder="Min Amount"
                     value={addFormData.min_amount}
                     onChange={handleAddAmountChange}

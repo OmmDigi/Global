@@ -123,15 +123,12 @@ export const deletePaymentService = async (value: IDeletePaymentProps) => {
 };
 
 export const checkLateFineService = async (
-  payMonthTxt: string,
-): Promise<{ amount: number }> => {
-  // from payMonth expect "2026-06" YYYY-MM
-
-  const payMonthDateInstance = new Date(payMonthTxt);
-  const currentMonthDateInstance = new Date();
-
-  const payMonth = payMonthDateInstance.getMonth() + 1;
-  const currentMonth = currentMonthDateInstance.getMonth() + 1;
+  payMonths: string[],
+): Promise<{
+  amount: number;
+  fineAmount: number;
+}> => {
+  // payMonths: array of "YYYY-MM" strings
 
   const { rows, rowCount } = await pool.query(
     `SELECT * FROM late_fine_config LIMIT 1`,
@@ -143,29 +140,39 @@ export const checkLateFineService = async (
     );
   }
 
-  // if paymonth is lessthan current month than surely add a fine amount
-  if (
-    payMonth < currentMonth &&
-    !rows[0].applicable_months.includes(MONTHS[payMonth - 1])
-  ) {
-    return {
-      amount: rows[0].amount,
-    };
+  const config = rows[0];
+
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+  const currentAbsMonth = currentYear * 12 + currentMonth;
+
+  // console.log(currentAbsMonth);
+
+  let totalFine = 0;
+
+  for (const payMonthTxt of payMonths) {
+    const d = new Date(payMonthTxt);
+    const payMonth = d.getMonth() + 1;
+    const payYear = d.getFullYear();
+    const payAbsMonth = payYear * 12 + payMonth;
+
+    if (payAbsMonth < currentAbsMonth) {
+      // Past month → fine unless exempt
+      // console.log("config.applicable_months", config.applicable_months);
+      // console.log("MONTHS[payMonth - 1]", MONTHS[payMonth - 1]);
+      // console.log(config.applicable_months.includes(MONTHS[payMonth - 1]));
+      if (config.applicable_months.includes(MONTHS[payMonth - 1])) {
+        totalFine += Number(config.amount);
+      }
+    } else if (payAbsMonth === currentAbsMonth) {
+      // Current month → fine only if past fine_date
+      if (now.getDate() >= config.fine_date) {
+        totalFine += Number(config.amount);
+      }
+    }
+    // Future month → no fine
   }
 
-  if (payMonth > currentMonth) {
-    return {
-      amount: 0,
-    };
-  }
-
-  if (currentMonthDateInstance.getDate() >= rows[0].fine_date) {
-    return {
-      amount: rows[0].amount,
-    };
-  }
-
-  return {
-    amount: 0,
-  };
+  return { amount: totalFine, fineAmount: Number(config.amount) };
 };

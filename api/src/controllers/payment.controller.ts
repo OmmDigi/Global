@@ -31,49 +31,65 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
   try {
     await client.query("BEGIN");
 
-    let monthlyFeeIndex = -1;
-    let filteredPosition = 0;
+    // removing all 0 amount fields
     const fee_structure_info = (
       value.fee_structure_info as {
         fee_head_id: number;
         custom_min_amount: number;
         month: string | null;
       }[]
-    ).filter((item) => {
-      if (item.custom_min_amount == 0) {
-        return false;
-      }
-      if (item.fee_head_id == MONTHLY_PAYMENT_HEAD_ID) {
-        monthlyFeeIndex = filteredPosition;
-      }
-      filteredPosition++;
-      return true;
-    });
+    ).filter((item) => item.custom_min_amount != 0);
 
+    // if no single fee to process throw error
     if (fee_structure_info.length === 0)
       throw new ErrorHandler(400, "Nothing to pay");
 
-    // check montlyFeeAvilable In the PaymentRequest
-    if (monthlyFeeIndex !== -1) {
-      const monthlyPaymentInfo = fee_structure_info[monthlyFeeIndex];
-      if (!monthlyPaymentInfo.month) {
+    const monthlyEntries = fee_structure_info.filter(
+      (f) => f.fee_head_id == MONTHLY_PAYMENT_HEAD_ID,
+    );
+
+    // Validate months and check late fine for all selected months in one call
+    if (monthlyEntries.length > 0) {
+      const months = monthlyEntries
+        .map((e) => e.month)
+        .filter((m): m is string => !!m);
+
+      if (months.length < monthlyEntries.length) {
         throw new ErrorHandler(400, "Please choose monthly payment month");
       }
-      const { amount } = await checkLateFineService(monthlyPaymentInfo.month);
-      fee_structure_info.push({
-        fee_head_id: LATE_FINE_FEE_HEAD_ID,
-        custom_min_amount: amount,
-        month: monthlyPaymentInfo.month,
-      });
+
+      const { amount, fineAmount } = await checkLateFineService(months);
+      if (amount > 0) {
+        months.forEach((month) => {
+          fee_structure_info.push({
+            fee_head_id: LATE_FINE_FEE_HEAD_ID,
+            custom_min_amount: fineAmount,
+            month: month,
+          });
+        });
+      }
     }
 
-    const placeholder = fee_structure_info
+    // Use unique fee_head_ids for the IN clause
+    const uniqueFeeHeadIds = [
+      ...new Set(fee_structure_info.map((f) => f.fee_head_id)),
+    ];
+    const placeholder = uniqueFeeHeadIds
       .map((_, index) => `$${index + 2}`)
       .join(", ");
 
-    const { rows, rowCount } = await client.query(
+    const { rows, rowCount } = await client.query<{
+      fee_head_id: number;
+      amount: string;
+      min_amount: string;
+      required: boolean;
+      form_name: string;
+      student_id: number;
+      student_name: string;
+      student_ph_number: string;
+    }>(
       `
-      SELECT 
+      SELECT
         ffs.fee_head_id,
         ffs.amount,
         ffs.min_amount,
@@ -92,10 +108,7 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
 
       WHERE ffs.form_id = $1 AND ffs.fee_head_id IN (${placeholder})
       `,
-      [
-        value.form_id,
-        ...fee_structure_info.flatMap((item) => [item.fee_head_id]),
-      ],
+      [value.form_id, ...uniqueFeeHeadIds],
     );
 
     if (rowCount === 0) throw new ErrorHandler(400, "No admission form found");
@@ -116,37 +129,113 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
     }[] = [];
 
     const payment_date_str = new Date().toUTCString();
+    // const lateFineEntries = fee_structure_info.filter(
+    //   (f) => f.fee_head_id == LATE_FINE_FEE_HEAD_ID,
+    // );
 
-    rows.forEach((item) => {
-      // const db_min_amount = parseFloat(item.min_amount);
-      const singleFeeStructure = fee_structure_info.find(
-        (fs) => fs.fee_head_id == item.fee_head_id,
-      );
-      const custom_amount = parseFloat(
-        singleFeeStructure?.custom_min_amount.toString() ?? "0",
-      );
+    // rows.forEach((item) => {
+    //   if (item.fee_head_id == MONTHLY_PAYMENT_HEAD_ID) {
+    //     // One payment row per selected month
+    //     monthlyEntries.forEach((monthEntry) => {
+    //       const custom_amount = parseFloat(
+    //         monthEntry.custom_min_amount.toString(),
+    //       );
+    //       if (custom_amount !== 0) {
+    //         amountToPaid += custom_amount;
+    //         fee_head_ids_info.push({
+    //           fee_head_id: item.fee_head_id,
+    //           amount: custom_amount,
+    //           month: monthEntry.month ? `${monthEntry.month}-01` : null,
+    //           payment_date: payment_date_str,
+    //           bill_no: null,
+    //           payment_mode: null,
+    //           payment_details: null,
+    //         });
+    //       }
+    //     });
+    //   } else if (item.fee_head_id == LATE_FINE_FEE_HEAD_ID) {
+    //     // Single combined fine entry for all months
+    //     const lateFineEntry = lateFineEntries[0];
+    //     if (lateFineEntry) {
+    //       const custom_amount = parseFloat(
+    //         lateFineEntry.custom_min_amount.toString(),
+    //       );
+    //       if (custom_amount !== 0) {
+    //         amountToPaid += custom_amount;
+    //         fee_head_ids_info.push({
+    //           fee_head_id: item.fee_head_id,
+    //           amount: custom_amount,
+    //           month: null,
+    //           payment_date: payment_date_str,
+    //           bill_no: null,
+    //           payment_mode: null,
+    //           payment_details: null,
+    //         });
+    //       }
+    //     }
+    //   } else {
+    //     const singleFeeStructure = fee_structure_info.find(
+    //       (fs) => fs.fee_head_id == item.fee_head_id,
+    //     );
+    //     const custom_amount = parseFloat(
+    //       singleFeeStructure?.custom_min_amount.toString() ?? "0",
+    //     );
+    //     amountToPaid += custom_amount;
+    //     if (custom_amount !== 0) {
+    //       fee_head_ids_info.push({
+    //         fee_head_id: item.fee_head_id,
+    //         amount: custom_amount,
+    //         month: singleFeeStructure?.month
+    //           ? `${singleFeeStructure.month}-01`
+    //           : null,
+    //         payment_date: payment_date_str,
+    //         bill_no: null,
+    //         payment_mode: null,
+    //         payment_details: null,
+    //       });
+    //     }
+    //   }
+    // });
 
-      amountToPaid += custom_amount;
+    rows.forEach((row) => {
+      // check for user send custom amount and db custom amount same or not if not throw error
+      fee_structure_info.forEach((feeStructure) => {
+        if (row.fee_head_id != feeStructure.fee_head_id) return;
 
-      // if (custom_amount >= db_min_amount) {
-      //   amountToPaid += custom_amount;
-      // } else {
-      //   amountToPaid += db_min_amount;
-      // }
+        if (row.fee_head_id == LATE_FINE_FEE_HEAD_ID) {
+          amountToPaid += feeStructure.custom_min_amount;
+          fee_head_ids_info.push({
+            amount: feeStructure.custom_min_amount,
+            bill_no: null,
+            fee_head_id: feeStructure.fee_head_id,
+            month: feeStructure.month ? `${feeStructure.month}-01` : null,
+            payment_date: payment_date_str,
+            payment_details: null,
+            payment_mode: "Online",
+          });
+          return;
+        }
 
-      if (custom_amount !== 0) {
+        if (parseInt(row.min_amount) != feeStructure.custom_min_amount) {
+          console.log("row", row);
+          console.log("feeStructure", feeStructure);
+          throw new ErrorHandler(
+            400,
+            "You cannot pay more or less amount of a decided fee",
+          );
+        }
+
+        amountToPaid += feeStructure.custom_min_amount;
         fee_head_ids_info.push({
-          fee_head_id: item.fee_head_id,
-          amount: custom_amount,
-          month: singleFeeStructure?.month
-            ? `${singleFeeStructure.month}-01`
-            : null,
-          payment_date: payment_date_str,
+          amount: feeStructure.custom_min_amount,
           bill_no: null,
-          payment_mode: null,
+          fee_head_id: feeStructure.fee_head_id,
+          month: feeStructure.month ? `${feeStructure.month}-01` : null,
+          payment_date: payment_date_str,
           payment_details: null,
+          payment_mode: "Online",
         });
-      }
+      });
     });
 
     const { success, data } = await phonePe().createOrder({
@@ -229,23 +318,28 @@ export const verifyPayment = asyncErrorHandler(async (req, res) => {
         payment_status[response.data.state],
         response.data.transactionId,
         response.data.orderId,
-        new Date(),
+        // new Date(),
+        new Date(response.data.paymentInstrument[0].timestamp),
         `Online Transaction ID : ${response.data.transactionId}`,
         req.query.merchant_order_id?.toString(),
       ],
     );
 
-    const lateFineFeeHeadPayment = paymentUpdateInfo.rows.find(
-      (item) => item.fee_head_id == LATE_FINE_FEE_HEAD_ID,
+    const totalLateFine = paymentUpdateInfo.rows.reduce(
+      (prev, current) =>
+        current.fee_head_id == LATE_FINE_FEE_HEAD_ID
+          ? prev + parseFloat(current.amount.toString())
+          : prev + 0,
+      0,
     );
 
-    if (lateFineFeeHeadPayment) {
+    if (totalLateFine > 0) {
       await client.query(
         "UPDATE form_fee_structure SET amount = amount + $1, min_amount = amount WHERE form_id = $2 AND fee_head_id = $3",
         [
-          lateFineFeeHeadPayment.amount,
-          lateFineFeeHeadPayment.form_id,
-          lateFineFeeHeadPayment.fee_head_id,
+          totalLateFine,
+          paymentUpdateInfo.rows[0].form_id,
+          LATE_FINE_FEE_HEAD_ID,
         ],
       );
     }
@@ -265,7 +359,9 @@ export const checkLateFine = asyncErrorHandler(async (req, res) => {
   const { error, value } = VCheckFine.validate(req.query ?? {});
   if (error) throw new ErrorHandler(400, error.message);
 
-  const { amount } = await checkLateFineService(value.pay_month);
+  const { amount } = await checkLateFineService(
+    Array.isArray(value.pay_month) ? value.pay_month : [value.pay_month],
+  );
   res.status(200).json(new ApiResponse(200, "Successfull", { amount }));
 });
 

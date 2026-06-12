@@ -9,8 +9,7 @@ import useSWRMutation from "swr/mutation";
 import { postFetcher, putFetcher } from "../api/fatcher";
 import { AxiosError } from "axios";
 import { message } from "antd";
-import { useSWRConfig } from "swr";
-import { mutate } from "swr";
+import useSWR, { mutate } from "swr";
 import { Loader } from "lucide-react";
 
 export default function SelectMultipleStudent() {
@@ -35,12 +34,7 @@ export default function SelectMultipleStudent() {
       postFetcher(url, arg)
     );
 
-  const { cache } = useSWRConfig();
-  const admissionList = cache.get(
-    `api/v1/admission?${searchParams.toString()}`
-  );
-
-  // const { data, isLoading, error } = useSWR(`api/v1/admission?${searchParams.toString()}`);
+  const { data: admissionList } = useSWR(`api/v1/admission?${searchParams.toString()}`);
 
   const onCheckBoxChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     const checked = event.currentTarget.checked;
@@ -131,9 +125,9 @@ export default function SelectMultipleStudent() {
 
   useEffect(() => {
     startTransition(() => {
-      if (admissionList?.data?.data && isSelected) {
+      if (Array.isArray(admissionList?.data?.admissionData) && isSelected) {
         addItem(
-          admissionList?.data?.data?.map((item: any) => ({
+          admissionList.data.admissionData.map((item: any) => ({
             form_id: item.form_id,
             student_id: item.student_id,
           }))
@@ -142,7 +136,7 @@ export default function SelectMultipleStudent() {
         clear();
       }
     });
-  }, [admissionList?.data?.data?.length, isSelected]);
+  }, [admissionList?.data?.admissionData?.length, isSelected]);
 
   return (
     <>
