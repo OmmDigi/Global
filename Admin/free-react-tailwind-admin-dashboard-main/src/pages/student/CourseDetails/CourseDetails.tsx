@@ -716,13 +716,25 @@ export default function CourseDetails() {
                                               {dayjs(m).format("MMM YYYY")}
                                               <button
                                                 type="button"
-                                                onClick={() =>
+                                                onClick={() => {
                                                   setSelectedMonths((prev) =>
                                                     prev.filter(
                                                       (_, idx) => idx !== i,
                                                     ),
-                                                  )
-                                                }
+                                                  );
+                                                  setEnteredAmounts(
+                                                    (prev: any) => ({
+                                                      ...prev,
+                                                      [item.fee_head_id]:
+                                                        item.min_amount *
+                                                        Math.max(
+                                                          1,
+                                                          selectedMonths.length -
+                                                            1,
+                                                        ),
+                                                    }),
+                                                  );
+                                                }}
                                                 className="text-blue-500 hover:text-red-500 font-bold leading-none"
                                               >
                                                 ×

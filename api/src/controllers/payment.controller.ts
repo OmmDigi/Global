@@ -338,7 +338,8 @@ export const verifyPayment = asyncErrorHandler(async (req, res) => {
       0,
     );
 
-    if (totalLateFine > 0) {
+    if (totalLateFine > 0 && payment_status[response.data.state] == 2) {
+      // 2 mean COMPLETED
       await client.query(
         "UPDATE form_fee_structure SET amount = amount + $1, min_amount = amount WHERE form_id = $2 AND fee_head_id = $3",
         [
@@ -601,10 +602,7 @@ export const getPaymentsList = asyncErrorHandler(async (req, res) => {
       LIMIT $${idx++} OFFSET $${idx++}`,
       [...params, limit, offset],
     ),
-    pool.query(
-      `SELECT COUNT(*) FROM payments p ${whereClause}`,
-      params,
-    ),
+    pool.query(`SELECT COUNT(*) FROM payments p ${whereClause}`, params),
   ]);
 
   res.status(200).json({
