@@ -10,6 +10,7 @@ import { GrHostMaintenance } from "react-icons/gr";
 import { TbReport } from "react-icons/tb";
 import { IoSettingsOutline } from "react-icons/io5";
 import { FaClipboardQuestion } from "react-icons/fa6";
+import { MdPayment } from "react-icons/md";
 
 import {
   ChevronDownIcon,
@@ -66,6 +67,12 @@ const navItems: NavItem[] = [
     id: 16,
     icon: <FaClipboardQuestion />,
     path: "/enquiry ",
+  },
+  {
+    name: "Payments",
+    id: 17,
+    icon: <MdPayment />,
+    path: "/payments",
   },
   {
     name: "Create Employee",

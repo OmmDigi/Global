@@ -16,6 +16,8 @@ import {
   VCheckFine,
   VCreateOrderValidator,
   VDeletePayment,
+  VGetPayments,
+  VUpdateBillNo,
 } from "../validator/payment.validator";
 
 import { v4 as uuidv4 } from "uuid";
@@ -58,7 +60,10 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
         throw new ErrorHandler(400, "Please choose monthly payment month");
       }
 
-      const { amount, fineAmount } = await checkLateFineService(months);
+      const { amount, fineAmount } = await checkLateFineService(
+        months,
+        value.form_id,
+      );
       if (amount > 0) {
         months.forEach((month) => {
           fee_structure_info.push({
@@ -202,28 +207,28 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
       fee_structure_info.forEach((feeStructure) => {
         if (row.fee_head_id != feeStructure.fee_head_id) return;
 
-        if (row.fee_head_id == LATE_FINE_FEE_HEAD_ID) {
-          amountToPaid += feeStructure.custom_min_amount;
-          fee_head_ids_info.push({
-            amount: feeStructure.custom_min_amount,
-            bill_no: null,
-            fee_head_id: feeStructure.fee_head_id,
-            month: feeStructure.month ? `${feeStructure.month}-01` : null,
-            payment_date: payment_date_str,
-            payment_details: null,
-            payment_mode: "Online",
-          });
-          return;
-        }
+        // if (row.fee_head_id == LATE_FINE_FEE_HEAD_ID) {
+        //   amountToPaid += feeStructure.custom_min_amount;
+        //   fee_head_ids_info.push({
+        //     amount: feeStructure.custom_min_amount,
+        //     bill_no: null,
+        //     fee_head_id: feeStructure.fee_head_id,
+        //     month: feeStructure.month ? `${feeStructure.month}-01` : null,
+        //     payment_date: payment_date_str,
+        //     payment_details: null,
+        //     payment_mode: "Online",
+        //   });
+        //   return;
+        // }
 
-        if (parseInt(row.min_amount) != feeStructure.custom_min_amount) {
-          console.log("row", row);
-          console.log("feeStructure", feeStructure);
-          throw new ErrorHandler(
-            400,
-            "You cannot pay more or less amount of a decided fee",
-          );
-        }
+        // if (parseInt(row.min_amount) != feeStructure.custom_min_amount) {
+        //   console.log("row", row);
+        //   console.log("feeStructure", feeStructure);
+        //   throw new ErrorHandler(
+        //     400,
+        //     "You cannot pay more or less amount of a decided fee",
+        //   );
+        // }
 
         amountToPaid += feeStructure.custom_min_amount;
         fee_head_ids_info.push({
@@ -361,6 +366,7 @@ export const checkLateFine = asyncErrorHandler(async (req, res) => {
 
   const { amount } = await checkLateFineService(
     Array.isArray(value.pay_month) ? value.pay_month : [value.pay_month],
+    value.form_id,
   );
   res.status(200).json(new ApiResponse(200, "Successfull", { amount }));
 });
@@ -534,6 +540,95 @@ export const addPayment = asyncErrorHandler(async (req: CustomRequest, res) => {
   } finally {
     client.release();
   }
+});
+
+export const getPaymentsList = asyncErrorHandler(async (req, res) => {
+  const { error, value } = VGetPayments.validate(req.query ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
+
+  const params: any[] = [];
+  const conditions: string[] = [];
+  let idx = 1;
+
+  conditions.push(`p.status = 2`);
+
+  if (value.mode === "Online") {
+    conditions.push(`p.mode = $${idx++}`);
+    params.push("Online");
+  } else {
+    conditions.push(`(p.mode != $${idx++} OR p.mode IS NULL)`);
+    params.push("Online");
+  }
+
+  if (value.from_date) {
+    conditions.push(`p.payment_date >= $${idx++}`);
+    params.push(value.from_date);
+  }
+  if (value.to_date) {
+    conditions.push(`p.payment_date <= $${idx++}`);
+    params.push(value.to_date);
+  }
+
+  const whereClause = `WHERE ${conditions.join(" AND ")}`;
+  const limit = 20;
+  const offset = (value.page - 1) * limit;
+
+  const [listResult, countResult] = await Promise.all([
+    pool.query(
+      `SELECT
+        p.id,
+        p.form_id,
+        p.mode,
+        p.amount,
+        p.status,
+        p.transition_id,
+        p.receipt_id,
+        p.order_id,
+        p.payment_date,
+        p.month,
+        p.bill_no,
+        p.remark,
+        p.created_at,
+        u.name AS student_name,
+        ff.form_name,
+        cfh.name AS fee_head_name
+      FROM payments p
+      LEFT JOIN users u ON p.student_id = u.id
+      LEFT JOIN fillup_forms ff ON p.form_id = ff.id
+      LEFT JOIN course_fee_head cfh ON p.fee_head_id = cfh.id
+      ${whereClause}
+      ORDER BY p.created_at DESC
+      LIMIT $${idx++} OFFSET $${idx++}`,
+      [...params, limit, offset],
+    ),
+    pool.query(
+      `SELECT COUNT(*) FROM payments p ${whereClause}`,
+      params,
+    ),
+  ]);
+
+  res.status(200).json({
+    status: 200,
+    message: "Payments list",
+    data: listResult.rows,
+    total: parseInt(countResult.rows[0].count),
+    page: value.page,
+    limit,
+  });
+});
+
+export const updatePaymentBillNo = asyncErrorHandler(async (req, res) => {
+  const { error, value } = VUpdateBillNo.validate(req.body ?? {});
+  if (error) throw new ErrorHandler(400, error.message);
+
+  const { rows, rowCount } = await pool.query(
+    "UPDATE payments SET bill_no = $1 WHERE id = $2 RETURNING id, bill_no",
+    [value.bill_no, value.id],
+  );
+
+  if (rowCount === 0) throw new ErrorHandler(404, "Payment not found");
+
+  res.status(200).json(new ApiResponse(200, "Bill no updated", rows[0]));
 });
 
 export const deletePayment = asyncErrorHandler(

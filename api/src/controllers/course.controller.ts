@@ -92,7 +92,7 @@ export const getSession = asyncErrorHandler(async (req, res) => {
       ${filter}
       ORDER BY id DESC 
       ${TO_STRING}`,
-    filterValues
+    filterValues,
   );
 
   res.status(200).json(new ApiResponse(200, "Session List", rows));
@@ -477,30 +477,35 @@ export const updateCourse = asyncErrorHandler(async (req, res) => {
   }
 });
 
-export const getCourseWithBatchSession = asyncErrorHandler(async (req : CustomRequest, res) => {
-  let sessionFilter = "WHERE b2.course_id = c.id AND s.id IS NOT NULL";
-  let batchFilter = "WHERE b3.course_id = c.id AND b3.id IS NOT NULL";
-  let courseFilter = "WHERE 1=1";
+export const getCourseWithBatchSession = asyncErrorHandler(
+  async (req: CustomRequest, res) => {
+    let sessionFilter = "WHERE b2.course_id = c.id AND s.id IS NOT NULL";
+    let batchFilter = "WHERE b3.course_id = c.id AND b3.id IS NOT NULL";
+    let courseFilter = "WHERE 1=1";
 
-  // const crmHostUrl = process.env.CRM_HOST_URL;
-  // const headerOrigin = req.headers.origin;
+    // const crmHostUrl = process.env.CRM_HOST_URL;
+    // const headerOrigin = req.headers.origin;
 
-  // if (crmHostUrl && headerOrigin && !crmHostUrl.includes(headerOrigin)) {
-  //   sessionFilter += " AND s.is_active = true";
-  //   batchFilter += " AND b3.is_active = true";
-  //   courseFilter += " AND c.is_active = true";
-  // }
+    // if (crmHostUrl && headerOrigin && !crmHostUrl.includes(headerOrigin)) {
+    //   sessionFilter += " AND s.is_active = true";
+    //   batchFilter += " AND b3.is_active = true";
+    //   courseFilter += " AND c.is_active = true";
+    // }
 
-  const userInfo = req?.user_info;
+    const userInfo = req?.user_info;
 
-  if (userInfo != undefined && userInfo.category != "Stuff" && userInfo.category != "Admin") {
-    sessionFilter += " AND s.is_active = true";
-    batchFilter += " AND b3.is_active = true";
-    courseFilter += " AND c.is_active = true";
-  }
+    if (
+      userInfo != undefined &&
+      userInfo.category != "Stuff" &&
+      userInfo.category != "Admin"
+    ) {
+      sessionFilter += " AND s.is_active = true";
+      batchFilter += " AND b3.is_active = true";
+      courseFilter += " AND c.is_active = true";
+    }
 
-  const { rows } = await pool.query(
-    `
+    const { rows } = await pool.query(
+      `
      SELECT 
       c.id,
       c.name AS course_name,
@@ -537,10 +542,13 @@ export const getCourseWithBatchSession = asyncErrorHandler(async (req : CustomRe
     
     ${courseFilter}
     `,
-  );
+    );
 
-  res.status(200).json(new ApiResponse(200, "Course Info For DropDown", rows));
-});
+    res
+      .status(200)
+      .json(new ApiResponse(200, "Course Info For DropDown", rows));
+  },
+);
 
 // batch controllers
 export const createBatch = asyncErrorHandler(async (req, res) => {
@@ -611,14 +619,17 @@ export const getBatch = asyncErrorHandler(async (req, res) => {
   let pNum = 1;
 
   if (typeof value.is_active !== "undefined") {
-    filter += ` AND b.is_active = $${pNum}`;
-    pNum++;
+    filter += ` AND b.is_active = $${pNum++}`;
     filterValues.push(value.is_active);
   }
 
-  if(value.session_id) {
-    filter += ` AND b.session_id = $${pNum}`;
-    pNum++;
+  if (value.course_id) {
+    filter += ` AND c.id = $${pNum++}`;
+    filterValues.push(value.course_id);
+  }
+
+  if (value.session_id) {
+    filter += ` AND b.session_id = $${pNum++}`;
     filterValues.push(value.session_id);
   }
 

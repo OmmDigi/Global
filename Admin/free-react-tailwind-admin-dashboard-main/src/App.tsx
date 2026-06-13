@@ -52,6 +52,7 @@ import Settings from "./pages/admin/Settings/FeeHead";
 import AdminReport from "./pages/admin/AdminReport/AdminReport";
 import FeesUpdate from "./pages/admin/FesUpdate/FeesUpdate";
 import Enquiry from "./pages/admin/Enquiry/Enquiry";
+import Payments from "./pages/admin/Payments/Payments";
 
 export default function App() {
   const [user, setUser] = useState<string | null>(null);
@@ -107,6 +108,7 @@ export default function App() {
               {/* Admission */}
               <Route path="/admissionAdmin" element={<Admission />} />
               <Route path="/enquiry" element={<Enquiry />} />
+              <Route path="/payments" element={<Payments />} />
               <Route path="/createLeave" element={<CreateLeave />} />
               <Route path="/manageLeave" element={<ManageLeave />} />
               <Route path="/report" element={<Report />} />

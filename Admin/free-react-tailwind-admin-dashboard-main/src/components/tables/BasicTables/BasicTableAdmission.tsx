@@ -15,6 +15,7 @@ import {
   ISelectedFormData,
   useSelectedForms,
 } from "../../../zustand/useSelectedForms";
+import { emptyOrNull } from "../../../utils/emptyOrNull";
 
 export default function BasicTableAdmission({
   admissionlist,
@@ -131,9 +132,12 @@ any) {
                       <div className="text-gray-500">
                         {currentPage * 10 - 10 + index + 1}
                       </div>
-                      <div className="block font-medium text-gray-500 text-theme-xs dark:text-gray-400]">
+                      <div className="block h-9 w-9 font-medium text-gray-500 text-theme-xs dark:text-gray-400">
                         <img
-                          src={order.student_image}
+                          src={emptyOrNull(
+                            order.student_image,
+                            "/images/chat/chat.jpg",
+                          )}
                           alt={order.student_image}
                           className="h-8 w-8 rounded-full"
                         />

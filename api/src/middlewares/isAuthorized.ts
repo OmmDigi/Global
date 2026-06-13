@@ -42,14 +42,17 @@ export const isAuthorized = (
       const currentRequestId =
         req.params?.id ?? req.query?.user_id ?? req.body?.user_id;
 
-      const requestIds : string[] = [];
-      if(typeof currentRequestId === "string") {
+      const requestIds: string[] = [];
+      if (typeof currentRequestId === "string") {
         requestIds.push(currentRequestId);
-      } else if(Array.isArray(currentRequestId)) {
+      } else if (Array.isArray(currentRequestId)) {
         requestIds.push(...currentRequestId);
       }
 
-      if(view_own_only === true && requestIds.some(id => parseInt(id) === userInfo.id)) {
+      if (
+        view_own_only === true &&
+        requestIds.some((id) => parseInt(id) === userInfo.id)
+      ) {
         next();
         return;
       }

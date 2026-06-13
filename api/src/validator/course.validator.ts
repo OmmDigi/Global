@@ -21,6 +21,7 @@ export const VGetSessionList = Joi.object({
   page: Joi.number().optional(),
   limit: Joi.number().optional(),
   is_active: Joi.bool().optional(),
+  course_id: Joi.number().optional(),
 });
 
 // fee head
@@ -73,7 +74,7 @@ export const VCreateCourse = Joi.object({
         amount: Joi.number().required(),
         min_amount: Joi.number().required(),
         required: Joi.boolean().required(),
-      })
+      }),
     )
     .required(),
 });
@@ -105,7 +106,7 @@ export const VUpdateCourse = Joi.object({
         amount: Joi.number().required(),
         min_amount: Joi.number().required(),
         required: Joi.boolean().required(),
-      })
+      }),
     )
     .optional(),
 });

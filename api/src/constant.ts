@@ -39,7 +39,13 @@ avilable_permissions.set("7", "Create Employee");
 avilable_permissions.set("8", "Inventory Manage");
 avilable_permissions.set("9", "Purchase Record");
 avilable_permissions.set("10", "Maintenance Record");
-avilable_permissions.set("11", "Stuff Attandance");
+avilable_permissions.set("11", "Attendance & Payslip");
+avilable_permissions.set("12", "Teacher Class Status");
+avilable_permissions.set("13", "AMC");
+avilable_permissions.set("14", "Report");
+avilable_permissions.set("15", "Settings");
+avilable_permissions.set("16", "Enquiry");
+avilable_permissions.set("17", "Payments");
 
 export const MONTHLY_PAYMENT_HEAD_ID = 4;
 export const LATE_FINE_FEE_HEAD_ID = 5;

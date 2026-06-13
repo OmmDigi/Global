@@ -33,11 +33,19 @@ const options: MultiSelectOption[] = [
     id: 6,
   },
   {
+    name: "Enquiry",
+    id: 16,
+  },
+  {
+    name: "Payments",
+    id: 17,
+  },
+  {
     name: "Create Employee",
     id: 7,
   },
   {
-    name: "Attendance  & Payslip",
+    name: "Attendance & Payslip",
     id: 11,
   },
   {
@@ -138,12 +146,12 @@ export default function CreateEmployee() {
   // create employee
   const { trigger: create } = useSWRMutation(
     "api/v1/users/create",
-    (url, { arg }) => postFetcher(url, arg)
+    (url, { arg }) => postFetcher(url, arg),
   );
 
   // edit employee
   const { trigger: update } = useSWRMutation("api/v1/users", (url, { arg }) =>
-    putFetcher(url, arg)
+    putFetcher(url, arg),
   );
 
   // get course list
@@ -152,7 +160,7 @@ export default function CreateEmployee() {
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -161,11 +169,10 @@ export default function CreateEmployee() {
     }));
   };
 
-
   const handleChangeCatagort = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
     setTeacher(value);
@@ -174,7 +181,7 @@ export default function CreateEmployee() {
       [name]: value,
     }));
   };
-  
+
   const handleNameChange = (selected: any[]) => {
     setFormData((prev: any) => ({
       ...prev,
@@ -188,7 +195,7 @@ export default function CreateEmployee() {
       const response = await create(formData as any);
       mutate(
         (currentData: any) => [...(currentData || []), response.data],
-        false
+        false,
       );
       messageApi.open({
         type: "success",
@@ -222,7 +229,7 @@ export default function CreateEmployee() {
 
   const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
-    type: "photo"
+    type: "photo",
   ) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -355,7 +362,7 @@ export default function CreateEmployee() {
     setFormData((prev) => ({
       ...prev,
       fee_structure_teacher: prev.fee_structure_teacher.filter(
-        (_, i) => i !== index
+        (_, i) => i !== index,
       ),
     }));
   };
@@ -364,7 +371,7 @@ export default function CreateEmployee() {
     setFormData((prev) => ({
       ...prev,
       fee_structure_teacher: prev.fee_structure_teacher.map((entry, i) =>
-        i === index ? { ...entry, [field]: value } : entry
+        i === index ? { ...entry, [field]: value } : entry,
       ),
     }));
   };
@@ -384,7 +391,7 @@ export default function CreateEmployee() {
     setFormData((prev) => ({
       ...prev,
       fee_structure_stuff: prev.fee_structure_stuff.filter(
-        (_, i) => i !== index
+        (_, i) => i !== index,
       ),
     }));
   };
@@ -392,12 +399,12 @@ export default function CreateEmployee() {
   const handleChangeEntriesStuff = (
     index: number,
     field: string,
-    value: string
+    value: string,
   ) => {
     setFormData((prev) => ({
       ...prev,
       fee_structure_stuff: prev.fee_structure_stuff.map((entry, i) =>
-        i === index ? { ...entry, [field]: value } : entry
+        i === index ? { ...entry, [field]: value } : entry,
       ),
     }));
   };
@@ -599,7 +606,6 @@ export default function CreateEmployee() {
                     </div>
 
                     <div className="grid grid-cols-1 gap-6 mt-3 xl:grid-cols-1">
-                    
                       {formData?.fee_structure_teacher?.map((entry, index) => (
                         <div key={index} className="flex gap-4 items-center">
                           <div>
@@ -610,7 +616,7 @@ export default function CreateEmployee() {
                                 handleChangeEntries(
                                   index,
                                   "course_id",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                               className="w-auto px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
@@ -633,7 +639,7 @@ export default function CreateEmployee() {
                                 handleChangeEntries(
                                   index,
                                   "class_per_month",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                               className="flex-1 border px-3 py-1 rounded-md"
@@ -647,7 +653,7 @@ export default function CreateEmployee() {
                                 handleChangeEntries(
                                   index,
                                   "type",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                               className="w-auto px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
@@ -668,7 +674,7 @@ export default function CreateEmployee() {
                                 handleChangeEntries(
                                   index,
                                   "amount",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                               className="flex-1 border px-3 py-1 rounded-md"
@@ -684,7 +690,7 @@ export default function CreateEmployee() {
                                 handleChangeEntries(
                                   index,
                                   "workshop",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                               className="flex-1 border px-3 py-1 rounded-md"
@@ -700,7 +706,7 @@ export default function CreateEmployee() {
                                 handleChangeEntries(
                                   index,
                                   "extra",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                               className="flex-1 border px-3 py-1 rounded-md"
@@ -754,7 +760,7 @@ export default function CreateEmployee() {
                                 handleChangeEntriesStuff(
                                   index,
                                   "fee_head",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                               className="w-auto px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
@@ -776,7 +782,7 @@ export default function CreateEmployee() {
                                 handleChangeEntriesStuff(
                                   index,
                                   "amount",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                               className="flex-1 border px-3 py-1 rounded-md"
@@ -790,7 +796,7 @@ export default function CreateEmployee() {
                                 handleChangeEntriesStuff(
                                   index,
                                   "amount_type",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                               className="w-auto px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"

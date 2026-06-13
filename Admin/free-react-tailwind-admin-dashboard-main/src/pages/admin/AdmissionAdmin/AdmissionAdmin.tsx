@@ -2083,6 +2083,7 @@ export default function AdmissionAdmin() {
                     <option value="name">Name</option>
                     <option value="email">Email</option>
                     <option value="ph_no">Ph No</option>
+                    <option value="bill_no">Bill No</option>
                   </select>
                 </div>
                 <div className="flex-1">

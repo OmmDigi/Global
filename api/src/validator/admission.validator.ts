@@ -43,6 +43,7 @@ export const VGetAdmissionList = Joi.object({
   ph_no: Joi.string().optional(),
   email: Joi.string().email().optional(),
   name: Joi.string().optional(),
+  bill_no: Joi.string().optional(),
   page: Joi.number().optional(),
   token: Joi.string().optional(),
   limit: Joi.number().optional(),

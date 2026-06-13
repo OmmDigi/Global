@@ -5,5 +5,5 @@ dist
 .env.local
 uploads/
 backup.controller.ts
-deleted_row_info/*
+deleted_row_info/deleted_fee_head.log
 db-backups

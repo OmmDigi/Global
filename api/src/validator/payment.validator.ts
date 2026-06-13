@@ -52,4 +52,17 @@ export const VCheckFine = Joi.object({
     Joi.string().pattern(/^\d{4}-\d{2}$/),
     Joi.array().items(Joi.string().pattern(/^\d{4}-\d{2}$/)),
   ),
+  form_id: Joi.number().required(),
+});
+
+export const VGetPayments = Joi.object({
+  mode: Joi.string().valid("Online", "Offline").default("Online"),
+  from_date: Joi.string().optional().allow(null, ""),
+  to_date: Joi.string().optional().allow(null, ""),
+  page: Joi.number().default(1),
+});
+
+export const VUpdateBillNo = Joi.object({
+  id: Joi.number().required(),
+  bill_no: Joi.string().required().allow(""),
 });

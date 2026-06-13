@@ -207,6 +207,15 @@ export const getAdmissions = async (
     filterValues.push(value.email);
   }
 
+  if (value.bill_no) {
+    if (filter === "") {
+      filter = `WHERE EXISTS (SELECT 1 FROM payments WHERE form_id = ff.id AND bill_no = $${placeholder++})`;
+    } else {
+      filter += ` AND EXISTS (SELECT 1 FROM payments WHERE form_id = ff.id AND bill_no = $${placeholder++}`;
+    }
+    filterValues.push(value.bill_no);
+  }
+
   let feeHeadIdFilter = `WHERE fee_head_id != ${LATE_FINE_FEE_HEAD_ID}`;
   let paymentTableFilter = "WHERE p.status = 2";
 

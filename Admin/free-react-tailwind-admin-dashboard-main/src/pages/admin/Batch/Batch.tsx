@@ -382,8 +382,29 @@ export default function Batch() {
               </form>
             </div>
 
-            <div className="flex items-center justify-end">
-              <div className="mb-4 min-w-44">
+            {/* Filters */}
+            <div className="flex items-center justify-end gap-10 mb-4">
+              <div className="min-w-44">
+                <label className="block text-sm text-start mt-1 dark:text-gray-400 text-gray-700 mb-1">
+                  Filter By Course
+                </label>
+                <select
+                  name="course_id"
+                  value={searchParams.get("course_id") ?? ""}
+                  onChange={(e) => {
+                    handleFilterChange("course_id", e.target.value);
+                  }}
+                  className="w-full px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                >
+                  <option value="">Choose</option>
+                  {courseList?.data?.map((data: any, index: number) => (
+                    <div key={index}>
+                      <option value={data?.id}>{data?.name}</option>
+                    </div>
+                  ))}
+                </select>
+              </div>
+              <div className="min-w-44">
                 <label className="block text-sm text-start mt-1 dark:text-gray-400 text-gray-700 mb-1">
                   Filter By Session
                 </label>

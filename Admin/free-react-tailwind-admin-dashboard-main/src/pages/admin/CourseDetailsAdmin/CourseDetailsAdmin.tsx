@@ -15,6 +15,7 @@ import DatePicker from "react-datepicker";
 import { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
 import { Loader, Trash2 } from "lucide-react";
+import { emptyOrNull } from "../../../utils/emptyOrNull";
 // import { ReceiptIndianRupee } from "lucide-react";
 // import { log } from "console";
 
@@ -200,7 +201,7 @@ export default function CourseDetailsAdmin() {
         content: response.message,
       });
       refetch();
-      setEnteredAmounts("");
+      // setEnteredAmounts("");
       // setEnteredBillno("");
       // setPaymentMode("");
       setEditId(null);
@@ -336,8 +337,6 @@ export default function CourseDetailsAdmin() {
     }
   };
 
-  // store remarks per row
-
   // Handle save per row
   const handleRowSave = (item: any) => {
     paymentModeDropdownRef.current[item.fee_head_id]?.focus();
@@ -389,7 +388,6 @@ export default function CourseDetailsAdmin() {
       console.warn("No matching fee head found");
       return;
     }
-    console.log("existingFee", fee);
     // Set state for this specific fee row (populate all inputs)
     setEnteredAmounts((prev: any) => ({
       ...prev,
@@ -565,7 +563,10 @@ export default function CourseDetailsAdmin() {
           <div className="space-y-6">
             <div className=" font-medium flex justify-center text-gray-500 text-theme-xs dark:text-gray-400 mb-10">
               <img
-                src="/images/chat/chat.jpg"
+                src={emptyOrNull(
+                  feesStructure?.data?.student_image,
+                  "/images/chat/chat.jpg",
+                )}
                 alt="/images/chat/chat.jpg"
                 className="h-30 w-30 rounded-full"
               />

@@ -2,7 +2,7 @@ import { PoolClient } from "pg";
 import { pool } from "../config/db";
 import { generatePlaceholders } from "../utils/generatePlaceholders";
 import { ErrorHandler } from "../utils/ErrorHandler";
-import { MONTHS } from "../constant";
+import { LATE_FINE_FEE_HEAD_ID, MONTHS } from "../constant";
 
 type IPaymentProps = {
   form_id: number;
@@ -124,30 +124,41 @@ export const deletePaymentService = async (value: IDeletePaymentProps) => {
 
 export const checkLateFineService = async (
   payMonths: string[],
+  form_id: number,
 ): Promise<{
   amount: number;
   fineAmount: number;
 }> => {
   // payMonths: array of "YYYY-MM" strings
 
-  const { rows, rowCount } = await pool.query(
-    `SELECT * FROM late_fine_config LIMIT 1`,
-  );
-  if (rowCount == 0) {
+  const [formFeeStructure, lateFineConfig] = await Promise.all([
+    pool.query(
+      "SELECT 1 FROM form_fee_structure WHERE form_id = $1 AND fee_head_id = $2",
+      [form_id, LATE_FINE_FEE_HEAD_ID],
+    ),
+    pool.query("SELECT * FROM late_fine_config LIMIT 1"),
+  ]);
+
+  if (formFeeStructure.rowCount == 0) {
+    return {
+      amount: 0,
+      fineAmount: lateFineConfig.rows[0].amount,
+    };
+  }
+
+  if (lateFineConfig.rowCount == 0) {
     throw new ErrorHandler(
       500,
       "No late fine config set. please try again after some time",
     );
   }
 
-  const config = rows[0];
+  const config = lateFineConfig.rows[0];
 
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth() + 1;
   const currentAbsMonth = currentYear * 12 + currentMonth;
-
-  // console.log(currentAbsMonth);
 
   let totalFine = 0;
 

@@ -107,8 +107,12 @@ export default function CourseDetails() {
 
     const fee_structure_info: any[] = [];
     let hasMonthlyPayment = false;
+    let hasLateFine = false;
 
     for (const item of feesStructure?.data?.fee_structure_info ?? []) {
+      if (item.fee_head_id == LATE_FINE) {
+        hasLateFine = true;
+      }
       const entireAmount = Number(enteredAmounts[item.fee_head_id] || 0);
       if (entireAmount === 0) continue;
 
@@ -155,23 +159,22 @@ export default function CourseDetails() {
 
       // }
 
-      const monthlyPayments = fee_structure_info.filter(
-        (f) => f.fee_head_id == MONTHLY_PAYMENT,
-      );
-      console.log(
-        monthlyPayments.map((item) => `pay_month=${item.month}`).join("&"),
-      );
-
-      try {
-        const fineRes = await getFetcher(
-          `api/v1/payment/check-late-fine?${monthlyPayments.map((item) => `pay_month=${item.month}`).join("&")}`,
+      if (hasLateFine) {
+        const monthlyPayments = fee_structure_info.filter(
+          (f) => f.fee_head_id == MONTHLY_PAYMENT,
         );
-        const fineAmount = Number(fineRes?.data?.amount ?? 0);
-        if (fineAmount > 0) {
-          totalFine += fineAmount;
+
+        try {
+          const fineRes = await getFetcher(
+            `api/v1/payment/check-late-fine?form_id=${id}&${monthlyPayments.map((item) => `pay_month=${item.month}`).join("&")}`,
+          );
+          const fineAmount = Number(fineRes?.data?.amount ?? 0);
+          if (fineAmount > 0) {
+            totalFine += fineAmount;
+          }
+        } catch {
+          // proceed if check fails
         }
-      } catch {
-        // proceed if check fails
       }
 
       if (totalFine > 0) {
@@ -198,6 +201,10 @@ export default function CourseDetails() {
   );
 
   const fees_structure_table = feesStructure?.data?.payments_history;
+
+  const paidMonths: string[] = (feesStructure?.data?.payments_history ?? [])
+    .filter((p: any) => p.fee_head_id == MONTHLY_PAYMENT)
+    .map((p: any) => dayjs(p.month).format("YYYY-MM"));
 
   const submitClick = async () => {
     const newFormDate = { form_id: id };
@@ -617,11 +624,27 @@ export default function CourseDetails() {
                                           }
                                           max={
                                             item.fee_head_id == MONTHLY_PAYMENT
-                                              ? item?.price
-                                              : item.min_amount
+                                              ? item.min_amount *
+                                                Math.max(
+                                                  1,
+                                                  selectedMonths.length,
+                                                )
+                                              : item?.due_amount
                                           }
                                           onChange={(e) =>
                                             handleAmountChange(e, item)
+                                          }
+                                          // value={
+                                          //   item.fee_head_id == MONTHLY_PAYMENT
+                                          //     ? item.min_amount *
+                                          //       Math.max(
+                                          //         1,
+                                          //         selectedMonths.length,
+                                          //       )
+                                          //     : undefined
+                                          // }
+                                          value={
+                                            enteredAmounts[item.fee_head_id]
                                           }
                                           placeholder="Amount"
                                           className="w-full px-2 py-1 border rounded"
@@ -638,18 +661,44 @@ export default function CourseDetails() {
                                             if (!date) return;
                                             const formatted =
                                               dayjs(date).format("YYYY-MM");
+
+                                            if (
+                                              paidMonths.includes(formatted)
+                                            ) {
+                                              return messageApi.warning(
+                                                `You already paid for "${dayjs(date).format("MMMM")}" month`,
+                                              );
+                                            }
+
                                             const already = selectedMonths.some(
                                               (m) =>
                                                 dayjs(m).format("YYYY-MM") ===
                                                 formatted,
                                             );
+
                                             if (!already) {
                                               setSelectedMonths((prev) => [
                                                 ...prev,
                                                 date,
                                               ]);
+                                              setEnteredAmounts(
+                                                (prev: any) => ({
+                                                  ...prev,
+                                                  [item.fee_head_id]:
+                                                    item.min_amount *
+                                                    Math.max(
+                                                      1,
+                                                      selectedMonths.length + 1,
+                                                    ),
+                                                }),
+                                              );
                                             }
                                           }}
+                                          // filterDate={(date) =>
+                                          //   !paidMonths.includes(
+                                          //     dayjs(date).format("YYYY-MM"),
+                                          //   )
+                                          // }
                                           dateFormat="MM-yyyy"
                                           showMonthYearPicker
                                           className="border w-[7.5rem] border-gray-300 dark:border-gray-300 dark:text-gray-200 rounded-md px-2 py-1 text-sm"
