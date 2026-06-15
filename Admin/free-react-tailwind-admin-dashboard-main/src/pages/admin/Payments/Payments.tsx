@@ -14,7 +14,7 @@ import { getFetcher, patchFetcher } from "../../../api/fatcher";
 export default function Payments() {
   const [messageApi, contextHolder] = message.useMessage();
 
-  const [mode, setMode] = useState<"Online" | "Offline">("Online");
+  const [mode, setMode] = useState<"Online" | "Offline" | "Both">("Online");
   const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
     null,
     null,
@@ -42,7 +42,7 @@ export default function Payments() {
       patchFetcher(url, arg),
   );
 
-  const handleModeChange = (newMode: "Online" | "Offline") => {
+  const handleModeChange = (newMode: "Online" | "Offline" | "Both") => {
     setMode(newMode);
     setPage(1);
   };
@@ -86,7 +86,7 @@ export default function Payments() {
           <div className="flex flex-wrap items-center gap-4">
             {/* Mode toggle */}
             <div className="flex rounded-lg overflow-hidden border border-gray-200 dark:border-white/[0.1]">
-              {(["Online", "Offline"] as const).map((m) => (
+              {(["Online", "Offline", "Both"] as const).map((m) => (
                 <button
                   key={m}
                   onClick={() => handleModeChange(m)}

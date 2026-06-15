@@ -6,7 +6,18 @@ import {
   TableHeader,
   TableRow,
 } from "../../ui/table";
-import { Calendar, Check, Eye, IdCard, Pencil, X } from "lucide-react";
+import {
+  Calendar,
+  Check,
+  CreditCard,
+  Eye,
+  IdCard,
+  List,
+  Pencil,
+  SquareArrowOutUpRight,
+  X,
+} from "lucide-react";
+import { Link } from "react-router";
 
 type Payment = {
   id: number;
@@ -15,11 +26,14 @@ type Payment = {
   form_name: string;
   fee_head_name: string;
   amount: string;
+  mode: string;
   bill_no: string | null;
   transition_id: string | null;
   payment_date: string | null;
   month: string | null;
   remark: string | null;
+  course_name: string;
+  batch_month_name: string;
 };
 
 type Props = {
@@ -54,8 +68,8 @@ export default function BasicTablePayments({
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
-      <div className="overflow-x-auto">
+    <div className="overflow-hidden w-full rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
+      <div className="overflow-x-auto max-w-full">
         <Table>
           <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
             <TableRow>
@@ -101,9 +115,21 @@ export default function BasicTablePayments({
                     {p.student_name}
                   </span>
                   <span className="flex items-center gap-1.5 text-xs text-gray-400 mt-0.5">
+                    <Calendar size={15} />
+                    {p.batch_month_name}
+                  </span>
+                  <Link
+                    to={`/courseDetailsAdmin/${p.form_id}`}
+                    className="flex items-center gap-1.5 text-xs text-gray-400 mt-0.5"
+                  >
                     {/* Form #{p.form_id} */}
                     <IdCard size={15} />
                     {p.form_name}
+                    <SquareArrowOutUpRight size={12} />
+                  </Link>
+                  <span className="flex items-center gap-1.5 text-xs text-gray-400 mt-0.5">
+                    <CreditCard size={15} />
+                    {p.mode}
                   </span>
                   {p.payment_date && (
                     <span className="flex items-center gap-1.5 text-xs text-gray-400">
@@ -111,10 +137,14 @@ export default function BasicTablePayments({
                       {new Date(p.payment_date).toLocaleDateString("en-IN")}
                     </span>
                   )}
+                  <span className="flex items-center gap-1.5 text-xs text-gray-400 mt-0.5">
+                    <List size={15} />
+                    {p.course_name}
+                  </span>
                 </TableCell>
 
                 {/* <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400 whitespace-nowrap">
-                  {p.form_name ?? "-"}
+                  {p.mode ?? "-"}
                 </TableCell> */}
 
                 <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400 whitespace-nowrap">

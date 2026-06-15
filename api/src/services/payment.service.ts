@@ -178,7 +178,7 @@ export const checkLateFineService = async (
       }
     } else if (payAbsMonth === currentAbsMonth) {
       // Current month → fine only if past fine_date
-      if (now.getDate() >= config.fine_date) {
+      if (now.getDate() > config.fine_date) {
         totalFine += Number(config.amount);
       }
     }

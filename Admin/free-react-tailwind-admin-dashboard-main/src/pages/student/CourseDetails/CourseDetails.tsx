@@ -21,6 +21,7 @@ import { uploadFiles } from "../../../utils/uploadFile";
 import Button from "../../../components/ui/button/Button";
 import { Loader2 } from "lucide-react";
 import { LATE_FINE, MONTHLY_PAYMENT } from "../../../constant";
+import { monthsDiffrence } from "../../../utils/monthsDiffrence";
 // import DatePicker from "react-datepicker";
 // import BasicTableCourseDetailsAdmin from "../../../components/tables/BasicTables/BasicTableCourseDetailsAdmin";
 
@@ -662,6 +663,21 @@ export default function CourseDetails() {
                                             const formatted =
                                               dayjs(date).format("YYYY-MM");
 
+                                            const lastSelectedMonth =
+                                              selectedMonths[selectedMonths.length - 1];
+                                            const referenceMonth =
+                                              lastSelectedMonth
+                                                ? dayjs(lastSelectedMonth).format("YYYY-MM")
+                                                : paidMonths[paidMonths.length - 1];
+                                            if (monthsDiffrence(referenceMonth, formatted) > 1) {
+                                              const lastMonthName = dayjs(referenceMonth).format("MMMM YYYY");
+                                              const expectedNextMonth = dayjs(referenceMonth).add(1, "month").format("MMMM YYYY");
+                                              const pickedMonthName = dayjs(formatted).format("MMMM YYYY");
+                                              return messageApi.warning(
+                                                `Cannot skip months. Last month: "${lastMonthName}", you picked "${pickedMonthName}". Next allowed: "${expectedNextMonth}"`,
+                                              );
+                                            }
+
                                             if (
                                               paidMonths.includes(formatted)
                                             ) {
@@ -717,10 +733,12 @@ export default function CourseDetails() {
                                               <button
                                                 type="button"
                                                 onClick={() => {
-                                                  setSelectedMonths((prev) =>
-                                                    prev.filter(
-                                                      (_, idx) => idx !== i,
-                                                    ),
+                                                  const filterSelectedMonths =
+                                                    selectedMonths.filter(
+                                                      (_, index) => index < i,
+                                                    );
+                                                  setSelectedMonths(
+                                                    filterSelectedMonths,
                                                   );
                                                   setEnteredAmounts(
                                                     (prev: any) => ({
@@ -729,8 +747,7 @@ export default function CourseDetails() {
                                                         item.min_amount *
                                                         Math.max(
                                                           1,
-                                                          selectedMonths.length -
-                                                            1,
+                                                          filterSelectedMonths.length,
                                                         ),
                                                     }),
                                                   );

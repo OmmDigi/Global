@@ -737,7 +737,7 @@ export default function CourseDetailsAdmin() {
                         );
                       setAddFormData({
                         fee_head_id: e.target.value,
-                        amount: oldFeeInfo?.due_amount ?? 0,
+                        amount: oldFeeInfo?.price ?? 0,
                         min_amount: oldFeeInfo?.min_amount ?? 0,
                       });
                       if (oldFeeInfo) setMaxValue(oldFeeInfo.due_amount); // ✅ set max value here

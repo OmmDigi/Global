@@ -556,9 +556,11 @@ export const getPaymentsList = asyncErrorHandler(async (req, res) => {
   if (value.mode === "Online") {
     conditions.push(`p.mode = $${idx++}`);
     params.push("Online");
-  } else {
+  }
+
+  if (value.mode === "Offline") {
     conditions.push(`(p.mode != $${idx++} OR p.mode IS NULL)`);
-    params.push("Online");
+    params.push("Cash");
   }
 
   if (value.from_date) {
@@ -592,11 +594,16 @@ export const getPaymentsList = asyncErrorHandler(async (req, res) => {
         p.created_at,
         u.name AS student_name,
         ff.form_name,
-        cfh.name AS fee_head_name
+        cfh.name AS fee_head_name,
+        c.name AS course_name,
+        b.month_name AS batch_month_name
       FROM payments p
       LEFT JOIN users u ON p.student_id = u.id
       LEFT JOIN fillup_forms ff ON p.form_id = ff.id
       LEFT JOIN course_fee_head cfh ON p.fee_head_id = cfh.id
+      LEFT JOIN enrolled_courses ec ON ec.form_id = ff.id
+      LEFT JOIN course c ON c.id = ec.course_id
+      LEFT JOIN batch b ON b.id = ec.batch_id
       ${whereClause}
       ORDER BY p.created_at DESC
       LIMIT $${idx++} OFFSET $${idx++}`,

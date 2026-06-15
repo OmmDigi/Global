@@ -56,7 +56,7 @@ export const VCheckFine = Joi.object({
 });
 
 export const VGetPayments = Joi.object({
-  mode: Joi.string().valid("Online", "Offline").default("Online"),
+  mode: Joi.string().valid("Online", "Offline", "Both").default("Online"),
   from_date: Joi.string().optional().allow(null, ""),
   to_date: Joi.string().optional().allow(null, ""),
   page: Joi.number().default(1),
