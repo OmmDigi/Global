@@ -61,10 +61,7 @@ export default function Courses() {
   } = useSWR(`api/v1/course?${searchParams.toString()}`, getFetcher);
 
   //  get fees head
-  const { data: feehead, isLoading: feeheadLoading } = useSWR(
-    "api/v1/course/fee-head",
-    getFetcher,
-  );
+  const { data: feehead } = useSWR("api/v1/course/fee-head", getFetcher);
 
   // edit course
   const { trigger: update } = useSWRMutation("api/v1/course", (url, { arg }) =>

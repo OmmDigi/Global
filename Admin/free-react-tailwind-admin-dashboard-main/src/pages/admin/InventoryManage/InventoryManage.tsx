@@ -39,7 +39,7 @@ export default function InventoryManage() {
   // get inventory  List
   const {
     data: inventoryList,
-    isLoading: inventoryLoding,
+    // isLoading: inventoryLoding,
     mutate,
   } = useSWR(`api/v2/inventory/item?${searchParams.toString()}`, getFetcher);
 
