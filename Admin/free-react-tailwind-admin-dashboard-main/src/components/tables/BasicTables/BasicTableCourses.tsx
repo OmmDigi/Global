@@ -11,12 +11,12 @@ import dayjs from "dayjs";
 
 import { useEffect, useState } from "react";
 import Pagination from "../../form/Pagination";
+import { useSearchParams } from "react-router";
 
 interface IProps {
   courseList: any;
   onEdit: (id: number) => void;
   onActive: (checked: boolean, id: number) => void;
-  onSendData: any;
 }
 
 // Define the table data using the interface
@@ -25,20 +25,38 @@ const BasicTableCourses: React.FC<IProps> = ({
   courseList,
   onEdit,
   onActive,
-  onSendData,
 }) => {
-  // const onShowSizeChange: PaginationProps["onShowSizeChange"] = (
-  //   current,
-  //   pageSize
-  // ) => {
-  // };
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = parseInt(searchParams.get("page") ?? "1");
+  const [searchInput, setSearchInput] = useState(searchParams.get("search") ?? "");
 
-  const [count, setCount] = useState(1);
   useEffect(() => {
-    onSendData(count);
-  }, [count, onSendData]);
+    const timer = setTimeout(() => {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        if (searchInput) {
+          next.set("search", searchInput);
+        } else {
+          next.delete("search");
+        }
+        next.set("page", "1");
+        return next;
+      });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
+      <div className="p-4">
+        <input
+          type="text"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          placeholder="Search course by name..."
+          className="w-full max-w-sm border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-700 dark:text-gray-300 dark:bg-gray-900 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
       <div className="max-w-full overflow-x-auto">
         <Table>
           {/* Table Header */}
@@ -97,14 +115,14 @@ const BasicTableCourses: React.FC<IProps> = ({
 
           {/* Table Body */}
           <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-            {courseList?.data?.map((order: any , index: number) => (
+            {courseList?.data?.map((order: any, index: number) => (
               <TableRow key={order.id}>
                 <TableCell className="px-5 py-4 sm:px-6 text-start">
                   <div className="flex items-center gap-3">
                     <div className="block font-medium text-gray-500 text-theme-xs dark:text-gray-400]">
-                     <div className="text-gray-500">
-                      {count * 10 - 10 + index + 1}
-                    </div>
+                      <div className="text-gray-500">
+                        {page * 10 - 10 + index + 1}
+                      </div>
                     </div>
                     <div>
                       <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
@@ -156,8 +174,10 @@ const BasicTableCourses: React.FC<IProps> = ({
         </Table>
         <div className="p-8">
           <Pagination
-            count={count}
-            onChange={setCount}
+            count={page}
+            onChange={(page) => {
+              setSearchParams((prev) => ({ ...prev, page }));
+            }}
             length={courseList?.data?.length ? courseList?.data?.length : 1}
           />
         </div>

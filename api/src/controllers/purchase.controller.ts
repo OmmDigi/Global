@@ -59,8 +59,27 @@ export const getSinglePurchaseRecord = asyncErrorHandler(async (req, res) => {
 
 export const getPurchaseRecordList = asyncErrorHandler(async (req, res) => {
   const { TO_STRING } = parsePagination(req);
+
+  const search = req.query.search?.toString() ?? "";
+  const searchBy = req.query.search_by?.toString() ?? "name";
+
+  const ALLOWED_SEARCH_COLS: Record<string, string> = {
+    name: "name",
+    bill_no: "bill_no",
+  };
+
+  const filterValues: string[] = [];
+  let filter = "";
+
+  if (search) {
+    const col = ALLOWED_SEARCH_COLS[searchBy] ?? "name";
+    filter = `WHERE ${col} ILIKE '%' || $1 || '%'`;
+    filterValues.push(search);
+  }
+
   const { rows } = await pool.query(
-    `SELECT * FROM purchase_record ORDER BY id DESC ${TO_STRING}`
+    `SELECT * FROM purchase_record ${filter} ORDER BY id DESC ${TO_STRING}`,
+    filterValues
   );
   res.status(200).json(new ApiResponse(200, "Purchase Record List", rows));
 });

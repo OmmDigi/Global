@@ -7,45 +7,69 @@ import {
   TableRow,
 } from "../../ui/table";
 import Pagination from "../../form/Pagination";
-
-
+import { useSearchParams } from "react-router";
 
 interface IProps {
   purchaseList: any;
   onEdit: (id: number) => void;
-  onSendData:any
 }
 
-// Define the table data using the interface
+const SEARCH_OPTIONS = [
+  { value: "name", label: "Item Name" },
+  { value: "bill_no", label: "Bill No" },
+];
 
-const BasicTablePurchase: React.FC<IProps> = ({
-  purchaseList,
-  onEdit,
-onSendData,
-  
-}: any) => {
+const BasicTablePurchase: React.FC<IProps> = ({ purchaseList, onEdit }) => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = parseInt(searchParams.get("page") ?? "1");
+  const [searchBy, setSearchBy] = useState(searchParams.get("search_by") ?? "name");
+  const [searchInput, setSearchInput] = useState(searchParams.get("search") ?? "");
 
-  // for delete
-  // const { trigger: deleteUser, isMutating } = useSWRMutation(
-  //   "api/v1/purchase",
-  //   (url, { arg }: { arg: number }) => deleteFetcher(`${url}/${arg}`) // arg contains the id
-  // );
-  // const handleDelete = async (id: number) => {
-  //   try {
-  //     await deleteUser(id);
-  //     message.success("User deleted successfully");
-  //     mutate("api/v1/purchase");
-  //   } catch (error) {
-  //     console.error("Delete failed:", error);
-  //     message.error("Failed to delete user");
-  //   }
-  // };
-const [count, setCount] = useState(1);
   useEffect(() => {
-    onSendData(count);
-  }, [count, onSendData]);
+    const timer = setTimeout(() => {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        if (searchInput) {
+          next.set("search", searchInput);
+          next.set("search_by", searchBy);
+        } else {
+          next.delete("search");
+          next.delete("search_by");
+        }
+        next.set("page", "1");
+        return next;
+      });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchInput, searchBy]);
+
+  const handleSearchByChange = (val: string) => {
+    setSearchBy(val);
+    setSearchInput("");
+  };
+
+  const placeholder = searchBy === "bill_no" ? "Search by bill no..." : "Search by item name...";
+
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
+      <div className="p-4 flex gap-2">
+        <select
+          value={searchBy}
+          onChange={(e) => handleSearchByChange(e.target.value)}
+          className="border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-700 dark:text-gray-300 dark:bg-gray-900 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          {SEARCH_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
+        <input
+          type="text"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          placeholder={placeholder}
+          className="w-full max-w-sm border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-700 dark:text-gray-300 dark:bg-gray-900 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
       <div className="max-w-full overflow-x-auto">
         <Table>
           {/* Table Header */}
@@ -151,10 +175,16 @@ const [count, setCount] = useState(1);
             ))}
           </TableBody>
         </Table>
-         <div className="p-8">
+        <div className="p-8">
           <Pagination
-            count={count}
-            onChange={setCount}
+            count={page}
+            onChange={(p) => {
+              setSearchParams((prev) => {
+                const next = new URLSearchParams(prev);
+                next.set("page", String(p));
+                return next;
+              });
+            }}
             length={purchaseList?.data?.length ? purchaseList?.data?.length : 1}
           />
         </div>

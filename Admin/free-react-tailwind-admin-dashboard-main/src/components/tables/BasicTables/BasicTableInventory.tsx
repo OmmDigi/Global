@@ -16,20 +16,25 @@ import Pagination from "../../form/Pagination";
 import DatePicker from "react-datepicker";
 import useSWR from "swr";
 import dayjs from "dayjs";
+import { useSearchParams } from "react-router";
 
 interface IProps {
   inventoryList: any;
   onEdit: (id: number) => void;
-  onSendData: any;
   mutate: any;
 }
 
-// Define the table data using the interface
+const SEARCH_OPTIONS = [
+  { value: "item_name", label: "Item Name" },
+  { value: "vendor_name", label: "Vendor Name" },
+];
+
+const inputCls =
+  "border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-700 dark:text-gray-300 dark:bg-gray-900 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500";
 
 const BasicTableInventory: React.FC<IProps> = ({
   inventoryList,
   onEdit,
-  onSendData,
   mutate,
 }: any) => {
   const [messageApi, contextHolder] = message.useMessage();
@@ -192,14 +197,101 @@ const BasicTableInventory: React.FC<IProps> = ({
     setFormType(null); // close form after submit
   };
 
-  const [count, setCount] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = parseInt(searchParams.get("page") ?? "1");
+  const [searchBy, setSearchBy] = useState(searchParams.get("search_by") ?? "item_name");
+  const [searchInput, setSearchInput] = useState(searchParams.get("search") ?? "");
+  const [dateFrom, setDateFrom] = useState<Date | null>(
+    searchParams.get("date_from") ? new Date(searchParams.get("date_from")!) : null
+  );
+  const [dateTo, setDateTo] = useState<Date | null>(
+    searchParams.get("date_to") ? new Date(searchParams.get("date_to")!) : null
+  );
+
   useEffect(() => {
-    onSendData(count);
-  }, [count, onSendData]);
+    const timer = setTimeout(() => {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        if (searchInput) {
+          next.set("search", searchInput);
+          next.set("search_by", searchBy);
+        } else {
+          next.delete("search");
+          next.delete("search_by");
+        }
+        next.set("page", "1");
+        return next;
+      });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchInput, searchBy]);
+
+  const handleSearchByChange = (val: string) => {
+    setSearchBy(val);
+    setSearchInput("");
+  };
+
+  const handleDateChange = (key: "date_from" | "date_to", date: Date | null) => {
+    if (key === "date_from") setDateFrom(date);
+    else setDateTo(date);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (date) next.set(key, dayjs(date).format("YYYY-MM-DD"));
+      else next.delete(key);
+      next.set("page", "1");
+      return next;
+    });
+  };
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
       {contextHolder}
+      {/* Filters */}
+      <div className="p-4 flex flex-wrap gap-3">
+        <select
+          value={searchBy}
+          onChange={(e) => handleSearchByChange(e.target.value)}
+          className={inputCls}
+        >
+          {SEARCH_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
+        <input
+          type="text"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          placeholder={searchBy === "vendor_name" ? "Search by vendor name..." : "Search by item name..."}
+          className={`${inputCls} w-48`}
+        />
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">Last Purchased:</span>
+          <DatePicker
+            selected={dateFrom}
+            onChange={(date) => handleDateChange("date_from", date)}
+            selectsStart
+            startDate={dateFrom}
+            endDate={dateTo}
+            placeholderText="From date"
+            dateFormat="dd/MM/yyyy"
+            className={inputCls}
+            isClearable
+          />
+          <span className="text-xs text-gray-400">–</span>
+          <DatePicker
+            selected={dateTo}
+            onChange={(date) => handleDateChange("date_to", date)}
+            selectsEnd
+            startDate={dateFrom}
+            endDate={dateTo}
+            minDate={dateFrom ?? undefined}
+            placeholderText="To date"
+            dateFormat="dd/MM/yyyy"
+            className={inputCls}
+            isClearable
+          />
+        </div>
+      </div>
       <div className="max-w-full overflow-x-auto">
         <Table>
           {/* Table Header */}
@@ -380,11 +472,15 @@ const BasicTableInventory: React.FC<IProps> = ({
         </Table>
         <div className="p-8">
           <Pagination
-            count={count}
-            onChange={setCount}
-            length={
-              inventoryList?.data?.length ? inventoryList?.data?.length : 1
-            }
+            count={page}
+            onChange={(p) => {
+              setSearchParams((prev) => {
+                const next = new URLSearchParams(prev);
+                next.set("page", String(p));
+                return next;
+              });
+            }}
+            length={inventoryList?.data?.length ? inventoryList?.data?.length : 1}
           />
         </div>
       </div>

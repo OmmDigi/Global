@@ -35,23 +35,18 @@ export const getVendorList = asyncErrorHandler(
   async (req: Request, res: Response) => {
     const { LIMIT, OFFSET } = parsePagination(req);
 
-    //for filters
+    const search = req.query.search?.toString() ?? "";
+    const filterValues: string[] = [];
     let filter = "";
-    const filterValues: any[] = [];
-    Object.entries(req.query).forEach(([key, value], index) => {
-      if (filter === "") filter = "WHERE";
 
-      if (index === 0) {
-        filter += ` ${key} = $${index + 1}`;
-      } else {
-        filter += ` AND ${key} = $${index + 1}`;
-      }
-      filterValues.push(value);
-    });
+    if (search) {
+      filter = `WHERE name ILIKE '%' || $1 || '%'`;
+      filterValues.push(search);
+    }
 
     const { rows } = await pool.query(
       `
-      SELECT 
+      SELECT
         *
       FROM vendor
       ${filter}

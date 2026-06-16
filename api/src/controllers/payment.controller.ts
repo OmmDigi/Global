@@ -559,16 +559,16 @@ export const getPaymentsList = asyncErrorHandler(async (req, res) => {
   }
 
   if (value.mode === "Offline") {
-    conditions.push(`(p.mode != $${idx++} OR p.mode IS NULL)`);
+    conditions.push(`p.mode = $${idx++}`);
     params.push("Cash");
   }
 
   if (value.from_date) {
-    conditions.push(`p.payment_date >= $${idx++}`);
+    conditions.push(`p.payment_date::date >= $${idx++}`);
     params.push(value.from_date);
   }
   if (value.to_date) {
-    conditions.push(`p.payment_date <= $${idx++}`);
+    conditions.push(`p.payment_date::date <= $${idx++}`);
     params.push(value.to_date);
   }
 
@@ -611,6 +611,8 @@ export const getPaymentsList = asyncErrorHandler(async (req, res) => {
     ),
     pool.query(`SELECT COUNT(*) FROM payments p ${whereClause}`, params),
   ]);
+
+  console.log(listResult.rows[0]);
 
   res.status(200).json({
     status: 200,

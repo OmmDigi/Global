@@ -18,6 +18,7 @@ import {
 import useSWRMutation from "swr/mutation";
 import useSWR, { mutate } from "swr";
 import { message } from "antd";
+import { useSearchParams } from "react-router";
 
 type FormDataType = {
   id?: number; // optional (if sometimes missing)
@@ -35,7 +36,7 @@ type FormDataType = {
 export default function PurchaseRecord() {
   const [messageApi, contextHolder] = message.useMessage();
   const [purchaseRecord, setPurchaseRecord] = useState(false);
-  const [pageCount, setPageCount] = useState<number>(1);
+  const [searchParams] = useSearchParams();
 
   const [photo, setPhoto] = useState<string | null>(null);
   const [id, setId] = useState<number>();
@@ -55,7 +56,7 @@ export default function PurchaseRecord() {
 
   // get purchaseList
   const { data: purchaseList } = useSWR(
-    `api/v1/purchase?page=${pageCount}`,
+    `api/v1/purchase?${searchParams.toString()}`,
     getFetcher
   );
   // create Holiday
@@ -70,9 +71,6 @@ export default function PurchaseRecord() {
     (url, { arg }) => putFetcher(url, arg)
   );
 
-  const handleChildData = (data: any) => {
-    setPageCount(data);
-  };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -441,7 +439,6 @@ export default function PurchaseRecord() {
             <BasicTablePurchase
               purchaseList={purchaseList}
               onEdit={handleEdit}
-              onSendData={handleChildData}
             />
           </ComponentCard>
         </div>

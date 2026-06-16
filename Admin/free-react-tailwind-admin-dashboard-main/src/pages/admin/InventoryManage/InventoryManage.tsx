@@ -11,6 +11,7 @@ import { message } from "antd";
 import BasicTableInventory from "../../../components/tables/BasicTables/BasicTableInventory";
 import { Minus, Plus } from "lucide-react";
 import useSWR from "swr";
+import { useSearchParams } from "react-router";
 
 type FormDataType = {
   id?: number; // optional (if sometimes missing)
@@ -21,7 +22,7 @@ type FormDataType = {
 export default function InventoryManage() {
   const [messageApi, contextHolder] = message.useMessage();
   const [addInventoryItem, setAddInventoryItem] = useState(false);
-  const [pageCount, setPageCount] = useState<number>(1);
+  const [searchParams] = useSearchParams();
 
   const [id, setId] = useState<number>();
   const [formData, setFormData] = useState<FormDataType>({
@@ -40,30 +41,24 @@ export default function InventoryManage() {
     data: inventoryList,
     isLoading: inventoryLoding,
     mutate,
-  } = useSWR(`api/v2/inventory/item?page=${pageCount}`, getFetcher);
+  } = useSWR(`api/v2/inventory/item?${searchParams.toString()}`, getFetcher);
 
   // create inventory
   const { trigger: create } = useSWRMutation(
     "api/v2/inventory/item",
-    (url, { arg }) => postFetcher(url, arg)
+    (url, { arg }) => postFetcher(url, arg),
   );
 
   // Update purchaseList
 
   const { trigger: update } = useSWRMutation(
     "api/v2/inventory/item",
-    (url, { arg }) => putFetcher(url, arg)
+    (url, { arg }) => putFetcher(url, arg),
   );
-  if (inventoryLoding) {
-    console.log("loading", inventoryLoding);
-  }
   // if (vendorLoading) {
   //   return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
   // }
 
-  const handleChildData = (data: any) => {
-    setPageCount(data);
-  };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -90,7 +85,7 @@ export default function InventoryManage() {
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
 
@@ -270,7 +265,6 @@ export default function InventoryManage() {
         <BasicTableInventory
           inventoryList={inventoryList}
           onEdit={handleEdit}
-          onSendData={handleChildData}
           mutate={mutate}
         />
       </ComponentCard>

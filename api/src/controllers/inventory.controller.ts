@@ -346,8 +346,52 @@ export const getSingleAmcItem = asyncErrorHandler(async (req, res) => {
 export const getAmcListItems = asyncErrorHandler(async (req, res) => {
   const { TO_STRING } = parsePagination(req);
 
+  const search = req.query.search?.toString() ?? "";
+  const searchBy = req.query.search_by?.toString() ?? "product_name";
+  const expiryFrom = req.query.expiry_from?.toString() ?? "";
+  const expiryTo = req.query.expiry_to?.toString() ?? "";
+  const renewalFrom = req.query.renewal_from?.toString() ?? "";
+  const renewalTo = req.query.renewal_to?.toString() ?? "";
+
+  const ALLOWED_SEARCH_COLS: Record<string, string> = {
+    product_name: "product_name",
+    company_name: "company_name",
+  };
+
+  const conditions: string[] = [];
+  const filterValues: string[] = [];
+  let pNum = 1;
+
+  if (search) {
+    const col = ALLOWED_SEARCH_COLS[searchBy] ?? "product_name";
+    conditions.push(`${col} ILIKE '%' || $${pNum++} || '%'`);
+    filterValues.push(search);
+  }
+
+  if (expiryFrom) {
+    conditions.push(`expiry_date >= $${pNum++}`);
+    filterValues.push(expiryFrom);
+  }
+
+  if (expiryTo) {
+    conditions.push(`expiry_date <= $${pNum++}`);
+    filterValues.push(expiryTo);
+  }
+
+  if (renewalFrom) {
+    conditions.push(`renewal_date >= $${pNum++}`);
+    filterValues.push(renewalFrom);
+  }
+
+  if (renewalTo) {
+    conditions.push(`renewal_date <= $${pNum++}`);
+    filterValues.push(renewalTo);
+  }
+
+  const filter = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
   const { rows } = await pool.query(
-    `SELECT 
+    `SELECT
       id,
       product_name,
       company_name,
@@ -356,6 +400,8 @@ export const getAmcListItems = asyncErrorHandler(async (req, res) => {
       TO_CHAR(contract_to, 'FMDD FMMonth, YYYY') AS contract_to,
       TO_CHAR(renewal_date, 'FMDD FMMonth, YYYY') AS renewal_date,
       TO_CHAR(expiry_date, 'FMDD FMMonth, YYYY') AS expiry_date
-     FROM amc_list ${TO_STRING}`);
-  res.status(200).json(new ApiResponse(200, "Amc List", rows))
+     FROM amc_list ${filter} ORDER BY id DESC ${TO_STRING}`,
+    filterValues
+  );
+  res.status(200).json(new ApiResponse(200, "Amc List", rows));
 })

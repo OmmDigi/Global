@@ -19,6 +19,7 @@ export const VGetSessionList = Joi.object({
   fields: Joi.string().optional(),
   session_id: Joi.number().optional(),
   page: Joi.number().optional(),
+  search: Joi.string().optional(),
   limit: Joi.number().optional(),
   is_active: Joi.bool().optional(),
   course_id: Joi.number().optional(),

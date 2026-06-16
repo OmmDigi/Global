@@ -9,6 +9,7 @@ import { getFetcher, postFetcher, putFetcher } from "../../../api/fatcher";
 import { message } from "antd";
 import useSWR, { mutate } from "swr";
 import BasicTableVendor from "../../../components/tables/BasicTables/BasicTableVendor";
+import { useSearchParams } from "react-router";
 
 type FormDataType = {
   id?: number; // optional (if sometimes missing)
@@ -20,6 +21,7 @@ type FormDataType = {
 export default function VendorManage() {
   const [messageApi, contextHolder] = message.useMessage();
   const [id, setId] = useState<number>(0);
+  const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState<FormDataType>({
     name: "",
     service_type: "",
@@ -29,13 +31,13 @@ export default function VendorManage() {
 
   //   create Seaaion
   const { trigger: create } = useSWRMutation("api/v1/vendor", (url, { arg }) =>
-    postFetcher(url, arg)
+    postFetcher(url, arg),
   );
 
   //   get vendorList
   const { data: vendorList, isLoading: vendorLoading } = useSWR(
-    "api/v1/vendor",
-    getFetcher
+    `api/v1/vendor?${searchParams.toString()}`,
+    getFetcher,
   );
 
   //   get single data
@@ -48,11 +50,8 @@ export default function VendorManage() {
   //   get updated data
   const { trigger: update } = useSWRMutation(
     "api/v1/course/vendor",
-    (url, { arg }) => putFetcher(url, arg)
+    (url, { arg }) => putFetcher(url, arg),
   );
-  if (vendorLoading) {
-    return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
-  }
 
   const handleEdit = async (id: number) => {
     try {
@@ -76,7 +75,7 @@ export default function VendorManage() {
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -247,11 +246,17 @@ export default function VendorManage() {
                 </div>
               </form>
             </div>
-            <BasicTableVendor
-              sessionList={vendorList}
-              onEdit={handleEdit}
-              // onActive={handleActive}
-            />
+            {vendorLoading ? (
+              <div className="text-gray-800 dark:text-gray-200">
+                Loading ...
+              </div>
+            ) : (
+              <BasicTableVendor
+                sessionList={vendorList}
+                onEdit={handleEdit}
+                // onActive={handleActive}
+              />
+            )}
           </ComponentCard>
         </div>
       </div>

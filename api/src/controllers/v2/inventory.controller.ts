@@ -156,6 +156,41 @@ export const deleteInventoryItemV2 = asyncErrorHandler(async (req, res) => {
 
 export const getInventoryItemInfo = asyncErrorHandler(async (req, res) => {
   const { TO_STRING } = parsePagination(req);
+
+  const search = req.query.search?.toString() ?? "";
+  const searchBy = req.query.search_by?.toString() ?? "item_name";
+  const dateFrom = req.query.date_from?.toString() ?? "";
+  const dateTo = req.query.date_to?.toString() ?? "";
+
+  const ALLOWED_SEARCH_COLS: Record<string, string> = {
+    item_name: "ii.item_name",
+    vendor_name: "v.name",
+  };
+
+  const whereConditions: string[] = [];
+  const havingConditions: string[] = [];
+  const filterValues: string[] = [];
+  let pNum = 1;
+
+  if (search) {
+    const col = ALLOWED_SEARCH_COLS[searchBy] ?? "ii.item_name";
+    whereConditions.push(`${col} ILIKE '%' || $${pNum++} || '%'`);
+    filterValues.push(search);
+  }
+
+  if (dateFrom) {
+    havingConditions.push(`MAX(it.transaction_date) >= $${pNum++}`);
+    filterValues.push(dateFrom);
+  }
+
+  if (dateTo) {
+    havingConditions.push(`MAX(it.transaction_date) <= $${pNum++}`);
+    filterValues.push(dateTo);
+  }
+
+  const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(" AND ")}` : "";
+  const havingClause = havingConditions.length > 0 ? `HAVING ${havingConditions.join(" AND ")}` : "";
+
   const { rows } = await pool.query(
     `
     SELECT
@@ -177,12 +212,17 @@ export const getInventoryItemInfo = asyncErrorHandler(async (req, res) => {
     LEFT JOIN vendor v
     ON v.id = it.vendor_id
 
+    ${whereClause}
+
     GROUP BY v.id, it.vendor_id, ii.id
+
+    ${havingClause}
 
     ORDER BY ii.id DESC
 
     ${TO_STRING}
-    `
+    `,
+    filterValues
   );
 
   res.status(200).json(new ApiResponse(200, "Inventory Item List", rows));

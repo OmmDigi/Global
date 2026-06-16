@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -10,6 +11,7 @@ import useSWRMutation from "swr/mutation";
 import { deleteFetcher } from "../../../api/fatcher";
 import { message } from "antd";
 import { mutate } from "swr";
+import { useSearchParams } from "react-router";
 
 
 interface IProps {
@@ -17,19 +19,24 @@ interface IProps {
   onEdit: (id: number) => void;
 }
 
-// Define the table data using the interface
+export default function BasicTableVendor({ sessionList, onEdit }: IProps) {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchInput, setSearchInput] = useState(searchParams.get("search") ?? "");
 
-export default function BasicTableVendor({
-  sessionList,
-  onEdit,
-}: // onActive,
-IProps) {
-
-  // const onShowSizeChange: PaginationProps["onShowSizeChange"] = (
-  //   current,
-  //   pageSize
-  // ) => {
-  // };
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        if (searchInput) {
+          next.set("search", searchInput);
+        } else {
+          next.delete("search");
+        }
+        return next;
+      });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   const { trigger: deleteUser } = useSWRMutation(
     "api/v1/vendor",
@@ -49,6 +56,15 @@ IProps) {
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
+      <div className="p-4">
+        <input
+          type="text"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          placeholder="Search by vendor name..."
+          className="w-full max-w-sm border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-700 dark:text-gray-300 dark:bg-gray-900 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
       <div className="max-w-full overflow-x-auto">
         <Table>
           {/* Table Header */}
@@ -58,7 +74,7 @@ IProps) {
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Session name
+                Vendor name
               </TableCell>
 
               <TableCell

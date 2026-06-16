@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useSearchParams } from "react-router";
 import DatePicker from "react-datepicker";
 import { message } from "antd";
 import useSWR from "swr";
@@ -11,30 +11,45 @@ import ComponentCard from "../../../components/common/ComponentCard";
 import BasicTablePayments from "../../../components/tables/BasicTables/BasicTablePayments";
 import { getFetcher, patchFetcher } from "../../../api/fatcher";
 
+type Mode = "Online" | "Offline" | "Both";
+
 export default function Payments() {
   const [messageApi, contextHolder] = message.useMessage();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [mode, setMode] = useState<"Online" | "Offline" | "Both">("Online");
-  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
-    null,
-    null,
-  ]);
-  const [startDate, endDate] = dateRange;
-  const [page, setPage] = useState(1);
+  const mode = (searchParams.get("mode") as Mode) ?? "Online";
+  const page = Number(searchParams.get("page") ?? "1");
+  const fromDate = searchParams.get("from_date");
+  const toDate = searchParams.get("to_date");
+
+  const startDate = fromDate ? dayjs(fromDate).toDate() : null;
+  const endDate = toDate ? dayjs(toDate).toDate() : null;
+
+  const updateParams = (updates: Record<string, string | null>) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      for (const [key, val] of Object.entries(updates)) {
+        if (val === null) next.delete(key);
+        else next.set(key, val);
+      }
+      return next;
+    });
+  };
 
   const buildQuery = () => {
     const params = new URLSearchParams();
     params.set("mode", mode);
     params.set("page", String(page));
-    if (startDate)
-      params.set("from_date", dayjs(startDate).format("YYYY-MM-DD"));
-    if (endDate) params.set("to_date", dayjs(endDate).format("YYYY-MM-DD"));
+    if (fromDate) params.set("from_date", fromDate);
+    if (toDate) params.set("to_date", toDate);
     return params.toString();
   };
 
   const swrKey = `api/v1/payment/list?${buildQuery()}`;
-
-  const { data, mutate } = useSWR(swrKey, getFetcher);
+  console.log(swrKey);
+  const { data, mutate } = useSWR(swrKey, getFetcher, {
+    revalidateOnFocus: false,
+  });
 
   const { trigger: updateBillNo } = useSWRMutation(
     "api/v1/payment/bill-no",
@@ -42,20 +57,21 @@ export default function Payments() {
       patchFetcher(url, arg),
   );
 
-  const handleModeChange = (newMode: "Online" | "Offline" | "Both") => {
-    setMode(newMode);
-    setPage(1);
+  const handleModeChange = (newMode: Mode) => {
+    updateParams({ mode: newMode, page: "1" });
   };
 
   const handleDateChange = (range: [Date | null, Date | null]) => {
-    setDateRange(range);
-    setPage(1);
+    const [start, end] = range;
+    updateParams({
+      from_date: start ? dayjs(start).format("YYYY-MM-DD") : null,
+      to_date: end ? dayjs(end).format("YYYY-MM-DD") : null,
+      page: "1",
+    });
   };
 
   const handleClearFilters = () => {
-    setDateRange([null, null]);
-    setMode("Online");
-    setPage(1);
+    setSearchParams({ mode: "Online", page: "1" });
   };
 
   const handleUpdateBillNo = async (id: number, bill_no: string) => {
@@ -139,7 +155,7 @@ export default function Payments() {
             <div className="flex items-center justify-center gap-2 mt-4">
               <button
                 disabled={page === 1}
-                onClick={() => setPage((p) => p - 1)}
+                onClick={() => updateParams({ page: String(page - 1) })}
                 className="px-3 py-1.5 text-sm rounded border border-gray-200 dark:border-white/[0.1] disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-white/[0.05] dark:text-white"
               >
                 Prev
@@ -149,7 +165,7 @@ export default function Payments() {
               </span>
               <button
                 disabled={page === totalPages}
-                onClick={() => setPage((p) => p + 1)}
+                onClick={() => updateParams({ page: String(page + 1) })}
                 className="px-3 py-1.5 text-sm rounded border border-gray-200 dark:border-white/[0.1] disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-white/[0.05] dark:text-white"
               >
                 Next

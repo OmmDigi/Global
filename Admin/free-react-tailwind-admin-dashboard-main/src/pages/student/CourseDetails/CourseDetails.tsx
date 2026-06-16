@@ -743,7 +743,6 @@ export default function CourseDetails() {
                                                   setSelectedMonths(
                                                     filterSelectedMonths,
                                                   );
-
                                                   setEnteredAmounts(
                                                     (prev: any) => ({
                                                       ...prev,

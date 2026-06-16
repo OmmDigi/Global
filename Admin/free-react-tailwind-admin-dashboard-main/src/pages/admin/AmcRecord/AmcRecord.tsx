@@ -19,6 +19,7 @@ import useSWRMutation from "swr/mutation";
 import useSWR, { mutate } from "swr";
 import { message } from "antd";
 import BasicTableAmc from "../../../components/tables/BasicTables/BasicTableAmc";
+import { useSearchParams } from "react-router";
 
 type FormDataType = {
   id?: number; // optional (if sometimes missing)
@@ -34,7 +35,7 @@ type FormDataType = {
 export default function AmcRecord() {
   const [messageApi, contextHolder] = message.useMessage();
   const [amcRecord, setAmcRecord] = useState(false);
-  const [pageCount, setPageCount] = useState<number>(1);
+  const [searchParams] = useSearchParams();
 
   // const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
   //   null,
@@ -64,9 +65,9 @@ export default function AmcRecord() {
     (url, { arg }) => postFetcher(url, arg)
   );
 
-  // get purchaseList
+  // get amcList
   const { data: amcList } = useSWR(
-    `api/v1/inventory/amc?page=${pageCount}`,
+    `api/v1/inventory/amc?${searchParams.toString()}`,
     getFetcher
   );
 
@@ -77,9 +78,6 @@ export default function AmcRecord() {
     (url, { arg }) => putFetcher(url, arg)
   );
 
-  const handleChildData = (data: any) => {
-    setPageCount(data);
-  };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -416,7 +414,6 @@ export default function AmcRecord() {
             <BasicTableAmc
               amcList={amcList}
               onEdit={handleEdit}
-              onSendData={handleChildData}
             />
           </ComponentCard>
         </div>

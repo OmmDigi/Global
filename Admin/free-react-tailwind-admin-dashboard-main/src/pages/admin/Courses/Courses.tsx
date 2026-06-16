@@ -9,6 +9,7 @@ import { getFetcher, postFetcher, putFetcher } from "../../../api/fatcher";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 import { message } from "antd";
+import { useSearchParams } from "react-router";
 
 type FormDataType = {
   id?: number; // optional (if sometimes missing)
@@ -27,7 +28,8 @@ type FormDataType = {
 export default function Courses() {
   const [messageApi, contextHolder] = message.useMessage();
   const [id, setId] = useState<number>();
-  const [pageCount, setPageCount] = useState<number>(1);
+
+  const [searchParams] = useSearchParams();
 
   const [formData, setFormData] = useState<FormDataType>({
     // id: 0,
@@ -48,7 +50,7 @@ export default function Courses() {
 
   // create course
   const { trigger: create } = useSWRMutation("api/v1/course", (url, { arg }) =>
-    postFetcher(url, arg)
+    postFetcher(url, arg),
   );
 
   // get course list
@@ -56,30 +58,23 @@ export default function Courses() {
     data: courseList,
     isLoading: courseLoading,
     mutate,
-  } = useSWR(`api/v1/course?page=${pageCount}`, getFetcher);
+  } = useSWR(`api/v1/course?${searchParams.toString()}`, getFetcher);
 
   //  get fees head
   const { data: feehead, isLoading: feeheadLoading } = useSWR(
     "api/v1/course/fee-head",
-    getFetcher
+    getFetcher,
   );
 
   // edit course
   const { trigger: update } = useSWRMutation("api/v1/course", (url, { arg }) =>
-    putFetcher(url, arg)
+    putFetcher(url, arg),
   );
-  if (courseLoading) {
-    return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
-  }
-
-  if (feeheadLoading) {
-    return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
-  }
 
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -87,9 +82,7 @@ export default function Courses() {
       [name]: value,
     }));
   };
-  const handleChildData = (data: any) => {
-    setPageCount(data);
-  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -232,10 +225,18 @@ export default function Courses() {
     setFormData((prev) => ({
       ...prev,
       fee_structure: prev.fee_structure.map((entry, i) =>
-        i === index ? { ...entry, [field]: value } : entry
+        i === index ? { ...entry, [field]: value } : entry,
       ),
     }));
   };
+
+  // if (courseLoading) {
+  //   return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
+  // }
+
+  // if (feeheadLoading) {
+  //   return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
+  // }
 
   return (
     <div>
@@ -309,7 +310,7 @@ export default function Courses() {
                             handleChangeEntries(
                               index,
                               "fee_head_id",
-                              e.target.value
+                              e.target.value,
                             )
                           }
                           className="w-auto px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
@@ -344,7 +345,7 @@ export default function Courses() {
                             handleChangeEntries(
                               index,
                               "min_amount",
-                              e.target.value
+                              e.target.value,
                             )
                           }
                           className="flex-1 border px-3 py-1 rounded-md"
@@ -358,7 +359,7 @@ export default function Courses() {
                             handleChangeEntries(
                               index,
                               "required",
-                              e.target.value
+                              e.target.value,
                             )
                           }
                           className="w-auto px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
@@ -414,12 +415,17 @@ export default function Courses() {
                 </div>
               </form>
             </div>
-            <BasicTableCourses
-              courseList={courseList}
-              onEdit={handleEdit}
-              onActive={handleActive}
-              onSendData={handleChildData}
-            />
+            {courseLoading ? (
+              <div className="text-gray-800 dark:text-gray-200">
+                Loading ...
+              </div>
+            ) : (
+              <BasicTableCourses
+                courseList={courseList}
+                onEdit={handleEdit}
+                onActive={handleActive}
+              />
+            )}
           </ComponentCard>
         </div>
       </div>

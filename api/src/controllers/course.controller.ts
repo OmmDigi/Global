@@ -336,14 +336,18 @@ export const getCourseList = asyncErrorHandler(async (req, res) => {
   const { TO_STRING } = parsePagination(req);
 
   // filtes
-  let filter = "";
+  let filter = "WHERE 1=1";
   const filterValues: string[] = [];
   let pNum = 1;
 
   if (typeof value.is_active !== "undefined") {
-    filter += `WHERE c.is_active = $${pNum}`;
-    pNum++;
+    filter += ` AND c.is_active = $${pNum++}`;
     filterValues.push(value.is_active);
+  }
+
+  if (value.search) {
+    filter += ` AND c.name ILIKE '%' || $${pNum++} || '%'`;
+    filterValues.push(value.search);
   }
 
   const { rows } = await pool.query(
