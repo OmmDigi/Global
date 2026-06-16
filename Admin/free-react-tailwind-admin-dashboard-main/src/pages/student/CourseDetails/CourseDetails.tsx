@@ -281,6 +281,58 @@ export default function CourseDetails() {
   //   e.preventDefault();
   // };
 
+  const onPaymentMonthDateChange = (date: Date | null, item: any) => {
+    if (!date) return;
+    const formatted = dayjs(date).format("YYYY-MM");
+
+    const courseStartDate = feesStructure?.data?.course_start_date;
+    if (courseStartDate) {
+      const courseStartMonth = dayjs(courseStartDate).format("YYYY-MM");
+      if (formatted < courseStartMonth) {
+        return messageApi.error(
+          `Your course starts from ${dayjs(courseStartDate).format("MMMM YYYY")}. You cannot pay for an earlier month.`,
+        );
+      }
+    }
+
+    const lastSelectedMonth = selectedMonths[selectedMonths.length - 1];
+    const courseStartMonthMinus1 = courseStartDate
+      ? dayjs(courseStartDate).subtract(1, "month").format("YYYY-MM")
+      : undefined;
+    const referenceMonth = lastSelectedMonth
+      ? dayjs(lastSelectedMonth).format("YYYY-MM")
+      : (paidMonths[paidMonths.length - 1] ?? courseStartMonthMinus1);
+    if (referenceMonth && monthsDiffrence(referenceMonth, formatted) > 1) {
+      const lastMonthName = dayjs(referenceMonth).format("MMMM YYYY");
+      const expectedNextMonth = dayjs(referenceMonth)
+        .add(1, "month")
+        .format("MMMM YYYY");
+      const pickedMonthName = dayjs(formatted).format("MMMM YYYY");
+      return messageApi.warning(
+        `Cannot skip months. Last month: "${lastMonthName}", you picked "${pickedMonthName}". Next allowed: "${expectedNextMonth}"`,
+      );
+    }
+
+    if (paidMonths.includes(formatted)) {
+      return messageApi.warning(
+        `You already paid for "${dayjs(date).format("MMMM")}" month`,
+      );
+    }
+
+    const already = selectedMonths.some(
+      (m) => dayjs(m).format("YYYY-MM") === formatted,
+    );
+
+    if (!already) {
+      setSelectedMonths((prev) => [...prev, date]);
+      setEnteredAmounts((prev: any) => ({
+        ...prev,
+        [item.fee_head_id]:
+          item.min_amount * Math.max(1, selectedMonths.length + 1),
+      }));
+    }
+  };
+
   return (
     <>
       {contextHolder}
@@ -658,58 +710,9 @@ export default function CourseDetails() {
                                       <div className="flex items-center gap-2">
                                         <DatePicker
                                           selected={null}
-                                          onChange={(date: Date | null) => {
-                                            if (!date) return;
-                                            const formatted =
-                                              dayjs(date).format("YYYY-MM");
-
-                                            const lastSelectedMonth =
-                                              selectedMonths[selectedMonths.length - 1];
-                                            const referenceMonth =
-                                              lastSelectedMonth
-                                                ? dayjs(lastSelectedMonth).format("YYYY-MM")
-                                                : paidMonths[paidMonths.length - 1];
-                                            if (monthsDiffrence(referenceMonth, formatted) > 1) {
-                                              const lastMonthName = dayjs(referenceMonth).format("MMMM YYYY");
-                                              const expectedNextMonth = dayjs(referenceMonth).add(1, "month").format("MMMM YYYY");
-                                              const pickedMonthName = dayjs(formatted).format("MMMM YYYY");
-                                              return messageApi.warning(
-                                                `Cannot skip months. Last month: "${lastMonthName}", you picked "${pickedMonthName}". Next allowed: "${expectedNextMonth}"`,
-                                              );
-                                            }
-
-                                            if (
-                                              paidMonths.includes(formatted)
-                                            ) {
-                                              return messageApi.warning(
-                                                `You already paid for "${dayjs(date).format("MMMM")}" month`,
-                                              );
-                                            }
-
-                                            const already = selectedMonths.some(
-                                              (m) =>
-                                                dayjs(m).format("YYYY-MM") ===
-                                                formatted,
-                                            );
-
-                                            if (!already) {
-                                              setSelectedMonths((prev) => [
-                                                ...prev,
-                                                date,
-                                              ]);
-                                              setEnteredAmounts(
-                                                (prev: any) => ({
-                                                  ...prev,
-                                                  [item.fee_head_id]:
-                                                    item.min_amount *
-                                                    Math.max(
-                                                      1,
-                                                      selectedMonths.length + 1,
-                                                    ),
-                                                }),
-                                              );
-                                            }
-                                          }}
+                                          onChange={(date: Date | null) =>
+                                            onPaymentMonthDateChange(date, item)
+                                          }
                                           // filterDate={(date) =>
                                           //   !paidMonths.includes(
                                           //     dayjs(date).format("YYYY-MM"),
@@ -740,15 +743,13 @@ export default function CourseDetails() {
                                                   setSelectedMonths(
                                                     filterSelectedMonths,
                                                   );
+
                                                   setEnteredAmounts(
                                                     (prev: any) => ({
                                                       ...prev,
                                                       [item.fee_head_id]:
                                                         item.min_amount *
-                                                        Math.max(
-                                                          1,
-                                                          filterSelectedMonths.length,
-                                                        ),
+                                                        filterSelectedMonths.length,
                                                     }),
                                                   );
                                                 }}

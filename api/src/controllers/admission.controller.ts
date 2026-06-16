@@ -63,6 +63,7 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
   };
 
   let admissionDate: string | null = null;
+  let courseStartingDate: string | null = null;
 
   try {
     await client.query("BEGIN");
@@ -105,6 +106,7 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
       const profileImage = admission_data?.image;
       const email = admission_data?.email;
       admissionDate = admission_data?.date;
+      courseStartingDate = admission_data?.courseStartingDate;
 
       if (!password)
         throw new ErrorHandler(400, "Account password is required", [
@@ -188,6 +190,7 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
       session_id: value.session_id,
       declaration_status: value?.declaration_status,
       admission_from: value.admission_from,
+      courseStartingDate,
     });
 
     await client.query("COMMIT");
@@ -220,6 +223,8 @@ export const updateAdmissionData = asyncErrorHandler(async (req, res) => {
   const password = admission_data?.password;
   const profileImage = admission_data?.image;
   const email = admission_data?.email;
+  const admissionDate = admission_data?.date;
+  const courseStartingDate = admission_data.courseStartingDate;
 
   if (!password)
     throw new ErrorHandler(400, "Account password is required", ["password"]);
@@ -269,6 +274,11 @@ export const updateAdmissionData = asyncErrorHandler(async (req, res) => {
          SET admission_details = EXCLUDED.admission_details
       `,
       [value.form_id, studentId, value.admission_data],
+    );
+
+    await client.query(
+      "UPDATE fillup_forms SET admission_date = $1, course_start_date = $2 WHERE id = $3",
+      [admissionDate, courseStartingDate, value.form_id],
     );
 
     await client.query("COMMIT");
@@ -744,6 +754,7 @@ export const promotAdmission = asyncErrorHandler(
           session_id: value.session_id,
           declaration_status: value?.declaration_status,
           admission_from: "crm",
+          courseStartingDate: null,
         });
       }
 

@@ -27,6 +27,7 @@ type IFillUpForm = {
   client?: PoolClient;
   declaration_status?: number;
   admission_from: string;
+  courseStartingDate: string | null;
 };
 
 export const doAdmission = async (data: IFillUpForm) => {
@@ -49,8 +50,8 @@ export const doAdmission = async (data: IFillUpForm) => {
      INSERT INTO fillup_forms (form_name, student_id, admission_date, admission_from ${
        data.declaration_status !== undefined ? ",declaration_status" : ""
      })
-     VALUES ($1 || nextval('${fillup_form_seq_constant_key}')::TEXT, $2, TO_CHAR($3::date, 'YYYY-MM-DD')::date, $4 ${
-       data.declaration_status !== undefined ? ",$5" : ""
+     VALUES ($1 || nextval('${fillup_form_seq_constant_key}')::TEXT, $2, TO_CHAR($3::date, 'YYYY-MM-DD')::date, $4, TO_CHAR($5::date, 'YYYY-MM-DD')::date ${
+       data.declaration_status !== undefined ? ",$6" : ""
      })
      RETURNING form_name, id
     `,
@@ -60,6 +61,7 @@ export const doAdmission = async (data: IFillUpForm) => {
           data.student_id,
           ADMISSION_DATE_TO_STORE,
           data.admission_from,
+          data.courseStartingDate,
           data.declaration_status,
         ]
       : [
@@ -67,6 +69,7 @@ export const doAdmission = async (data: IFillUpForm) => {
           data.student_id,
           ADMISSION_DATE_TO_STORE,
           data.admission_from,
+          data.courseStartingDate,
         ],
   );
 
@@ -426,6 +429,7 @@ export const getSingleAdmissionData = async (
          SELECT
             ff.id AS form_id,
             ff.form_name,
+            TO_CHAR(ff.course_start_date, 'YYYY-MM-DD') AS course_start_date,
             u.name AS student_name,
             u.email,
             u.ph_no,

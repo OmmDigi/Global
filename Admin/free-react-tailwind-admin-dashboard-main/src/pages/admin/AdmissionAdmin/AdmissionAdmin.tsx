@@ -27,6 +27,7 @@ const year = new Date().getFullYear();
 const initialFormData = {
   courseName: "",
   sessionName: "",
+  courseStartingDate: "",
   batchName: "",
   image: "",
   candidateName: "",
@@ -762,6 +763,21 @@ export default function AdmissionAdmin() {
                                 type="date"
                                 name="date"
                                 value={formData.date}
+                                onChange={handleInputChange}
+                                className="w-48 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              />
+                            </div>
+
+                            <div className="mt-0">
+                              <label className="block text-sm text-start mb-1">
+                                Course Starting Month{" "}
+                                <span className="text-red-500">*</span>
+                              </label>
+                              <input
+                                // ref={admissionDateFormRef}
+                                type="date"
+                                name="courseStartingDate"
+                                value={formData.courseStartingDate}
                                 onChange={handleInputChange}
                                 className="w-48 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                               />

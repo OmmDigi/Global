@@ -590,3 +590,5 @@ CREATE TABLE IF NOT EXISTS late_fine_config (
   applicable_months TEXT[] NOT NULL DEFAULT '{}',
   fine_date INT NOT NULL DEFAULT 10
 );
+
+ALTER TABLE fillup_forms ADD COLUMN IF NOT EXISTS course_start_date DATE;
