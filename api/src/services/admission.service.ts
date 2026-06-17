@@ -45,9 +45,38 @@ export const doAdmission = async (data: IFillUpForm) => {
   const customFormIdPrefix = `GTI/FORM/${date.getFullYear()}/`;
   const fillup_form_seq_constant_key = "fillup_form_seq";
 
+  console.log(
+    data.declaration_status !== undefined
+      ? [
+          customFormIdPrefix,
+          data.student_id,
+          ADMISSION_DATE_TO_STORE,
+          data.admission_from,
+          data.courseStartingDate == "" ? null : data.courseStartingDate,
+          data.declaration_status,
+        ]
+      : [
+          customFormIdPrefix,
+          data.student_id,
+          ADMISSION_DATE_TO_STORE,
+          data.admission_from,
+          data.courseStartingDate == "" ? null : data.courseStartingDate,
+        ],
+  );
+
+  console.log(`
+     INSERT INTO fillup_forms (form_name, student_id, admission_date, admission_from ${
+       data.declaration_status !== undefined ? ",declaration_status" : ""
+     })
+     VALUES ($1 || nextval('${fillup_form_seq_constant_key}')::TEXT, $2, TO_CHAR($3::date, 'YYYY-MM-DD')::date, $4, TO_CHAR($5::date, 'YYYY-MM-DD')::date ${
+       data.declaration_status !== undefined ? ",$6" : ""
+     })
+     RETURNING form_name, id
+    `);
+
   const { rows } = await pgClient.query(
     `
-     INSERT INTO fillup_forms (form_name, student_id, admission_date, admission_from ${
+     INSERT INTO fillup_forms (form_name, student_id, admission_date, admission_from, course_start_date ${
        data.declaration_status !== undefined ? ",declaration_status" : ""
      })
      VALUES ($1 || nextval('${fillup_form_seq_constant_key}')::TEXT, $2, TO_CHAR($3::date, 'YYYY-MM-DD')::date, $4, TO_CHAR($5::date, 'YYYY-MM-DD')::date ${
@@ -61,7 +90,7 @@ export const doAdmission = async (data: IFillUpForm) => {
           data.student_id,
           ADMISSION_DATE_TO_STORE,
           data.admission_from,
-          data.courseStartingDate,
+          data.courseStartingDate == "" ? null : data.courseStartingDate,
           data.declaration_status,
         ]
       : [
@@ -69,7 +98,7 @@ export const doAdmission = async (data: IFillUpForm) => {
           data.student_id,
           ADMISSION_DATE_TO_STORE,
           data.admission_from,
-          data.courseStartingDate,
+          data.courseStartingDate == "" ? null : data.courseStartingDate,
         ],
   );
 
