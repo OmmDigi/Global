@@ -27,7 +27,7 @@ const year = new Date().getFullYear();
 const initialFormData = {
   courseName: "",
   sessionName: "",
-  courseStartingDate: "",
+  courseStartingDate: localStorage.getItem("course_start_date") ?? "",
   batchName: "",
   image: "",
   candidateName: "",
@@ -54,7 +54,7 @@ const initialFormData = {
   },
   place: "",
   name: "",
-  date: `${year}-01-01`,
+  date: localStorage.getItem("admission_date") ?? `${year}-01-01`,
 
   // Next page
   selfAttestedLastResult: [],
@@ -400,7 +400,9 @@ export default function AdmissionAdmin() {
           batchName: formData.batchName,
         });
       }
-      mutateAdmissionList();
+     
+    mutateAdmissionList();
+      
       setCurrent(0);
       jumpToTop(200);
       admissionDateFormRef.current?.focus();
@@ -763,7 +765,13 @@ export default function AdmissionAdmin() {
                                 type="date"
                                 name="date"
                                 value={formData.date}
-                                onChange={handleInputChange}
+                                onChange={(event) => {
+                                  localStorage.setItem(
+                                    "admission_date",
+                                    event.currentTarget.value,
+                                  );
+                                  handleInputChange(event);
+                                }}
                                 className="w-48 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                               />
                             </div>
@@ -778,7 +786,13 @@ export default function AdmissionAdmin() {
                                 type="date"
                                 name="courseStartingDate"
                                 value={formData.courseStartingDate}
-                                onChange={handleInputChange}
+                                onChange={(event) => {
+                                  localStorage.setItem(
+                                    "course_start_date",
+                                    event.currentTarget.value,
+                                  );
+                                  handleInputChange(event);
+                                }}
                                 className="w-48 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                               />
                             </div>
