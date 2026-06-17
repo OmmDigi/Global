@@ -7,7 +7,7 @@ import { FaEye } from "react-icons/fa";
 
 import { Button, message, theme } from "antd";
 import { Minus, Plus, Upload, X } from "lucide-react";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import {
   getFetcher,
   patchFetcher,
@@ -168,13 +168,36 @@ export default function AdmissionAdmin() {
     });
     setSelectedCourseId(courseParams as any);
   }, [window.location.search]);
+  useEffect(() => {
+    if (current != 0) {
+      nextButtonRef.current?.scrollIntoView({
+        behavior: "instant",
+        block: "center",
+      });
+    }
+  }, [current]);
+  useEffect(() => {
+    searchParams.forEach((value, key) => {
+      if (
+        key === "name" ||
+        key === "email" ||
+        key === "ph_no" ||
+        key === "form_no"
+      ) {
+        setSearchBy({
+          type: key,
+          value: value,
+        });
+      }
+    });
+  }, []);
 
   // get Course list
   const { data: courseList } = useSWR(`api/v1/course/dropdown`, getFetcher);
 
   const { data: feeHeadList } = useSWR(`api/v1/course/fee-head`, getFetcher);
 
-  const { data: admissionlist, mutate: mutateAdmissionList } = useSWR(
+  const { data: admissionlist, isLoading: admissionLoading } = useSWR(
     `api/v1/admission?${searchParams.toString()}`,
     getFetcher,
   );
@@ -204,6 +227,21 @@ export default function AdmissionAdmin() {
   //     });
   //   }
   // };
+
+  const { trigger: create } = useSWRMutation(
+    "api/v1/admission/create",
+    (url, { arg }) => postFetcher(url, arg),
+  );
+
+  // update course
+  const { trigger: update } = useSWRMutation(
+    "api/v1/admission/form",
+    (url, { arg }) => putFetcher(url, arg),
+  );
+  const { trigger: update2 } = useSWRMutation(
+    "api/v1/admission",
+    (url, { arg }) => patchFetcher(url, arg),
+  );
 
   const handleFilterSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -256,21 +294,6 @@ export default function AdmissionAdmin() {
       return prev;
     });
   };
-
-  const { trigger: create } = useSWRMutation(
-    "api/v1/admission/create",
-    (url, { arg }) => postFetcher(url, arg),
-  );
-
-  // update course
-  const { trigger: update } = useSWRMutation(
-    "api/v1/admission/form",
-    (url, { arg }) => putFetcher(url, arg),
-  );
-  const { trigger: update2 } = useSWRMutation(
-    "api/v1/admission",
-    (url, { arg }) => patchFetcher(url, arg),
-  );
 
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
@@ -400,9 +423,8 @@ export default function AdmissionAdmin() {
           batchName: formData.batchName,
         });
       }
-     
-    mutateAdmissionList();
-      
+      setMontessoriTeachers(false);
+      mutate(`api/v1/admission?${searchParams.toString()}`);
       setCurrent(0);
       jumpToTop(200);
       admissionDateFormRef.current?.focus();
@@ -459,7 +481,8 @@ export default function AdmissionAdmin() {
         type: "success",
         content: response.message,
       });
-      mutateAdmissionList();
+      // mutateAdmissionList();
+      mutate(`api/v1/admission?${searchParams.toString()}`);
       setId(0);
       setMontessoriTeachers(false);
       setCurrent(0);
@@ -487,7 +510,8 @@ export default function AdmissionAdmin() {
     try {
       const response = await update2(UpdateFormPayload as any);
 
-      mutateAdmissionList();
+      // mutateAdmissionList();
+      mutate(`api/v1/admission?${searchParams.toString()}`);
       messageApi.open({
         type: "success",
         content: response.message,
@@ -525,15 +549,6 @@ export default function AdmissionAdmin() {
 
     setCurrent(current + 1);
   };
-
-  useEffect(() => {
-    if (current != 0) {
-      nextButtonRef.current?.scrollIntoView({
-        behavior: "instant",
-        block: "center",
-      });
-    }
-  }, [current]);
 
   const prev = () => {
     // jumpToTop();
@@ -578,26 +593,12 @@ export default function AdmissionAdmin() {
     value: "",
   });
 
-  useEffect(() => {
-    searchParams.forEach((value, key) => {
-      if (
-        key === "name" ||
-        key === "email" ||
-        key === "ph_no" ||
-        key === "form_no"
-      ) {
-        setSearchBy({
-          type: key,
-          value: value,
-        });
-      }
-    });
-  }, []);
-
   // const clearAdmissionForm = () => {
   //  setFormData(initialFormData);
   // };
-
+  if (admissionLoading) {
+    return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
+  }
   return (
     <>
       <div className="z-50 fixed top-50">{contextHolder}</div>
@@ -2150,7 +2151,7 @@ export default function AdmissionAdmin() {
               onEdit={handleEdit}
               onActive={handleActive}
               // onSendData={handleChildData}
-              pageMutate={mutateAdmissionList}
+              // pageMutate={mutateAdmissionList}
             />
           </ComponentCard>
         </div>
