@@ -603,9 +603,6 @@ export default function AdmissionAdmin() {
   // const clearAdmissionForm = () => {
   //  setFormData(initialFormData);
   // };
-  if (admissionLoading) {
-    return <div className="text-gray-800 dark:text-gray-200">Loading ...</div>;
-  }
   return (
     <>
       <div className="z-50 fixed top-50">{contextHolder}</div>
@@ -2152,14 +2149,20 @@ export default function AdmissionAdmin() {
               </div>
             </form>
             <SelectMultipleStudent />
-            <BasicTableAdmission
-              admissionlist={admissionlist?.data?.admissionData ?? []}
-              totalAmountSum={admissionlist?.data?.totalAmountSum}
-              onEdit={handleEdit}
-              onActive={handleActive}
-              // onSendData={handleChildData}
-              // pageMutate={mutateAdmissionList}
-            />
+            {admissionLoading ? (
+              <div className="text-gray-800 dark:text-gray-200">
+                Loading ...
+              </div>
+            ) : (
+              <BasicTableAdmission
+                admissionlist={admissionlist?.data?.admissionData ?? []}
+                totalAmountSum={admissionlist?.data?.totalAmountSum}
+                onEdit={handleEdit}
+                onActive={handleActive}
+                // onSendData={handleChildData}
+                // pageMutate={mutateAdmissionList}
+              />
+            )}
           </ComponentCard>
         </div>
       </div>
