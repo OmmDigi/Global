@@ -276,9 +276,16 @@ export const updateAdmissionData = asyncErrorHandler(async (req, res) => {
       [value.form_id, studentId, value.admission_data],
     );
 
+    let courseStartingMonth: null | string = null;
+    if (courseStartingDate) {
+      courseStartingMonth = new Date(courseStartingDate)
+        .toISOString()
+        .split("T")[0];
+    }
+
     await client.query(
       "UPDATE fillup_forms SET admission_date = $1, course_start_date = $2 WHERE id = $3",
-      [admissionDate, courseStartingDate, value.form_id],
+      [admissionDate, courseStartingMonth, value.form_id],
     );
 
     await client.query("COMMIT");

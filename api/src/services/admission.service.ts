@@ -41,6 +41,12 @@ export const doAdmission = async (data: IFillUpForm) => {
     data.admissionDate === "" || data.admissionDate == null
       ? date.toISOString().split("T")[0]
       : data.admissionDate; //YYYY-MM-DD
+  let courseStartingMonth: null | string = null;
+  if (data.courseStartingDate) {
+    courseStartingMonth = new Date(data.courseStartingDate)
+      .toISOString()
+      .split("T")[0];
+  }
 
   const customFormIdPrefix = `GTI/FORM/${date.getFullYear()}/`;
   const fillup_form_seq_constant_key = "fillup_form_seq";
@@ -61,7 +67,7 @@ export const doAdmission = async (data: IFillUpForm) => {
           data.student_id,
           ADMISSION_DATE_TO_STORE,
           data.admission_from,
-          data.courseStartingDate == "" ? null : data.courseStartingDate,
+          courseStartingMonth,
           data.declaration_status,
         ]
       : [
@@ -69,7 +75,7 @@ export const doAdmission = async (data: IFillUpForm) => {
           data.student_id,
           ADMISSION_DATE_TO_STORE,
           data.admission_from,
-          data.courseStartingDate == "" ? null : data.courseStartingDate,
+          courseStartingMonth,
         ],
   );
 

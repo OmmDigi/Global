@@ -107,6 +107,13 @@ const initialFormData = {
   password: "",
 };
 
+const initFormFn = () => {
+  const newInit = { ...initialFormData };
+  newInit.courseStartingDate = localStorage.getItem("course_start_date") ?? "";
+  newInit.date = localStorage.getItem("admission_date") ?? `${year}-01-01`;
+  return newInit;
+};
+
 export default function AdmissionAdmin() {
   const [messageApi, contextHolder] = message.useMessage();
   const { token } = theme.useToken();
@@ -417,7 +424,7 @@ export default function AdmissionAdmin() {
       });
       if (response.success === true) {
         setFormData({
-          ...initialFormData,
+          ...initFormFn(),
           courseName: formData.courseName,
           sessionName: formData.sessionName,
           batchName: formData.batchName,
@@ -487,7 +494,7 @@ export default function AdmissionAdmin() {
       setMontessoriTeachers(false);
       setCurrent(0);
       jumpToTop();
-      setFormData(initialFormData);
+      setFormData(initFormFn());
     } catch (error: any) {
       messageApi.open({
         type: "error",
@@ -784,7 +791,7 @@ export default function AdmissionAdmin() {
                               </label>
                               <input
                                 // ref={admissionDateFormRef}
-                                type="date"
+                                type="month"
                                 name="courseStartingDate"
                                 value={formData.courseStartingDate}
                                 onChange={(event) => {
