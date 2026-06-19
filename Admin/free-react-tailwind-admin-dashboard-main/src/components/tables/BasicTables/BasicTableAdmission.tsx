@@ -221,7 +221,7 @@ any) {
                       />
 
                       <button
-                        onClick={() => onEdit(order.form_id)}
+                        onClick={(e) => onEdit(order.form_id, e.clientY)}
                         className="text-blue-500 hover:underline"
                       >
                         Edit

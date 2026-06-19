@@ -1,4 +1,11 @@
-import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
+import {
+  ChangeEvent,
+  FormEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import PageMeta from "../../../components/common/PageMeta";
 import ComponentCard from "../../../components/common/ComponentCard";
@@ -7,7 +14,7 @@ import { FaEye } from "react-icons/fa";
 
 import { Button, message, theme } from "antd";
 import { Minus, Plus, Upload, X } from "lucide-react";
-import useSWR, { mutate } from "swr";
+import useSWR from "swr";
 import {
   getFetcher,
   patchFetcher,
@@ -136,6 +143,7 @@ export default function AdmissionAdmin() {
   const [pageCount] = useState<number>(0);
   const [searchParams, setSearchParams] = useSearchParams();
   const admissionDateFormRef = useRef<HTMLInputElement>(null);
+  const editRowWindowPosition = useRef<number>(0);
 
   useEffect(() => {
     if (course && batch && changeSession && pageCount && formSearch) {
@@ -204,10 +212,19 @@ export default function AdmissionAdmin() {
 
   const { data: feeHeadList } = useSWR(`api/v1/course/fee-head`, getFetcher);
 
-  const { data: admissionlist, isLoading: admissionLoading } = useSWR(
-    `api/v1/admission?${searchParams.toString()}`,
-    getFetcher,
-  );
+  // Force a clean, predictable key string
+  const swrKey = useMemo(() => {
+    const currentParams = searchParams.toString();
+    return currentParams
+      ? `api/v1/admission?${currentParams}`
+      : "api/v1/admission";
+  }, [searchParams]);
+
+  const {
+    data: admissionlist,
+    isLoading: admissionLoading,
+    mutate: boundMutate,
+  } = useSWR(swrKey, getFetcher);
 
   const handleSearch = () => {
     if (filterFormRef.current) {
@@ -431,7 +448,7 @@ export default function AdmissionAdmin() {
         });
       }
       setMontessoriTeachers(false);
-      mutate(`api/v1/admission?${searchParams.toString()}`);
+      await boundMutate();
       setCurrent(0);
       jumpToTop(200);
       admissionDateFormRef.current?.focus();
@@ -446,7 +463,8 @@ export default function AdmissionAdmin() {
     }
   };
 
-  const handleEdit = async (id: number) => {
+  const handleEdit = async (id: number, clientY: number) => {
+    editRowWindowPosition.current = clientY;
     try {
       setId(id);
       jumpToTop();
@@ -488,12 +506,11 @@ export default function AdmissionAdmin() {
         type: "success",
         content: response.message,
       });
-      // mutateAdmissionList();
-      mutate(`api/v1/admission?${searchParams.toString()}`);
+      await boundMutate();
       setId(0);
       setMontessoriTeachers(false);
       setCurrent(0);
-      jumpToTop();
+      jumpToTop(editRowWindowPosition.current);
       setFormData(initFormFn());
     } catch (error: any) {
       messageApi.open({
@@ -517,8 +534,7 @@ export default function AdmissionAdmin() {
     try {
       const response = await update2(UpdateFormPayload as any);
 
-      // mutateAdmissionList();
-      mutate(`api/v1/admission?${searchParams.toString()}`);
+      await boundMutate();
       messageApi.open({
         type: "success",
         content: response.message,
@@ -2149,20 +2165,19 @@ export default function AdmissionAdmin() {
               </div>
             </form>
             <SelectMultipleStudent />
-            {admissionLoading ? (
+            {admissionLoading && (
               <div className="text-gray-800 dark:text-gray-200">
                 Loading ...
               </div>
-            ) : (
-              <BasicTableAdmission
-                admissionlist={admissionlist?.data?.admissionData ?? []}
-                totalAmountSum={admissionlist?.data?.totalAmountSum}
-                onEdit={handleEdit}
-                onActive={handleActive}
-                // onSendData={handleChildData}
-                // pageMutate={mutateAdmissionList}
-              />
             )}
+
+            <BasicTableAdmission
+              admissionlist={admissionlist?.data?.admissionData ?? []}
+              totalAmountSum={admissionlist?.data?.totalAmountSum}
+              onEdit={handleEdit}
+              onActive={handleActive}
+              // onSendData={handleChildData}
+            />
           </ComponentCard>
         </div>
       </div>
