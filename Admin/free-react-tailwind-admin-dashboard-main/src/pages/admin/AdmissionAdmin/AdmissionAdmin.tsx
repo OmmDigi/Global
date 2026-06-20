@@ -213,18 +213,22 @@ export default function AdmissionAdmin() {
   const { data: feeHeadList } = useSWR(`api/v1/course/fee-head`, getFetcher);
 
   // Force a clean, predictable key string
-  const swrKey = useMemo(() => {
-    const currentParams = searchParams.toString();
-    return currentParams
-      ? `api/v1/admission?${currentParams}`
-      : "api/v1/admission";
-  }, [searchParams]);
+  // const swrKey = useMemo(() => {
+  //   const currentParams = searchParams.toString();
+  //   return currentParams
+  //     ? `api/v1/admission?${currentParams}`
+  //     : "api/v1/admission";
+  // }, [searchParams]);
 
   const {
-    data: admissionlist,
-    isLoading: admissionLoading,
-    mutate: boundMutate,
-  } = useSWR(swrKey, getFetcher);
+  data: admissionlist,
+  isLoading: admissionLoading,
+  mutate: boundMutate,
+} = useSWR(['api/v1/admission', searchParams.toString()], ([url, params]) => {
+  // Ensure your fetcher appends the query params correctly
+  const fullUrl = params ? `${url}?${params}` : url;
+  return getFetcher(fullUrl); 
+});
 
   const handleSearch = () => {
     if (filterFormRef.current) {
