@@ -380,14 +380,14 @@ export default function NavComp() {
                         OUR GALLERY
                       </Link>
                     </div> */}
-                    <div className="text-xs font-semibold text-gray-900">
+                    {/* <div className="text-xs font-semibold text-gray-900">
                       <Link
                         href="/courses"
                         className="relative inline-block after:block after:h-[2px] after:bg-blue-600 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 after:origin-left after:mt-.5"
                       >
                         OUR COURSES
                       </Link>
-                    </div>
+                    </div> */}
                     <div className="text-xs font-semibold text-gray-900">
                       <Link
                         href="/contact-us"

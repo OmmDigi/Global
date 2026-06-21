@@ -5,6 +5,9 @@ import Navbar from "@/components/Navbar";
 import React, { Suspense } from "react";
 
 export default async function OurCoursesList() {
+  if(1==1) {
+    return "";
+  }
   const courses = [];
   const ADMISSION_FEE_HEAD_ID = 4;
 
