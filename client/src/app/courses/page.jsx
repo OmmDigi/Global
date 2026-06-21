@@ -11,8 +11,6 @@ export default async function OurCoursesList() {
   const response = await fetch(`${process.env.API_BASE_URL}api/v1/course`);
 
   if (!response.ok) {
-    console.log("ERROR : ");
-    console.log(await response.text());
     return (
       <p className="text-center font-semibold pt-6 text-2xl">
         Unable to get response from server!! try again
