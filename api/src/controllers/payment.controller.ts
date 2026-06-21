@@ -365,11 +365,11 @@ export const checkLateFine = asyncErrorHandler(async (req, res) => {
   const { error, value } = VCheckFine.validate(req.query ?? {});
   if (error) throw new ErrorHandler(400, error.message);
 
-  const { amount } = await checkLateFineService(
+  const { amount, lateFineMonths } = await checkLateFineService(
     Array.isArray(value.pay_month) ? value.pay_month : [value.pay_month],
     value.form_id,
   );
-  res.status(200).json(new ApiResponse(200, "Successfull", { amount }));
+  res.status(200).json(new ApiResponse(200, "Successfull", { amount, lateFineMonths }));
 });
 
 // this is from admin panel only

@@ -40,6 +40,7 @@ export default function CourseDetails() {
   const [isUploading, setIsUploading] = useState(false);
   const [lateFineDialogOpen, setLateFineDialogOpen] = useState(false);
   const [lateFineAmount, setLateFineAmount] = useState(0);
+  const [lateFineMonths, setLateFineMonths] = useState<string[]>([]);
   const [pendingFormData, setPendingFormData] = useState<any>(null);
 
   // const months = useRef<{
@@ -159,7 +160,7 @@ export default function CourseDetails() {
       // )) {
 
       // }
-
+      let lateFineMonthsList : string[] = [];
       if (hasLateFine) {
         const monthlyPayments = fee_structure_info.filter(
           (f) => f.fee_head_id == MONTHLY_PAYMENT,
@@ -172,6 +173,7 @@ export default function CourseDetails() {
           const fineAmount = Number(fineRes?.data?.amount ?? 0);
           if (fineAmount > 0) {
             totalFine += fineAmount;
+            lateFineMonthsList = fineRes?.data?.lateFineMonths ?? []
           }
         } catch {
           // proceed if check fails
@@ -181,6 +183,7 @@ export default function CourseDetails() {
       if (totalFine > 0) {
         setPendingFormData(finalFormData);
         setLateFineAmount(totalFine);
+        setLateFineMonths(lateFineMonthsList);
         setLateFineDialogOpen(true);
         return;
       }
@@ -350,7 +353,9 @@ export default function CourseDetails() {
         <p className="text-gray-700">
           An additional late fine of{" "}
           <span className="font-semibold text-red-500">₹{lateFineAmount}</span>{" "}
-          will be charged with your payment.
+          will be charged with your payment for the month
+          {lateFineMonths.length > 1 ? "s" : ""} of{" "}
+          {lateFineMonths.join(", ")}.
         </p>
         <p className="text-gray-500 mt-2">Do you wish to proceed?</p>
       </Modal>

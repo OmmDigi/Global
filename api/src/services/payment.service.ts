@@ -128,6 +128,7 @@ export const checkLateFineService = async (
 ): Promise<{
   amount: number;
   fineAmount: number;
+  lateFineMonths : string[]
 }> => {
   // payMonths: array of "YYYY-MM" strings
 
@@ -143,6 +144,7 @@ export const checkLateFineService = async (
     return {
       amount: 0,
       fineAmount: lateFineConfig.rows[0].amount,
+      lateFineMonths : []
     };
   }
 
@@ -161,7 +163,7 @@ export const checkLateFineService = async (
   const currentAbsMonth = currentYear * 12 + currentMonth;
 
   let totalFine = 0;
-
+  let lateFineMonths : string[] = [];
   for (const payMonthTxt of payMonths) {
     const d = new Date(payMonthTxt);
     const payMonth = d.getMonth() + 1;
@@ -175,15 +177,17 @@ export const checkLateFineService = async (
       // console.log(config.applicable_months.includes(MONTHS[payMonth - 1]));
       if (config.applicable_months.includes(MONTHS[payMonth - 1])) {
         totalFine += Number(config.amount);
+        lateFineMonths.push(MONTHS[payMonth - 1])
       }
     } else if (payAbsMonth === currentAbsMonth) {
       // Current month → fine only if past fine_date
       if (now.getDate() > config.fine_date) {
         totalFine += Number(config.amount);
+        lateFineMonths.push(MONTHS[payMonth - 1])
       }
     }
     // Future month → no fine
   }
 
-  return { amount: totalFine, fineAmount: Number(config.amount) };
+  return { amount: totalFine, fineAmount: Number(config.amount), lateFineMonths : lateFineMonths };
 };
