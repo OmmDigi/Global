@@ -55,9 +55,9 @@ export default async function OurCoursesList() {
                   <th className="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">
                     Duration
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">
+                  {/*<th className="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">
                     Admission Fees
-                  </th>
+                  </th> */}
                   <th className="px-6 py-4 text-center text-sm font-semibold uppercase tracking-wider">
                     Action
                   </th>
@@ -77,9 +77,11 @@ export default async function OurCoursesList() {
                     <td className="px-6 py-4 text-gray-700">
                       {course.duration}
                     </td>
+                    {/*
                     <td className="px-6 py-4 text-gray-900 font-semibold">
                       {course.fee}
                     </td>
+                    */}
                     <td className="px-6 py-4 text-center">
                       <Suspense>
                         <BookNowCourseButton courseId={course.id} />
