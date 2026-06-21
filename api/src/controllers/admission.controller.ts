@@ -1,4 +1,5 @@
 import { pool } from "../config/db";
+import { ADMISSION_FEE_HEAD_ID, ADMISSION_FORM_FEE_HEAD_ID } from "../constant";
 import asyncErrorHandler from "../middlewares/asyncErrorHandler";
 import {
   doAdmission,
@@ -200,7 +201,7 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
         form_id,
         course_name: rows[0].name,
         fee_structure: fee_structure.filter(
-          (item) => item.fee_head_id == 1 || item.fee_head_id == 3,
+          (item) => item.fee_head_id == ADMISSION_FORM_FEE_HEAD_ID || item.fee_head_id == ADMISSION_FEE_HEAD_ID,
         ),
       }),
     );

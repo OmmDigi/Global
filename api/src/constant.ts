@@ -50,6 +50,7 @@ avilable_permissions.set("17", "Payments");
 export const MONTHLY_PAYMENT_HEAD_ID = 4;
 export const LATE_FINE_FEE_HEAD_ID = 5;
 export const ADMISSION_FEE_HEAD_ID = 3;
+export const ADMISSION_FORM_FEE_HEAD_ID = 1;
 export const BSS_FEE_HEAD_ID = 3;
 
 export const MONTHS = [

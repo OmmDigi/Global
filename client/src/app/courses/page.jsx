@@ -9,9 +9,9 @@ export default async function OurCoursesList() {
     return "";
   }
   const courses = [];
-  const ADMISSION_FEE_HEAD_ID = 4;
+  const ADMISSION_FEE_HEAD_ID = 3;
 
-  const response = await fetch(`${process.env.API_BASE_URL}api/v1/course`);
+  const response = await fetch(`${process.env.API_BASE_URL}api/v1/course?is_active=true&limit=-1`);
 
   if (!response.ok) {
     return (
