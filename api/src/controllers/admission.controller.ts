@@ -868,3 +868,10 @@ export const changeStudentAdmisionCourse = asyncErrorHandler(
     res.status(200).json(new ApiResponse(200, "Successfully updated!"));
   },
 );
+
+export const deleteSingleForm = asyncErrorHandler(async (req, res) => {
+  await pool.query("DELETE FROM fillup_forms WHERE id = $1", [
+    req.params.form_id,
+  ]);
+  res.status(200).json(new ApiResponse(200, "Form Successfully deleted"));
+});

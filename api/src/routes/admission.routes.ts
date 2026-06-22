@@ -4,6 +4,7 @@ import {
   changeStudentAdmisionCourse,
   createAdmission,
   deleteSingleFeeHeadFromSingleAdmisson,
+  deleteSingleForm,
   getAdmissionFeeHeadHistoryList,
   getAdmissionFeeHeadPrice,
   // downloadDeclarationStatus,
@@ -38,5 +39,9 @@ admissionRoute
   .post("/amount", isAuthorized(6), updateAdmissionFeeHeadAmount)
   .post("/fee-head", isAuthorized(6), modifyFeeHeadOfAdmission)
   .get("/:form_id", isAuthorized(6), getSingleAdmission)
-  .delete("/:form_id/:fee_head_id", isAuthorized(6), deleteSingleFeeHeadFromSingleAdmisson)
-
+  .delete("/:form_id", isAuthorized(6), deleteSingleForm)
+  .delete(
+    "/:form_id/:fee_head_id",
+    isAuthorized(6),
+    deleteSingleFeeHeadFromSingleAdmisson,
+  );

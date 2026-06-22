@@ -16,6 +16,11 @@ import {
   useSelectedForms,
 } from "../../../zustand/useSelectedForms";
 import { emptyOrNull } from "../../../utils/emptyOrNull";
+import useSWRMutation from "swr/mutation";
+import { deleteFetcher } from "../../../api/fatcher";
+import { useState } from "react";
+import { mutate } from "swr";
+import { message } from "antd";
 
 export default function BasicTableAdmission({
   admissionlist,
@@ -29,6 +34,11 @@ any) {
   const { data: selectedForms, addItem, removeItem } = useSelectedForms();
   const selectedFormIds = new Set(selectedForms.map((f) => f.form_id));
 
+  const { trigger: deleteAdmission, isMutating: isDeleting } = useSWRMutation(
+    `api/v1/admission`,
+    (url: any, { arg }: { arg: number }) => deleteFetcher(`${url}/${arg}`),
+  );
+
   const currentPage = parseInt(searchParams.get("page") || "1");
 
   const handleDetailsClick = (id: number) => {
@@ -38,6 +48,24 @@ any) {
       return;
     }
     navigate(`/courseDetailsAdmin/${id}`);
+  };
+
+  const handleDeleteClick = (id: number) => {
+    if (
+      !confirm(
+        "Are you sure you want to delete this form? This action cannot be undone, and the student details cannot be recovered.",
+      )
+    )
+      return;
+
+    deleteAdmission(id)
+      .catch(() => {
+        message.error("Unable to delete form");
+      })
+      .then(() => {
+        message.success("Successfully deleted");
+        mutate(["api/v1/admission", searchParams.toString()]);
+      });
   };
 
   const onCheckBoxChanged = (checked: boolean, data: ISelectedFormData) => {
@@ -215,19 +243,33 @@ any) {
                         }
                       />
 
-                      <button
-                        onClick={(e) => onEdit(order.form_id, e.clientY)}
-                        className="text-blue-500 hover:underline"
-                      >
-                        Edit
-                      </button>
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="flex items-center gap-3.5">
+                          <button
+                            onClick={(e) => onEdit(order.form_id, e.clientY)}
+                            className="text-blue-500 hover:underline"
+                          >
+                            Edit
+                          </button>
 
-                      <button
-                        onClick={() => handleDetailsClick(order.form_id)}
-                        className="text-blue-500 hover:underline"
-                      >
-                        Details
-                      </button>
+                          <button
+                            onClick={() => handleDetailsClick(order.form_id)}
+                            className="text-blue-500 hover:underline"
+                          >
+                            Details
+                          </button>
+                        </div>
+                        {order.total_collection == 0 &&
+                        order.admission_from != "crm" ? (
+                          <button
+                            disabled={isDeleting}
+                            onClick={() => handleDeleteClick(order.form_id)}
+                            className="text-red-500 hover:underline"
+                          >
+                            Delete
+                          </button>
+                        ) : null}
+                      </div>
                     </div>
                   </TableCell>
 
