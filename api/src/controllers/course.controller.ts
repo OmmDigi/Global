@@ -498,11 +498,7 @@ export const getCourseWithBatchSession = asyncErrorHandler(
 
     const userInfo = req?.user_info;
 
-    if (
-      userInfo != undefined &&
-      userInfo.category != "Stuff" &&
-      userInfo.category != "Admin"
-    ) {
+    if (userInfo?.category != "Stuff" && userInfo?.category != "Admin") {
       sessionFilter += " AND s.is_active = true";
       batchFilter += " AND b3.is_active = true";
       courseFilter += " AND c.is_active = true";

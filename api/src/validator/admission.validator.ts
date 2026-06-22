@@ -92,8 +92,8 @@ export const VPromotAdmisson = Joi.object({
   batch_id: Joi.number().required().label("Batch"),
   session_id: Joi.number().required().label("Session"),
 
-  admission_date: Joi.string().required().label("Admission Date"),
-  course_starting_month: Joi.string().required().label("Course Starting Month"),
+  // admission_date: Joi.string().required().label("Admission Date"),
+  // course_starting_month: Joi.string().required().label("Course Starting Month"),
 });
 
 export const VChangeStudentAdmissionCourse = Joi.object({
@@ -102,6 +102,6 @@ export const VChangeStudentAdmissionCourse = Joi.object({
   batch_id: Joi.number().required().label("Batch"),
   session_id: Joi.number().required().label("Session"),
 
-  admission_date: Joi.string().required().label("Admission Date"),
-  course_starting_month: Joi.string().required().label("Course Starting Month"),
+  // admission_date: Joi.string().required().label("Admission Date"),
+  // course_starting_month: Joi.string().required().label("Course Starting Month"),
 });

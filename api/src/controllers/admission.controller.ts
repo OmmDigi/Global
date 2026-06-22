@@ -768,11 +768,11 @@ export const promotAdmission = asyncErrorHandler(
           course_id: value.course_id,
           batch_id: value.batch_id,
           fee_structure,
-          admissionDate: value.admission_date,
+          admissionDate: null,
           session_id: value.session_id,
           declaration_status: value?.declaration_status,
           admission_from: "crm",
-          courseStartingDate: value.course_starting_month,
+          courseStartingDate: null,
         });
       }
 
