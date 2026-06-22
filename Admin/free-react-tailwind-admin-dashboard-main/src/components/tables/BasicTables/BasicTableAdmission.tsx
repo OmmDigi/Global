@@ -40,11 +40,6 @@ any) {
     navigate(`/courseDetailsAdmin/${id}`);
   };
 
-  // const [count, setCount] = useState(1);
-  // useEffect(() => {
-  //   onSendData(count);
-  // }, [count, onSendData]);
-
   const onCheckBoxChanged = (checked: boolean, data: ISelectedFormData) => {
     if (checked) {
       addItem(data);
@@ -252,11 +247,7 @@ any) {
           </TableBody>
         </Table>
         <div className="p-8 flex items-center justify-between">
-          <Pagination
-            // count={count}
-            // onChange={setCount}
-            length={admissionlist.length ?? 1}
-          />
+          <Pagination length={admissionlist.length ?? 1} />
 
           <div className="grid grid-cols-2 gap-2.5 text-white">
             <span>Total Fee : {totalAmountSum?.total_course_fee ?? 0}</span>

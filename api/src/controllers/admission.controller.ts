@@ -201,7 +201,9 @@ export const createAdmission = asyncErrorHandler(async (req, res) => {
         form_id,
         course_name: rows[0].name,
         fee_structure: fee_structure.filter(
-          (item) => item.fee_head_id == ADMISSION_FORM_FEE_HEAD_ID || item.fee_head_id == ADMISSION_FEE_HEAD_ID,
+          (item) =>
+            item.fee_head_id == ADMISSION_FORM_FEE_HEAD_ID ||
+            item.fee_head_id == ADMISSION_FEE_HEAD_ID,
         ),
       }),
     );
@@ -490,7 +492,8 @@ export const getAdmissionFeeHeadPrice = asyncErrorHandler(async (req, res) => {
   const { rows, rowCount } = await pool.query(
     `
     SELECT
-      ffs.amount
+      ffs.amount,
+      ffs.min_amount
     FROM enrolled_courses ec
 
     LEFT JOIN form_fee_structure ffs
@@ -507,7 +510,12 @@ export const getAdmissionFeeHeadPrice = asyncErrorHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, "Form Amount", "0"));
   }
 
-  res.status(200).json(new ApiResponse(200, "Form Amount", rows[0].amount));
+  res.status(200).json(
+    new ApiResponse(200, "Form Amount", {
+      amount: rows[0].amount,
+      min_amount: rows[0].min_amount,
+    }),
+  );
 });
 
 export const updateAdmissionFeeHeadAmount = asyncErrorHandler(
@@ -523,12 +531,14 @@ export const updateAdmissionFeeHeadAmount = asyncErrorHandler(
       await client.query("BEGIN");
 
       await client.query(
-        "INSERT INTO admission_fee_head_amount_history (session_id, fee_head_id, previous_amount, current_amount, course_id, batch_id) VALUES ($1, $2, $3, $4, $5, $6)",
+        "INSERT INTO admission_fee_head_amount_history (session_id, fee_head_id, previous_amount, current_amount, previous_min_amount, current_min_amount, course_id, batch_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
         [
           value.session_id,
           value.fee_head_id,
           value.previous_amount,
           value.current_amount,
+          value.previous_min_amount,
+          value.current_min_amount,
           value.course_id,
           value.batch_id ?? null,
         ],
@@ -594,7 +604,7 @@ export const updateAdmissionFeeHeadAmount = asyncErrorHandler(
           row.form_id,
           value.fee_head_id,
           value.current_amount,
-          value.current_amount,
+          value.current_min_amount,
           true,
         ]),
       );
@@ -758,11 +768,11 @@ export const promotAdmission = asyncErrorHandler(
           course_id: value.course_id,
           batch_id: value.batch_id,
           fee_structure,
-          admissionDate: null,
+          admissionDate: value.admission_date,
           session_id: value.session_id,
           declaration_status: value?.declaration_status,
           admission_from: "crm",
-          courseStartingDate: null,
+          courseStartingDate: value.course_starting_month,
         });
       }
 
@@ -827,10 +837,26 @@ export const changeStudentAdmisionCourse = asyncErrorHandler(
       (_: any, index: number) => `$${index + 3 + 1}`,
     );
 
+    const placeholder2 = uniqueFormIds.map(
+      (_: any, index: number) => `$${index + 2 + 1}`,
+    );
+
+    let courseStartingMonth: string | null = null;
+    if (value.course_starting_month) {
+      courseStartingMonth = new Date(value.course_starting_month)
+        .toISOString()
+        .split("T")[0];
+    }
+
     await doTransition(async (client) => {
       await client.query(
         `UPDATE enrolled_courses SET course_id = $1, batch_id = $2, session_id = $3 WHERE form_id IN (${placeholder})`,
         [value.course_id, value.batch_id, value.session_id, ...uniqueFormIds],
+      );
+
+      await client.query(
+        `UPDATE fillup_forms SET admission_date = TO_CHAR($1::date, 'YYYY-MM-DD')::date, course_start_date = TO_CHAR($2::date, 'YYYY-MM-DD')::date WHERE id IN (${placeholder2})`,
+        [value.admission_date, courseStartingMonth, ...uniqueFormIds],
       );
 
       await client.query(

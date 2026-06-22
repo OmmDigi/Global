@@ -44,6 +44,7 @@ export default function FeesUpdate() {
   const [feeHeadList, setFeeHeadList] = useState<FeeHeadType[]>([]);
 
   const [prevAmount, setPrevAmount] = useState<number | null>(null);
+  const [prevMinAmount, setPrevMinAmount] = useState<number | null>(null);
 
   const [isSubmitting, startSubmitting] = useTransition();
 
@@ -55,18 +56,18 @@ export default function FeesUpdate() {
   //   create amount
   const { trigger: create } = useSWRMutation(
     "api/v1/admission/amount",
-    (url, { arg }) => postFetcher(url, arg)
+    (url, { arg }) => postFetcher(url, arg),
   );
 
   //   get amount list
   const { data: amountList } = useSWR(
     `api/v1/admission/amount/history?page=${pageCount}`,
-    getFetcher
+    getFetcher,
   );
 
   const { data: courseList } = useSWR<CourseListType>(
     `api/v1/course/dropdown`,
-    getFetcher
+    getFetcher,
   );
 
   const handleChildData = (data: any) => {
@@ -76,7 +77,7 @@ export default function FeesUpdate() {
   const handleFeeHeadFilter = async (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { value } = e.target;
     setFeeHead(value);
@@ -85,7 +86,7 @@ export default function FeesUpdate() {
   const handleFormSearch = async () => {
     if (feeHead) {
       const response = await getFetcher(
-        `api/v1/admission/amount/history?fee_head_id=${feeHead}`
+        `api/v1/admission/amount/history?fee_head_id=${feeHead}`,
       );
       if (response) {
         messageApi.open({
@@ -103,7 +104,7 @@ export default function FeesUpdate() {
   };
 
   const handleCourseDropDownChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
+    event: React.ChangeEvent<HTMLSelectElement>,
   ) => {
     const selectedCourseID = parseInt(event.currentTarget.value);
     setSessionFilterList([]);
@@ -133,10 +134,10 @@ export default function FeesUpdate() {
     // }
 
     const selectedCourse = courseList?.data.find(
-      (course) => course.id === selectedCourseID
+      (course) => course.id === selectedCourseID,
     );
     const batches = selectedCourse?.batch.filter(
-      (batch) => batch.session_id === currentSessionId
+      (batch) => batch.session_id === currentSessionId,
     );
 
     setSessionFilterList(selectedCourse ? selectedCourse.session : []);
@@ -144,7 +145,7 @@ export default function FeesUpdate() {
   };
 
   const handleSessionSelectChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
+    event: React.ChangeEvent<HTMLSelectElement>,
   ) => {
     const selectedSessionID = parseInt(event.currentTarget.value);
     setBatchFilterList([]);
@@ -154,18 +155,18 @@ export default function FeesUpdate() {
     setCurrentSessionId(selectedSessionID);
 
     const selectedCourseData = courseList?.data.find(
-      (course) => course.id === selectedCourseId
+      (course) => course.id === selectedCourseId,
     );
 
     const batches = selectedCourseData?.batch.filter(
-      (batch) => batch.session_id === selectedSessionID
+      (batch) => batch.session_id === selectedSessionID,
     );
 
     setBatchFilterList(batches ? batches : []);
   };
 
   const handleBatchSelectChange = async (
-    event: React.ChangeEvent<HTMLSelectElement>
+    event: React.ChangeEvent<HTMLSelectElement>,
   ) => {
     const selectedBatchID = parseInt(event.currentTarget.value);
     setCurrentBatchId(selectedBatchID);
@@ -180,7 +181,7 @@ export default function FeesUpdate() {
   };
 
   const handleNewFeeHeadChange = async (
-    event: React.ChangeEvent<HTMLSelectElement>
+    event: React.ChangeEvent<HTMLSelectElement>,
   ) => {
     const selectedFeeHeadID = parseInt(event.currentTarget.value);
     if (selectedFeeHeadID === 0) return;
@@ -190,9 +191,10 @@ export default function FeesUpdate() {
       const response = await getFetcher(
         `api/v1/admission/amount?fee_head_id=${selectedFeeHeadID}&session_id=${currentSessionId}${
           currentBatchId === -1 ? "" : `&batch_id=${currentBatchId}`
-        }&course_id=${selectedCourseId}`
+        }&course_id=${selectedCourseId}`,
       );
-      setPrevAmount(response?.data || null);
+      setPrevAmount(response?.data?.amount || null);
+      setPrevMinAmount(response?.data?.min_amount ?? null);
     } catch (error) {
       message.error("Error fetching previous amount");
     }
@@ -201,7 +203,11 @@ export default function FeesUpdate() {
   const handleUpdateFeeHeadForm = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    if (!confirm("Are you sure you want to continue the update ?")) return;
+
     const formData = new FormData(e.currentTarget);
+    formData.set("previous_amount", String(prevAmount));
+    formData.set("previous_min_amount", String(prevMinAmount));
     const data = Object.fromEntries(formData.entries());
 
     if (data.batch_id.toString() == "-1") {
@@ -215,8 +221,11 @@ export default function FeesUpdate() {
           type: "success",
           content: response.message,
         });
-        e.currentTarget.reset();
+        setPrevAmount(Number(data.current_amount));
+        setPrevMinAmount(Number(data.current_min_amount));
+        e.currentTarget?.reset();
       } catch (error: any) {
+        console.log("Error ", error);
         messageApi.open({
           type: "error",
           content: error.response?.data?.message
@@ -321,7 +330,7 @@ export default function FeesUpdate() {
                     </select>
                   </div>
 
-                  <div className="w-12/12  mb-4">
+                  {/* <div className="w-12/12  mb-4">
                     <label className="block text-sm text-start mt-1 dark:text-gray-400 text-gray-700 mb-1">
                       Previous Fee
                     </label>
@@ -331,16 +340,37 @@ export default function FeesUpdate() {
                       name="previous_amount"
                       className="w-full px-3 py-3 bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
                     ></input>
-                  </div>
+                  </div> */}
 
                   <div className="w-12/12  mb-4">
                     <label className="block text-sm text-start mt-1 dark:text-gray-400 text-gray-700 mb-1">
-                      Updated Fee
+                      New Amount
                     </label>
                     <input
                       name="current_amount"
                       className="w-full px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
                     ></input>
+                    {prevAmount !== null && (
+                      <p className="mt-1 text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                        <span>⚠</span>
+                        <span>Previous amount: ₹{prevAmount}</span>
+                      </p>
+                    )}
+                  </div>
+                  <div className="w-12/12  mb-4">
+                    <label className="block text-sm text-start mt-1 dark:text-gray-400 text-gray-700 mb-1">
+                      New Min Amount
+                    </label>
+                    <input
+                      name="current_min_amount"
+                      className="w-full px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
+                    ></input>
+                    {prevMinAmount !== null && (
+                      <p className="mt-1 text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                        <span>⚠</span>
+                        <span>Previous min amount: ₹{prevMinAmount}</span>
+                      </p>
+                    )}
                   </div>
                 </div>
 

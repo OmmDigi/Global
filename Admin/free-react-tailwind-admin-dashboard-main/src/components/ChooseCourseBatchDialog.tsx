@@ -2,22 +2,26 @@ import React, { ChangeEvent, useState } from "react";
 import useSWR from "swr";
 import { getFetcher } from "../api/fatcher";
 import Button from "./ui/button/Button";
-import { Loader } from "lucide-react";
+import { Loader, TriangleAlert } from "lucide-react";
 
 interface IProps {
   setIsDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
   onFormSubmit: (
     course_id: number,
     batch_id: number,
-    session_id: number
+    session_id: number,
+    admission_date: string,
+    course_starting_month: string,
   ) => void;
   isFormSubmiting?: boolean;
+  type: "promote" | "move";
 }
 
 export default function ChooseCourseBatchDialog({
   setIsDialogOpen,
   onFormSubmit,
   isFormSubmiting,
+  type,
 }: IProps) {
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   // const [changeSession, setChangeSession] = useState<any>(0);
@@ -25,6 +29,8 @@ export default function ChooseCourseBatchDialog({
     courseName: "",
     sessionName: "",
     batchName: "",
+    admissionDate: "",
+    courseStartingDate: "",
   });
 
   // get Course list
@@ -45,7 +51,7 @@ export default function ChooseCourseBatchDialog({
   };
 
   const handleSessionChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     // setChangeSession(value);
@@ -56,7 +62,7 @@ export default function ChooseCourseBatchDialog({
   };
 
   const handleInputChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     // setBatch(value);
@@ -79,11 +85,17 @@ export default function ChooseCourseBatchDialog({
           onFormSubmit(
             parseInt(formData.courseName),
             parseInt(formData.batchName),
-            parseInt(formData.sessionName)
+            parseInt(formData.sessionName),
+            formData.admissionDate,
+            formData.courseStartingDate,
           );
         }
       }}
     >
+      <h1 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <TriangleAlert className="text-yellow-500" />
+        {type == "move" ? "Move" : "Copy"}
+      </h1>
       <div className="mb-4">
         <label className="block text-lg font-bold text-gray-700 mb-1">
           Choose your Courses <span className="text-red-500">*</span>
@@ -103,7 +115,7 @@ export default function ChooseCourseBatchDialog({
         </select>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 mb-10">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 mb-4">
         <div>
           <label className="block text-sm font-bold text-gray-700 mb-1">
             Choose your Session <span className="text-red-500">*</span>
@@ -147,6 +159,32 @@ export default function ChooseCourseBatchDialog({
         </div>
       </div>
 
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 mb-10">
+        <div>
+          <label className="block text-sm font-bold text-gray-700 mb-1">
+            Admission Date <span className="text-red-500">*</span>
+          </label>
+          <input
+            name="admissionDate"
+            onChange={handleInputChange}
+            type="date"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-bold text-gray-700 mb-1">
+            Course Starting Month <span className="text-red-500">*</span>
+          </label>
+          <input
+            name="courseStartingDate"
+            onChange={handleInputChange}
+            type="month"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+      </div>
+
       <div className="flex items-center justify-between">
         <Button disabled={isFormSubmiting}>
           {isFormSubmiting ? (
@@ -160,7 +198,7 @@ export default function ChooseCourseBatchDialog({
           disabled={isFormSubmiting}
           onClick={() => setIsDialogOpen(false)}
           variant="outline"
-          className="!text-white hover:!text-black"
+          className="hover:!text-black dark:text-white text-black"
         >
           Close
         </Button>

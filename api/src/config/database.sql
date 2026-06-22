@@ -592,3 +592,7 @@ CREATE TABLE IF NOT EXISTS late_fine_config (
 );
 
 ALTER TABLE fillup_forms ADD COLUMN IF NOT EXISTS course_start_date DATE;
+
+ALTER TABLE admission_fee_head_amount_history
+    ADD COLUMN IF NOT EXISTS current_min_amount NUMERIC,
+    ADD COLUMN IF NOT EXISTS previous_min_amount NUMERIC;

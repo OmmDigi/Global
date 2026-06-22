@@ -6,7 +6,7 @@ import { useSearchParams } from "react-router";
 import { useSelectedForms } from "../zustand/useSelectedForms";
 import ChooseCourseBatchDialog from "./ChooseCourseBatchDialog";
 import useSWRMutation from "swr/mutation";
-import { postFetcher, putFetcher } from "../api/fatcher";
+import { getFetcher, postFetcher, putFetcher } from "../api/fatcher";
 import { AxiosError } from "axios";
 import { message } from "antd";
 import useSWR, { mutate } from "swr";
@@ -26,15 +26,22 @@ export default function SelectMultipleStudent() {
 
   const { trigger: changeCourse, isMutating: isChangingCourse } =
     useSWRMutation("api/v1/admission/change-course", (url, { arg }) =>
-      putFetcher(url, arg)
+      putFetcher(url, arg),
     );
 
   const { trigger: promotStudent, isMutating: isPromotingStudent } =
     useSWRMutation("api/v1/admission/promot", (url, { arg }) =>
-      postFetcher(url, arg)
+      postFetcher(url, arg),
     );
 
-  const { data: admissionList } = useSWR(`api/v1/admission?${searchParams.toString()}`);
+  const { data: admissionList } = useSWR(
+    ["api/v1/admission", searchParams.toString()],
+    ([url, params]) => {
+      // Ensure your fetcher appends the query params correctly
+      const fullUrl = params ? `${url}?${params}` : url;
+      return getFetcher(fullUrl);
+    },
+  );
 
   const onCheckBoxChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     const checked = event.currentTarget.checked;
@@ -69,11 +76,13 @@ export default function SelectMultipleStudent() {
   const onChooseCourseBatchFormSubmit = async (
     course_id: number,
     batch_id: number,
-    session_id: number
+    session_id: number,
+    admission_date: string,
+    course_starting_month: string,
   ) => {
     if (
       !confirm(
-        "Are you sure you want to continue? Once you click OK, this action cannot be undone."
+        `Are you sure you want to ${type.current === "move" ? '"Move"' : '"Copy"'}? Once you click OK, this action cannot be undone.`,
       )
     )
       return;
@@ -85,25 +94,28 @@ export default function SelectMultipleStudent() {
           batch_id,
           session_id,
           form_ids: selectedForms.map((item) => item.form_id),
+          admission_date,
+          course_starting_month,
         } as any);
         messageApi.open({
           type: "success",
           content: response?.message,
         });
       } else {
-        console.log(selectedForms.map((item) => item.student_id))
         const response = await promotStudent({
           course_id,
           batch_id,
           session_id,
           student_ids: selectedForms.map((item) => item.student_id),
+          admission_date,
+          course_starting_month,
         } as any);
         messageApi.open({
           type: "success",
           content: response?.message,
         });
       }
-      mutate(`api/v1/admission?${searchParams.toString()}`);
+      mutate(["api/v1/admission", searchParams.toString()]);
       clear();
       const urlSearchParams = new URLSearchParams(searchParams);
       // urlSearchParams.delete("limit");
@@ -124,18 +136,22 @@ export default function SelectMultipleStudent() {
   }, [searchParams.toString()]);
 
   useEffect(() => {
-    startTransition(() => {
-      if (Array.isArray(admissionList?.data?.admissionData) && isSelected) {
+    if (!isSelected) {
+      clear();
+    }
+  }, [isSelected]);
+
+  useEffect(() => {
+    if (Array.isArray(admissionList?.data?.admissionData) && isSelected) {
+      startTransition(() => {
         addItem(
           admissionList.data.admissionData.map((item: any) => ({
             form_id: item.form_id,
             student_id: item.student_id,
-          }))
+          })),
         );
-      } else {
-        clear();
-      }
-    });
+      });
+    }
   }, [admissionList?.data?.admissionData?.length, isSelected]);
 
   return (
@@ -148,6 +164,7 @@ export default function SelectMultipleStudent() {
               setIsDialogOpen={setIsDialogOpen}
               onFormSubmit={onChooseCourseBatchFormSubmit}
               isFormSubmiting={isChangingCourse || isPromotingStudent}
+              type={type.current}
             />
           </div>
         </div>
@@ -178,7 +195,11 @@ export default function SelectMultipleStudent() {
               type.current = "move";
               setIsDialogOpen(true);
             }}
-            disabled={selectedForms.length == 0 || isChangingCourse || isPromotingStudent}
+            disabled={
+              selectedForms.length == 0 ||
+              isChangingCourse ||
+              isPromotingStudent
+            }
           >
             Move
           </Button>
@@ -188,7 +209,11 @@ export default function SelectMultipleStudent() {
               type.current = "promote";
               setIsDialogOpen(true);
             }}
-            disabled={selectedForms.length == 0 || isChangingCourse || isPromotingStudent}
+            disabled={
+              selectedForms.length == 0 ||
+              isChangingCourse ||
+              isPromotingStudent
+            }
           >
             Copy
           </Button>

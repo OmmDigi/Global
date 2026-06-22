@@ -69,7 +69,9 @@ export const VUpdateSessionCourseHeadPrice = Joi.object({
   batch_id: Joi.number().optional(),
 
   previous_amount: Joi.number().required(),
+  previous_min_amount: Joi.number().required(),
   current_amount: Joi.number().required(),
+  current_min_amount: Joi.number().required(),
 });
 
 export const VModifyAdmissionFeeHead = Joi.object({
@@ -89,6 +91,9 @@ export const VPromotAdmisson = Joi.object({
   course_id: Joi.number().required().label("Course"),
   batch_id: Joi.number().required().label("Batch"),
   session_id: Joi.number().required().label("Session"),
+
+  admission_date: Joi.string().required().label("Admission Date"),
+  course_starting_month: Joi.string().required().label("Course Starting Month"),
 });
 
 export const VChangeStudentAdmissionCourse = Joi.object({
@@ -96,4 +101,7 @@ export const VChangeStudentAdmissionCourse = Joi.object({
   course_id: Joi.number().required().label("Course"),
   batch_id: Joi.number().required().label("Batch"),
   session_id: Joi.number().required().label("Session"),
+
+  admission_date: Joi.string().required().label("Admission Date"),
+  course_starting_month: Joi.string().required().label("Course Starting Month"),
 });

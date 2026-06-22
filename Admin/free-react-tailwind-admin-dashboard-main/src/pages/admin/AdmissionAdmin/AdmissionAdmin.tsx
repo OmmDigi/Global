@@ -1,10 +1,4 @@
-import {
-  ChangeEvent,
-  FormEvent,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import PageMeta from "../../../components/common/PageMeta";
 import ComponentCard from "../../../components/common/ComponentCard";
@@ -220,14 +214,14 @@ export default function AdmissionAdmin() {
   // }, [searchParams]);
 
   const {
-  data: admissionlist,
-  isLoading: admissionLoading,
-  mutate: boundMutate,
-} = useSWR(['api/v1/admission', searchParams.toString()], ([url, params]) => {
-  // Ensure your fetcher appends the query params correctly
-  const fullUrl = params ? `${url}?${params}` : url;
-  return getFetcher(fullUrl); 
-});
+    data: admissionlist,
+    isLoading: admissionLoading,
+    mutate: boundMutate,
+  } = useSWR(["api/v1/admission", searchParams.toString()], ([url, params]) => {
+    // Ensure your fetcher appends the query params correctly
+    const fullUrl = params ? `${url}?${params}` : url;
+    return getFetcher(fullUrl);
+  });
 
   const handleSearch = () => {
     if (filterFormRef.current) {
@@ -296,8 +290,8 @@ export default function AdmissionAdmin() {
 
     const formData = new FormData(e.currentTarget);
 
-    const key = formData.get("type")?.toString() ?? "";
-    const value = formData.get("value")?.toString() ?? "";
+    const key = formData.get("type")?.toString();
+    const value = formData.get("value")?.toString();
 
     setSearchParams((prev) => {
       for (const [currentKey] of prev) {
@@ -317,7 +311,11 @@ export default function AdmissionAdmin() {
           prev.delete("page");
         }
       }
-      prev.set(key, value);
+
+      if (key && value) {
+        prev.set(key, value);
+      }
+
       return prev;
     });
   };
@@ -2179,7 +2177,6 @@ export default function AdmissionAdmin() {
               totalAmountSum={admissionlist?.data?.totalAmountSum}
               onEdit={handleEdit}
               onActive={handleActive}
-              // onSendData={handleChildData}
             />
           </ComponentCard>
         </div>
