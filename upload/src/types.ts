@@ -12,4 +12,5 @@ export interface IBlob {
   pathname: string;
   contentType?: string;
   contentDisposition: string;
+  name: string;
 }

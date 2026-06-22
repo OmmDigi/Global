@@ -32,12 +32,13 @@ export const uploadSingleFile = asyncErrorHandler(
       downloadUrl: download_url,
       pathname: `${pathName}/${req.file.filename}`,
       contentType: req.file.mimetype,
+      name: req.file.filename,
     };
 
     res
       .status(201)
       .json(new ApiResponse(201, "File uploaded successfully!", blobResult));
-  }
+  },
 );
 
 export const uploadMultipleFile = asyncErrorHandler(async (req, res) => {
@@ -72,6 +73,7 @@ export const uploadMultipleFile = asyncErrorHandler(async (req, res) => {
         downloadUrl: download_url,
         pathname: `${pathName}/${file.filename}`,
         contentType: file.mimetype,
+        name: file.filename,
       });
     });
   }

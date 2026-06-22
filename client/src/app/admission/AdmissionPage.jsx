@@ -185,17 +185,21 @@ function AdmissionPage() {
   const handleFileChange = (e, name) => {
     const files = e.target.files;
 
-    console.log("handleFileChange", files);
-
     uploadFiles({
       url: `${uploadUrl}api/v1/upload/multiple`,
-      files: [files],
+      files: files,
       folder: "admission_doc",
-      onUploading(percent) {},
+      onUploading(percent) {
+        message.loading(percent)
+      },
+     onError(error) {
+      e.currentTarget?.reset();
+      console.log(error)
+     },
       onUploaded(result) {
         setFormData((prev) => ({
           ...prev,
-          [name]: Array.from(files),
+          [name]: result,
         }));
       },
     });
@@ -216,7 +220,6 @@ function AdmissionPage() {
 
   const handleFileUpload = (e, type) => {
     const file = e.target.files[0];
-    console.log("file", file);
 
     if (file) {
       const reader = new FileReader();
@@ -237,7 +240,7 @@ function AdmissionPage() {
       onUploaded(result) {
         setFormData((prev) => ({
           ...prev,
-          image: result[0],
+          image: result[0].url,
         }));
       },
     });
@@ -1174,7 +1177,7 @@ function AdmissionPage() {
                           type="file"
                           name="addressProof"
                           onChange={(e) =>
-                            handleFileChange(e, "ageProofAdmitCard")
+                            handleFileChange(e, "addressProof")
                           }
                           multiple
                           accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"

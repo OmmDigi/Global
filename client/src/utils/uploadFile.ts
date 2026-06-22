@@ -16,6 +16,7 @@ export interface IUploadedFile {
   pathname: string;
   contentType?: string;
   contentDisposition: string;
+  name: string;
 }
 
 interface IProps<E = AxiosError<IResponse>> {
@@ -69,7 +70,7 @@ export const uploadFiles = async ({
       const webpFile = new File(
         [compressedFile],
         file.name.replace(/\.[^/.]+$/, ".webp"),
-        { type: "image/webp" }
+        { type: "image/webp" },
       );
 
       formData.append("files", webpFile);
@@ -84,7 +85,7 @@ export const uploadFiles = async ({
           const percentCompleted = Math.round((loaded * 100) / (total || 0));
           onUploading?.(percentCompleted);
         },
-      }
+      },
     );
 
     if (onUploaded) {

@@ -1292,7 +1292,7 @@ export default function AdmissionAdmin() {
                                     className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                   />
                                   {formData?.selfAttestedLastResult?.length >
-                                    0 && (
+                                  0 ? (
                                     <div className="mt-2 space-y-1">
                                       {formData?.selfAttestedLastResult?.map(
                                         (file: any, index: number) => (
@@ -1330,7 +1330,7 @@ export default function AdmissionAdmin() {
                                         ),
                                       )}
                                     </div>
-                                  )}
+                                  ) : null}
                                 </div>
 
                                 <div>
@@ -1358,18 +1358,29 @@ export default function AdmissionAdmin() {
                                             <span className="truncate">
                                               {file?.name}
                                             </span>
-                                            <button
-                                              type="button"
-                                              onClick={() =>
-                                                removeFile2(
-                                                  "ageProofAdmitCard",
-                                                  index,
-                                                )
-                                              }
-                                              className="text-red-500 hover:text-red-700 ml-2"
-                                            >
-                                              ×
-                                            </button>
+                                            <div className="flex items-center gap-1.5">
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  window.open(file?.url)
+                                                }
+                                                className="text-blue-500 hover:text-blue-700 ml-2 "
+                                              >
+                                                <FaEye />
+                                              </button>
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  removeFile2(
+                                                    "ageProofAdmitCard",
+                                                    index,
+                                                  )
+                                                }
+                                                className="text-red-500 hover:text-red-700 ml-2"
+                                              >
+                                                ×
+                                              </button>
+                                            </div>
                                           </div>
                                         ),
                                       )}
@@ -1402,18 +1413,29 @@ export default function AdmissionAdmin() {
                                             <span className="truncate">
                                               {file.name}
                                             </span>
-                                            <button
-                                              type="button"
-                                              onClick={() =>
-                                                removeFile2(
-                                                  "addressProof",
-                                                  index,
-                                                )
-                                              }
-                                              className="text-red-500 hover:text-red-700 ml-2"
-                                            >
-                                              ×
-                                            </button>
+                                            <div className="flex items-center gap-1.5">
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  window.open(file?.url)
+                                                }
+                                                className="text-blue-500 hover:text-blue-700 ml-2 "
+                                              >
+                                                <FaEye />
+                                              </button>
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  removeFile2(
+                                                    "addressProof",
+                                                    index,
+                                                  )
+                                                }
+                                                className="text-red-500 hover:text-red-700 ml-2"
+                                              >
+                                                ×
+                                              </button>
+                                            </div>
                                           </div>
                                         ),
                                       )}
