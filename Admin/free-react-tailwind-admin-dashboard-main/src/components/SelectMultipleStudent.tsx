@@ -77,8 +77,8 @@ export default function SelectMultipleStudent() {
     course_id: number,
     batch_id: number,
     session_id: number,
-    admission_date: string,
-    course_starting_month: string,
+    // admission_date: string,
+    // course_starting_month: string,
   ) => {
     if (
       !confirm(
@@ -94,8 +94,8 @@ export default function SelectMultipleStudent() {
           batch_id,
           session_id,
           form_ids: selectedForms.map((item) => item.form_id),
-          admission_date,
-          course_starting_month,
+          // admission_date,
+          // course_starting_month,
         } as any);
         messageApi.open({
           type: "success",
@@ -107,8 +107,8 @@ export default function SelectMultipleStudent() {
           batch_id,
           session_id,
           student_ids: selectedForms.map((item) => item.student_id),
-          admission_date,
-          course_starting_month,
+          // admission_date,
+          // course_starting_month,
         } as any);
         messageApi.open({
           type: "success",

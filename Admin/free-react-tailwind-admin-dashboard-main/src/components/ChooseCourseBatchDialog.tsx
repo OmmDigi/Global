@@ -10,8 +10,8 @@ interface IProps {
     course_id: number,
     batch_id: number,
     session_id: number,
-    admission_date: string,
-    course_starting_month: string,
+    // admission_date: string,
+    // course_starting_month: string,
   ) => void;
   isFormSubmiting?: boolean;
   type: "promote" | "move";
@@ -29,8 +29,8 @@ export default function ChooseCourseBatchDialog({
     courseName: "",
     sessionName: "",
     batchName: "",
-    admissionDate: "",
-    courseStartingDate: "",
+    // admissionDate: "",
+    // courseStartingDate: "",
   });
 
   // get Course list
@@ -86,8 +86,8 @@ export default function ChooseCourseBatchDialog({
             parseInt(formData.courseName),
             parseInt(formData.batchName),
             parseInt(formData.sessionName),
-            formData.admissionDate,
-            formData.courseStartingDate,
+            // formData.admissionDate,
+            // formData.courseStartingDate,
           );
         }
       }}
@@ -159,7 +159,7 @@ export default function ChooseCourseBatchDialog({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 mb-10">
+      {/* <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 mb-10">
         <div>
           <label className="block text-sm font-bold text-gray-700 mb-1">
             Admission Date <span className="text-red-500">*</span>
@@ -183,7 +183,7 @@ export default function ChooseCourseBatchDialog({
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-      </div>
+      </div> */}
 
       <div className="flex items-center justify-between">
         <Button disabled={isFormSubmiting}>

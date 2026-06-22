@@ -837,16 +837,16 @@ export const changeStudentAdmisionCourse = asyncErrorHandler(
       (_: any, index: number) => `$${index + 3 + 1}`,
     );
 
-    const placeholder2 = uniqueFormIds.map(
-      (_: any, index: number) => `$${index + 2 + 1}`,
-    );
+    // const placeholder2 = uniqueFormIds.map(
+    //   (_: any, index: number) => `$${index + 2 + 1}`,
+    // );
 
-    let courseStartingMonth: string | null = null;
-    if (value.course_starting_month) {
-      courseStartingMonth = new Date(value.course_starting_month)
-        .toISOString()
-        .split("T")[0];
-    }
+    // let courseStartingMonth: string | null = null;
+    // if (value.course_starting_month) {
+    //   courseStartingMonth = new Date(value.course_starting_month)
+    //     .toISOString()
+    //     .split("T")[0];
+    // }
 
     await doTransition(async (client) => {
       await client.query(
@@ -854,10 +854,10 @@ export const changeStudentAdmisionCourse = asyncErrorHandler(
         [value.course_id, value.batch_id, value.session_id, ...uniqueFormIds],
       );
 
-      await client.query(
-        `UPDATE fillup_forms SET admission_date = TO_CHAR($1::date, 'YYYY-MM-DD')::date, course_start_date = TO_CHAR($2::date, 'YYYY-MM-DD')::date WHERE id IN (${placeholder2})`,
-        [value.admission_date, courseStartingMonth, ...uniqueFormIds],
-      );
+      // await client.query(
+      //   `UPDATE fillup_forms SET admission_date = TO_CHAR($1::date, 'YYYY-MM-DD')::date, course_start_date = TO_CHAR($2::date, 'YYYY-MM-DD')::date WHERE id IN (${placeholder2})`,
+      //   [value.admission_date, courseStartingMonth, ...uniqueFormIds],
+      // );
 
       await client.query(
         "INSERT INTO copy_move_logs (user_id, data, action_type) VALUES ($1, $2, $3)",
