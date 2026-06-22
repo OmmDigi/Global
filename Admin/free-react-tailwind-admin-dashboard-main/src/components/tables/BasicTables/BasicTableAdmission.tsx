@@ -18,7 +18,6 @@ import {
 import { emptyOrNull } from "../../../utils/emptyOrNull";
 import useSWRMutation from "swr/mutation";
 import { deleteFetcher } from "../../../api/fatcher";
-import { useState } from "react";
 import { mutate } from "swr";
 import { message } from "antd";
 
