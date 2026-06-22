@@ -517,9 +517,9 @@ function AdmissionPage() {
                 <div className="p-4 bg-gray-100 rounded-lg shadow-sm">
                   <div className="space-x-4">
                     <div className="flex flex-wrap justify-center font-bold items-center gap-10">
-                      <button className="bg-blue-200 p-4 hover:bg-blue-400 hover:text-gray-100 text-lg rounded-4xl">
+                      {/* <button className="bg-blue-200 p-4 hover:bg-blue-400 hover:text-gray-100 text-lg rounded-4xl">
                         <Link href="/login">Cash Payment</Link>
-                      </button>
+                      </button> */}
 
                       <button
                         type="submit"
