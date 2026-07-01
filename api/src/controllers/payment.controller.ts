@@ -60,12 +60,12 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
         throw new ErrorHandler(400, "Please choose monthly payment month");
       }
 
-      const { amount, fineAmount } = await checkLateFineService(
+      const { amount, fineAmount, lateFineMonthsNumbers } = await checkLateFineService(
         months,
         value.form_id,
       );
       if (amount > 0) {
-        months.forEach((month) => {
+        lateFineMonthsNumbers.forEach((month) => {
           fee_structure_info.push({
             fee_head_id: LATE_FINE_FEE_HEAD_ID,
             custom_min_amount: fineAmount,
@@ -312,6 +312,45 @@ export const verifyPayment = asyncErrorHandler(async (req, res) => {
   // );
 
   await doTransition(async (client) => {
+    // for monthly payment auto increment the bill number by checking last bill number
+    await client.query(
+      `
+        WITH get_form_id AS (
+          SELECT
+           form_id
+          FROM payments WHERE order_id = $1
+          LIMIT 1
+        ),
+        last_bill AS (
+            SELECT MAX(CAST(bill_no AS INT)) AS max_bill
+            FROM payments
+            WHERE form_id = (SELECT form_id FROM get_form_id) 
+              AND fee_head_id = $2
+              AND bill_no IS NOT NULL
+        ),
+        ordered AS (
+            SELECT
+                id,
+                DENSE_RANK() OVER (ORDER BY month ASC) AS rn
+            FROM payments
+            WHERE form_id = (SELECT form_id FROM get_form_id) 
+              AND bill_no IS NULL
+              AND (fee_head_id = $2 OR fee_head_id = $3)
+        )
+        UPDATE payments p
+        SET 
+          bill_no = lb.max_bill + o.rn
+        FROM ordered o
+        CROSS JOIN last_bill lb
+        WHERE p.id = o.id AND (p.fee_head_id = $2 OR p.fee_head_id = $3);
+        `,
+      [
+        req.query.merchant_order_id,
+        MONTHLY_PAYMENT_HEAD_ID,
+        LATE_FINE_FEE_HEAD_ID,
+      ],
+    );
+
     const paymentUpdateInfo = await client.query<{
       form_id: number;
       amount: number;
@@ -369,7 +408,9 @@ export const checkLateFine = asyncErrorHandler(async (req, res) => {
     Array.isArray(value.pay_month) ? value.pay_month : [value.pay_month],
     value.form_id,
   );
-  res.status(200).json(new ApiResponse(200, "Successfull", { amount, lateFineMonths }));
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Successfull", { amount, lateFineMonths }));
 });
 
 // this is from admin panel only

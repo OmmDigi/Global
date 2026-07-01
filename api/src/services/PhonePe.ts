@@ -47,7 +47,7 @@ export class PhonePe {
     merchant_key: string,
     merchant_id: string,
     merchant_base_url: string,
-    merchant_status_url: string
+    merchant_status_url: string,
   ) {
     if (merchant_key === "") throw new Error("merchant_key is required");
     if (merchant_id === "") throw new Error("merchant_id is required");
@@ -64,7 +64,7 @@ export class PhonePe {
   }
 
   createOrder = async (
-    paymentPayload: ICreateOrderPayload
+    paymentPayload: ICreateOrderPayload,
   ): Promise<ICreateOrderResponse> => {
     if (this.MERCHANT_KEY === null)
       throw new Error("PHONEPE_MERCHANT_KEY is required");
@@ -80,7 +80,7 @@ export class PhonePe {
       this.MERCHANT_ID,
       this.MERCHANT_KEY,
       1,
-      this.ENV_TYPE
+      this.ENV_TYPE,
     );
 
     const merchantOrderId = paymentPayload.merchantTransactionId;
@@ -211,9 +211,7 @@ export class PhonePe {
   //   return (await axios.request(option)).data;
   // };
 
-  checkStatus = async (
-    merchantOrderId: string
-  ): Promise<PaymentResponse> => {
+  checkStatus = async (merchantOrderId: string): Promise<PaymentResponse> => {
     if (this.MERCHANT_KEY === null)
       throw new Error("PHONEPE_MERCHANT_KEY is required");
     if (this.MERCHANT_ID === null)
@@ -228,7 +226,7 @@ export class PhonePe {
       this.MERCHANT_ID,
       this.MERCHANT_KEY,
       1,
-      this.ENV_TYPE
+      this.ENV_TYPE,
     );
 
     const response = await client.getOrderStatus(merchantOrderId);
