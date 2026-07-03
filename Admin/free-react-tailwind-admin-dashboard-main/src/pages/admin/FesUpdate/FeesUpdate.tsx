@@ -28,6 +28,15 @@ type FeeHeadType = {
   is_active: boolean;
 };
 
+type FeeHeadRowType = {
+  fee_head_id: number;
+  fee_head_name: string;
+  prev_amount: number | null;
+  prev_min_amount: number | null;
+  current_amount: string;
+  current_min_amount: string;
+};
+
 export default function FeesUpdate() {
   const [messageApi, contextHolder] = message.useMessage();
   const [pageCount, setPageCount] = useState<number>(1);
@@ -42,9 +51,7 @@ export default function FeesUpdate() {
   const [batchFilterList, setBatchFilterList] = useState<BatchType[]>([]);
 
   const [feeHeadList, setFeeHeadList] = useState<FeeHeadType[]>([]);
-
-  const [prevAmount, setPrevAmount] = useState<number | null>(null);
-  const [prevMinAmount, setPrevMinAmount] = useState<number | null>(null);
+  const [allFeeHeadRows, setAllFeeHeadRows] = useState<FeeHeadRowType[]>([]);
 
   const [isSubmitting, startSubmitting] = useTransition();
 
@@ -109,29 +116,12 @@ export default function FeesUpdate() {
     const selectedCourseID = parseInt(event.currentTarget.value);
     setSessionFilterList([]);
     setBatchFilterList([]);
+    setFeeHeadList([]);
+    setAllFeeHeadRows([]);
 
     if (selectedCourseID === 0) return;
 
     setSelectedCourseId(selectedCourseID);
-
-    // if (selectedCourseID === -1) {
-    //   // 'All' option selected
-    //   let allSessions: SessionType[] = [];
-
-    //   const alreadyExistSession = new Set<number>();
-
-    //   courseList?.data.forEach((course) => {
-    //     course.session.forEach((session) => {
-    //       if (!alreadyExistSession.has(session.session_id)) {
-    //         alreadyExistSession.add(session.session_id);
-    //         allSessions.push(session);
-    //       }
-    //     });
-    //   });
-
-    //   setSessionFilterList(allSessions);
-    //   return;
-    // }
 
     const selectedCourse = courseList?.data.find(
       (course) => course.id === selectedCourseID,
@@ -149,6 +139,8 @@ export default function FeesUpdate() {
   ) => {
     const selectedSessionID = parseInt(event.currentTarget.value);
     setBatchFilterList([]);
+    setFeeHeadList([]);
+    setAllFeeHeadRows([]);
 
     if (selectedSessionID === 0) return;
 
@@ -165,65 +157,153 @@ export default function FeesUpdate() {
     setBatchFilterList(batches ? batches : []);
   };
 
+  // fetch every fee head's amount for this course/session/batch, keyed by fee head
+  const fetchAllFeeHeadAmounts = async (
+    heads: FeeHeadType[],
+    batchId: number,
+  ) => {
+    try {
+      const response = await getFetcher(
+        `api/v1/admission/amount?session_id=${currentSessionId}${
+          batchId === -1 ? "" : `&batch_id=${batchId}`
+        }&course_id=${selectedCourseId}`,
+      );
+
+      const priceByFeeHead = new Map<
+        number,
+        { amount: number; min_amount: number }
+      >();
+      (response?.data || []).forEach((item: any) => {
+        priceByFeeHead.set(Number(item.fee_head_id), {
+          amount: Number(item.amount),
+          min_amount: Number(item.min_amount),
+        });
+      });
+
+      setAllFeeHeadRows(
+        heads.map((head) => {
+          const prev = priceByFeeHead.get(head.id);
+          return {
+            fee_head_id: head.id,
+            fee_head_name: head.name,
+            prev_amount: prev?.amount ?? null,
+            prev_min_amount: prev?.min_amount ?? null,
+            current_amount: prev?.amount != null ? String(prev.amount) : "",
+            current_min_amount:
+              prev?.min_amount != null ? String(prev.min_amount) : "",
+          };
+        }),
+      );
+    } catch (error) {
+      message.error("Error fetching fee head amount list");
+    }
+  };
+
   const handleBatchSelectChange = async (
     event: React.ChangeEvent<HTMLSelectElement>,
   ) => {
     const selectedBatchID = parseInt(event.currentTarget.value);
     setCurrentBatchId(selectedBatchID);
+    setAllFeeHeadRows([]);
 
-    // fetch the fee head list
+    if (selectedBatchID === 0) {
+      setFeeHeadList([]);
+      return;
+    }
+
     try {
       const response = await getFetcher(`api/v1/course/fee-head`);
-      setFeeHeadList(response?.data || []);
+      const heads: FeeHeadType[] = response?.data || [];
+      setFeeHeadList(heads);
+      await fetchAllFeeHeadAmounts(heads, selectedBatchID);
     } catch (error) {
       message.error("Error fetching fee head list");
     }
   };
 
-  const handleNewFeeHeadChange = async (
-    event: React.ChangeEvent<HTMLSelectElement>,
+  const handleAllFeeHeadRowChange = (
+    feeHeadId: number,
+    field: "current_amount" | "current_min_amount",
+    value: string,
   ) => {
-    const selectedFeeHeadID = parseInt(event.currentTarget.value);
-    if (selectedFeeHeadID === 0) return;
-
-    // fetch the previous amount
-    try {
-      const response = await getFetcher(
-        `api/v1/admission/amount?fee_head_id=${selectedFeeHeadID}&session_id=${currentSessionId}${
-          currentBatchId === -1 ? "" : `&batch_id=${currentBatchId}`
-        }&course_id=${selectedCourseId}`,
-      );
-      setPrevAmount(response?.data?.amount || null);
-      setPrevMinAmount(response?.data?.min_amount ?? null);
-    } catch (error) {
-      message.error("Error fetching previous amount");
-    }
+    setAllFeeHeadRows((prev) =>
+      prev.map((row) =>
+        row.fee_head_id === feeHeadId ? { ...row, [field]: value } : row,
+      ),
+    );
   };
 
-  const handleUpdateFeeHeadForm = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const submitAllFeeHeadRows = (mode: "save" | "update") => {
+    const confirmMessage =
+      mode === "update"
+        ? "Are you sure you want to update? This will only update students who already have that fee head and will create nothing new."
+        : "Are you sure you want to save? This will update every changed fee head below and also create it for any student/form who doesn't have it yet.";
 
-    if (!confirm("Are you sure you want to continue the update ?")) return;
+    if (!confirm(confirmMessage)) return;
 
-    const formData = new FormData(e.currentTarget);
-    formData.set("previous_amount", String(prevAmount));
-    formData.set("previous_min_amount", String(prevMinAmount));
-    const data = Object.fromEntries(formData.entries());
+    // submit only rows whose amount was entered/changed from the previous value
+    const rowsToSave = allFeeHeadRows.filter((row) => {
+      if (row.current_amount === "") return false;
+      const newAmount = Number(row.current_amount);
+      const newMinAmount = Number(
+        row.current_min_amount || row.current_amount,
+      );
+      return (
+        newAmount !== (row.prev_amount ?? null) ||
+        newMinAmount !== (row.prev_min_amount ?? null)
+      );
+    });
 
-    if (data.batch_id.toString() == "-1") {
-      delete data.batch_id;
+    if (rowsToSave.length === 0) {
+      messageApi.open({
+        type: "error",
+        content: "Enter a new amount for at least one fee head",
+      });
+      return;
     }
 
     startSubmitting(async () => {
       try {
-        const response = await create(data as any);
+        for (const row of rowsToSave) {
+          const payload: Record<string, any> = {
+            session_id: currentSessionId,
+            course_id: selectedCourseId,
+            fee_head_id: row.fee_head_id,
+            previous_amount: row.prev_amount ?? 0,
+            previous_min_amount: row.prev_min_amount ?? 0,
+            current_amount: Number(row.current_amount),
+            current_min_amount: Number(
+              row.current_min_amount || row.current_amount,
+            ),
+            mode,
+          };
+          if (currentBatchId !== -1) payload.batch_id = currentBatchId;
+
+          await create(payload as any);
+        }
+
         messageApi.open({
           type: "success",
-          content: response.message,
+          content: "Fee head amounts successfully updated",
         });
-        setPrevAmount(Number(data.current_amount));
-        setPrevMinAmount(Number(data.current_min_amount));
-        e.currentTarget?.reset();
+
+        const savedFeeHeadIds = new Set(
+          rowsToSave.map((row) => row.fee_head_id),
+        );
+
+        setAllFeeHeadRows((prev) =>
+          prev.map((row) =>
+            savedFeeHeadIds.has(row.fee_head_id)
+              ? {
+                  ...row,
+                  prev_amount: Number(row.current_amount),
+                  prev_min_amount: Number(
+                    row.current_min_amount || row.current_amount,
+                  ),
+                }
+              : row,
+          ),
+        );
       } catch (error: any) {
         console.log("Error ", error);
         messageApi.open({
@@ -248,8 +328,8 @@ export default function FeesUpdate() {
         <div className="space-y-6 ">
           <ComponentCard title="Fees Update Form">
             <div className="space-y-6">
-              <form onSubmit={handleUpdateFeeHeadForm} className="space-y-6">
-                <div className="grid grid-cols-1 gap-6 xl:grid-cols-4">
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
                   <div className="w-12/12  mb-4">
                     <label className="block text-sm text-start mt-1 dark:text-gray-400 text-gray-700 mb-1">
                       Choose Course
@@ -260,7 +340,6 @@ export default function FeesUpdate() {
                       className="w-full px-3 py-3 bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
                     >
                       <option value={0}>Choose</option>
-                      {/* <option value={-1}>All</option> */}
                       {courseList?.data?.map((course) => (
                         <div key={course.id}>
                           <option value={course.id}>
@@ -311,167 +390,110 @@ export default function FeesUpdate() {
                       ))}
                     </select>
                   </div>
-
-                  <div className="w-12/12  mb-4">
-                    <label className="block text-sm text-start mt-1 dark:text-gray-400 text-gray-700 mb-1">
-                      Fee Head
-                    </label>
-                    <select
-                      name="fee_head_id"
-                      onChange={handleNewFeeHeadChange}
-                      className="w-full px-3 py-3 bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
-                    >
-                      <option value={0}>Choose</option>
-                      {feeHeadList?.map((feeHead) => (
-                        <div key={feeHead.id}>
-                          <option value={feeHead.id}>{feeHead.name}</option>
-                        </div>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* <div className="w-12/12  mb-4">
-                    <label className="block text-sm text-start mt-1 dark:text-gray-400 text-gray-700 mb-1">
-                      Previous Fee
-                    </label>
-                    <input
-                      readOnly
-                      value={prevAmount ?? ""}
-                      name="previous_amount"
-                      className="w-full px-3 py-3 bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
-                    ></input>
-                  </div> */}
-
-                  <div className="w-12/12  mb-4">
-                    <label className="block text-sm text-start mt-1 dark:text-gray-400 text-gray-700 mb-1">
-                      New Amount
-                    </label>
-                    <input
-                      name="current_amount"
-                      className="w-full px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
-                    ></input>
-                    {prevAmount !== null && (
-                      <p className="mt-1 text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                        <span>⚠</span>
-                        <span>Previous amount: ₹{prevAmount}</span>
-                      </p>
-                    )}
-                  </div>
-                  <div className="w-12/12  mb-4">
-                    <label className="block text-sm text-start mt-1 dark:text-gray-400 text-gray-700 mb-1">
-                      New Min Amount
-                    </label>
-                    <input
-                      name="current_min_amount"
-                      className="w-full px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
-                    ></input>
-                    {prevMinAmount !== null && (
-                      <p className="mt-1 text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                        <span>⚠</span>
-                        <span>Previous min amount: ₹{prevMinAmount}</span>
-                      </p>
-                    )}
-                  </div>
                 </div>
 
-                <div className="flex items-center justify-center">
-                  <button
-                    disabled={isSubmitting}
-                    type="submit"
-                    className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-                  >
-                    {isSubmitting ? (
-                      <LoaderCircle size={18} className="animate-spin" />
-                    ) : (
-                      "Save"
-                    )}
-                  </button>
-                </div>
-              </form>
+                {feeHeadList.length > 0 && (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300">
+                      <thead className="bg-gray-100 dark:bg-gray-900">
+                        <tr>
+                          <th className="px-3 py-2">Fee Head</th>
+                          <th className="px-3 py-2">Previous Amount</th>
+                          <th className="px-3 py-2">Previous Min Amount</th>
+                          <th className="px-3 py-2">New Amount</th>
+                          <th className="px-3 py-2">New Min Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {allFeeHeadRows.map((row) => (
+                          <tr
+                            key={row.fee_head_id}
+                            className="border-t border-gray-200 dark:border-gray-700"
+                          >
+                            <td className="px-3 py-2">{row.fee_head_name}</td>
+                            <td className="px-3 py-2">
+                              {row.prev_amount ?? "-"}
+                            </td>
+                            <td className="px-3 py-2">
+                              {row.prev_min_amount ?? "-"}
+                            </td>
+                            <td className="px-3 py-2">
+                              <input
+                                value={row.current_amount}
+                                onChange={(e) =>
+                                  handleAllFeeHeadRowChange(
+                                    row.fee_head_id,
+                                    "current_amount",
+                                    e.target.value,
+                                  )
+                                }
+                                className="w-28 px-2 py-1 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                              />
+                            </td>
+                            <td className="px-3 py-2">
+                              <input
+                                value={row.current_min_amount}
+                                onChange={(e) =>
+                                  handleAllFeeHeadRowChange(
+                                    row.fee_head_id,
+                                    "current_min_amount",
+                                    e.target.value,
+                                  )
+                                }
+                                className="w-28 px-2 py-1 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                              />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
 
-              {/* <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 gap-6 xl:grid-cols-4">
-                  <div className="w-12/12  mb-4">
-                    <label className="block text-sm text-start mt-1 dark:text-gray-400 text-gray-700 mb-1">
-                      Choose your Session
-                    </label>
-                    <select
-                      name="session_id"
-                      value={formData.session_id}
-                      onChange={handleSessionChange}
-                      className="w-full px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
-                    >
-                      <option value="">Choose</option>
-                      {sessionList?.data?.map((data: any, index: number) => (
-                        <div key={index}>
-                          <option value={data?.id}>{data?.name}</option>
-                        </div>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="w-12/12  mb-4">
-                    <label className="block text-sm text-start mt-1 dark:text-gray-400 text-gray-700 mb-1">
-                      Choose your fee Head
-                    </label>
-                    <select
-                      name="fee_head"
-                      value={formData.fee_head}
-                      onChange={(e) => handleFeeHeadChange(e)}
-                      className="w-full px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
-                    >
-                      <option value="">Choose</option>
-                      {fee_head?.data?.map((data: any, index: number) => (
-                        <div key={index}>
-                          <option value={data?.id}>{data?.name}</option>
-                        </div>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="w-12/12  mb-4">
-                    <label className="block text-sm text-start mt-1 dark:text-gray-400 text-gray-700 mb-1">
-                      Previous Fee
-                    </label>
-                    <input
-                      readOnly
-                      name="previous_fee"
-                      value={previousAmount ?? formData.previous_fee}
-                      onChange={handlePreviousAmountChange}
-                      className="w-full px-3 py-3 bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
-                    ></input>
-                  </div>
-                  <div className="w-12/12  mb-4">
-                    <label className="block text-sm text-start mt-1 dark:text-gray-400 text-gray-700 mb-1">
-                      Updated Fee
-                    </label>
-                    <input
-                      name="updated_fee"
-                      value={formData.updated_fee}
-                      onChange={handleChange}
-                      className="w-full px-3 py-3   bg-gray-100  pl-2.5 pr-2 text-sm  hover:border-gray-200   dark:hover:border-gray-800    border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
-                    ></input>
-                  </div>
-                </div>
+                {feeHeadList.length > 0 && (
+                  <>
+                    <p className="mt-1 text-xs text-amber-600 dark:text-amber-400 flex items-center justify-center gap-1 text-center">
+                      <span>⚠</span>
+                      <span>
+                        <strong>Save</strong> updates every changed fee head
+                        above and also creates it for any student who doesn't
+                        have it yet. <strong>Update</strong> only changes
+                        students who already have that fee head and creates
+                        nothing new.
+                      </span>
+                    </p>
 
-                <div className="flex flex-wrap justify-center items-center gap-6">
-                  <div className="flex items-center gap-5">
-                    {id ? (
-                      <div
-                        onClick={handleUpdate}
-                        className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-                      >
-                        Update
-                      </div>
-                    ) : (
+                    <div className="flex items-center justify-center gap-4">
                       <button
-                        type="submit"
+                        disabled={isSubmitting}
+                        type="button"
+                        onClick={() => submitAllFeeHeadRows("save")}
+                        title="Update existing fee heads and create this fee head for students who don't have it yet"
                         className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
                       >
-                        Submit
+                        {isSubmitting ? (
+                          <LoaderCircle size={18} className="animate-spin" />
+                        ) : (
+                          "Save"
+                        )}
                       </button>
-                    )}
-                  </div>
-                </div>
-              </form> */}
+                      <button
+                        disabled={isSubmitting}
+                        type="button"
+                        onClick={() => submitAllFeeHeadRows("update")}
+                        title="Only update students who already have this fee head, don't create it for anyone else"
+                        className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+                      >
+                        {isSubmitting ? (
+                          <LoaderCircle size={18} className="animate-spin" />
+                        ) : (
+                          "Update"
+                        )}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
 
             <div className="flex justify-center items-center gap-6 mt-5 ">

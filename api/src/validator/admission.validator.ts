@@ -58,7 +58,7 @@ export const VUpdateDeclarationStatus = Joi.object({
 export const VGetSessionCourseHeadPrice = Joi.object({
   session_id: Joi.number().required(),
   course_id: Joi.number().required(),
-  fee_head_id: Joi.number().required(),
+  fee_head_id: Joi.number().optional(),
   batch_id: Joi.number().optional(),
 });
 
@@ -72,6 +72,10 @@ export const VUpdateSessionCourseHeadPrice = Joi.object({
   previous_min_amount: Joi.number().required(),
   current_amount: Joi.number().required(),
   current_min_amount: Joi.number().required(),
+
+  // "save" creates form_fee_structure rows for forms missing this fee head too;
+  // "update" only touches forms that already have this fee head
+  mode: Joi.string().valid("save", "update").optional().default("save"),
 });
 
 export const VModifyAdmissionFeeHead = Joi.object({

@@ -489,6 +489,35 @@ export const getAdmissionFeeHeadPrice = asyncErrorHandler(async (req, res) => {
     filterValues.push(value.session_id);
   }
 
+  // no fee_head_id means "All" was chosen, so return every fee head's amount for this course/session/batch
+  if (!value.fee_head_id) {
+    const { rows } = await pool.query(
+      `
+      SELECT DISTINCT ON (ffs.fee_head_id)
+        ffs.fee_head_id,
+        cfh.name AS fee_head_name,
+        ffs.amount,
+        ffs.min_amount
+      FROM enrolled_courses ec
+
+      LEFT JOIN form_fee_structure ffs
+      ON ffs.form_id = ec.form_id
+
+      LEFT JOIN course_fee_head cfh
+      ON cfh.id = ffs.fee_head_id
+
+      ${filter}
+
+      AND ffs.fee_head_id IS NOT NULL
+
+      ORDER BY ffs.fee_head_id, ffs.id DESC
+      `,
+      filterValues,
+    );
+
+    return res.status(200).json(new ApiResponse(200, "Form Amount List", rows));
+  }
+
   const { rows, rowCount } = await pool.query(
     `
     SELECT
@@ -581,7 +610,7 @@ export const updateAdmissionFeeHeadAmount = asyncErrorHandler(
 
       const { rows } = await client.query(
         `
-        SELECT 
+        SELECT
          ec.form_id
         FROM enrolled_courses ec
         ${filter}
@@ -589,25 +618,42 @@ export const updateAdmissionFeeHeadAmount = asyncErrorHandler(
         filterValues,
       );
 
-      const placeholder = generatePlaceholders(rows.length, 5);
+      if (value.mode === "update") {
+        // only touch forms that already have this fee head, never create new rows
+        await client.query(
+          `
+          UPDATE form_fee_structure
+          SET amount = $1, min_amount = $2
+          WHERE fee_head_id = $3 AND form_id = ANY($4::bigint[])
+          `,
+          [
+            value.current_amount,
+            value.current_min_amount,
+            value.fee_head_id,
+            rows.map((row: any) => row.form_id),
+          ],
+        );
+      } else {
+        const placeholder = generatePlaceholders(rows.length, 5);
 
-      await client.query(
-        `
-        INSERT INTO form_fee_structure 
-          (form_id, fee_head_id, amount, min_amount, required)
-        VALUES
-          ${placeholder}
-        ON CONFLICT (form_id, fee_head_id) DO UPDATE 
-          SET amount = EXCLUDED.amount
-        `,
-        rows.flatMap((row: any) => [
-          row.form_id,
-          value.fee_head_id,
-          value.current_amount,
-          value.current_min_amount,
-          true,
-        ]),
-      );
+        await client.query(
+          `
+          INSERT INTO form_fee_structure
+            (form_id, fee_head_id, amount, min_amount, required)
+          VALUES
+            ${placeholder}
+          ON CONFLICT (form_id, fee_head_id) DO UPDATE
+            SET amount = EXCLUDED.amount, min_amount = EXCLUDED.min_amount
+          `,
+          rows.flatMap((row: any) => [
+            row.form_id,
+            value.fee_head_id,
+            value.current_amount,
+            value.current_min_amount,
+            true,
+          ]),
+        );
+      }
       await client.query("COMMIT");
 
       res

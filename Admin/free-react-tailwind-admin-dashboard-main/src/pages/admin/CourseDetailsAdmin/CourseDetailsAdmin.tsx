@@ -21,6 +21,39 @@ import { emptyOrNull } from "../../../utils/emptyOrNull";
 
 const year = new Date().getFullYear();
 
+const getPaymentDatesStorageKey = (courseId?: string) =>
+  `paymentDates_${courseId}`;
+const getPaymentMonthsStorageKey = (courseId?: string) =>
+  `paymentMonths_${courseId}`;
+
+const loadStoredDateMap = (
+  key: string
+): { [feeHeadId: number]: Date | null } => {
+  try {
+    const stored = localStorage.getItem(key);
+    if (!stored) return {};
+    const parsed = JSON.parse(stored);
+    const result: { [feeHeadId: number]: Date | null } = {};
+    Object.keys(parsed).forEach((k) => {
+      result[Number(k)] = parsed[k] ? new Date(parsed[k]) : null;
+    });
+    return result;
+  } catch {
+    return {};
+  }
+};
+
+const saveDateMap = (
+  key: string,
+  map: { [feeHeadId: number]: Date | null }
+) => {
+  const serializable: { [feeHeadId: string]: string | null } = {};
+  Object.entries(map).forEach(([k, v]) => {
+    serializable[k] = v ? v.toISOString() : null;
+  });
+  localStorage.setItem(key, JSON.stringify(serializable));
+};
+
 export default function CourseDetailsAdmin() {
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
@@ -63,6 +96,28 @@ export default function CourseDetailsAdmin() {
   // console.log("addFormData", addFormData);
 
   const { id } = useParams();
+
+  useEffect(() => {
+    if (!id) return;
+    setSelectedDates(loadStoredDateMap(getPaymentDatesStorageKey(id)));
+    setMonth(loadStoredDateMap(getPaymentMonthsStorageKey(id)));
+  }, [id]);
+
+  const handleDateChange = (feeHeadId: number, date: Date | null) => {
+    setSelectedDates((prev) => {
+      const updated = { ...prev, [feeHeadId]: date };
+      saveDateMap(getPaymentDatesStorageKey(id), updated);
+      return updated;
+    });
+  };
+
+  const handleMonthChange = (feeHeadId: number, date: Date | null) => {
+    setMonth((prev) => {
+      const updated = { ...prev, [feeHeadId]: date };
+      saveDateMap(getPaymentMonthsStorageKey(id), updated);
+      return updated;
+    });
+  };
   // const [formId, setFormId] = useState(id);
   // const [searchBy, setSearchBy] = useState({
   //   type: "name",
@@ -905,12 +960,9 @@ export default function CourseDetailsAdmin() {
                                       selectedDates[item.fee_head_id] ||
                                       new Date(`${year}-01-01`)
                                     }
-                                    onChange={(date: Date | null) => {
-                                      setSelectedDates((prev) => ({
-                                        ...prev,
-                                        [item.fee_head_id]: date,
-                                      }));
-                                    }}
+                                    onChange={(date: Date | null) =>
+                                      handleDateChange(item.fee_head_id, date)
+                                    }
                                     dateFormat="dd-MM-yyyy"
                                     className="w-25 border rounded px-1 py-1"
                                     placeholderText="dd-mm-yyyy"
@@ -924,12 +976,9 @@ export default function CourseDetailsAdmin() {
                                     <DatePicker
                                       name="fee_head_id"
                                       selected={month[item.fee_head_id] || null}
-                                      onChange={(date: Date | null) => {
-                                        setMonth((prev) => ({
-                                          ...prev,
-                                          [item.fee_head_id]: date,
-                                        }));
-                                      }}
+                                      onChange={(date: Date | null) =>
+                                        handleMonthChange(item.fee_head_id, date)
+                                      }
                                       dateFormat="MM-yyyy"
                                       showMonthYearPicker
                                       className="border w-30  border-gray-300 dark:border-gray-300 dark:text-gray-200 rounded-md px-1 py-1 mr-2 mt-1 text-sm"
@@ -942,12 +991,12 @@ export default function CourseDetailsAdmin() {
                                           selectedDates[item.fee_head_id] ||
                                           new Date(`${year}-01-01`)
                                         }
-                                        onChange={(date: Date | null) => {
-                                          setSelectedDates((prev) => ({
-                                            ...prev,
-                                            [item.fee_head_id]: date,
-                                          }));
-                                        }}
+                                        onChange={(date: Date | null) =>
+                                          handleDateChange(
+                                            item.fee_head_id,
+                                            date
+                                          )
+                                        }
                                         dateFormat="dd-MM-yyyy"
                                         className="w-25 border mr-2 rounded px-1 py-1"
                                         placeholderText="dd-mm-yyyy"

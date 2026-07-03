@@ -60,10 +60,8 @@ export const createOrder = asyncErrorHandler(async (req, res) => {
         throw new ErrorHandler(400, "Please choose monthly payment month");
       }
 
-      const { amount, fineAmount, lateFineMonthsNumbers } = await checkLateFineService(
-        months,
-        value.form_id,
-      );
+      const { amount, fineAmount, lateFineMonthsNumbers } =
+        await checkLateFineService(months, value.form_id);
       if (amount > 0) {
         lateFineMonthsNumbers.forEach((month) => {
           fee_structure_info.push({
@@ -652,8 +650,6 @@ export const getPaymentsList = asyncErrorHandler(async (req, res) => {
     ),
     pool.query(`SELECT COUNT(*) FROM payments p ${whereClause}`, params),
   ]);
-
-  console.log(listResult.rows[0]);
 
   res.status(200).json({
     status: 200,
