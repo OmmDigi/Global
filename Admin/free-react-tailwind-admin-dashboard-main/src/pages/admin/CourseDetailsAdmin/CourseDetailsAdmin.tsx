@@ -16,42 +16,23 @@ import { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
 import { Loader, Trash2 } from "lucide-react";
 import { emptyOrNull } from "../../../utils/emptyOrNull";
+import { LATE_FINE, MONTHLY_PAYMENT } from "../../../constant";
 // import { ReceiptIndianRupee } from "lucide-react";
 // import { log } from "console";
 
 const year = new Date().getFullYear();
 
-const getPaymentDatesStorageKey = (courseId?: string) =>
-  `paymentDates_${courseId}`;
-const getPaymentMonthsStorageKey = (courseId?: string) =>
-  `paymentMonths_${courseId}`;
+const PAYMENT_DATE_KEY = "paymentDate";
+const PAYMENT_MONTH_KEY = "paymentMonth";
 
-const loadStoredDateMap = (
-  key: string
-): { [feeHeadId: number]: Date | null } => {
-  try {
-    const stored = localStorage.getItem(key);
-    if (!stored) return {};
-    const parsed = JSON.parse(stored);
-    const result: { [feeHeadId: number]: Date | null } = {};
-    Object.keys(parsed).forEach((k) => {
-      result[Number(k)] = parsed[k] ? new Date(parsed[k]) : null;
-    });
-    return result;
-  } catch {
-    return {};
-  }
+const loadStoredDate = (key: string): Date | null => {
+  const stored = localStorage.getItem(key);
+  return stored ? new Date(stored) : null;
 };
 
-const saveDateMap = (
-  key: string,
-  map: { [feeHeadId: number]: Date | null }
-) => {
-  const serializable: { [feeHeadId: string]: string | null } = {};
-  Object.entries(map).forEach(([k, v]) => {
-    serializable[k] = v ? v.toISOString() : null;
-  });
-  localStorage.setItem(key, JSON.stringify(serializable));
+const saveStoredDate = (key: string, date: Date | null) => {
+  if (date) localStorage.setItem(key, date.toISOString());
+  else localStorage.removeItem(key);
 };
 
 export default function CourseDetailsAdmin() {
@@ -96,28 +77,6 @@ export default function CourseDetailsAdmin() {
   // console.log("addFormData", addFormData);
 
   const { id } = useParams();
-
-  useEffect(() => {
-    if (!id) return;
-    setSelectedDates(loadStoredDateMap(getPaymentDatesStorageKey(id)));
-    setMonth(loadStoredDateMap(getPaymentMonthsStorageKey(id)));
-  }, [id]);
-
-  const handleDateChange = (feeHeadId: number, date: Date | null) => {
-    setSelectedDates((prev) => {
-      const updated = { ...prev, [feeHeadId]: date };
-      saveDateMap(getPaymentDatesStorageKey(id), updated);
-      return updated;
-    });
-  };
-
-  const handleMonthChange = (feeHeadId: number, date: Date | null) => {
-    setMonth((prev) => {
-      const updated = { ...prev, [feeHeadId]: date };
-      saveDateMap(getPaymentMonthsStorageKey(id), updated);
-      return updated;
-    });
-  };
   // const [formId, setFormId] = useState(id);
   // const [searchBy, setSearchBy] = useState({
   //   type: "name",
@@ -156,6 +115,33 @@ export default function CourseDetailsAdmin() {
     `api/v1/course/fee-head?${searchParams.toString()}`,
     getFetcher,
   );
+
+  useEffect(() => {
+    const ids =
+      feesStructure?.data?.fee_structure_info?.map(
+        (item: any) => item.fee_head_id,
+      ) || [];
+    if (!ids.length) return;
+
+    const storedDate = loadStoredDate(PAYMENT_DATE_KEY);
+    const storedMonth = loadStoredDate(PAYMENT_MONTH_KEY);
+
+    setSelectedDates((prev) => {
+      const updated = { ...prev };
+      ids.forEach((fid: number) => {
+        if (!(fid in updated)) updated[fid] = storedDate;
+      });
+      return updated;
+    });
+
+    setMonth((prev) => {
+      const updated = { ...prev };
+      ids.forEach((fid: number) => {
+        if (!(fid in updated)) updated[fid] = storedMonth;
+      });
+      return updated;
+    });
+  }, [feesStructure]);
 
   //  if(!feesStructure?.data?.student_name){
   //     messageApi.open({
@@ -211,6 +197,71 @@ export default function CourseDetailsAdmin() {
       ...prev,
       [id]: value,
     }));
+  };
+
+  // picking a date/month on one fee head applies it to every fee head row;
+  // localStorage is only written when the payment is actually submitted
+  const handleDateChange = (date: Date | null) => {
+    const ids =
+      feesStructure?.data?.fee_structure_info?.map(
+        (item: any) => item.fee_head_id,
+      ) || [];
+    setSelectedDates((prev) => {
+      const updated = { ...prev };
+      ids.forEach((fid: number) => {
+        updated[fid] = date;
+      });
+      return updated;
+    });
+  };
+
+  const handleMonthChange = (feeHeadId: number, date: Date | null) => {
+    const ids =
+      feesStructure?.data?.fee_structure_info?.map(
+        (item: any) => item.fee_head_id,
+      ) || [];
+    setMonth((prev) => {
+      const updated = { ...prev };
+      ids.forEach((fid: number) => {
+        updated[fid] = date;
+      });
+      return updated;
+    });
+
+    if (!date) return;
+    const history = feesStructure?.data?.payments_history || [];
+
+    if (feeHeadId === MONTHLY_PAYMENT) {
+      const prevMonth = dayjs(date).subtract(1, "month").format("YYYY-MM");
+      const match = history.find(
+        (p: any) =>
+          p.fee_head_id == MONTHLY_PAYMENT &&
+          dayjs(p.month).format("YYYY-MM") === prevMonth,
+      );
+      if (match) {
+        const nextBillNo = Number.isNaN(Number(match.bill_no))
+          ? match.bill_no
+          : Number(match.bill_no) + 1;
+        setEnteredBillno((prev: any) => ({
+          ...prev,
+          [MONTHLY_PAYMENT]: nextBillNo,
+          [LATE_FINE]: nextBillNo,
+        }));
+      }
+    } else if (feeHeadId === LATE_FINE) {
+      const selectedMonth = dayjs(date).format("YYYY-MM");
+      const match = history.find(
+        (p: any) =>
+          p.fee_head_id == MONTHLY_PAYMENT &&
+          dayjs(p.month).format("YYYY-MM") === selectedMonth,
+      );
+      if (match) {
+        setEnteredBillno((prev: any) => ({
+          ...prev,
+          [LATE_FINE]: match.bill_no,
+        }));
+      }
+    }
   };
 
   // const onChange = (e: any) => {
@@ -302,6 +353,11 @@ export default function CourseDetailsAdmin() {
       // payment_details: paymentDetails ? paymentDetails : null,
       fee_structure_info,
     };
+
+    const firstFeeHeadId =
+      feesStructure?.data?.fee_structure_info?.[0]?.fee_head_id;
+    saveStoredDate(PAYMENT_DATE_KEY, selectedDates[firstFeeHeadId] || null);
+    saveStoredDate(PAYMENT_MONTH_KEY, month[firstFeeHeadId] || null);
 
     startTransition(async () => {
       await doPayment(finalFormData as any);
@@ -421,6 +477,9 @@ export default function CourseDetailsAdmin() {
     setRemarksPopup((prev: any) => ({ ...prev, [item.fee_head_id]: false }));
     setRemarksText((prev: any) => ({ ...prev, [item.fee_head_id]: null }));
 
+    saveStoredDate(PAYMENT_DATE_KEY, selectedDates[item.fee_head_id] || null);
+    saveStoredDate(PAYMENT_MONTH_KEY, month[item.fee_head_id] || null);
+
     startTransition(async () => {
       await doPayment(finalFormData as any);
     });
@@ -521,6 +580,9 @@ export default function CourseDetailsAdmin() {
 
     setRemarksPopup((prev: any) => ({ ...prev, [item.fee_head_id]: false }));
     setRemarksText((prev: any) => ({ ...prev, [item.fee_head_id]: null }));
+
+    saveStoredDate(PAYMENT_DATE_KEY, selectedDates[item.fee_head_id] || null);
+    saveStoredDate(PAYMENT_MONTH_KEY, month[item.fee_head_id] || null);
 
     startTransition(async () => {
       await doPayment(finalFormData as any);
@@ -961,7 +1023,7 @@ export default function CourseDetailsAdmin() {
                                       new Date(`${year}-01-01`)
                                     }
                                     onChange={(date: Date | null) =>
-                                      handleDateChange(item.fee_head_id, date)
+                                      handleDateChange(date)
                                     }
                                     dateFormat="dd-MM-yyyy"
                                     className="w-25 border rounded px-1 py-1"
@@ -977,7 +1039,10 @@ export default function CourseDetailsAdmin() {
                                       name="fee_head_id"
                                       selected={month[item.fee_head_id] || null}
                                       onChange={(date: Date | null) =>
-                                        handleMonthChange(item.fee_head_id, date)
+                                        handleMonthChange(
+                                          item.fee_head_id,
+                                          date,
+                                        )
                                       }
                                       dateFormat="MM-yyyy"
                                       showMonthYearPicker
@@ -992,10 +1057,7 @@ export default function CourseDetailsAdmin() {
                                           new Date(`${year}-01-01`)
                                         }
                                         onChange={(date: Date | null) =>
-                                          handleDateChange(
-                                            item.fee_head_id,
-                                            date
-                                          )
+                                          handleDateChange(date)
                                         }
                                         dateFormat="dd-MM-yyyy"
                                         className="w-25 border mr-2 rounded px-1 py-1"
@@ -1013,6 +1075,12 @@ export default function CourseDetailsAdmin() {
                                   onChange={(e) => handleBillnoChange(e, item)}
                                   className="w-24 px-1 text-sm py-1 mt-1 mr-2 border border-blue-400 rounded"
                                   placeholder="Bill-No"
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter" && !e.shiftKey) {
+                                      e.preventDefault();
+                                      handleUpdate(item);
+                                    }
+                                  }}
                                 />
                               </div>
                               <div>
