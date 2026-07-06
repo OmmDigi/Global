@@ -53,7 +53,7 @@ export default function CourseDetailsAdmin() {
     [key: number]: Date | null;
   }>({});
   const [enteredAmounts, setEnteredAmounts] = useState<any>("");
-  const [enteredBillno, setEnteredBillno] = useState<any>("");
+  const [enteredBillno, setEnteredBillno] = useState<string>("");
   const [paymentMode, setPaymentMode] = useState<any>("");
 
   const [selectedDates, setSelectedDates] = useState<{
@@ -244,8 +244,8 @@ export default function CourseDetailsAdmin() {
           : Number(match.bill_no) + 1;
         setEnteredBillno((prev: any) => ({
           ...prev,
-          [MONTHLY_PAYMENT]: nextBillNo,
-          [LATE_FINE]: nextBillNo,
+          [MONTHLY_PAYMENT]: String(nextBillNo),
+          [LATE_FINE]: String(nextBillNo),
         }));
       }
     } else if (feeHeadId === LATE_FINE) {
@@ -258,7 +258,7 @@ export default function CourseDetailsAdmin() {
       if (match) {
         setEnteredBillno((prev: any) => ({
           ...prev,
-          [LATE_FINE]: match.bill_no,
+          [LATE_FINE]: String(match.bill_no),
         }));
       }
     }
