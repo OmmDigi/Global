@@ -126,6 +126,9 @@ export default function CourseDetailsAdmin() {
     const storedDate = loadStoredDate(PAYMENT_DATE_KEY);
     const storedMonth = loadStoredDate(PAYMENT_MONTH_KEY);
 
+    updateMonthlyPaymentBillNumber(MONTHLY_PAYMENT, storedMonth);
+    // updateMonthlyPaymentBillNumber(LATE_FINE, storedMonth);
+
     setSelectedDates((prev) => {
       const updated = { ...prev };
       ids.forEach((fid: number) => {
@@ -215,20 +218,10 @@ export default function CourseDetailsAdmin() {
     });
   };
 
-  const handleMonthChange = (feeHeadId: number, date: Date | null) => {
-    const ids =
-      feesStructure?.data?.fee_structure_info?.map(
-        (item: any) => item.fee_head_id,
-      ) || [];
-    setMonth((prev) => {
-      const updated = { ...prev };
-      ids.forEach((fid: number) => {
-        updated[fid] = date;
-      });
-      return updated;
-    });
-
-    if (!date) return;
+  const updateMonthlyPaymentBillNumber = (
+    feeHeadId: number,
+    date: Date | null,
+  ) => {
     const history = feesStructure?.data?.payments_history || [];
 
     if (feeHeadId === MONTHLY_PAYMENT) {
@@ -262,6 +255,23 @@ export default function CourseDetailsAdmin() {
         }));
       }
     }
+  };
+
+  const handleMonthChange = (feeHeadId: number, date: Date | null) => {
+    const ids =
+      feesStructure?.data?.fee_structure_info?.map(
+        (item: any) => item.fee_head_id,
+      ) || [];
+    setMonth((prev) => {
+      const updated = { ...prev };
+      ids.forEach((fid: number) => {
+        updated[fid] = date;
+      });
+      return updated;
+    });
+
+    if (!date) return;
+    updateMonthlyPaymentBillNumber(feeHeadId, date);
   };
 
   // const onChange = (e: any) => {
