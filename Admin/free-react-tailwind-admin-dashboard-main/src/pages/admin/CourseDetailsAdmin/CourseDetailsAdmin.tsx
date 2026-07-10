@@ -240,6 +240,12 @@ export default function CourseDetailsAdmin() {
           [MONTHLY_PAYMENT]: String(nextBillNo),
           [LATE_FINE]: String(nextBillNo),
         }));
+      } else {
+        setEnteredBillno((prev: any) => ({
+          ...prev,
+          [MONTHLY_PAYMENT]: "",
+          [LATE_FINE]: "",
+        }));
       }
     } else if (feeHeadId === LATE_FINE) {
       const selectedMonth = dayjs(date).format("YYYY-MM");
@@ -251,7 +257,13 @@ export default function CourseDetailsAdmin() {
       if (match) {
         setEnteredBillno((prev: any) => ({
           ...prev,
+          // [MONTHLY_PAYMENT]: String(match.bill_no),
           [LATE_FINE]: String(match.bill_no),
+        }));
+      } else {
+        setEnteredBillno((prev: any) => ({
+          ...prev,
+          [LATE_FINE]: "",
         }));
       }
     }
