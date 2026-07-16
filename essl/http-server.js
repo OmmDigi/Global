@@ -16,8 +16,8 @@ import { generateUniqueFileName } from "./utils/generateUniqueFileName.js";
 import path from "path";
 import axios from "axios";
 
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -84,11 +84,13 @@ wss.on("connection", (ws, req) => {
       },
     ];
 
+    console.log(`[Connection Config] : ${JSON.stringify(config)}`);
+
     ws.send(
       JSON.stringify({
         action: "connect_device",
         deviceinfo,
-      })
+      }),
     );
   } catch (error) {
     console.error("Error processing device info:", error.message);
@@ -102,7 +104,6 @@ wss.on("connection", (ws, req) => {
       if (data && data.action === "connection_failed") {
         console.log(`Connection failed for device ${deviceId}`);
         console.log(`[Connection Error] : ${JSON.stringify(data)}`);
-        console.log(`[Connection Config] : ${JSON.stringify(config)}`);
         clients.delete(deviceId);
       }
 
@@ -116,9 +117,7 @@ wss.on("connection", (ws, req) => {
           "utf-8",
           (err) => {
             if (err) {
-              console.log(
-                `Something went wrong while creating ${fileName}`
-              );
+              console.log(`Something went wrong while creating ${fileName}`);
               return;
             }
             //attendance logs successfully created
@@ -133,10 +132,10 @@ wss.on("connection", (ws, req) => {
               .catch((reason) =>
                 console.log(
                   "Error while trigger process attendance api",
-                  reason
-                )
+                  reason,
+                ),
               );
-          }
+          },
         );
       }
 
