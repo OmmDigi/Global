@@ -90,15 +90,24 @@ async function connectDevice(deviceinfo) {
 
     console.log("✅ Connected to ESSL devices");
 
-    return zkInstances;
+    return {
+      success : true,
+      instances : zkInstances,
+      message : "Connection Successfully Completed"
+    };
   } catch (err) {
     console.error("❌ Failed to connect to device:", err);
-    return null;
+    return {
+      success : false,
+      instances : null,
+      messaga : err
+    };
   }
 }
 
 function connectWebSocket() {
   let zks = null;
+  let connectionError = null;
 
   const wsUrl = `${config.cloud_api_url.replace(/^https/, "wss")}/device`;
 
@@ -119,11 +128,15 @@ function connectWebSocket() {
 
       if (data.action === "connect_device") {
         // get the array of device info ips : [], ports : []
-        zks = await connectDevice(data.deviceinfo);
+        let connectionResponse = await connectDevice(data.deviceinfo);
+        zks = connectionResponse.instances;
+        if(connectionResponse.success) {
+          connectionError = connectionResponse.messaga;
+        }
       }
 
       if (!zks || zks.length === 0) {
-        ws.send(JSON.stringify({ action: "connection_failed" }));
+        ws.send(JSON.stringify({ action: "connection_failed", error : connectionError }));
         console.error("❌ Could not start bridge. Check device connection.");
         return;
       }

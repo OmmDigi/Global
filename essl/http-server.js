@@ -84,8 +84,6 @@ wss.on("connection", (ws, req) => {
       },
     ];
 
-    console.log(`[Connection Config] : ${JSON.stringify(config)}`);
-
     ws.send(
       JSON.stringify({
         action: "connect_device",
