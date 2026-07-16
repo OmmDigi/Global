@@ -101,6 +101,7 @@ wss.on("connection", (ws, req) => {
       const data = JSON.parse(msg.toString());
       if (data && data.action === "connection_failed") {
         console.log(`Connection failed for device ${deviceId}`);
+        console.log(`Connection [Error] : ${JSON.stringify(data)}`);
         clients.delete(deviceId);
       }
 
