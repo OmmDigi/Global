@@ -116,7 +116,7 @@ function page() {
                       <td className="px-4 py-2 font-semibold">
                         MINIMUM QUALIFICATION:
                       </td>
-                      <td className="px-4 py-2">Madhyamik</td>
+                      <td className="px-4 py-2">H.S Pass</td>
                     </tr>
                     <tr className="bg-orange-100">
                       <td className="px-4 py-2 font-semibold">
@@ -127,7 +127,7 @@ function page() {
                         <br />
                         2) Attested Copies of Last Passed Marksheet
                         <br />
-                        3) Madhyamik Admit Card
+                        3) H.S Admit Card
                         <br />
                         4) Any Photo ID Proof
                       </td>
