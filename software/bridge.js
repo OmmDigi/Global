@@ -91,16 +91,16 @@ async function connectDevice(deviceinfo) {
     console.log("✅ Connected to ESSL devices");
 
     return {
-      success : true,
-      instances : zkInstances,
-      message : "Connection Successfully Completed"
+      success: true,
+      instances: zkInstances,
+      message: "Connection Successfully Completed"
     };
   } catch (err) {
     console.error("❌ Failed to connect to device:", err);
     return {
-      success : false,
-      instances : null,
-      messaga : err
+      success: false,
+      instances: null,
+      messaga: err
     };
   }
 }
@@ -130,23 +130,23 @@ function connectWebSocket() {
         // get the array of device info ips : [], ports : []
         let connectionResponse = await connectDevice(data.deviceinfo);
         zks = connectionResponse.instances;
-        if(connectionResponse.success) {
+        if (!connectionResponse.success) {
           connectionError = connectionResponse.messaga;
         }
       }
 
       if (!zks || zks.length === 0) {
-        ws.send(JSON.stringify({ action: "connection_failed", error : connectionError }));
+        ws.send(JSON.stringify({ action: "connection_failed", error: connectionError }));
         console.error("❌ Could not start bridge. Check device connection.");
         return;
       }
 
 
       // get all attendance logs from the device and send to the cloud
-      if(data.action === "set_attendance_logs") {
+      if (data.action === "set_attendance_logs") {
         // send the log to the essl ws sever
         const logs = await zks[0].getAttendances();
-        ws.send(JSON.stringify({ action : "attendance_logs", message : logs}));
+        ws.send(JSON.stringify({ action: "attendance_logs", message: logs }));
         return;
       }
 
@@ -154,10 +154,10 @@ function connectWebSocket() {
         data.action === "add_employee"
           ? "add"
           : data.action === "delete_employee"
-          ? "delete"
-          : data.action === "update_employee"
-          ? "update"
-          : null;
+            ? "delete"
+            : data.action === "update_employee"
+              ? "update"
+              : null;
 
       if (syncAction != null) {
         syncUserToDevices(syncAction, zks, data.user);

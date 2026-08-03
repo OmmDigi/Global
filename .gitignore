@@ -6,3 +6,5 @@ conf.php
 attendance-logs/*
 /migrate-old
 /migrate-old/**
+db-backup.sh
+/global_db_backup_tmp
