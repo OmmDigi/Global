@@ -4266,8 +4266,8 @@ export const totalPaymentReport = asyncErrorHandler(async (req, res) => {
     filterValues.push(value.mode);
   }
 
-  console.log(filter);
-  console.log(filterValues);
+  // console.log(filter);
+  // console.log(filterValues);
 
   // Set response headers for streaming
   res.setHeader(
@@ -4409,10 +4409,10 @@ export const totalPaymentReport = asyncErrorHandler(async (req, res) => {
       // will increase serial number if the current course is diffrent than previous one
       srNumber += 1;
 
-      // now marge the previous rows if exist
-      // if the margeFrom and margeTo is not 0 than marge them it will mean it is not the first loop
+      // now marge the previous course rows if it had more than one row
+      // a single row course needs no marge, only the total value below
 
-      if (margeFrom != 0 && margeTo != 0) {
+      if (margeTo > margeFrom) {
         // marge A (Sr Number) col
         worksheet.mergeCells(`A${margeFrom}:A${margeTo}`);
 
@@ -4452,7 +4452,9 @@ export const totalPaymentReport = asyncErrorHandler(async (req, res) => {
       worksheet.getCell(`D${excelRow.number}`).numFmt = "#,##,##0.00";
       worksheet.getCell(`E${excelRow.number}`).numFmt = "#,##,##0.00";
 
+      // reset both pointers to the first row of the new course
       margeFrom = excelRow.number;
+      margeTo = excelRow.number;
 
       currentCourseId = data.course_id;
 
@@ -4481,8 +4483,8 @@ export const totalPaymentReport = asyncErrorHandler(async (req, res) => {
   });
 
   pgStream.on("end", () => {
-    if (margeFrom != 0 && margeTo != 0) {
-      try {
+    if (margeFrom != 0) {
+      if (margeTo > margeFrom) {
         // marge A (Sr Number) col
         worksheet.mergeCells(`A${margeFrom}:A${margeTo}`);
 
@@ -4491,7 +4493,7 @@ export const totalPaymentReport = asyncErrorHandler(async (req, res) => {
 
         // marge F (Total Collection) col
         worksheet.mergeCells(`F${margeFrom}:F${margeTo}`);
-      } catch {}
+      }
 
       // get the total amount cell
       const totalAmountCell = worksheet.getCell(`F${margeFrom}`);
