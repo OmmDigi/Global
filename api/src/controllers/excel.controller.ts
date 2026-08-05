@@ -4378,8 +4378,8 @@ export const totalPaymentReport = asyncErrorHandler(async (req, res) => {
       LEFT JOIN course_fee_head cfh
       ON cfh.id = p.fee_head_id
 
-      LEFT JOIN fillup_forms ff
-      ON ff.id = p.form_id
+      -- LEFT JOIN fillup_forms ff
+      -- ON ff.id = p.form_id
 
       ${filter}
 
