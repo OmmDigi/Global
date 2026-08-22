@@ -1,6 +1,6 @@
 {
   "name": "global-technical",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "Global Technical Institute Crm",
   "main": "main.js",
   "scripts": {
@@ -16,7 +16,7 @@
   "author": "Omm Digital Soluction",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^37.3.0",
+    "electron": "^22.3.27",
     "electron-builder": "^26.0.12"
   },
   "dependencies": {
