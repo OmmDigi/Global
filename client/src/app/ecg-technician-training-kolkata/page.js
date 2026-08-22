@@ -58,7 +58,10 @@ function page() {
               <tbody>
                 <tr className="bg-blue-100">
                   <td className="p-3 font-semibold w-1/3">COURSE NAME:</td>
-                  <td className="p-3">ECG Technician Training</td>
+                  <td className="p-3">
+                    Certificate course in ECG technician / Diploma in ECG
+                    technician
+                  </td>
                 </tr>
                 <tr className="bg-orange-100">
                   <td className="p-3 font-semibold">CERTIFICATE:</td>
@@ -66,7 +69,7 @@ function page() {
                 </tr>
                 <tr className="bg-blue-100">
                   <td className="p-3 font-semibold">COURSE DURATION:</td>
-                  <td className="p-3">For 6 Months</td>
+                  <td className="p-3">For 6 Months / 1 year</td>
                 </tr>
                 <tr className="bg-orange-100">
                   <td className="p-3 font-semibold">SESSION:</td>
