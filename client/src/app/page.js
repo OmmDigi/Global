@@ -412,6 +412,102 @@ export default function Home() {
                     </div>
                   </Link>
                 </div>
+                <div className="mx-4 flex justify-center items-center h-full transition-transform duration-300 hover:scale-105">
+                  <Link
+                    href="/ot-technician-training"
+                    className="min-w-[300px]  gap-10 bg-white shadow-md hover:shadow-xl cursor-pointer transition"
+                  >
+                    <Image
+                      src="/image/ot/ot_tehnician-400x300.webp"
+                      alt="OT Technician Training"
+                      className="   w-full h-48 object-cover p-5"
+                      height={48}
+                      width={300}
+                    />
+                    <div className="p-4 text-center">
+                      <h4 className="text-lg text-red-500 font-semibold mb-2">
+                        OT Technician Training
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        Master the art of surgical assistance
+                      </p>
+                      <p className="flex justify-end items-center font-bold text-blue-600">
+                        For Detail
+                        <Image
+                          src="image/right-arrow.gif"
+                          className="  w-10 h-10   object-cover"
+                          alt="right-arrow"
+                          height={10}
+                          width={300}
+                        />
+                      </p>
+                    </div>
+                  </Link>
+                </div>
+                <div className="mx-4 flex justify-center items-center h-full transition-transform duration-300 hover:scale-105">
+                  <Link
+                    href="/x-ray"
+                    className="min-w-[300px]  gap-10 bg-white shadow-md hover:shadow-xl cursor-pointer transition"
+                  >
+                    <Image
+                      src="/image/x-ray/WhatsApp-Image-2025-02-13-at-2.21.07-PM-1-1-1063x800.webp"
+                      alt="X-Ray Technician Training"
+                      className="   w-full h-48 object-cover p-5"
+                      height={48}
+                      width={300}
+                    />
+                    <div className="p-4 text-center">
+                      <h4 className="text-lg text-red-500 font-semibold mb-2">
+                        X-Ray Technician Training
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        Capture high-quality X-ray images
+                      </p>
+                      <p className="flex justify-end items-center font-bold text-blue-600">
+                        For Detail
+                        <Image
+                          src="image/right-arrow.gif"
+                          className="  w-10 h-10   object-cover"
+                          alt="right-arrow"
+                          height={10}
+                          width={300}
+                        />
+                      </p>
+                    </div>
+                  </Link>
+                </div>
+                <div className="mx-4 flex justify-center items-center h-full transition-transform duration-300 hover:scale-105">
+                  <Link
+                    href="/cmsed"
+                    className="min-w-[300px]  gap-10 bg-white shadow-md hover:shadow-xl cursor-pointer transition"
+                  >
+                    <Image
+                      src="/image/cmsed/ot1.jpeg"
+                      alt="X-Ray Technician Training"
+                      className="   w-full h-48 object-cover p-5"
+                      height={48}
+                      width={300}
+                    />
+                    <div className="p-4 text-center">
+                      <h4 className="text-lg text-red-500 font-semibold mb-2">
+                        CMS-ED
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        MEDICAL TECHNICIAN (EMT)
+                      </p>
+                      <p className="flex justify-end items-center font-bold text-blue-600">
+                        For Detail
+                        <Image
+                          src="image/right-arrow.gif"
+                          className="  w-10 h-10   object-cover"
+                          alt="right-arrow"
+                          height={10}
+                          width={300}
+                        />
+                      </p>
+                    </div>
+                  </Link>
+                </div>
               </Carousel>
             </div>
           </div>
@@ -841,7 +937,7 @@ export default function Home() {
                 customLeftArrow={<CustomLeftArrow />}
                 customRightArrow={<CustomRightArrow />}
               >
-                  <div>
+                <div>
                   {" "}
                   <Image
                     src="/image/Collaborations/9.png"
@@ -946,7 +1042,6 @@ export default function Home() {
                     width={300}
                   />
                 </div>
-                
               </Carousel>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 items-center"></div>
