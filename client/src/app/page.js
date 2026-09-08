@@ -110,6 +110,7 @@ export default function Home() {
   const [textIndex, setTextIndex] = useState(0);
   const careerTexts = ["Career", "Future", "Dream Job", "Path", "Opportunity"];
   const [popup, setPopup] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     setTimeout(() => {
@@ -119,6 +120,13 @@ export default function Home() {
         setPopup(false);
       }
     }, 1000);
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return (
@@ -234,18 +242,18 @@ export default function Home() {
         {/* carousal card section  */}
         <div className=" grid grid-cols-1 md:grid-cols-1   bg-gray-200 overflow-hidden">
           <div className="w-full   items-start flex justify-evenly ">
-            <div className="w-full max-w-screen-xl mt-20  items-start ">
+            <div className="w-full max-w-screen-xl mt-10 md:mt-20  items-start ">
               <Carousel
-                // swipeable={true}
-                // draggable={true}
-                // autoPlay={true}
+                swipeable={true}
+                draggable={true}
+                autoPlay={isMobile}
                 responsive={responsive}
                 infinite={true}
-                autoPlaySpeed={1000}
+                autoPlaySpeed={2000}
                 keyBoardControl={true}
                 transitionDuration={500}
                 // containerClass="carousel-container"
-                itemClass="carousel-item-padding-40-px"
+                itemClass="carousel-item-padding-20-px"
                 removeArrowOnDeviceType={["tablet", "mobile"]}
                 // dotListClass="custom-dot-list-style"
                 // className="px-0.5 py-6 "
@@ -773,7 +781,7 @@ export default function Home() {
         {/* google reviews */}
         {/* <div className="max-w-7xl mx-auto bg-white">
           <div className="text-center mb-10">
-            <h4 className="text-2xl md:text-2xl  font-semibold text-blue-800  inline-block pb-2">
+            <h4 className="text-2xl md:text-2xl font-semibold text-blue-800  inline-block pb-2">
               Google Reviews
             </h4>
           </div>
