@@ -13,8 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Global Institute of Medical Sciences",
-  description: "Global Institute of Medical Sciences (GIMS) - Leading paramedical and nursing institute in Kolkata offering various courses.",
+  title: "Global Technical Institute | Best Training Institute in Kolkata",
+  description:
+    "Global Technical Institute offers career-focused Teacher, Nursing, Physiotherapy, Lab Technician, ECG, X-Ray, OT & CMS & ED training courses in Kolkata.",
+  keywords:
+    "Global Technical Institute, training institute in Kolkata, teacher training institute Kolkata, nursing training Kolkata, physiotherapy training Kolkata, lab technician training Kolkata, ECG technician training Kolkata, X-ray training Kolkata, OT technician training Kolkata, CMS ED training Kolkata, technical training institute Kolkata",
 };
 
 export default function RootLayout({ children }) {

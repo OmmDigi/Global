@@ -1,6 +1,9 @@
-﻿export const metadata = {
-  title: 'Sitemap.Xml - Global Institute of Medical Sciences',
-  description: 'Global Institute of Medical Sciences - Sitemap.Xml',
+export const metadata = {
+  title: "Sitemap | Global Technical Institute Kolkata",
+  description:
+    "Sitemap of Global Technical Institute, Kolkata.",
+  keywords:
+    "Global Technical Institute sitemap",
 };
 
 export default function Layout({ children }) {

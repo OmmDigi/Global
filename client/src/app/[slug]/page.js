@@ -19,6 +19,32 @@ async function getPost(slug) {
   return res.json();
 }
 
+export async function generateMetadata({ params }) {
+  const { slug } = await params;
+  const post = await getPost(slug);
+
+  if (!post) return {};
+
+  const description = (post.content || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&[a-z#0-9]+;/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 160);
+  const categories = post.categories?.map((cat) => cat.name) || [];
+
+  return {
+    title: `${post.title} | Global Technical Institute Kolkata`,
+    description,
+    keywords: [...categories, "Global Technical Institute", "Global Technical Institute Kolkata"].join(", "),
+    openGraph: {
+      title: post.title,
+      description,
+      images: post.thumbnail ? [post.thumbnail] : [],
+    },
+  };
+}
+
 export default async function PostDetails({ params }) {
   const post = await getPost(params?.slug);
   const category = post?.categories?.map((cat) => cat.name).join(", ");
