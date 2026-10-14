@@ -84,10 +84,11 @@ function page() {
                 </tr>
                 <tr className="bg-orange-100">
                   <td className="p-3 font-semibold">BOARD & RECOGNITION:</td>
-                  <td className="p-3 space-y-1">
-                    <div>1) BSS Promoted by Govt. of India</div>
-                    <div>2) ISO Certified Global Technical Institute</div>
-                    <div>3) Affiliated Partner NSDC</div>
+                  <td className="p-3">
+                    Our course is
+                    affiliated by World Skill Council (WSC) and Central Bharat
+                    Sevak Samaj (BSS), a National Development Agency established
+                    in 1952 by the Planning Commission, Govt. of India.
                   </td>
                 </tr>
                 <tr className="bg-blue-100">
