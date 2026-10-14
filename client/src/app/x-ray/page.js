@@ -62,9 +62,11 @@ function page() {
                 <tr class="bg-orange-100">
                   <td class="px-4 py-3 font-medium">CERTIFICATE:</td>
                   <td class="px-4 py-3">
-                    1. Certificate in X-Ray & Imaging Technology
+                    1. Certificate in X-Ray & Imaging Technician
                     <br />
                     2. Diploma in X-Ray & Imaging Technology
+                    <br />
+                    3. Diploma in Radiology & Imaging Technology
                   </td>
                 </tr>
                 <tr class="bg-blue-100">
@@ -74,9 +76,7 @@ function page() {
                 <tr class="bg-orange-100">
                   <td class="px-4 py-3 font-medium">BOARD AND RECOGNITION:</td>
                   <td class="px-4 py-3">
-                    1) BSS Promoted by Govt. of India
-                    <br />
-                    2) ISO Certified Global Technical Institute
+                    UGC Affiliated University
                   </td>
                 </tr>
                 <tr class="bg-blue-100">
@@ -91,7 +91,15 @@ function page() {
                 </tr>
                 <tr class="bg-blue-100">
                   <td class="px-4 py-3 font-medium">MINIMUM QUALIFICATION:</td>
-                  <td class="px-4 py-3">H.S Pass</td>
+                  <td class="px-4 py-3">
+                    H.S Pass (BSS)
+                    <br />
+                    H.S Pass with Science (UGC)
+                  </td>
+                </tr>
+                <tr class="bg-blue-100">
+                  <td class="px-4 py-3 font-medium">INTERNSHIP:</td>
+                  <td class="px-4 py-3">6 Months Compulsory</td>
                 </tr>
                 <tr class="bg-orange-100">
                   <td class="px-4 py-3 font-medium">DOCUMENTS REQUIRED:</td>
@@ -115,8 +123,13 @@ function page() {
             </h4>
             <div class="bg-blue-100 border border-blue-300 rounded-md p-4">
               <p>
-                <strong>MODULE:</strong> Personality development and grooming
-                session.
+                1. Personality Development & Grooming Session
+                <br />
+                2. Hands-on Practical Classes
+                <br />
+                3. Workshop
+                <br />
+                4. Clinical Assessment
               </p>
             </div>
           </div>
