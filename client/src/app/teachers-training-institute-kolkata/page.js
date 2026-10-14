@@ -72,7 +72,7 @@ function page() {
                     <tr className="bg-blue-100">
                       <td className="px-4 py-2 font-semibold">COURSE NAME:</td>
                       <td className="px-4 py-2">
-                        Primary Teacher’s Training (Based on Montessori Method)
+                        Diploma in Primary Teachers’ Training
                       </td>
                     </tr>
                     <tr className="bg-orange-100">
@@ -80,11 +80,11 @@ function page() {
                         BOARD AND RECOGNITION:
                       </td>
                       <td className="px-4 py-2">
-                        1) BSS Promoted by Govt. of India
+                        1) BSS Affiliated by Govt. of India
                         <br />
-                        2) ISO Certified Global Technical Institute
+                        2) Certification from World Skill Council (WSC)
                         <br />
-                        {/* 3) Affiliated Partner NSDC */}
+                        3) ISO Certified Global Technical Institute
                       </td>
                     </tr>
                     <tr className="bg-blue-100">
@@ -142,7 +142,29 @@ function page() {
                   <h4 className="text-blue-800 font-semibold mb-2">
                     Special Modules for Skill Development:
                   </h4>
-                  <p>Personality development and grooming session.</p>
+                  <p>
+                    1) Computer
+                    <br />
+                    2) Spoken English
+                    <br />
+                    3) Grooming & Personality Development
+                    <br />
+                    4) Phonics
+                    <br />
+                    5) Abacus
+                    <br />
+                    6) Practice Teaching
+                    <br />
+                    7) AI Based Smart Class
+                    <br />
+                    8) Interview Session
+                    <br />
+                    9) Workshop
+                    <br />
+                    10) Story Telling Class
+                    <br />
+                    11) Class Management
+                  </p>
                 </div>
               </div>
             </section>
@@ -183,7 +205,7 @@ function page() {
                     <tr className="bg-orange-100">
                       <td className="px-4 py-2 font-semibold">CERTIFICATE:</td>
                       <td className="px-4 py-2">
-                        Diploma in Elementary Education
+                        Advanced Diploma in Elementary Education
                       </td>
                     </tr>
                     <tr className="bg-blue-100">
@@ -197,17 +219,17 @@ function page() {
                         BOARD & RECOGNITION:
                       </td>
                       <td className="px-4 py-2">
-                        1) BSS Promoted by Govt. of India
+                        1) BSS Affiliated by Govt. of India
                         <br />
-                        2) ISO Certified Global Technical Institute
+                        2) Certification from World Skill Council (WSC)
                         <br />
-                        {/* 3) Affiliated Partner NSDC */}
+                        3) ISO Certified Global Technical Institute
                       </td>
                     </tr>
                     <tr className="bg-blue-100">
                       <td className="px-4 py-2 font-semibold">SESSION:</td>
                       <td className="px-4 py-2">
-                        2 Sessions (April, November)
+                        2 Sessions (May, November)
                       </td>
                     </tr>
                     <tr className="bg-orange-100">
@@ -247,7 +269,17 @@ function page() {
                   <h4 className="text-blue-800 font-semibold mb-2">
                     Special Modules for Skill Development:
                   </h4>
-                  <p>Personality development and grooming session.</p>
+                  <p>
+                    1) Personality Development & Grooming Session
+                    <br />
+                    2) Class Management System
+                    <br />
+                    3) Special Practical Session
+                    <br />
+                    4) AI Based Smart Class
+                    <br />
+                    5) Interview Related Session
+                  </p>
                 </div>
               </div>
             </section>
