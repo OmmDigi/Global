@@ -76,9 +76,9 @@ function page() {
                     <tr className="bg-orange-100">
                       <td className="px-4 py-2 font-semibold">CERTIFICATE:</td>
                       <td className="px-4 py-2">
-                        1) Certificate in Physiotherapy
+                        1) Certificate in Physiotherapy & Activity Therapy
                         <br />
-                        2) Diploma in Physiotherapy
+                        2) Diploma in Physiotherapy & Activity Therapy
                       </td>
                     </tr>
                     <tr className="bg-blue-100">
@@ -109,7 +109,9 @@ function page() {
                       <td className="px-4 py-2 font-semibold">
                         NO.OF CLASSES:
                       </td>
-                      <td className="px-4 py-2">2 Classes per week</td>
+                      <td className="px-4 py-2">
+                        2 Classes per week (Sat & Sun, 11 AM - 5 PM)
+                      </td>
                     </tr>
 
                     <tr className="bg-blue-100">
@@ -139,7 +141,17 @@ function page() {
                   <h4 className="text-blue-800 font-semibold mb-2">
                     Special Modules for Skill Development:
                   </h4>
-                  <p>Personality development and grooming session.</p>
+                  <p>
+                    1) Personality Development & Grooming Session
+                    <br />
+                    2) Hands-on Practical & Demonstration Classes
+                    <br />
+                    3) Workshop
+                    <br />
+                    4) Clinical Assessment
+                    <br />
+                    5) Patient Assistance Live Session
+                  </p>
                 </div>
               </div>
             </section>
