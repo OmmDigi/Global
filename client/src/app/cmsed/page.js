@@ -57,15 +57,16 @@ function page() {
             <tbody className="divide-y divide-gray-200">
               <tr className="bg-blue-100 ">
                 <td className="py-3 pl-3 font-semibold w-1/3">Course Name:</td>
-                <td className="py-3">CMSED</td>
+                <td className="py-3">
+                  Community Medical Services & Essential Drugs (CMS & ED)
+                </td>
               </tr>
 
               <tr className="bg-orange-100">
                 <td className="py-3 pl-3 font-semibold">Certificate:</td>
                 <td className="py-3">
-                  1. Certificate in CMSED
-                  <br />
-                  2. Diploma in CMSED
+                  Diploma in Community Medical Services & Essential Drugs (CMS
+                  & ED)
                 </td>
               </tr>
 
@@ -78,11 +79,7 @@ function page() {
                 <td className="py-3 pl-3 font-semibold">
                   Board & Recognition:
                 </td>
-                <td className="py-3">
-                  1. ISO Certified Global Technical Institute
-                  <br />
-                  2. UGC Approved Universities
-                </td>
+                <td className="py-3">UGC Recognition, Affiliated Universities</td>
               </tr>
 
               <tr className="bg-blue-100">
@@ -92,14 +89,14 @@ function page() {
 
               <tr className="bg-orange-100">
                 <td className="py-3 pl-3 font-semibold">No. of Classes:</td>
-                <td className="py-3">1 className per week</td>
+                <td className="py-3">1 class per week</td>
               </tr>
 
               <tr className="bg-blue-100">
                 <td className="py-3 pl-3 font-semibold">
                   Minimum Qualification:
                 </td>
-                <td className="py-3">H.S Pass</td>
+                <td className="py-3">Madhyamik</td>
               </tr>
 
               <tr className="bg-orange-100">
@@ -107,13 +104,27 @@ function page() {
                 <td className="py-3">
                   1. Photos (6 copies)
                   <br />
-                  2. Madhyamik & HS Result & Certificate
+                  2. Result (Madhyamik / HS)
                   <br />
-                  3. Madhyamik Admit Card
+                  3. Certificate (Madhyamik / HS)
                   <br />
-                  4. Any Photo ID Proof
+                  4. Admit Card (Madhyamik / HS)
+                </td>
+              </tr>
+
+              <tr className="bg-blue-100">
+                <td className="py-3 pl-3 font-semibold">Internship:</td>
+                <td className="py-3">3 or 6 Months</td>
+              </tr>
+
+              <tr className="bg-orange-100">
+                <td className="py-3 pl-3 font-semibold">Special Module:</td>
+                <td className="py-3">
+                  1. Clinical Assessment
                   <br />
-                  5. Migration Certificate
+                  2. Workshop
+                  <br />
+                  3. Hands-on Practical Classes
                 </td>
               </tr>
             </tbody>
