@@ -187,10 +187,7 @@ function page() {
                     <tr className="bg-orange-100">
                       <td className="px-4 py-2 font-semibold">CERTIFICATE:</td>
                       <td className="px-4 py-2">
-                        1) Diploma in Elementary Education
-                        <br />
-                        2) Govt. Registered Certificate on General Nursing
-                        Midwifery
+                        GNM Certificate
                       </td>
                     </tr>
                     <tr className="bg-blue-100">
@@ -204,50 +201,21 @@ function page() {
                         BOARD & RECOGNITION:
                       </td>
                       <td className="px-4 py-2">
-                        1) BSS Promoted by Govt. of India
-                        <br />
-                        2) ISO Certified Global Technical Institute
+                        WBNC & INC Approved College
                       </td>
                     </tr>
                     <tr className="bg-blue-100">
                       <td className="px-4 py-2 font-semibold">SESSION:</td>
-                      <td className="px-4 py-2">1 session (Aug-Sep)</td>
+                      <td className="px-4 py-2">Only 1 session</td>
                     </tr>
                     <tr className="bg-orange-100">
-                      <td className="px-4 py-2 font-semibold">
-                        NO. OF CLASSES:
-                      </td>
-                      <td className="px-4 py-2">3 classes per week</td>
-                    </tr>
-                    <tr className="bg-blue-100">
                       <td className="px-4 py-2 font-semibold">
                         MINIMUM QUALIFICATION:
                       </td>
                       <td className="px-4 py-2">H.S pass</td>
                     </tr>
-                    <tr className="bg-orange-100">
-                      <td className="px-4 py-2 font-semibold">
-                        DOCUMENTS REQUIRED:
-                      </td>
-                      <td className="px-4 py-2">
-                        1) Photo (6 Copies)
-                        <br />
-                        2) Last Passed Mark Sheet (Attested)
-                        <br />
-                        3) Madhyamik Admit Card
-                        <br />
-                        4) Any Photo ID Proof
-                      </td>
-                    </tr>
                   </tbody>
                 </table>
-
-                <div className="bg-gray-100 p-4 rounded-md">
-                  <h4 className="text-blue-800 font-semibold mb-2">
-                    Special Modules for Skill Development:
-                  </h4>
-                  <p>Personality development and grooming session.</p>
-                </div>
               </div>
             </section>
           )}
