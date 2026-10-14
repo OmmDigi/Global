@@ -42,30 +42,31 @@ function page() {
               <tbody>
                 <tr className="bg-blue-100 text-gray-900 font-semibold">
                   <td className="px-4 py-3 w-1/3">COURSE NAME:</td>
-                  <td className="px-4 py-3">OT Technician Training</td>
+                  <td className="px-4 py-3">OT Technology Training</td>
                 </tr>
                 <tr className="bg-orange-100">
                   <td className="px-4 py-3 font-medium">CERTIFICATE:</td>
                   <td className="px-4 py-3">
-                    1) Certificate in OT Technician
+                    1) Certificate in Operation Theatre Technician
                     <br />
-                    2) Diploma in OT Technician
+                    2) Diploma in Operation Theatre Technology
                   </td>
                 </tr>
                 <tr className="bg-blue-100">
                   <td className="px-4 py-3 font-medium">COURSE DURATION:</td>
-                  <td className="px-4 py-3">1 year</td>
+                  <td className="px-4 py-3">2 years</td>
                 </tr>
                 <tr className="bg-orange-100">
                   <td className="px-4 py-3 font-medium">
                     BOARD AND RECOGNITION:
                   </td>
                   <td className="px-4 py-3">
-                    1) BSS Promoted by Govt. of India
+                    UGC Affiliated University
                     <br />
-                    2) ISO Certified Global Technical Institute
-                    <br />
-                    3) Affiliated Partner NSDC
+                    Our course is affiliated by World Skill Council (WSC) and
+                    Central Bharat Sevak Samaj (BSS), a National Development
+                    Agency established in 1952 by the Planning Commission, Govt.
+                    of India.
                   </td>
                 </tr>
                 <tr className="bg-blue-100">
@@ -76,7 +77,9 @@ function page() {
                 </tr>
                 <tr className="bg-orange-100">
                   <td className="px-4 py-3 font-medium">NO. OF CLASSES:</td>
-                  <td className="px-4 py-3">2 classes per week</td>
+                  <td className="px-4 py-3">
+                    2 classes per week (Sat & Sun, 10 AM - 7 PM)
+                  </td>
                 </tr>
                 <tr className="bg-blue-100">
                   <td className="px-4 py-3 font-medium">
@@ -96,6 +99,10 @@ function page() {
                     4) Any Photo I.D Proof
                   </td>
                 </tr>
+                <tr className="bg-blue-100">
+                  <td className="px-4 py-3 font-medium">INTERNSHIP:</td>
+                  <td className="px-4 py-3">6 Months / 1 Year</td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -106,8 +113,13 @@ function page() {
             </h4>
             <div className="bg-blue-100 border border-blue-300 rounded-md p-4">
               <p>
-                <strong>MODULE:</strong> Personality development and grooming
-                session.
+                1) Personality Development & Grooming Classes
+                <br />
+                2) Workshop
+                <br />
+                3) Hands-on Practical Classes & Demonstration Classes
+                <br />
+                4) Interview Session
               </p>
             </div>
           </div>
