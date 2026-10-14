@@ -42,11 +42,15 @@ function page() {
             <tbody>
               <tr className="bg-blue-100">
                 <td className="font-semibold px-4 py-2">COURSE NAME:</td>
-                <td className="px-4 py-2">Medical Lab Technician Training</td>
+                <td className="px-4 py-2">Medical Laboratory Technology Training</td>
               </tr>
               <tr className="bg-orange-100">
                 <td className="font-semibold px-4 py-2">CERTIFICATE:</td>
-                <td className="px-4 py-2">Diploma in Medical Lab Technician</td>
+                <td className="px-4 py-2">
+                  1) Certificate in Medical Laboratory Technician (CMLT)
+                  <br />
+                  2) Diploma in Medical Laboratory Technology (DMLT)
+                </td>
               </tr>
               <tr className="bg-blue-100">
                 <td className="font-semibold px-4 py-2">COURSE DURATION:</td>
@@ -61,11 +65,12 @@ function page() {
                   BOARD AND RECOGNITION:
                 </td>
                 <td className="px-4 py-2">
-                  1) BSS Promoted by Govt. of India
+                  UGC Affiliated University
                   <br />
-                  2) ISO Certified Global Technical Institute
-                  <br />
-                  3) Affiliated Partner NSDC
+                  Our course is affiliated by World Skill Council (WSC) and
+                  Central Bharat Sevak Samaj (BSS), a National Development
+                  Agency established in 1952 by the Planning Commission, Govt.
+                  of India.
                 </td>
               </tr>
               <tr className="bg-blue-100">
@@ -76,7 +81,7 @@ function page() {
               </tr>
               <tr className="bg-orange-100">
                 <td className="font-semibold px-4 py-2">NO. OF CLASSES:</td>
-                <td className="px-4 py-2">2 classes per week</td>
+                <td className="px-4 py-2">2 classes per week (Sat & Sun)</td>
               </tr>
               <tr className="bg-blue-100">
                 <td className="font-semibold px-4 py-2">
@@ -96,6 +101,10 @@ function page() {
                   4) Any Photo I.D Proof
                 </td>
               </tr>
+              <tr className="bg-blue-100">
+                <td className="font-semibold px-4 py-2">INTERNSHIP:</td>
+                <td className="px-4 py-2">6 Months (Compulsory)</td>
+              </tr>
             </tbody>
           </table>
 
@@ -106,9 +115,17 @@ function page() {
             <table className="w-full text-sm border border-gray-300">
               <tbody>
                 <tr className="bg-blue-100">
-                  <td className="px-4 py-2 font-medium">MODULE</td>
+                  <td className="px-4 py-2 font-medium">MODULES</td>
                   <td className="px-4 py-2">
-                    Personality development and grooming Session.
+                    1) Personality Development & Grooming
+                    <br />
+                    2) Hands-on Practical Training
+                    <br />
+                    3) Workshop
+                    <br />
+                    4) Interview Session
+                    <br />
+                    5) Clinical Assessment
                   </td>
                 </tr>
               </tbody>
