@@ -50,7 +50,7 @@ function page() {
             <div className="pr-4 pt-1">
               {montessoriTeachers ? <FaMinus /> : <FaPlus />}
             </div>
-            Auxiliary Nursing Midwifery
+            Auxiliary Nursing and Midwifery (ANM)
           </div>
           {montessoriTeachers && (
             <section className="grid grid-cols-1 md:grid-cols-12 gap-6 max-w-6xl mx-auto px-4 py-10 bg-white text-gray-800">
@@ -72,14 +72,14 @@ function page() {
                   <tbody>
                     <tr className="bg-blue-100">
                       <td className="px-4 py-2 font-semibold">COURSE NAME:</td>
-                      <td className="px-4 py-2">Auxiliary Nursing Midwifery</td>
+                      <td className="px-4 py-2">
+                        Auxiliary Nursing and Midwifery (ANM)
+                      </td>
                     </tr>
                     <tr className="bg-orange-100">
                       <td className="px-4 py-2 font-semibold">CERTIFICATE:</td>
                       <td className="px-4 py-2">
-                        1) Diploma in Patient Care
-                        <br />
-                        2) Govt. Registered Certificate on Auxiliary Nursing
+                        Govt. Registered Certificate on Auxiliary Nursing &
                         Midwifery
                       </td>
                     </tr>
@@ -98,20 +98,16 @@ function page() {
                         <br />
                         2) ISO Certified Global Technical Institute
                         <br />
-                        3) Affiliated Partner NSDC
-                      </td>
-                    </tr>
-                    <tr className="bg-blue-100">
-                      <td className="px-4 py-2 font-semibold">SESSION:</td>
-                      <td className="px-4 py-2">
-                        3 sessions (January, May, September)
+                        {/* 3) Affiliated Partner NSDC */}
                       </td>
                     </tr>
                     <tr className="bg-orange-100">
                       <td className="px-4 py-2 font-semibold">
                         NO.OF CLASSES:
                       </td>
-                      <td className="px-4 py-2">2 classes per week</td>
+                      <td className="px-4 py-2">
+                        2 classes per week (Sat & Sun, 10 AM - 3 PM)
+                      </td>
                     </tr>
                     <tr className="bg-blue-100">
                       <td className="px-4 py-2 font-semibold">SESSION:</td>
@@ -139,6 +135,10 @@ function page() {
                         4) Any Photo ID Proof
                       </td>
                     </tr>
+                    <tr className="bg-blue-100">
+                      <td className="px-4 py-2 font-semibold">INTERNSHIP:</td>
+                      <td className="px-4 py-2">6 Months / 1 Year</td>
+                    </tr>
                   </tbody>
                 </table>
 
@@ -146,7 +146,17 @@ function page() {
                   <h4 className="text-blue-800 font-semibold mb-2">
                     Special Modules for Skill Development:
                   </h4>
-                  <p>Personality development and grooming session.</p>
+                  <p>
+                    1) Personality Development and Grooming Session
+                    <br />
+                    2) Interview Related Session
+                    <br />
+                    3) Hands-on Practical Training
+                    <br />
+                    4) Workshop
+                    <br />
+                    5) Emergency & Assessment Session
+                  </p>
                 </div>
               </div>
             </section>

@@ -217,9 +217,9 @@ function page() {
             <ul className="list-disc list-inside text-gray-600 mt-2 space-y-1">
               <li>BSS Promoted by Govt. of India</li>
               <li>ISO Certified Global Technical Institute</li>
-              <li>
+              {/* <li>
                 Affiliated Partner NSDC (National Skill Development Corporation)
-              </li>
+              </li> */}
             </ul>
           </section>
 

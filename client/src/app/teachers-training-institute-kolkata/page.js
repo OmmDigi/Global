@@ -84,7 +84,7 @@ function page() {
                         <br />
                         2) ISO Certified Global Technical Institute
                         <br />
-                        3) Affiliated Partner NSDC
+                        {/* 3) Affiliated Partner NSDC */}
                       </td>
                     </tr>
                     <tr className="bg-blue-100">
@@ -201,7 +201,7 @@ function page() {
                         <br />
                         2) ISO Certified Global Technical Institute
                         <br />
-                        3) Affiliated Partner NSDC
+                        {/* 3) Affiliated Partner NSDC */}
                       </td>
                     </tr>
                     <tr className="bg-blue-100">
