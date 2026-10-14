@@ -65,7 +65,10 @@ function page() {
                 </tr>
                 <tr className="bg-orange-100">
                   <td className="p-3 font-semibold">CERTIFICATE:</td>
-                  <td className="p-3">ECG Technician</td>
+                  <td className="p-3 space-y-1">
+                    <div>1) Certificate in ECG Technician</div>
+                    <div>2) Diploma in ECG Technician</div>
+                  </td>
                 </tr>
                 <tr className="bg-blue-100">
                   <td className="p-3 font-semibold">COURSE DURATION:</td>
@@ -77,7 +80,7 @@ function page() {
                 </tr>
                 <tr className="bg-blue-100">
                   <td className="p-3 font-semibold">NO. OF CLASSES:</td>
-                  <td className="p-3">1 className per week</td>
+                  <td className="p-3">1 class per week</td>
                 </tr>
                 <tr className="bg-orange-100">
                   <td className="p-3 font-semibold">BOARD & RECOGNITION:</td>
@@ -117,10 +120,22 @@ function page() {
               </thead>
               <tbody>
                 <tr>
-                  <td className="p-3">Personality Development</td>
+                  <td className="p-3">1) Personality Development</td>
                   <td className="p-3">
                     Personality development and grooming session
                   </td>
+                </tr>
+                <tr>
+                  <td className="p-3">2) Hands-on Practical Classes</td>
+                  <td className="p-3">Hands-on practical classes</td>
+                </tr>
+                <tr>
+                  <td className="p-3">3) Workshop</td>
+                  <td className="p-3">Workshop</td>
+                </tr>
+                <tr>
+                  <td className="p-3">4) Clinical Assessment</td>
+                  <td className="p-3">Clinical assessment</td>
                 </tr>
               </tbody>
             </table>
