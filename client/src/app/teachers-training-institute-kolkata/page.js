@@ -92,7 +92,7 @@ function page() {
                         NATURE OF CERTIFICATE:
                       </td>
                       <td className="px-4 py-2">
-                        Diploma in Primary Teachers' Training
+                        Diploma in Primary Teachers&apos; Training
                       </td>
                     </tr>
                     <tr className="bg-orange-100">
@@ -200,7 +200,7 @@ function page() {
                   <tbody>
                     <tr className="bg-blue-100">
                       <td className="px-4 py-2 font-semibold">COURSE NAME:</td>
-                      <td className="px-4 py-2">Senior Teachers' Training</td>
+                      <td className="px-4 py-2">Senior Teachers&apos; Training</td>
                     </tr>
                     <tr className="bg-orange-100">
                       <td className="px-4 py-2 font-semibold">CERTIFICATE:</td>
