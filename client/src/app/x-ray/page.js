@@ -76,7 +76,11 @@ function page() {
                 <tr class="bg-orange-100">
                   <td class="px-4 py-3 font-medium">BOARD AND RECOGNITION:</td>
                   <td class="px-4 py-3">
-                    UGC Affiliated University
+                    1. Central Bharat Sevak Samaj (BSS)
+                    <br />
+                    2. World Skill Council (WSC)
+                    <br />
+                    3. UGC Affiliated University
                   </td>
                 </tr>
                 <tr class="bg-blue-100">

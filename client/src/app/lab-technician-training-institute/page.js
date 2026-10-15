@@ -65,12 +65,11 @@ function page() {
                   BOARD AND RECOGNITION:
                 </td>
                 <td className="px-4 py-2">
-                  UGC Affiliated University
+                  1. Central Bharat Sevak Samaj (BSS)
                   <br />
-                  Our course is affiliated by World Skill Council (WSC) and
-                  Central Bharat Sevak Samaj (BSS), a National Development
-                  Agency established in 1952 by the Planning Commission, Govt.
-                  of India.
+                  2. World Skill Council (WSC)
+                  <br />
+                  3. UGC Affiliated University
                 </td>
               </tr>
               <tr className="bg-blue-100">

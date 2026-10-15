@@ -95,8 +95,8 @@ function page() {
                         1) BSS Promoted by Govt. of India
                         <br />
                         2) ISO Certified Global Technical Institute
-                        <br />
-                        3) Affiliated Partner NSDC
+                        {/* <br />
+                        3) Affiliated Partner NSDC */}
                       </td>
                     </tr>
                     <tr className="bg-blue-100">

@@ -85,10 +85,13 @@ function page() {
                 <tr className="bg-orange-100">
                   <td className="p-3 font-semibold">BOARD & RECOGNITION:</td>
                   <td className="p-3">
-                    Our course is
+                    {/* Our course is
                     affiliated by World Skill Council (WSC) and Central Bharat
                     Sevak Samaj (BSS), a National Development Agency established
-                    in 1952 by the Planning Commission, Govt. of India.
+                    in 1952 by the Planning Commission, Govt. of India. */}
+                    1. Central Bharat Sevak Samaj (BSS)
+                    <br />
+                    2. World Skill Council (WSC)
                   </td>
                 </tr>
                 <tr className="bg-blue-100">
