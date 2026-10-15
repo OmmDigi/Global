@@ -214,13 +214,13 @@ function page() {
             <h3 className="text-2xl font-semibold text-gray-800">
               Board and Recognition
             </h3>
-            <ul className="list-disc list-inside text-gray-600 mt-2 space-y-1">
-              <li>BSS Promoted by Govt. of India</li>
-              <li>ISO Certified Global Technical Institute</li>
-              {/* <li>
-                Affiliated Partner NSDC (National Skill Development Corporation)
-              </li> */}
-            </ul>
+            <p className="text-gray-600 mt-2">
+              At Global Technical Institute, we take pride in our affiliation
+              with esteemed organizations. Our course is affiliated with World
+              Skill Council (WSC) and Central Bharat Sevak Samaj (BSS), a
+              National Development Agency established in 1952 by the Planning
+              Commission, Govt. of India.
+            </p>
           </section>
 
           <section>
@@ -316,7 +316,7 @@ function page() {
                   Q: Is the training institute recognized?
                 </h4>
                 <p className="text-gray-600">
-                  A: Yes, BSS promoted, ISO certified, NSDC affiliated.
+                  A: Yes, BSS promoted and ISO certified.
                 </p>
               </div>
               <div>

@@ -326,9 +326,10 @@ function page() {
           </h2>
           <p>
             At Global Technical Institute, we take pride in our affiliation with
-            esteemed organizations. Our course is promoted by the Government of
-            India through the BSS board. We are ISO Certified and an affiliated
-            partner of NSDC.
+            esteemed organizations. Our course is affiliated with World Skill
+            Council (WSC) and Central Bharat Sevak Samaj (BSS), a National
+            Development Agency established in 1952 by the Planning Commission,
+            Govt. of India.
           </p>
         </div>
 
@@ -361,7 +362,7 @@ function page() {
             Course Duration and Schedule:
           </h2>
           <p>
-            The program spans 1 year with flexible options: three classes per
+            The program spans 2 year with flexible options: three classes per
             week or weekend classes. Both online and offline modes are
             available.
           </p>

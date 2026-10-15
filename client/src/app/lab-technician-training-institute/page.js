@@ -158,9 +158,8 @@ function page() {
           </p>
 
           <p className="mt-2">
-            Backed by BSS (Promoted by Govt. of India), ISO Certification, and
-            NSDC affiliation, our training ensures top-tier learning and
-            recognition.
+            Backed by BSS (Promoted by Govt. of India) and ISO Certification,
+            our training ensures top-tier learning and recognition.
           </p>
         </div>
 

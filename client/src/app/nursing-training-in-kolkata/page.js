@@ -99,6 +99,7 @@ function page() {
                         2) ISO Certified Global Technical Institute
                         <br />
                         {/* 3) Affiliated Partner NSDC */}
+                        3) Certification from World Skill Council (WSC)
                       </td>
                     </tr>
                     <tr className="bg-orange-100">
@@ -112,7 +113,7 @@ function page() {
                     <tr className="bg-blue-100">
                       <td className="px-4 py-2 font-semibold">SESSION:</td>
                       <td className="px-4 py-2">
-                        3 Sessions (March, July & November)
+                        3 Sessions (Jan, May, Sep)
                       </td>
                     </tr>
                     <tr className="bg-blue-100">
@@ -290,14 +291,11 @@ function page() {
           </div>
 
           <p>
-            At Global Technical Institute, we take pride in our affiliations and
-            recognition. Our course is promoted by the Government of India
-            through the Bharat Sevak Samaj (BSS), ensuring the highest education
-            standards. Additionally, our institute holds ISO certification,
-            further validating our commitment to quality training. We are also
-            an affiliated partner of the{" "}
-            <strong>National Skill Development Corporation (NSDC)</strong>,
-            which opens up various career opportunities for our students.
+            At Global Technical Institute, we take pride in our affiliation with
+            esteemed organizations. Our course is affiliated with World Skill
+            Council (WSC) and Central Bharat Sevak Samaj (BSS), a National
+            Development Agency established in 1952 by the Planning Commission,
+            Govt. of India.
           </p>
 
           <h2 className="text-xl font-semibold mt-8">

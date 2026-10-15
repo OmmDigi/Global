@@ -284,9 +284,7 @@ function page() {
             training in physiotherapy. The Government of India recognizes and
             promotes our courses through the Board of Secondary Education
             Society (BSS). Additionally, we are proud to hold an ISO
-            certification, ensuring our commitment to global standards, and we
-            are affiliated with the National Skill Development Corporation
-            (NSDC).
+            certification, ensuring our commitment to global standards.
           </p>
 
           <h2 className="text-xl font-semibold text-gray-900">
