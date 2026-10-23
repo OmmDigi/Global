@@ -92,6 +92,8 @@ function page() {
                     1. Central Bharat Sevak Samaj (BSS)
                     <br />
                     2. World Skill Council (WSC)
+                    <br />
+                    3. ISO Certified Global Technical Institute
                   </td>
                 </tr>
                 <tr className="bg-blue-100">

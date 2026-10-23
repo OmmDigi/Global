@@ -42,7 +42,9 @@ function page() {
             <tbody>
               <tr className="bg-blue-100">
                 <td className="font-semibold px-4 py-2">COURSE NAME:</td>
-                <td className="px-4 py-2">Medical Laboratory Technology Training</td>
+                <td className="px-4 py-2">
+                  Medical Laboratory Technology Training
+                </td>
               </tr>
               <tr className="bg-orange-100">
                 <td className="font-semibold px-4 py-2">CERTIFICATE:</td>
@@ -70,6 +72,8 @@ function page() {
                   2. World Skill Council (WSC)
                   <br />
                   3. UGC Affiliated University
+                  <br />
+                  4. ISO Certified Global Technical Institute
                 </td>
               </tr>
               <tr className="bg-blue-100">
