@@ -102,18 +102,17 @@ function page() {
                         3) Certification from World Skill Council (WSC)
                       </td>
                     </tr>
+
+                    <tr className="bg-blue-100">
+                      <td className="px-4 py-2 font-semibold">SESSION:</td>
+                      <td className="px-4 py-2">3 Sessions (Jan, May, Sep)</td>
+                    </tr>
                     <tr className="bg-orange-100">
                       <td className="px-4 py-2 font-semibold">
                         NO.OF CLASSES:
                       </td>
                       <td className="px-4 py-2">
                         2 classes per week (Sat & Sun, 10 AM - 3 PM)
-                      </td>
-                    </tr>
-                    <tr className="bg-blue-100">
-                      <td className="px-4 py-2 font-semibold">SESSION:</td>
-                      <td className="px-4 py-2">
-                        3 Sessions (Jan, May, Sep)
                       </td>
                     </tr>
                     <tr className="bg-blue-100">
@@ -197,9 +196,7 @@ function page() {
                     </tr>
                     <tr className="bg-orange-100">
                       <td className="px-4 py-2 font-semibold">CERTIFICATE:</td>
-                      <td className="px-4 py-2">
-                        GNM Certificate
-                      </td>
+                      <td className="px-4 py-2">GNM Certificate</td>
                     </tr>
                     <tr className="bg-blue-100">
                       <td className="px-4 py-2 font-semibold">
@@ -211,9 +208,7 @@ function page() {
                       <td className="px-4 py-2 font-semibold">
                         BOARD & RECOGNITION:
                       </td>
-                      <td className="px-4 py-2">
-                        WBNC & INC Approved College
-                      </td>
+                      <td className="px-4 py-2">WBNC & INC Approved College</td>
                     </tr>
                     <tr className="bg-blue-100">
                       <td className="px-4 py-2 font-semibold">SESSION:</td>
