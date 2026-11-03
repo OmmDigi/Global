@@ -6,6 +6,9 @@ require("./bridge.js");
 let mainWindow;
 let browserView;
 
+// Old Intel G41 (GMA X4500) GPU drivers cause blank/flickering windows; render on CPU
+app.disableHardwareAcceleration();
+
 app.commandLine.appendSwitch('ignore-certificate-errors');
 app.commandLine.appendSwitch('allow-insecure-localhost', 'true');
 
@@ -24,7 +27,7 @@ function createWindow() {
     },
     show: false,
     titleBarStyle: "default",
-    icon: path.join(__dirname, "assets", "icon.png"),
+    icon: path.join(__dirname, "assets", "logo.png"),
   });
 
   // Load the wrapper HTML file (now just for progress bar UI)
