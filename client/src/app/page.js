@@ -516,6 +516,105 @@ export default function Home() {
                     </div>
                   </Link>
                 </div>
+                {/* yoga */}
+                <div className="mx-4 flex justify-center items-center h-full transition-transform duration-300 hover:scale-105">
+                  <Link
+                    href="/yoga-institute-in-kolkata"
+                    className="min-w-[300px]  gap-10 bg-white shadow-md hover:shadow-xl cursor-pointer transition"
+                  >
+                    <Image
+                      src="/image/yoga/Hatha Yoga.png"
+                      alt="X-Ray Technician Training"
+                      className="   w-full h-48 object-cover p-5"
+                      height={48}
+                      width={300}
+                    />
+                    <div className="p-4 text-center">
+                      <h4 className="text-lg text-red-500 font-semibold mb-2">
+                        YOGA TRANING
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        Diploma in Yoga and Naturopathy
+                      </p>
+                      <p className="flex justify-end items-center font-bold text-blue-600">
+                        For Detail
+                        <Image
+                          src="image/right-arrow.gif"
+                          className="  w-10 h-10   object-cover"
+                          alt="right-arrow"
+                          height={10}
+                          width={300}
+                        />
+                      </p>
+                    </div>
+                  </Link>
+                </div>
+                {/* pharmacy */}
+                <div className="mx-4 flex justify-center items-center h-full transition-transform duration-300 hover:scale-105">
+                  <Link
+                    href="/pharmacy-assistant-course-in-kolkata"
+                    className="min-w-[300px]  gap-10 bg-white shadow-md hover:shadow-xl cursor-pointer transition"
+                  >
+                    <Image
+                      src="/image/pharmasist/pharms.jpg"
+                      alt="X-Ray Technician Training"
+                      className="   w-full h-48 object-cover p-5"
+                      height={48}
+                      width={300}
+                    />
+                    <div className="p-4 text-center">
+                      <h4 className="text-lg text-red-500 font-semibold mb-2">
+                        Pharmacy Assistant
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        Pharmacy Assistant
+                      </p>
+                      <p className="flex justify-end items-center font-bold text-blue-600">
+                        For Detail
+                        <Image
+                          src="image/right-arrow.gif"
+                          className="  w-10 h-10   object-cover"
+                          alt="right-arrow"
+                          height={10}
+                          width={300}
+                        />
+                      </p>
+                    </div>
+                  </Link>
+                </div>
+                {/* Dialysis   */}
+                <div className="mx-4 flex justify-center items-center h-full transition-transform duration-300 hover:scale-105">
+                  <Link
+                    href="/dialysis-course-in-kolkata"
+                    className="min-w-[300px]  gap-10 bg-white shadow-md hover:shadow-xl cursor-pointer transition"
+                  >
+                    <Image
+                      src="/image/dialysis/Diploma.png"
+                      alt="X-Ray Technician Training"
+                      className="   w-full h-48 object-cover p-5"
+                      height={48}
+                      width={300}
+                    />
+                    <div className="p-4 text-center">
+                      <h4 className="text-lg text-red-500 font-semibold mb-2">
+                        Dailysis Training
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        Diploma in Dialysis Technology
+                      </p>
+                      <p className="flex justify-end items-center font-bold text-blue-600">
+                        For Detail
+                        <Image
+                          src="image/right-arrow.gif"
+                          className="  w-10 h-10   object-cover"
+                          alt="right-arrow"
+                          height={10}
+                          width={300}
+                        />
+                      </p>
+                    </div>
+                  </Link>
+                </div>
               </Carousel>
             </div>
           </div>
