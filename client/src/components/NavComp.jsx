@@ -316,6 +316,30 @@ export default function NavComp() {
                             CMS & ED Training
                           </Link>
                         </div>
+                        <div className="py-1">
+                          <Link
+                            href="/yoga-institute-in-kolkata"
+                            className="block px-4 py-1 text-sm text-gray-700 hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                          >
+                               Yoga Training
+                          </Link>
+                        </div>
+                        <div className="py-1">
+                          <Link
+                            href="/pharmacy-assistant-course-in-kolkata"
+                            className="block px-4 py-1 text-sm text-gray-700 hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                          >
+                               Pharmacy Assistant Training
+                          </Link>
+                        </div>
+                        <div className="py-1">
+                          <Link
+                            href="/dialysis-course-in-kolkata"
+                            className="block px-4 py-1 text-sm text-gray-700 hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                          >
+                               Dialysis Training
+                          </Link>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -579,6 +603,30 @@ export default function NavComp() {
                                     className="block px-4 py-1 text-sm text-gray-700 hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
                                   >
                                     CMS & ED Training
+                                  </Link>
+                                </div>
+                                <div className="py-1">
+                                  <Link
+                                    href="/yoga-institute-in-kolkata"
+                                    className="block px-4 py-1 text-sm text-gray-700 hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                  >
+                                    Yoga Training
+                                  </Link>
+                                </div>
+                                <div className="py-1">
+                                  <Link
+                                    href="/pharmacy-assistant-course-in-kolkata"
+                                    className="block px-4 py-1 text-sm text-gray-700 hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                  >
+                                    Pharmacy Assistant Training
+                                  </Link>
+                                </div>
+                                <div className="py-1">
+                                  <Link
+                                    href="/dialysis-course-in-kolkata"
+                                    className="block px-4 py-1 text-sm text-gray-700 hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                  >
+                                    Dialysis Training
                                   </Link>
                                 </div>
                               </div>
