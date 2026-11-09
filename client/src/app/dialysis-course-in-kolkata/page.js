@@ -52,7 +52,7 @@ function page() {
                 </tr>
                 <tr className="bg-blue-100">
                   <td className="px-4 py-3 font-medium">COURSE DURATION:</td>
-                  <td className="px-4 py-3">1 Year/ 2 Year</td>
+                  <td className="px-4 py-3">1 Year/ 2 Years</td>
                 </tr>
                 <tr className="bg-orange-100">
                   <td className="px-4 py-3 font-medium">
