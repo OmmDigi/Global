@@ -47,13 +47,12 @@ function page() {
                 <tr className="bg-orange-100">
                   <td className="px-4 py-3 font-medium">CERTIFICATE:</td>
                   <td className="px-4 py-3">
-                    Govt. Registered Certificate on Auxiliary Nursing &
-                    Midwifery
+                    Govt registered certificate on dialysis technology
                   </td>
                 </tr>
                 <tr className="bg-blue-100">
                   <td className="px-4 py-3 font-medium">COURSE DURATION:</td>
-                  <td className="px-4 py-3">1 / 2 Year</td>
+                  <td className="px-4 py-3">1 Year/ 2 Year</td>
                 </tr>
                 <tr className="bg-orange-100">
                   <td className="px-4 py-3 font-medium">
@@ -73,15 +72,13 @@ function page() {
                 </tr>
                 <tr className="bg-orange-100">
                   <td className="px-4 py-3 font-medium">NO. OF CLASSES:</td>
-                  <td className="px-4 py-3">
-                    2 classes per week (Sat & Sun, 10 AM - 3 PM)
-                  </td>
+                  <td className="px-4 py-3">2 classes per week (Sat & Sun)</td>
                 </tr>
                 <tr className="bg-blue-100">
                   <td className="px-4 py-3 font-medium">
                     MINIMUM QUALIFICATION:
                   </td>
-                  <td className="px-4 py-3">10th Pass (BSS)</td>
+                  <td className="px-4 py-3">10 th / 12 th</td>
                 </tr>
                 <tr className="bg-orange-100">
                   <td className="px-4 py-3 font-medium">DOCUMENTS REQUIRED:</td>

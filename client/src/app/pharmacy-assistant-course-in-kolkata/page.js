@@ -68,13 +68,13 @@ function page() {
                 </tr>
                 <tr className="bg-orange-100">
                   <td className="px-4 py-3 font-medium">NO. OF CLASSES:</td>
-                  <td className="px-4 py-3">1 classes per week (Sat)</td>
+                  <td className="px-4 py-3">1 classes per week</td>
                 </tr>
                 <tr className="bg-blue-100">
                   <td className="px-4 py-3 font-medium">
                     MINIMUM QUALIFICATION:
                   </td>
-                  <td className="px-4 py-3">10th Pass (BSS)</td>
+                  <td className="px-4 py-3">10th Pass</td>
                 </tr>
                 <tr className="bg-orange-100">
                   <td className="px-4 py-3 font-medium">DOCUMENTS REQUIRED:</td>
