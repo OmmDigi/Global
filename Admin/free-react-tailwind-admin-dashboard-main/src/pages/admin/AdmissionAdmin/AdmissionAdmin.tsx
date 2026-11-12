@@ -145,6 +145,7 @@ export default function AdmissionAdmin() {
 
   const filterFormRef = useRef<HTMLFormElement>(null);
   const searchByfilterFormRef = useRef<HTMLFormElement>(null);
+  const searchByValueInputRef = useRef<HTMLInputElement>(null);
 
   const [selectedCourseId, setSelectedCourseId] = useState(null);
 
@@ -198,7 +199,15 @@ export default function AdmissionAdmin() {
         });
       }
     });
+
+    let timerout = setTimeout(() => {
+      searchByValueInputRef.current?.focus()
+    }, 500);
+    return () => {
+      clearTimeout(timerout);
+    }
   }, []);
+
 
   // get Course list
   const { data: courseList } = useSWR(`api/v1/course/dropdown`, getFetcher);
@@ -1292,7 +1301,7 @@ export default function AdmissionAdmin() {
                                     className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                   />
                                   {formData?.selfAttestedLastResult?.length >
-                                  0 ? (
+                                    0 ? (
                                     <div className="mt-2 space-y-1">
                                       {formData?.selfAttestedLastResult?.map(
                                         (file: any, index: number) => (
@@ -2036,9 +2045,8 @@ export default function AdmissionAdmin() {
                 </label>
                 <select
                   // key={editedFormId + "courseName"}
-                  key={`CourseDropDown ${
-                    formDataParams.courseName ?? formData.courseName
-                  }`}
+                  key={`CourseDropDown ${formDataParams.courseName ?? formData.courseName
+                    }`}
                   name="courseName"
                   // disabled={id ? true : false}
                   // defaultValue={formData.courseName}
@@ -2062,9 +2070,8 @@ export default function AdmissionAdmin() {
                 </label>
                 <select
                   // key={editedFormId + "sessionName"}
-                  key={`sessionDropdown ${
-                    formDataParams.sessionName ?? formData.sessionName
-                  }`}
+                  key={`sessionDropdown ${formDataParams.sessionName ?? formData.sessionName
+                    }`}
                   name="sessionName"
                   // disabled={id ? true : false}
                   defaultValue={
@@ -2089,9 +2096,8 @@ export default function AdmissionAdmin() {
                   Choose your Batch
                 </label>
                 <select
-                  key={`batchdropdowm ${
-                    formDataParams.batchName ?? formData.batchName
-                  }`}
+                  key={`batchdropdowm ${formDataParams.batchName ?? formData.batchName
+                    }`}
                   name="batchName"
                   // disabled={id ? true : false}
                   defaultValue={formDataParams.batchName ?? formData.batchName}
@@ -2149,7 +2155,13 @@ export default function AdmissionAdmin() {
                     disabled={id ? true : false}
                     // defaultValue={formData.batchName}
                     defaultValue={searchBy.type}
-                    onChange={FormSearch}
+                    onChange={(e) => {
+                      FormSearch(e);
+                      if (searchByValueInputRef.current) {
+                        searchByValueInputRef.current.value = "";
+                        searchByValueInputRef.current.focus();
+                      }
+                    }}
                     className="w-full px-3 py-2 border dark:bg-gray-800 dark:text-white border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Option</option>
@@ -2166,6 +2178,7 @@ export default function AdmissionAdmin() {
                   </label>
                   <input
                     key={searchBy.value}
+                    ref={searchByValueInputRef}
                     type="text"
                     name="value"
                     defaultValue={searchBy.value}
@@ -2181,7 +2194,7 @@ export default function AdmissionAdmin() {
                       searchByfilterFormRef.current.requestSubmit();
                     }
                   }}
-                  // onClick={handleFormSearch}
+                // onClick={handleFormSearch}
                 >
                   Search
                 </Button>
