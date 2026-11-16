@@ -221,6 +221,10 @@ export default function CourseDetailsAdmin() {
         (item: any) => item.fee_head_id,
       ) || [];
 
+    const firstFeeHeadId =
+      feesStructure?.data?.fee_structure_info?.[0]?.fee_head_id;
+    saveStoredValue(PAYMENT_MODE_KEY, paymentMode[firstFeeHeadId] || "");
+
     setPaymentMode((prev: any) => {
       const updated = { ...prev };
       ids.forEach((fid: number) => {
