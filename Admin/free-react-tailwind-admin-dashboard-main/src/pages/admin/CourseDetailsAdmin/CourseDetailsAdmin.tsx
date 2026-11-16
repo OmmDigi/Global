@@ -63,8 +63,11 @@ export default function CourseDetailsAdmin() {
   }>({});
   const [enteredAmounts, setEnteredAmounts] = useState<any>("");
   const [enteredBillno, setEnteredBillno] = useState<string>("");
-  const [paymentMode, setPaymentMode] = useState<any>("");
+  // const [paymentMode, setPaymentMode] = useState<any>("");
 
+  const [paymentMode, setPaymentMode] = useState<{
+    [key: number]: "";
+  }>({});
   const [selectedDates, setSelectedDates] = useState<{
     [key: number]: Date | null;
   }>({});
@@ -210,14 +213,21 @@ export default function CourseDetailsAdmin() {
       [id]: value,
     }));
   };
-  const handlePaymentType = (e: any, item: any) => {
+  const handlePaymentType = (e: any) => {
     const value = e.target.value;
-    const id = item.fee_head_id;
+    // const id = item.fee_head_id;
+    const ids =
+      feesStructure?.data?.fee_structure_info?.map(
+        (item: any) => item.fee_head_id,
+      ) || [];
 
-    setPaymentMode((prev: any) => ({
-      ...prev,
-      [id]: value,
-    }));
+    setPaymentMode((prev: any) => {
+      const updated = { ...prev };
+      ids.forEach((fid: number) => {
+        updated[fid] = value;
+      });
+      return updated;
+    });
   };
 
   // picking a date/month on one fee head applies it to every fee head row;
