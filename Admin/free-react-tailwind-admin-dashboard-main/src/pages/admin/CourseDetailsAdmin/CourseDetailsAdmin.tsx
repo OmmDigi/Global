@@ -24,6 +24,7 @@ const year = new Date().getFullYear();
 
 const PAYMENT_DATE_KEY = "paymentDate";
 const PAYMENT_MONTH_KEY = "paymentMonth";
+const PAYMENT_MODE_KEY = "paymentMode";
 
 const loadStoredDate = (key: string): Date | null => {
   const stored = localStorage.getItem(key);
@@ -32,6 +33,14 @@ const loadStoredDate = (key: string): Date | null => {
 
 const saveStoredDate = (key: string, date: Date | null) => {
   if (date) localStorage.setItem(key, date.toISOString());
+  else localStorage.removeItem(key);
+};
+
+const loadStoredValue = (key: string): string =>
+  localStorage.getItem(key) || "";
+
+const saveStoredValue = (key: string, value: string | null) => {
+  if (value) localStorage.setItem(key, value);
   else localStorage.removeItem(key);
 };
 
@@ -125,6 +134,7 @@ export default function CourseDetailsAdmin() {
 
     const storedDate = loadStoredDate(PAYMENT_DATE_KEY);
     const storedMonth = loadStoredDate(PAYMENT_MONTH_KEY);
+    const storedPaymentMode = loadStoredValue(PAYMENT_MODE_KEY);
 
     updateMonthlyPaymentBillNumber(MONTHLY_PAYMENT, storedMonth);
     // updateMonthlyPaymentBillNumber(LATE_FINE, storedMonth);
@@ -141,6 +151,14 @@ export default function CourseDetailsAdmin() {
       const updated = { ...prev };
       ids.forEach((fid: number) => {
         if (!(fid in updated)) updated[fid] = storedMonth;
+      });
+      return updated;
+    });
+
+    setPaymentMode((prev: any) => {
+      const updated = { ...prev };
+      ids.forEach((fid: number) => {
+        if (!(fid in updated)) updated[fid] = storedPaymentMode;
       });
       return updated;
     });
@@ -380,6 +398,7 @@ export default function CourseDetailsAdmin() {
       feesStructure?.data?.fee_structure_info?.[0]?.fee_head_id;
     saveStoredDate(PAYMENT_DATE_KEY, selectedDates[firstFeeHeadId] || null);
     saveStoredDate(PAYMENT_MONTH_KEY, month[firstFeeHeadId] || null);
+    saveStoredValue(PAYMENT_MODE_KEY, paymentMode[firstFeeHeadId] || null);
 
     startTransition(async () => {
       await doPayment(finalFormData as any);
@@ -501,6 +520,7 @@ export default function CourseDetailsAdmin() {
 
     saveStoredDate(PAYMENT_DATE_KEY, selectedDates[item.fee_head_id] || null);
     saveStoredDate(PAYMENT_MONTH_KEY, month[item.fee_head_id] || null);
+    saveStoredValue(PAYMENT_MODE_KEY, paymentMode[item.fee_head_id] || null);
 
     startTransition(async () => {
       await doPayment(finalFormData as any);
@@ -605,6 +625,7 @@ export default function CourseDetailsAdmin() {
 
     saveStoredDate(PAYMENT_DATE_KEY, selectedDates[item.fee_head_id] || null);
     saveStoredDate(PAYMENT_MONTH_KEY, month[item.fee_head_id] || null);
+    saveStoredValue(PAYMENT_MODE_KEY, paymentMode[item.fee_head_id] || null);
 
     startTransition(async () => {
       await doPayment(finalFormData as any);
