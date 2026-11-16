@@ -202,7 +202,7 @@ export default function AdmissionAdmin() {
 
     let timerout = setTimeout(() => {
       searchByValueInputRef.current?.focus()
-    }, 500);
+    }, 200);
     return () => {
       clearTimeout(timerout);
     }

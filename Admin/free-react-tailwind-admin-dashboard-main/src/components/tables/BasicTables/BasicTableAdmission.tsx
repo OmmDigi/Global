@@ -27,9 +27,9 @@ export default function BasicTableAdmission({
   onEdit,
   onActive,
 }: // onSendData,
-any) {
+  any) {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { data: selectedForms, addItem, removeItem } = useSelectedForms();
   const selectedFormIds = new Set(selectedForms.map((f) => f.form_id));
 
@@ -46,7 +46,23 @@ any) {
       navigate(`/courseDetailsAdmin/${id}?fee_head_id=${feeHeadId}`);
       return;
     }
+    setSearchParams(prev => {
+      if (prev.get("form_no")) {
+        prev.set("form_no", "");
+      }
+      if (prev.get("name")) {
+        prev.set("name", "");
+      }
+      if (prev.get("email")) {
+        prev.set("email", "");
+      }
+      if (prev.get("ph_no")) {
+        prev.set("ph_no", "");
+      }
+      return prev;
+    });
     navigate(`/courseDetailsAdmin/${id}`);
+    //form_no, name, email, ph_no, bill_no
   };
 
   const handleDeleteClick = (id: number) => {
@@ -183,11 +199,10 @@ any) {
                           </span>
                         </div>
                         <span
-                          className={` flex items-center gap-1 text-sm uppercase ${
-                            order.admission_from === "crm"
+                          className={` flex items-center gap-1 text-sm uppercase ${order.admission_from === "crm"
                               ? "text-green-600"
                               : "text-red-400"
-                          }`}
+                            }`}
                         >
                           {order.admission_from}
                         </span>
@@ -211,11 +226,10 @@ any) {
                   </TableCell>
 
                   <TableCell
-                    className={`px-4 py-3 ${
-                      Number(order.due_amount) === 0
+                    className={`px-4 py-3 ${Number(order.due_amount) === 0
                         ? "text-green-500 dark:text-green-400"
                         : "text-red-500 dark:text-red-500 "
-                    }  text-start text-theme-sm `}
+                      }  text-start text-theme-sm `}
                   >
                     {order.due_amount}
                   </TableCell>
@@ -259,7 +273,7 @@ any) {
                           </button>
                         </div>
                         {order.total_collection == 0 &&
-                        order.admission_from != "crm" ? (
+                          order.admission_from != "crm" ? (
                           <button
                             disabled={isDeleting}
                             onClick={() => handleDeleteClick(order.form_id)}
