@@ -1057,7 +1057,7 @@ export default function CourseDetailsAdmin() {
                                     //   ? editData?.mode
                                     //   : "")
                                   }
-                                  onChange={(e) => handlePaymentType(e, item)}
+                                  onChange={(e) => handlePaymentType(e)}
                                   className="w-25 px-2 py-2  bg-gray-100  pr-2 text-sm border-gray-300   hover:border-gray-200   dark:hover:border-gray-800    dark:border-gray-600 rounded-md dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 text-gray-700"
                                 >
                                   <option value="">Mode</option>
